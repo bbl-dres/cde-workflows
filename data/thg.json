@@ -5,12 +5,32 @@
     ["art", "Projektart", "Neubau", ["Neubau", "Neubau auf bestehendem UG", "Erneuerung", "Auskernung"]],
     ["EBF", "EBF · aus den Grundrissen", null],
     ["GF", "GF · aus den Grundrissen", null],
-    ["sys", "Systemgrenze", "SIA 2032:2020", ["SIA 2032:2020", "SNBS Hochbau 2023.1 · Kriterium 311 (SIA 2032 vollständig)", "Minergie-ECO 2026 (SIA 2032)", "SIA 390/1:2025 Klimapfad · Erstellung", "EN 15978 · A1–A3, B4, C3–C4 (DGNB/QNG)", "Abweichend, im Bericht begründet"]],
+    [
+      "sys",
+      "Systemgrenze",
+      "SIA 2032:2020",
+      [
+        "SIA 2032:2020",
+        "SNBS Hochbau 2023.1 · Kriterium 311 (SIA 2032 vollständig)",
+        "Minergie-ECO 2026 (SIA 2032)",
+        "SIA 390/1:2025 Klimapfad · Erstellung",
+        "EN 15978 · A1–A3, B4, C3–C4 (DGNB/QNG)",
+        "Abweichend, im Bericht begründet"
+      ]
+    ],
     [
       "kbob",
       "Ökobilanzdaten",
       "KBOB/ecobau-Liste 2022, Version 9.0",
-      ["KBOB/ecobau-Liste 2022, Version 9.0", "KBOB/ecobau-Liste 2022, Version 8.02"]
+      [
+        "KBOB/ecobau-Liste 2022, Version 9.0",
+        "KBOB/ecobau-Liste 2022, Version 8.02",
+        "ÖKOBAUDAT 2024-II (EN 15804+A2, Sphera MLC)",
+        "ÖKOBAUDAT 2024-II (EN 15804+A2, ecoinvent)",
+        "baubook (EN 15804+A2, ecoinvent)",
+        "ecoinvent 3.12 (Hintergrunddaten, EN 15804+A2)",
+        "Herstellerspezifische EPD (EN 15804+A2)"
+      ]
     ],
     [
       "tool",

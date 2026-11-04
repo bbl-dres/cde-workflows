@@ -279,7 +279,7 @@ test('application model: documents, LOIN, logs', () => {
   assert.equal(vm.loin.keys.length, 7);
   assert.ok(vm.logs.length >= 10 && vm.logs.every(l => /^[0-9a-f]{8}-/.test(l.id) && l.projectId));
   const other = vmFor({ ...base }, data.projects.projects.find(p => !p.detailed));
-  assert.equal(other.documents.rows.length, 1, 'default document set');
+  assert.equal(other.documents.rows.length, 2, 'default document set: AIA and CAD-Richtlinie BBL'); assert.ok(other.documents.rows.some(r => r.name.startsWith('CAD-Richtlinie BBL')), 'CAD-Richtlinie in every project');
   assert.equal(other.loin.keys.length, 0, 'LOIN empty as in the CDE Bund');
 });
 
