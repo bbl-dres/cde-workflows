@@ -1,0 +1,128 @@
+import { html, icon, esc } from '../ui.js';
+
+// Startseite nach dem Login: Begrüssung, offene Aufgaben, Meine Projekte, Einblicke mit Karte (MapLibre GL,
+// swisstopo-Basiskarte als Vektorkacheln; Fallback OpenFreeMap; ohne Netz eine Ortsliste).
+//
+// The map is expensive (WebGL context, style download), so the map element survives re-renders of the
+// dashboard: it is moved into the fresh DOM instead of being rebuilt. It is removed when leaving the page.
+let live = null;   // { map, el, key }
+
+// Removing a map whose style is still loading makes MapLibre reject its fetch with an AbortError (intentional here).
+window.addEventListener('unhandledrejection', e => { if (e.reason && e.reason.name === 'AbortError' && live === null) e.preventDefault(); });
+
+function destroyMap() {
+  if (!live) return;
+  try { live.map.remove(); } catch { /* already gone */ }
+  live = null;
+}
+
+export default {
+  title: () => 'Startseite',
+  render(ctx) {
+    const { vm, user, link } = ctx;
+    const n = vm.dash.open;
+    const insights = [
+      ['Issues', vm.insights.issues], ['Aufgaben', vm.insights.tasks],
+      ['Data Drops', vm.insights.dataDrops], ['Kommunikation', vm.insights.communication],
+    ];
+    return html`<div class="dash">
+      <div class="dash-top">
+        <div>
+          <h1 class="dash-hello">Hallo ${user.firstName}</h1>
+          <p class="dash-sub">Du hast aktuell ${n} offene ${n === 1 ? 'Aufgabe' : 'Aufgaben'}. <a href="#${link.tasks('all')}" data-nav="${link.tasks('all')}">Mehr anzeigen</a></p>
+        </div>
+        <div class="dash-stats">
+          <div><span class="dash-stat-n">${vm.dash.open}</span><span class="dash-stat-l">Offen</span></div>
+          <div><span class="dash-stat-n">${vm.dash.onTrack}</span><span class="dash-stat-l">On Track</span></div>
+          <div><span class="dash-stat-n">${vm.dash.late}</span><span class="dash-stat-l">Verspätet</span></div>
+        </div>
+      </div>
+
+      <div class="dash-section-head"><span class="dash-h2">Meine Projekte</span><a href="#${link.projects()}" data-nav="${link.projects()}">Alle anzeigen</a></div>
+      <div class="dash-projects">
+        ${vm.myProjects.map(p => html`<a class="dash-project" href="#${p.href}" data-nav="${p.href}">
+          <span class="dash-project-name">${p.name}</span>
+          <span class="dash-project-desc">${p.description}</span>
+          <span class="dash-project-meta">Letzte Änderungen am ${p.updatedAt}</span>
+        </a>`)}
+        ${vm.myProjects.length === 0 ? html`<div class="muted">Keine Projekte zugewiesen.</div>` : ''}
+      </div>
+
+      <div class="dash-insights">
+        <div class="dash-insights-left">
+          <div class="dash-h2" style="margin-bottom:14px">Einblicke</div>
+          <div class="dash-grid">
+            ${insights.map(([l, v]) => html`<div class="dash-cell"><span class="dash-cell-l">${l}</span><span class="dash-cell-n">${v}</span></div>`)}
+          </div>
+        </div>
+        <div class="dash-map" id="dash-map" aria-label="Karte der Projekte">
+          <div class="dash-map-fallback">${icon('map-pin', 22, '#5b6573')}<div>${vm.myProjects.map(p => html`<div>${p.name} · ${p.location.place}</div>`)}</div></div>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  mount(root, ctx) {
+    const host = root.querySelector('#dash-map');
+    if (!host || !window.maplibregl) return;
+    const key = ctx.user.key + ':' + ctx.vm.myProjects.map(p => p.id).join(',');
+
+    // Same user and projects: reuse the live map (keeps the WebGL context and the loaded style).
+    if (live && live.key === key && live.el) {
+      host.appendChild(live.el);
+      host.querySelector('.dash-map-fallback')?.remove();
+      live.map.resize();
+      host.__map = live.map;
+      return;
+    }
+    destroyMap();
+
+    const cfg = ctx.data.projects.map || {};
+    const el = document.createElement('div');
+    el.className = 'dash-map-canvas';
+    host.appendChild(el);
+    const map = new maplibregl.Map({
+      container: el,
+      style: cfg.style,
+      center: cfg.center || [8.2, 46.8],
+      zoom: cfg.zoom || 6.4,
+      attributionControl: { compact: true },
+    });
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
+    live = { map, el, key };
+    host.__map = map;   // diagnostics / tests
+
+    // Fall back to a global style only if the style itself cannot be loaded (offline, blocked).
+    let fellBack = false;
+    map.on('error', e => {
+      const err = e && e.error;
+      const url = err && err.url ? String(err.url) : '';
+      const styleFailed = !map.isStyleLoaded() && (url.startsWith(cfg.style || '\u0000') || /style/i.test(String(err && err.message || '')));
+      if (!fellBack && cfg.fallbackStyle && styleFailed) { fellBack = true; map.setStyle(cfg.fallbackStyle); }
+    });
+    map.once('load', () => { host.querySelector('.dash-map-fallback')?.remove(); map.resize(); });
+
+    ctx.vm.myProjects.forEach(p => {
+      const pin = document.createElement('button');
+      pin.type = 'button';
+      pin.className = 'map-pin';
+      pin.title = p.name;
+      pin.setAttribute('aria-label', p.name);
+      const popup = new maplibregl.Popup({ offset: 14, closeButton: false })
+        .setHTML(`<strong>${esc(p.name)}</strong><br>${esc(p.location.place)} · ${esc(p.phase)}<br><a href="#${esc(p.href)}">Projekt öffnen</a>`);
+      new maplibregl.Marker({ element: pin }).setLngLat([p.location.lng, p.location.lat]).setPopup(popup).addTo(map);
+    });
+
+    // Frame the projects inside Switzerland (projects abroad keep their pin but do not zoom the map out).
+    const [sw, ne] = cfg.fitBounds || [[5.9, 45.8], [10.5, 47.8]];
+    const bounds = new maplibregl.LngLatBounds();
+    ctx.vm.myProjects.forEach(p => {
+      const { lng, lat } = p.location;
+      if (lng >= sw[0] && lng <= ne[0] && lat >= sw[1] && lat <= ne[1]) bounds.extend([lng, lat]);
+    });
+    if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 56, maxZoom: 8.5, duration: 0 });
+  },
+
+  /** Called by app.js when another page replaces the dashboard. */
+  unmount() { destroyMap(); },
+};

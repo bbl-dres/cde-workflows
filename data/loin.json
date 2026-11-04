@@ -1,0 +1,33 @@
+{
+  "note": "Info-Management › LOIN (Level of Information Need): Informationsschlüssel, Elemente, Parameter Sets, Parameter. Projekte ohne Eintrag sind leer wie in der CDE Bund.",
+  "groups": [
+    { "key": "arch", "label": "Architektur" },
+    { "key": "kosten", "label": "Kostenplanung" },
+    { "key": "nachhaltigkeit", "label": "Nachhaltigkeit" }
+  ],
+  "byProject": {
+    "musterhausen": {
+      "keys": [
+        { "group": "arch", "name": "ARC-Wand-Brandschutz", "set": "Pset_WallCommon", "element": "IfcWall", "valid": true },
+        { "group": "arch", "name": "ARC-Raum-Flächen SIA 416", "set": "Qto_SpaceBaseQuantities", "element": "IfcSpace", "valid": true },
+        { "group": "arch", "name": "ARC-Geschoss-Höhen", "set": "Pset_BuildingStoreyCommon", "element": "IfcBuildingStorey", "valid": true },
+        { "group": "kosten", "name": "KV-eBKP-H Code", "set": "CDE_Kosten", "element": "IfcBuildingElement", "valid": true },
+        { "group": "kosten", "name": "KV-Menge-Einheit", "set": "CDE_Kosten", "element": "IfcBuildingElement", "valid": false },
+        { "group": "nachhaltigkeit", "name": "THG-Bauteil-Emissionen", "set": "CDE_Oekobilanz", "element": "IfcBuildingElement", "valid": true },
+        { "group": "nachhaltigkeit", "name": "THG-Materialzuordnung KBOB", "set": "CDE_Oekobilanz", "element": "IfcMaterial", "valid": false }
+      ],
+      "elements": [
+        { "name": "Wand", "ifc": "IfcWall", "keys": 2 }, { "name": "Raum", "ifc": "IfcSpace", "keys": 1 }, { "name": "Geschoss", "ifc": "IfcBuildingStorey", "keys": 1 }, { "name": "Bauteil", "ifc": "IfcBuildingElement", "keys": 3 }, { "name": "Material", "ifc": "IfcMaterial", "keys": 1 }
+      ],
+      "sets": [
+        { "name": "Pset_WallCommon", "parameters": 4, "elements": 1 }, { "name": "Qto_SpaceBaseQuantities", "parameters": 6, "elements": 1 }, { "name": "Pset_BuildingStoreyCommon", "parameters": 3, "elements": 1 }, { "name": "CDE_Kosten", "parameters": 3, "elements": 1 }, { "name": "CDE_Oekobilanz", "parameters": 4, "elements": 2 }
+      ],
+      "parameters": [
+        { "name": "FireRating", "type": "IfcLabel", "unit": "–", "set": "Pset_WallCommon" }, { "name": "IsExternal", "type": "IfcBoolean", "unit": "–", "set": "Pset_WallCommon" },
+        { "name": "NetFloorArea", "type": "IfcAreaMeasure", "unit": "m²", "set": "Qto_SpaceBaseQuantities" }, { "name": "GrossVolume", "type": "IfcVolumeMeasure", "unit": "m³", "set": "Qto_SpaceBaseQuantities" },
+        { "name": "eBKP_Code", "type": "IfcLabel", "unit": "–", "set": "CDE_Kosten" }, { "name": "Menge", "type": "IfcReal", "unit": "lt. Einheit", "set": "CDE_Kosten" },
+        { "name": "THG_kgCO2eq", "type": "IfcReal", "unit": "kg CO₂-eq", "set": "CDE_Oekobilanz" }, { "name": "KBOB_ID", "type": "IfcIdentifier", "unit": "–", "set": "CDE_Oekobilanz" }
+      ]
+    }
+  }
+}

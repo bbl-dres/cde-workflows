@@ -1,0 +1,89 @@
+/* ---- App frame (CDE Bund). Measurements: docs/reviews/2026-11-03-gap-analysis-pixel.md ---- */
+:root { --banner-h: 28px; --topbar-h: 50px; --head-h: calc(var(--banner-h) + var(--topbar-h)); --footer-h: 28px; }
+#app { min-height: 100vh; }
+.app-frame { position: relative; min-height: 100vh; background: var(--bg-app); }
+
+/* Prototype banner: white on red, above the topbar */
+.proto-banner { height: var(--banner-h); background: #cc1044; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 12px; font-size: 12px; font-weight: 600; line-height: 1.2; text-align: center; white-space: nowrap; overflow: hidden; }
+
+/* Topbar: 48 px (h-12); logo 26×29 at 20 px; nav 14 px; search 28 px; icons 20 px with 44 px gaps; avatar 28 px */
+/* 50 px (references: tasks 1537, delivery plan 1534); search field 28 px centred (y 11–38); the dashboard reference is clipped by 3 px at the top */
+.topbar { height: var(--topbar-h); background: var(--topbar); display: flex; align-items: center; padding: 0 12px 0 20px; color: #fff; position: relative; z-index: 5; }
+.swiss-logo { width: 26px; height: 29px; flex: none; margin-right: 36px; background: url(../assets/swiss-logo-flag.png) center/contain no-repeat; }
+.topbar-link { font-size: 14px; line-height: 20px; white-space: nowrap; margin-right: 24px; position: relative; top: 2px; }
+.topbar-badge { position: absolute; top: -10px; right: -16px; min-width: 18px; height: 18px; border-radius: 9px; background: var(--red); box-shadow: 0 0 0 1px #fff; font-size: 12px; line-height: 18px; padding: 0 6px; display: flex; align-items: center; justify-content: center; font-weight: 400; }
+.topbar-search { flex: 1; display: flex; margin: 0 36px 0 20px; min-width: 0; }
+.topbar-search-input { flex: 1; min-width: 0; height: 28px; background: #fff; border: 1px solid var(--line-2); border-right: 0; border-radius: 4px 0 0 4px; display: flex; align-items: center; padding: 0 9px; font-size: 12px; color: var(--placeholder); white-space: nowrap; overflow: hidden; }
+.topbar-search-btn { width: 28px; height: 28px; flex: none; background: #fff; border: 1px solid var(--line-2); border-radius: 0 4px 4px 0; display: flex; align-items: center; justify-content: center; }
+.topbar-icons { display: flex; gap: 44px; align-items: center; margin-right: 24px; }
+.topbar-user { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.topbar-username { font-size: 13px; font-weight: 600; }
+.side-toggle { display: none; background: none; border: 0; padding: 4px; margin: 0 8px 0 -8px; border-radius: 4px; cursor: pointer; }
+.side-toggle:hover { background: rgba(255,255,255,.12); }
+
+/* Body: sidebar + main */
+.app-body { display: flex; min-height: calc(100vh - var(--head-h) - var(--footer-h)); }
+.app-footer { height: var(--footer-h); display: flex; align-items: center; justify-content: flex-end; padding: 0 12px; font-size: 11px; color: var(--muted); background: #e4e8ee; border-top: 1px solid #d9dee5; }
+.app-footer a { color: var(--muted); }
+.app-footer a:hover { color: var(--navy); text-decoration: underline; }
+.sidebar { width: 240px; flex: none; background: #fff; padding: 8px 0 16px; }
+.sidebar-simple { width: 232px; }
+.sidebar-project { padding: 0 16px; margin-bottom: 24px; }
+.sidebar-project-name { font-size: 18px; font-weight: 500; line-height: 28px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.sidebar-title { font-size: 18px; line-height: 28px; }
+.sidebar-project-type { font-size: 12px; line-height: 16px; color: var(--muted); margin-top: 4px; }
+.nav { display: flex; flex-direction: column; padding: 0 8px; }
+.sidebar-simple .nav { padding: 0 8px 0 1px; }   /* list sidebars: icon at 12 px, highlight almost flush left */
+.sidebar-simple .nav-item { padding: 0 12px; }
+.nav-item { display: flex; align-items: center; gap: 16px; height: 40px; padding: 0 8px; border-radius: 4px; font-size: 14px; font-weight: 500; line-height: 20px; color: var(--text); text-decoration: none; cursor: default; transition: background-color .15s, color .15s; }
+a.nav-item { cursor: pointer; }
+a.nav-item:hover, .nav-group:hover { background: #e5e7eb; text-decoration: none; color: var(--navy-hover); }   /* hover:bg-gray-200 hover:text-blue-dark */
+.nav-item.is-active { background: var(--nav-active); color: #111827; font-weight: 600; }
+.nav-item.is-sub { margin-left: 18px; padding-left: 12px; gap: 14px; }   /* icon at 38 px, text at 70 px; bold active label still fits (Segoe UI) */
+.nav-badge { font-size: 12px; line-height: 18px; border: 1px solid var(--line); border-radius: 10px; padding: 0 8px; font-weight: 400; color: var(--text); }
+.side-backdrop { display: none; }
+
+.app-main { flex: 1; min-width: 0; padding: 5px 8px 8px; position: relative; }
+.app-main-full { padding: 16px 12px 16px 16px; }
+.app-main-white { padding: 8px; }
+.page-card { background: #fff; min-height: calc(100vh - var(--head-h) - var(--footer-h) - 16px); padding: 6px 12px 12px; }
+
+/* Page head (title line 28 px, breadcrumb right), tabs */
+.page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 4px; min-height: 28px; }
+.page-title { font-size: 20px; font-weight: 500; line-height: 28px; display: flex; align-items: center; gap: 12px; min-width: 0; margin: 0; }
+.breadcrumb { font-size: 12px; line-height: 20px; margin-top: 4px; color: var(--muted-2); display: flex; gap: 4px; align-items: center; white-space: nowrap; flex: none; }
+.breadcrumb-sep { color: var(--muted-2); }
+.breadcrumb-link { color: var(--muted-2); transition: color .3s; }
+.breadcrumb-link:hover { color: rgba(0,0,0,.85); text-decoration: none; }
+.breadcrumb-current { color: var(--text); }
+.tabs { display: flex; gap: 32px; font-size: 16px; line-height: 24px; border-bottom: 1px solid var(--line-3); margin: 4px 0 12px; }
+.tab { padding: 8px 0; color: var(--text); border-bottom: 2px solid transparent; margin-bottom: -1px; text-decoration: none; font-weight: 500; transition: color .3s; white-space: nowrap; }
+a.tab:hover { color: #21485c; text-decoration: none; }
+.tab.is-active { border-bottom-color: var(--navy); color: var(--navy); }
+
+/* ---- Responsive (Tailwind breakpoints of the CDE Bund: sm 640, md 768, lg 1024, xl 1280, 2xl 1536) ---- */
+@media (max-width: 1023.98px) {
+  /* Sidebar off-canvas (nz-sider with breakpoint lg, collapsed width 0, trigger in the topbar) */
+  .side-toggle { display: inline-flex; }
+  .sidebar { position: fixed; top: var(--head-h); bottom: 0; left: 0; z-index: 45; overflow-y: auto; transform: translateX(-100%); transition: transform .2s ease; box-shadow: 2px 0 8px rgba(0,0,0,.15); }
+  body.side-open .sidebar { transform: none; }
+  body.side-open .side-backdrop { display: block; position: fixed; inset: var(--head-h) 0 0 0; background: rgba(0,0,0,.35); z-index: 44; }
+  .page-head { flex-wrap: wrap; }
+  .breadcrumb { flex: 1 1 100%; margin-top: 0; }
+  .tabs { gap: 24px; overflow-x: auto; }
+}
+@media (max-width: 767.98px) {
+  .topbar { padding-left: 12px; }
+  .swiss-logo { margin-right: 16px; }
+  .topbar-link { margin-right: 16px; }
+  .topbar-search { margin: 0 16px 0 4px; }
+  .topbar-icons { gap: 20px; margin-right: 16px; }
+  .topbar-search-input { font-size: 0; }
+  .tabs { font-size: 14px; }
+}
+@media (max-width: 639.98px) {
+  .topbar-username { display: none; }
+  .topbar-icons { gap: 12px; margin-right: 10px; }
+  .proto-banner { font-size: 11px; white-space: normal; line-height: 1.15; }
+  .app-main-full { padding: 12px; }
+}

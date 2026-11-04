@@ -1,0 +1,32 @@
+{
+  "initial": { "GV": 24800, "GSF": 4200, "GGF": 1620, "BUF": 2400, "GF": 6480, "KF": 780, "VF": 920, "FF": 260, "HNF": 3420, "NNF": 1100, "AGF": 140, "EBF": 5600, "FAW": 4300, "FB": 1620 },
+  "required": ["GV", "GSF", "GGF", "BUF", "GF", "KF", "VF", "FF", "HNF", "NNF", "AGF", "EBF", "FAW", "FB"],
+  "groups": [
+    { "title": "Gebäudevolumen", "rows": [
+      { "code": "GV", "name": "Gebäudevolumen", "unit": "m³", "base": "GV" } ] },
+    { "title": "Grundstücksflächen", "rows": [
+      { "code": "GSF", "name": "Grundstücksfläche", "unit": "m²", "base": "GSF" },
+      { "code": "GGF", "name": "Gebäudegrundfläche", "unit": "m²", "base": "GSF" },
+      { "code": "UF", "name": "Umgebungsfläche", "unit": "m²", "base": "GSF", "derived": true },
+      { "code": "BUF", "name": "Bearbeitete Umgebungsfläche", "unit": "m²", "base": "GSF" } ] },
+    { "title": "Gebäudeflächen", "rows": [
+      { "code": "GF", "name": "Geschossfläche", "unit": "m²", "base": "GF" },
+      { "code": "KF", "name": "Konstruktionsfläche", "unit": "m²", "base": "GF" },
+      { "code": "NGF", "name": "Nettogeschossfläche", "unit": "m²", "base": "GF", "derived": true },
+      { "code": "VF", "name": "Verkehrsfläche", "unit": "m²", "base": "GF" },
+      { "code": "FF", "name": "Funktionsfläche", "unit": "m²", "base": "GF" },
+      { "code": "NF", "name": "Nutzfläche", "unit": "m²", "base": "GF", "derived": true },
+      { "code": "HNF", "name": "Hauptnutzfläche", "unit": "m²", "base": "GF" },
+      { "code": "NNF", "name": "Nebennutzfläche", "unit": "m²", "base": "GF" },
+      { "code": "AGF", "name": "Aussengeschossfläche", "unit": "m²", "base": "GF" } ] },
+    { "title": "Weitere Bezugsmengen", "rows": [
+      { "code": "EBF", "name": "Energiebezugsfläche (SIA 380/1)", "unit": "m²" },
+      { "code": "FAW", "name": "Fläche Aussenwand (eBKP-H)", "unit": "m²" },
+      { "code": "FB", "name": "Fläche Bedachung (eBKP-H)", "unit": "m²" } ] }
+  ],
+  "quotients": [
+    { "k": "FAW/GF", "name": "Fläche Aussenwand / Geschossfläche", "num": "FAW" },
+    { "k": "FB/GF", "name": "Fläche Bedachung / Geschossfläche", "num": "FB" },
+    { "k": "GV/GF", "name": "Gebäudevolumen / Geschossfläche", "num": "GV" }
+  ]
+}

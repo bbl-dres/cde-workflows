@@ -1,0 +1,246 @@
+import { html, icon, btn, checkbox, avatar, metaRows, progress, raw } from '../ui.js';
+import { emptyState } from '../shell.js';
+import { dropZone, resultPanel } from './plan.js';
+
+// Datenformular (design 04.11.2026): the tab bodies of KV-32, THG-32 and the floor plans DWG, rendered from the
+// view model of model/form.js (F). Übersicht: KPIs, table/chart or plan figures, Lieferung, Verlauf, Beteiligte.
+// Erfassung: Hauptgruppen (direct amount or positions), sticky submit bar. Prüfung: comparison or plan result,
+// Prüfung BBL, Übergabe. Beteiligte, Dokumente, Verlauf: tables.
+
+const COLS = 'grid-template-columns:68px minmax(0,1fr) 72px 120px 140px 100px';
+const card = (head, body, style = '') => html`<div class="card" style="${raw(style)}">${head ? html`<div class="card-head">${head}</div>` : ''}${body}</div>`;
+const headLink = (label, href) => html`<a class="card-head-link" href="#${href}" data-nav="${href}">${label}</a>`;
+const hint = t => html`<span class="card-hint">${t}</span>`;
+const check = c => html`<div class="rv-check">${icon(c.icon, 16, c.color)}<span class="flex-1">${c.label}</span></div>`;
+const kvRow = (k, v) => html`<div class="rv-kv"><span class="rv-kv-k">${k}</span><span>${v}</span></div>`;
+
+export const tabBadge = b => (b ? html`<span class="tab-badge" style="background:${b.bg};color:${b.fg}">${b.n}</span>` : '');
+
+export function renderForm(ctx, F, tab) {
+  switch (tab) {
+    case 'erfassung': return erfassung(ctx, F);
+    case 'pruefung': return pruefung(ctx, F);
+    case 'beteiligte': return beteiligte(F);
+    case 'dokumente': return dokumente(F);
+    case 'verlauf': return verlauf(F);
+    default: return uebersicht(ctx, F);
+  }
+}
+
+// ---- Übersicht ----
+function uebersicht(ctx, F) {
+  const L = tab => ctx.link.delivery(F.codeLc, tab);
+  return html`<div class="fm-cols">
+    <div class="fm-main">
+      <div class="kpi-grid">
+        ${F.kpis.map(k => html`<div class="card kpi"><span class="kpi-k">${k.k}</span><span class="kpi-row"><span class="kpi-v">${k.v}</span><span class="kpi-u">${k.u}</span></span></div>`)}
+        <div class="card kpi"><span class="kpi-k">${F.comp.label}</span><span class="kpi-v">${F.comp.pct}</span>${progress(F.comp.w, F.comp.bar)}<span class="fs-12" style="color:${F.comp.fg}">${F.comp.text}</span></div>
+      </div>
+      ${F.kind === 'plan' ? planOverview(F, L) : costOverview(F, L)}
+    </div>
+    <div class="fm-side">
+      ${card('Lieferung', html`<div style="padding:8px 12px 12px">${metaRows(F.meta)}</div>`)}
+      ${card(html`<span class="flex-1">Verlauf</span>${headLink('Alle Ereignisse', L('verlauf'))}`, stepsList(F, L))}
+      ${card(html`<span class="flex-1">Beteiligte</span>${headLink('Verwalten', L('beteiligte'))}`, html`<div class="pp-list">${F.people.map(p => html`<div class="pp-row">${avatar(p.ini, 28, '#e5e7eb', '#374151')}<div class="flex-1 min-w-0 flex-col"><span class="pp-name">${p.name}</span><span class="pp-firm">${p.firm}</span></div><span class="pp-role">${p.role}</span></div>`)}</div>`)}
+    </div>
+  </div>`;
+}
+
+const stepsList = (F, L) => html`<div class="st-list">${F.steps.map(s => html`<div class="st-row" style="background:${s.rowBg}">
+  <span class="st-dot" style="border-color:${s.bd};background:${s.bg};color:${s.fg}">${s.sym}</span>
+  <span class="st-label" style="color:${s.lc};font-weight:${s.fw}">${s.label}</span>
+  <span class="st-sub">${s.sub}</span>
+  ${s.isCur ? html`<div class="st-next"><span class="st-next-text">${F.next.text}</span>${F.next.btn ? html`<div>${btn({ label: F.next.btn, kind: 'primary', nav: L(F.next.tab) })}</div>` : ''}</div>` : ''}
+</div>`)}</div>`;
+
+function costOverview(F, L) {
+  const C = 'grid-template-columns:52px minmax(0,1fr) 130px 130px 110px';
+  return html`
+    ${card(html`<span class="flex-1">${F.ov.tableTitle}</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div class="fm-table"><div style="min-width:520px">
+      <div class="fm-th" style="${C}"><span>Code</span><span>Hauptgruppe</span><span class="right">${F.ov.colCur}</span><span class="right">${F.ov.colPrev}</span><span class="right">${F.ov.colKw}</span></div>
+      ${F.costRows.map(c => html`<div class="fm-tr" style="${C};background:${c.bg}"><span class="fm-code">${c.code}</span><span class="ellipsis">${c.name}</span><span class="right">${c.cur}</span><span class="right muted">${c.prev}</span><span class="right muted">${c.kw}</span></div>`)}
+      <div class="fm-total" style="${C}"><span></span><span>Total</span><span class="right">${F.totalRow.cur}</span><span class="right muted">${F.totalRow.prev}</span><span class="right muted">${F.totalRow.kw}</span></div>
+      ${F.subtotals.length ? html`<div class="fm-space"></div>${F.subtotals.map(u => html`<div class="fm-sub" style="${C}"><span>${u.code}</span><span>${u.name}</span><span class="right">${u.cur}</span><span class="right muted fw-400">${u.prev}</span><span class="right">${u.kw}</span></div>`)}` : ''}
+    </div></div>`)}
+    ${card(html`<span class="flex-1">${F.ov.chartTitle}</span>${hint(F.ov.chartHint)}`, targetChart(F))}`;
+}
+
+const targetChart = F => {
+  const K = F.chart;
+  return html`<div class="tgt-body">
+    <div class="tgt-ist"><span class="kpi-v">${K.ist}</span><span class="kpi-u">${F.ov.istLabel}</span></div>
+    <div class="tgt" role="img" aria-label="${K.ist} im Vergleich mit ${K.targets.map(m => m.label + ' ' + m.val).join(', ')}"><div class="tgt-track"></div>${K.hasBand ? html`<div class="tgt-band" style="left:${K.bandL};width:${K.bandW}"></div>` : ''}<div class="tgt-bar" style="width:${K.istW}"></div>
+      ${K.targets.map(m => html`<div class="tgt-mark" style="left:${m.x};background:${m.c}"></div><span class="tgt-dot" style="top:${m.ly};left:${m.x};background:${m.c}">${m.n}</span>`)}</div>
+    <div class="tgt-axis"><span>${K.min}</span><span>${K.max}</span></div>
+    <div class="tgt-legend"><span></span><span class="muted fs-12">Ziel</span><span class="muted fs-12 right">Wert</span><span class="muted fs-12 right">Ist zum Ziel</span>
+      ${K.targets.map(m => html`<span class="tgt-n" style="background:${m.c}">${m.n}</span><span class="ellipsis">${m.label}</span><span class="right">${m.val}</span><span class="right" style="color:${m.dc}">${m.delta}</span>`)}
+      ${K.hasBand ? html`<span class="tgt-bandsw"></span><span style="color:#374151">Genauigkeit ±${K.acc} % um Kostenziel</span><span class="right" style="color:#374151">${K.band}</span><span></span>` : ''}
+    </div>
+  </div>`;
+};
+
+function planOverview(F, L) {
+  const P = F.planOv;
+  return html`
+    ${card(html`<span class="flex-1">Flächen SIA 416</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div style="padding:10px 12px 14px">${P.sia.map(a => html`<div class="sia-row" style="background:${a.bg};font-weight:${a.fw}"><span class="fw-600">${a.ab}</span><span>${a.name}</span><span class="right">${a.val}</span><span class="right muted">${a.share}</span></div>`)}</div>`)}
+    ${card(html`<span class="flex-1">Prüfregeln nach Kategorie</span>${hint('CAD-Richtlinie BBL V1.0')}`, html`<div class="cat-list">${P.cats.map(c => html`<div class="cat-row"><span>${c.name}</span><div class="cat-bar"><div style="width:${c.wOk};background:#7fb69a"></div><div style="width:${c.wWarn};background:#e0b54a"></div><div style="width:${c.wErr};background:#cf1322"></div></div><span class="right muted">${c.ratio}</span></div>`)}
+      <div class="cat-legend"><span><span class="cat-sw" style="background:#7fb69a"></span>Bestanden</span><span><span class="cat-sw" style="background:#e0b54a"></span>Warnung</span><span><span class="cat-sw" style="background:#cf1322"></span>Fehler</span></div></div>`)}`;
+}
+
+// ---- Erfassung ----
+function erfassung(ctx, F) {
+  return html`<div class="fm-stack">${F.kind === 'plan' ? planEntry(ctx, F) : dataEntry(ctx, F)}${F.erf.hasEndwert ? endwertCard(F) : ''}${submitBar(F)}</div>`;
+}
+
+function dataEntry(ctx, F) {
+  const E = F.erf, open = !!ctx.state.ui.importMenu, ro = F.locked ? raw('readonly') : '';
+  return html`<div class="card">
+    <div class="card-head" style="flex-wrap:wrap">
+      <span class="flex-1" style="flex-basis:220px">${E.tableTitle}</span>
+      <div class="dd">
+        <button type="button" class="btn btn-secondary" data-action="toggleImportMenu" aria-haspopup="menu" aria-expanded="${open ? 'true' : 'false'}">Importieren ${icon('chevron-down', 12, 'currentColor')}</button>
+        ${open ? html`<div class="dd-menu" role="menu">${E.importItems.map(([key, label]) => html`<button type="button" role="menuitem" class="dd-item" data-action="importItem" data-arg="${key}" data-form="${F.id}">${label}</button>`)}</div>` : ''}
+      </div>
+      <button type="button" class="btn btn-secondary">Excel herunterladen</button>
+    </div>
+    ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}
+    <div class="fm-table"><div class="ent">
+      <div class="ent-th" style="${COLS}"><span>Code</span><span>Bezeichnung</span><span>Einheit</span><span class="right">${E.qtyLabel}</span><span class="right">${E.valLabel}</span><span class="right">${E.kwLabel}</span></div>
+      ${E.rows.map(r => (r.isGroupRow ? groupRow(F, r, ro) : posRow(F, r, ro)))}
+      ${E.rows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine fehlenden Werte.</div>` : ''}
+      <div class="ent-total" style="${COLS}"><span></span><span>${E.totalLabel}</span><span></span><span></span><span class="right pr18">${E.totalStr}</span><span class="right muted">${E.totalKw}</span></div>
+      ${F.subtotals.length ? html`<div class="fm-space"></div>${F.subtotals.map(u => html`<div class="ent-subtotal" style="${COLS}"><span>${u.code}</span><span>${u.name}</span><span></span><span></span><span class="right pr18">${u.cur}</span><span class="right">${u.kw}</span></div>`)}<div style="height:8px"></div>` : ''}
+    </div></div>
+    <div class="card-foot">${E.foot}</div>
+  </div>`;
+}
+
+const groupRow = (F, r, ro) => html`<div class="ent-group" style="${COLS};background:${r.bg}">
+  <span class="ent-code">${r.canToggle ? html`<button type="button" class="ent-toggle" data-action="formMode" data-form="${F.id}" data-group="${r.code}" aria-label="${r.toggleLabel} ${r.code}" aria-expanded="${r.direct ? 'false' : 'true'}">${icon(r.chev, 16, '#374151')}</button>` : html`<span class="ent-toggle" aria-hidden="true"></span>`}${r.code}</span>
+  <span class="ent-name"><span class="fw-600">${r.name}</span>${r.sub ? html`<span class="ent-sub">${r.sub}</span>` : ''}${r.canToggle ? html`<a data-action="formMode" data-form="${F.id}" data-group="${r.code}">${r.toggleLabel}</a>` : ''}</span>
+  <span class="muted fs-12">${r.unit}</span>
+  <span class="right muted">${r.bez}</span>
+  ${r.direct
+    ? html`<span class="ent-cell-input"><input class="ent-input fw-600" aria-label="${F.erf.valLabel} ${r.code} ${r.name}" value="${r.gStr}" placeholder="fehlt" style="border-color:${r.gBd};background:${F.erf.inputBg}" ${r.gKey ? html`data-change="setMap" data-key="${r.gKey}" data-code="${r.code}" data-fid="${r.gKey}-${r.code}"` : html`data-change="formGroupVal" data-form="${F.id}" data-group="${r.code}" data-fid="${F.id}-g-${r.code}"`} ${ro}></span>`
+    : html`<span class="right fw-600 pr18">${r.sum}</span>`}
+  <span class="right muted fs-125">${r.kw}</span>
+</div>`;
+
+const posRow = (F, r, ro) => html`<div class="ent-pos" style="${COLS}">
+  <span class="ent-pos-code">${r.code}</span>
+  <span class="ellipsis">${r.name}</span>
+  <span class="muted fs-12">${r.unit}</span>
+  ${r.hasQty ? html`<span class="ent-cell-input"><input class="ent-input" aria-label="Menge ${r.code}" value="${r.qStr}" placeholder="fehlt" style="border-color:${r.qBd};background:${F.erf.inputBg}" data-change="setMap" data-key="${r.qKey}" data-code="${r.code}" data-fid="${r.qKey}-${r.code}" ${ro}></span>` : html`<span class="right muted fs-12">–</span>`}
+  <span class="ent-cell-input"><input class="ent-input" aria-label="${F.erf.valLabel} ${r.code}" value="${r.vStr}" placeholder="fehlt" style="border-color:${r.vBd};background:${F.erf.inputBg}" data-change="setMap" data-key="${r.vKey}" data-code="${r.code}" data-fid="${r.vKey}-${r.code}" ${ro}></span>
+  <span class="right muted fs-125">${r.kw}</span>
+</div>`;
+
+const endwertCard = F => card('Weitere Angaben', html`<div class="extra-row">
+  <label class="flex items-center gap-10" style="flex-wrap:wrap"><span>THG-Emissionen Erstellung, Endwert für SUS <span class="req">*</span></span>
+    <input class="ent-input" style="width:90px;background:${F.erf.inputBg}" aria-label="Endwert THG-Emissionen Erstellung" value="${F.erf.endwert}" data-change="setEndwert" data-fid="endwert" ${F.locked ? raw('readonly') : ''}>
+    <span class="muted">kg CO₂-eq/m² EBF·a</span></label>
+  <span class="muted">Kontrollwert aus Positionen, 60 Jahre: ${F.erf.control}</span>
+</div>`);
+
+function planEntry(ctx, F) {
+  const p = F.plan;
+  return html`<div class="card">
+    <div class="card-head" style="flex-wrap:wrap">
+      <span class="flex-1 min-w-0" style="flex-basis:220px">${F.erf.tableTitle}${p.fileName ? html` <span class="card-hint">· ${p.fileName}${F.erf.fileMeta ? ' · ' + F.erf.fileMeta : ''}</span>` : ''}</span>
+      ${p.result && !F.locked ? html`<label class="btn btn-secondary" style="cursor:pointer">${icon('upload', 13, 'currentColor')}Neu hochladen<input type="file" accept=".dwg" hidden data-change="planFile" data-key="${p.key}" aria-label="DWG-Datei neu hochladen"></label>
+        <button type="button" class="btn btn-secondary" data-action="planLoadSample" data-key="${p.key}">Musterplan laden</button>
+        <a class="fs-12" data-action="planRemove" data-key="${p.key}">Entfernen</a>` : ''}
+      ${F.locked ? html`<span class="muted fs-12">Erfassung gesperrt</span>` : ''}
+    </div>
+    ${p.busy ? html`<div class="note note-grey" style="margin:10px 12px 6px"><span class="plan-spin">${icon('loader-circle', 14, '#5b6573')}</span>${p.busy}</div>` : ''}
+    ${p.error ? html`<div class="note note-rose" style="margin:10px 12px 6px">${icon('circle-alert', 14, '#9b2c44')}${p.error}</div>` : ''}
+    ${!p.result ? html`<div style="padding:40px 20px 36px">${dropZone(p)}</div>` : resultPanel(ctx, p)}
+    <div class="card-foot">${F.erf.foot}</div>
+  </div>`;
+}
+
+function submitBar(F) {
+  const B = F.bar, A = F.act;
+  if (B.locked) return html`<div class="submit-bar"><span class="fs-13 flex-1" style="min-width:240px">Eingereicht. Die Erfassung ist gesperrt, bis Paula Muster freigibt oder zurückweist.</span><a class="fs-125" data-action="${A.reopen}" data-key="${F.id}">Erfassung wieder öffnen (Prototyp)</a></div>`;
+  return html`<div class="submit-bar">
+    <div class="submit-comp"><span class="fs-125" style="color:#374151">${B.compText}</span>${progress(B.compW, B.compBar)}</div>
+    ${B.canFilter ? checkbox({ checked: F.erf.missingOnly, label: 'Nur fehlende Werte anzeigen', action: 'formToggleMissing', key: F.id }) : ''}
+    <span class="flex-1"></span>
+    ${B.reason ? html`<span class="submit-reason">${B.reason}</span>` : ''}
+    ${btn({ label: B.label, kind: 'primary', cls: 'btn-lg', action: A.submit, key: F.id, disabled: !B.canSubmit })}
+  </div>`;
+}
+
+// ---- Prüfung ----
+function pruefung(ctx, F) {
+  const L = tab => ctx.link.delivery(F.codeLc, tab), A = F.act;
+  return html`<div class="fm-cols">
+    <div class="fm-main">${F.kind === 'plan' ? planResult(F, L) : compareCard(F)}</div>
+    <div class="fm-side">
+      ${card(html`<span class="flex-1">Prüfung BBL</span>${hint('Paula Muster, BBL')}`, html`<div class="card-body flex-col" style="gap:10px">
+        ${F.rv.notSubmitted ? html`<div class="note note-grey">Wartet auf die Einreichung durch ${F.leadName}.</div>` : F.autoChecks.map(check)}
+        <div class="rv-manual">${F.manual.map(m => checkbox({ checked: m.checked, label: m.label, action: A.toggle, key: m.key, arg: F.id, disabled: m.disabled }))}</div>
+        <textarea class="rv-textarea" placeholder="Kommentar an Lieferant (bei Rückweisung Pflicht)" aria-label="Kommentar an Lieferant"></textarea>
+        ${F.rv.decide ? html`<div class="rv-actions">
+          <span class="fs-12 muted flex-1" style="min-width:120px">${F.rv.reason}</span>
+          ${F.rv.canReview ? btn({ label: 'Zurückweisen', action: A.reject, key: F.id }) : html`<button type="button" class="btn btn-secondary" disabled>Zurückweisen</button>`}
+          ${F.rv.canReview ? btn({ label: 'Freigeben', kind: 'primary', action: A.approve, key: F.id, disabled: !F.rv.canApprove }) : html`<button type="button" class="btn btn-primary" disabled>Freigeben</button>`}
+        </div>` : ''}
+        ${F.rv.done ? html`<div class="rv-note rv-note-green">${F.rv.doneText} <a data-action="${A.reset}" data-key="${F.id}">Zurücksetzen</a></div>` : ''}
+      </div>`)}
+      ${card('Übergabe', html`<div style="padding:8px 12px 12px">${kvRow('Zielsystem', F.handover.ziel)}${kvRow('Wert', F.handover.value)}${kvRow('Status', F.handover.status)}</div>${F.canTransfer ? html`<div style="padding:0 14px 14px">${btn({ label: `An ${F.target} übertragen`, kind: 'primary', action: A.transfer, key: F.id })}</div>` : ''}`)}
+    </div>
+  </div>`;
+}
+
+function compareCard(F) {
+  const C = 'grid-template-columns:64px minmax(0,1fr) 130px 130px 100px';
+  return card(`Vergleich mit Vorphase ${F.cmpPrevLabel}`, html`<div class="fm-table"><div style="min-width:540px">
+    <div class="fm-th" style="${C}"><span>Code</span><span>Bezeichnung</span><span class="right">${F.code} ${F.cmpUnit}</span><span class="right">${F.cmpPrevLabel} ${F.cmpUnit}</span><span class="right">Abweichung</span></div>
+    ${F.cmp.map(c => html`<div class="fm-tr" style="${C}"><span class="fw-600">${c.code}</span><span class="ellipsis">${c.name}</span><span class="right">${c.cur}</span><span class="right muted">${c.prev}</span><span class="right" style="color:${c.dc};font-weight:${c.dw}">${c.delta}</span></div>`)}
+    <div class="fm-total" style="${C}"><span></span><span>Total</span><span class="right">${F.cmpT.cur}</span><span class="right muted">${F.cmpT.prev}</span><span class="right" style="color:${F.cmpT.dc};font-weight:${F.cmpT.dw}">${F.cmpT.delta}</span></div>
+    ${F.subtotals.length ? html`<div class="fm-space"></div>${F.subtotals.map(u => html`<div class="fm-sub" style="${C}"><span>${u.code}</span><span>${u.name}</span><span class="right">${u.cur}</span><span class="right muted fw-400">${u.prev}</span><span class="right" style="color:${u.dc}">${u.delta}</span></div>`)}<div style="height:8px"></div>` : ''}
+  </div></div><div class="card-foot">Abweichungen ab 10 % sind rot markiert und brauchen eine Begründung.</div>`);
+}
+
+function planResult(F, L) {
+  const R = F.res, p = F.plan;
+  return card(html`<span class="flex-1">Prüfergebnis</span>${p.fileName ? hint(p.fileName) : ''}`, F.rv.notSubmitted
+    ? html`<div class="muted fs-125" style="padding:28px 16px">Die Lieferung wurde noch nicht eingereicht (Status ${F.status}). Das Prüfergebnis ist nach der Einreichung durch den Lieferverantwortlichen sichtbar.</div>`
+    : html`<div class="res-row"><span class="res-sym" style="background:${R.bg};color:${R.fg}">${R.sym}</span><div class="flex-col" style="gap:2px"><span class="res-title">${R.title}</span><span class="res-sub">${R.sub}</span></div></div>
+      <div style="padding:0 14px 6px">${F.reviewIssues.map(it => html`<div class="res-issue">${icon(it.icon, 16, it.color)}<span>${it.text}</span><span class="res-code">${it.code}${it.count ? ` · ${it.count}×` : ''}</span></div>`)}</div>
+      <div style="padding:8px 14px 12px"><a class="fs-125" href="#${L('erfassung')}" data-nav="${L('erfassung')}">Im Plan anzeigen</a></div>`);
+}
+
+// ---- Beteiligte · Dokumente · Verlauf ----
+function beteiligte(F) {
+  const C = 'grid-template-columns:minmax(0,1.3fr) minmax(0,1.3fr) 150px minmax(0,1.2fr) 130px 80px';
+  return html`<div class="fm-stack" style="max-width:1100px">${card(html`<span class="flex-1">Beteiligte an dieser Lieferung</span><button type="button" class="btn btn-secondary">Bearbeitende hinzufügen</button>`, html`<div class="fm-table"><div style="min-width:760px">
+    <div class="fm-th" style="${C};padding:0 12px;gap:0 12px"><span>Person</span><span>Firma</span><span>Rolle</span><span>Bereich</span><span>Status</span><span></span></div>
+    ${F.peopleRows.map(p => html`<div class="fm-tr" style="${C};min-height:46px;padding:0 12px;gap:0 12px;background:${p.bg}">
+      <span class="flex items-center gap-8 min-w-0">${avatar(p.ini, 24, '#aab2bc')}<span class="ellipsis">${p.name}</span></span><span class="ellipsis">${p.firm}</span><span class="fw-500">${p.role}</span><span class="ellipsis" style="color:#3d4650">${p.scope}</span><span style="color:${p.stC}">${p.st}</span>
+      <span class="flex justify-end gap-6"><button type="button" class="btn-icon" title="Rolle und Bereich bearbeiten" aria-label="Rolle und Bereich bearbeiten">${icon('pencil', 14, '#374151')}</button>${p.editable ? html`<button type="button" class="btn-icon btn-icon-danger" title="Aus Lieferung entfernen" aria-label="Aus Lieferung entfernen">${icon('trash-2', 14, '#374151')}</button>` : ''}</span>
+    </div>`)}
+  </div></div>`)}</div>`;
+}
+
+function dokumente(F) {
+  const C = 'grid-template-columns:minmax(0,2fr) 70px 90px minmax(0,1fr) 100px';
+  return card(html`<span class="flex-1">Dokumente</span><button type="button" class="btn btn-secondary">Hochladen</button>`, html`<div class="fm-table"><div style="min-width:620px">
+    <div class="fm-th" style="${C}"><span>Name</span><span>Typ</span><span>Pflicht</span><span>Hochgeladen von</span><span>Datum</span></div>
+    ${F.docs.map(d => html`<div class="fm-tr" style="${C};min-height:40px"><a class="ellipsis" title="${d.name}">${d.name}</a><span>${d.type}</span><span style="color:${d.reqFg};font-weight:${d.reqFw}">${d.req}</span><span class="ellipsis">${d.by}</span><span>${d.date}</span></div>`)}
+    ${F.docs.length === 0 ? html`<div style="padding:28px 0">${emptyState('Keine Dokumente')}</div>` : ''}
+  </div></div><div class="card-foot">Pflichtdokumente sind Teil der Einreichung. Fehlt eines, ist «Einreichen» gesperrt.</div>`);
+}
+
+function verlauf(F) {
+  const C = 'grid-template-columns:120px 220px minmax(0,1fr)';
+  return card(html`<span class="flex-1">Verlauf</span>${hint(`${F.hist.length} Ereignisse, neueste zuerst`)}`, html`<div class="fm-table"><div style="min-width:620px">
+    <div class="fm-th" style="${C};gap:0 14px"><span>Datum</span><span>Person</span><span>Ereignis</span></div>
+    ${F.hist.map(h => html`<div class="hist-row" style="${C}">
+      <span class="flex-col"><span>${h.d}</span>${h.time ? html`<span class="fs-12 muted">${h.time}</span>` : ''}</span>
+      <span class="flex items-center gap-8 min-w-0">${avatar(h.ini, 26, '#e5e7eb', '#374151')}<span class="flex-col min-w-0"><span class="ellipsis">${h.name}</span><span class="fs-12 muted ellipsis">${h.firm}</span></span></span>
+      <span class="flex-col" style="gap:2px"><span class="fw-500">${h.t}</span>${h.detail ? html`<span class="fs-125 muted">${h.detail}</span>` : ''}</span>
+    </div>`)}
+  </div></div>`, 'max-width:1040px');
+}

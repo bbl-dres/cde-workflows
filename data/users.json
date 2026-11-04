@@ -1,0 +1,13 @@
+{
+  "defaultUser": "PM",
+  "internalOrg": "BBL",
+  "users": [
+    { "key": "PM", "name": "Paula Muster", "firstName": "Paula", "initials": "PM", "role": "Projektleitung BBL", "org": "BBL", "internal": true },
+    { "key": "AB", "name": "Alex Beispiel", "firstName": "Alex", "initials": "AB", "role": "Architekt", "org": "Muster Architekten AG", "internal": false },
+    { "key": "KB", "name": "Kai Beispiel", "firstName": "Kai", "initials": "KB", "role": "Kostenplaner", "org": "Kostenplanung Beispiel GmbH", "internal": false },
+    { "key": "OB", "name": "Olivia Beispiel", "firstName": "Olivia", "initials": "OB", "role": "Ökobilanz", "org": "Ökobilanz Beispiel AG", "internal": false },
+    { "key": "GM", "name": "Gian Muster", "firstName": "Gian", "initials": "GM", "role": "Generalplaner", "org": "Generalplaner Beispiel AG", "internal": false },
+    { "key": "BM", "name": "Bea Muster", "firstName": "Bea", "initials": "BM", "role": "BIM-Management BBL", "org": "BBL", "internal": true },
+    { "key": "FM", "name": "Fiona Muster", "firstName": "Fiona", "initials": "FM", "role": "Fachstelle Nachhaltigkeit BBL", "org": "BBL", "internal": true }
+  ]
+}

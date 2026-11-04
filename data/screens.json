@@ -1,0 +1,415 @@
+[
+  {
+    "id": "home",
+    "code": "Studie",
+    "label": "Design-Studie",
+    "title": "Datenlieferungen KV und THG in der CDE Bund",
+    "subtitle": "Design-Studie · BBL · November 2026",
+    "user": null,
+    "nav": null,
+    "group": "studie",
+    "annotations": [],
+    "fullPage": true
+  },
+  {
+    "id": "review",
+    "code": "Review",
+    "label": "Review aus Nutzersicht",
+    "title": "Review aus Nutzersicht",
+    "subtitle": "Heuristische Einschätzung, nicht mit Nutzenden getestet",
+    "user": null,
+    "nav": null,
+    "annotations": [],
+    "group": "studie",
+    "fullPage": true
+  },
+  {
+    "id": "qs",
+    "code": "QS",
+    "label": "QS Design und UX",
+    "title": "QS Design und UX",
+    "subtitle": "Das Design System der CDE Bund bleibt unverändert, harmonisiert wurden nur die Ergänzungen",
+    "user": null,
+    "nav": null,
+    "annotations": [],
+    "group": "studie",
+    "fullPage": true
+  },
+  {
+    "id": "s01",
+    "code": "01",
+    "label": "01 Informationslieferplan",
+    "title": "Informationslieferplan",
+    "subtitle": "Projektleitung · Übersicht der Lieferungen",
+    "user": {
+      "name": "Paula Muster",
+      "initials": "PM",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "ilp",
+      "infoOpen": true
+    },
+    "annotations": [
+      "Unverändertes Frontend: Datenlieferungen sind normale Einträge mit den bestehenden Spalten. Der Typ «Datenformular» steht in der Beschreibung; Kacheln und Status-Labels bleiben gleich.",
+      "Keine neue Schaltfläche. Bestellt wird über den bestehenden Dialog «Aufgabenplan hinzufügen», ergänzt um die Auswahl einer Datenformular-Vorlage (<a href=\"#s02\" data-screen-link>02</a>).",
+      "Die Beschreibung nennt Typ, Inhalt und Zielsystem (ePPM oder SUS). Ein Klick auf den Namen öffnet die Lieferung (<a href=\"#s03\" data-screen-link>03</a>, <a href=\"#s05\" data-screen-link>05</a>)."
+    ],
+    "group": "screens",
+    "fullPage": false
+  },
+  {
+    "id": "s02",
+    "code": "02",
+    "label": "02 Datenlieferung bestellen",
+    "title": "Datenlieferung bestellen",
+    "subtitle": "Projektleitung · Dialog",
+    "user": {
+      "name": "Paula Muster",
+      "initials": "PM",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "ilp",
+      "infoOpen": true
+    },
+    "annotations": [
+      "Drei Vorlagen: Grundmengen SIA 416, Kosten (Menge + Kosten) und Ökobilanz (Menge + THG). Vorlage anklicken zum Umschalten.",
+      "Pflicht und Kontrolle werden aus den Anlagekosten in den Stammdaten abgeleitet: ab 1 Mio CHF Muss und Kontrolle, darunter Kann nach Ermessen PPE/PM. Anlagekosten als Tweak änderbar.",
+      "Der Lieferverantwortliche erhält eine Aufgabe und meldet sich über AGOV an. Rechte wie bei bestehenden Projektmitgliedern."
+    ],
+    "group": "screens",
+    "fullPage": false
+  },
+  {
+    "id": "s02b",
+    "code": "02b",
+    "label": "02b Aufgaben Lieferant",
+    "title": "Einstieg über Aufgaben",
+    "subtitle": "Architekt · so findet der Lieferant die Eingabemaske",
+    "user": {
+      "name": "Alex Beispiel",
+      "initials": "AB",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "au",
+      "infoOpen": true
+    },
+    "annotations": [
+      "Jede Bestellung (<a href=\"#s02\" data-screen-link>02</a>) erzeugt automatisch eine Aufgabe vom neuen Typ «Datenformular» für den Lieferverantwortlichen. Sie erscheint in der bestehenden Aufgabenliste (Spalte Typ, Filter «Typ») und im Überblick unter «Projektaufgaben».",
+      "Ein Klick auf die Aufgabe öffnet direkt die Eingabemaske (Tab «Erfassung», <a href=\"#s03a\" data-screen-link>03a</a>–<a href=\"#s04\" data-screen-link>04</a>). Kein neuer Menüpunkt; der Status der Aufgabe ist der Workflow-Status der Lieferung.",
+      "Benachrichtigung und E-Mail bei Bestellung, Rückweisung und vor Fälligkeit, über die bestehende Glocke der CDE Bund."
+    ],
+    "group": "screens",
+    "fullPage": false
+  },
+  {
+    "id": "s03a",
+    "code": "03a",
+    "label": "03a Flächen aus den Grundrissen",
+    "title": "Grundmengen aus den Grundrissen (DWG)",
+    "subtitle": "Architekt · FV-32 entfällt, Flächen SIA 416 aus den Planlieferungen",
+    "user": {
+      "name": "Alex Beispiel",
+      "initials": "AB",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "au",
+      "infoOpen": true
+    },
+    "annotations": [
+      "Die Flächen und Volumen nach SIA 416 kommen aus den geprüften Grundrissen (DWG), eine Lieferung pro Geschoss (<a href=\"#s10\" data-screen-link>B1</a>). Ein eigenes Formular FV-32 entfällt.",
+      "Die Übersicht einer Planlieferung zeigt Räume mit AOID, Geschossfläche, die Flächen SIA 416 und die Prüfregeln nach Kategorie.",
+      "KV-32 (<a href=\"#s03\" data-screen-link>03</a>) und THG-32 (<a href=\"#s04\" data-screen-link>04</a>) verwenden die Flächen als Bezugsmengen (GF, GSF, FAW, FB, BUF, NF, EBF)."
+    ],
+    "group": "screens",
+    "fullPage": false
+  },
+  {
+    "id": "s03",
+    "code": "03",
+    "label": "03 Erfassung Kostenvoranschlag",
+    "title": "Erfassung Kostenvoranschlag",
+    "subtitle": "Generalplaner / Kostenplaner · über Aufgabe",
+    "user": {
+      "name": "Alex Beispiel",
+      "initials": "AB",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "au",
+      "infoOpen": true
+    },
+    "annotations": [
+      "Die Erfassung öffnet sich aus der Aufgabe des Lieferanten und funktioniert ohne 3D-Modell. Erfasst wird der Betrag pro Hauptgruppe eBKP-H; «Aufschlüsseln» öffnet die Positionen (Menge + Kosten), der Betrag der Hauptgruppe ist dann ihre Summe.",
+      "Drei Eingabewege wie im eBKP-Assistant: manuell, Excel (<a href=\"#s03c\" data-screen-link>03c</a>, <a href=\"#s03d\" data-screen-link>03d</a>) und IFC optional (nur Mengen). «Excel herunterladen» liefert den aktuellen Stand zum Weiterbearbeiten.",
+      "Vollständigkeit und Einreichen in der Leiste am Ende der Erfassung: Einreichen ist erst möglich, wenn alle Werte erfasst sind (Probieren: Menge bei D8 eintragen, «Nur fehlende Werte anzeigen»)."
+    ],
+    "group": "screens",
+    "fullPage": false
+  },
+  {
+    "id": "s03c",
+    "code": "03c",
+    "label": "03c Excel importieren: Datei",
+    "title": "Excel importieren: Datei wählen",
+    "subtitle": "Architekt / Kostenplaner · Dialog aus der Erfassung",
+    "user": {
+      "name": "Alex Beispiel",
+      "initials": "AB",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "au",
+      "infoOpen": true
+    },
+    "annotations": [
+      "Die leere Vorlage liegt im Import-Dialog, wo sie gebraucht wird. Sie enthält nur die bestellten Positionen in der Gliederung der Bestellung.",
+      "Festes Spaltenformat mit dem Code als Schlüssel. So funktionieren auch Exporte aus Kostenplanungs-Software, sofern sie den Code mitliefern.",
+      "Auf der Erfassungsseite (<a href=\"#s03\" data-screen-link>03</a>) steht zusätzlich «Excel herunterladen»: aktueller Stand als Excel, offline bearbeiten und wieder importieren."
+    ],
+    "group": "screens",
+    "fullPage": false
+  },
+  {
+    "id": "s03d",
+    "code": "03d",
+    "label": "03d Excel importieren: Vorschau",
+    "title": "Excel importieren: Vorschau",
+    "subtitle": "Architekt / Kostenplaner · Änderungen prüfen und übernehmen",
+    "user": {
+      "name": "Alex Beispiel",
+      "initials": "AB",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "au",
+      "infoOpen": true
+    },
+    "annotations": [
+      "Vorschau vor dem Übernehmen: jede Zeile mit Status, Änderungen mit bisherigem Wert. Filter anklicken.",
+      "Wahl zwischen «überschreiben» und «nur leere Felder füllen». Probieren: Übernehmen klicken, dann ändern sich C2 und G2 in <a href=\"#s03\" data-screen-link>03</a> und <a href=\"#s03b\" data-screen-link>03b</a>.",
+      "Unbekannte Codes werden ignoriert, fehlende Werte bleiben als Hinweis in der Erfassung markiert. Der Import wird im Verlauf protokolliert."
+    ],
+    "group": "screens",
+    "fullPage": false
+  },
+  {
+    "id": "s03b",
+    "code": "03b",
+    "label": "03b Übersicht Kostenvoranschlag",
+    "title": "Übersicht Kostenvoranschlag",
+    "subtitle": "Lieferant und Projektleitung · Kennzahlen, Hauptgruppen, Kostenziel",
+    "user": {
+      "name": "Alex Beispiel",
+      "initials": "AB",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "au",
+      "infoOpen": true
+    },
+    "annotations": [
+      "Tab «Übersicht» statt Zusammenfassung, für jede Lieferung gleich aufgebaut: Kennzahlen, Kosten nach Hauptgruppen im Vergleich mit der Vorphase (KS-31) und das Kostenziel, live aus der Erfassung (<a href=\"#s03\" data-screen-link>03</a>).",
+      "Rechts stehen Lieferung, Verlauf (Status-Schritte mit dem nächsten Schritt) und Beteiligte als Kurzfassung; die Details liegen in den Tabs Verlauf und Beteiligte.",
+      "Bauwerks-, Erstellungs- und Anlagekosten als Eckwerte. Diese gehen nach Freigabe an ePPM und sind über alle Projekte vergleichbar."
+    ],
+    "group": "screens",
+    "fullPage": false
+  },
+  {
+    "id": "s04",
+    "code": "04",
+    "label": "04 Erfassung Ökobilanz",
+    "title": "Erfassung Ökobilanz Bauemissionen",
+    "subtitle": "Ökobilanz-Ersteller · über Aufgabe",
+    "user": {
+      "name": "Olivia Beispiel",
+      "initials": "OB",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "au",
+      "infoOpen": true
+    },
+    "annotations": [
+      "Gleiche Maske wie beim KV, mit THG-Emissionen statt Kosten. Die CDE Bund verwaltet nur den Data Drop und rechnet nichts.",
+      "Endwert und Bericht (PDF) sind Pflicht. Der Endwert wird nach Freigabe ans SUS übertragen; die Summe der Positionen dient nur als Plausibilitätskontrolle."
+    ],
+    "group": "screens",
+    "fullPage": false
+  },
+  {
+    "id": "s05",
+    "code": "05",
+    "label": "05 Prüfung und Übergabe",
+    "title": "Prüfung und Übergabe",
+    "subtitle": "Projektleitung · Kontrolle der Ökobilanz",
+    "user": {
+      "name": "Paula Muster",
+      "initials": "PM",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "ilp",
+      "infoOpen": true
+    },
+    "annotations": [
+      "Der Workflow-Status zeigt, wo die Lieferung steht. Im Informationslieferplan erscheint er über die bestehenden Status-Pills.",
+      "Automatische Prüfungen plus manuelle Bestätigung durch die PM. Beide Häkchen setzen, dann Freigeben und Übertragen durchklicken.",
+      "Übergabe per Schnittstelle: KV an ePPM, THG-Endwert an SUS. Offen ist, wer die Übertragung auslöst."
+    ],
+    "group": "screens",
+    "fullPage": false
+  },
+  {
+    "id": "s06",
+    "code": "06",
+    "label": "06 Kontrolle über alle Projekte",
+    "title": "Kontrolle über alle Projekte",
+    "subtitle": "Fachstelle Nachhaltigkeit · bestellt und bekommen",
+    "user": {
+      "name": "Fiona Muster",
+      "initials": "FM",
+      "aufgabenActive": true
+    },
+    "nav": null,
+    "annotations": [
+      "Projektübergreifende Kontrolle über die bestehende Aufgabenliste, gefiltert nach Typ. Keine neue Seite nötig, nur ein neuer Aufgabentyp und Filter.",
+      "Pflicht nach 1-Mio-Regel: Muss-Lieferungen werden kontrolliert, Kann-Lieferungen nur abgelegt. Nicht bestellte Kann-Projekte bleiben sichtbar.",
+      "Die bestehenden Kacheln beantworten «bestellt, bekommen, geprüft»; überfällige Bestellungen sind sofort sichtbar."
+    ],
+    "group": "screens",
+    "fullPage": false
+  },
+  {
+    "id": "s07",
+    "code": "07",
+    "label": "07 GP: Beteiligte und interne Prüfung",
+    "title": "Beteiligte",
+    "subtitle": "Generalplaner · Personen, Rollen und Bereiche",
+    "user": {
+      "name": "Gian Muster",
+      "initials": "GM",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "au",
+      "infoOpen": true
+    },
+    "annotations": [
+      "Neuer Tab «Beteiligte»: Der GP ist lieferverantwortlich und fügt Subplaner als Bearbeitende hinzu, auf Wunsch nur für einzelne Positionen.",
+      "Ohne GP-Mandat entfällt der Schritt «Intern geprüft»; der Lieferverantwortliche reicht direkt ein. Bearbeitende melden fertig (Status in der Tabelle).",
+      "Bearbeitende sehen nur ihre Lieferung. Login und Berechtigung laufen über AGOV und die bestehenden Projektrollen der CDE Bund."
+    ],
+    "group": "screens",
+    "fullPage": false
+  },
+  {
+    "id": "s08",
+    "code": "08",
+    "label": "08 Prüfung Kostenvoranschlag",
+    "title": "Prüfung Kostenvoranschlag",
+    "subtitle": "Projektleitung · Vergleich mit KS-31 und Kostenziel",
+    "user": {
+      "name": "Paula Muster",
+      "initials": "PM",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "ilp",
+      "infoOpen": true
+    },
+    "annotations": [
+      "Vergleich je Hauptgruppe mit der Kostenschätzung der Vorphase (KS-31). Abweichungen über 10 % sind markiert. Rechnet live mit den Werten aus <a href=\"#s03\" data-screen-link>03</a> und dem Import <a href=\"#s03d\" data-screen-link>03d</a>.",
+      "Kostenziel aus der Projektdefinition. Der Wert kommt idealerweise aus ePPM, damit beide Systeme dasselbe Ziel zeigen.",
+      "Gleiches Prüfmuster wie bei der Ökobilanz (<a href=\"#s05\" data-screen-link>05</a>). Die Abhängigkeit zu FV-32 wird als Hinweis angezeigt; Freigabe ist trotzdem möglich."
+    ],
+    "group": "screens",
+    "fullPage": false
+  },
+  {
+    "id": "s09",
+    "code": "09",
+    "label": "09 Einstellungen Informationsanforderungen",
+    "title": "Vorlagen für Datenformulare",
+    "subtitle": "BIM-Management · Einstellungen › Informationsanforderungen",
+    "user": {
+      "name": "Bea Muster",
+      "initials": "BM",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "ei",
+      "infoOpen": false
+    },
+    "annotations": [
+      "Die Vorlagen sitzen im bestehenden Tab «Informationsanforderungen», neben LOIN. Im Projekt werden sie nur aktiviert; der Bestelldialog (<a href=\"#s02\" data-screen-link>02</a>) zeigt nur aktive Vorlagen. Zeile anklicken für Details.",
+      "Inhalt und Version werden zentral gepflegt. So bleiben Lieferungen über alle Projekte vergleichbar und ePPM und SUS erhalten immer dieselbe Struktur.",
+      "Die Prüfregeln speisen die automatischen Prüfungen in <a href=\"#s05\" data-screen-link>05</a> und <a href=\"#s08\" data-screen-link>08</a>. Für IFC kann hier zusätzlich festgelegt werden, welche Mengen und Klassifikationen das Modell liefern muss."
+    ],
+    "group": "screens",
+    "fullPage": false
+  },
+  {
+    "id": "varb",
+    "code": "B",
+    "label": "Variante B DWG",
+    "title": "Variante B: Grundmengen aus DWG-Plänen",
+    "subtitle": "Vorschlag zur Diskussion",
+    "user": null,
+    "nav": null,
+    "annotations": [],
+    "group": "varianteb",
+    "fullPage": true
+  },
+  {
+    "id": "s10",
+    "code": "B1",
+    "label": "B1 Planlieferung DWG · Übersicht",
+    "title": "Planlieferung DWG: Übersicht",
+    "subtitle": "Architekt · ein Grundriss pro Lieferung",
+    "user": {
+      "name": "Alex Beispiel",
+      "initials": "AB",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "au",
+      "infoOpen": true
+    },
+    "annotations": [
+      "Jedes Geschoss ist eine eigene Lieferung (DWG-UG … DWG-DG) mit denselben Tabs wie die anderen Datenformulare.",
+      "Eine Zeile pro Geschoss mit Ebene, Geschosshöhe, Datei und Prüfstatus. Probieren: 02 neu hochladen und 03 hochladen.",
+      "Summen je Geschoss und total. GV ist eine Näherung aus GF und Geschosshöhe. Übernehmen erst ohne Fehler; danach rechnen 03a, 03b und 04 neu.",
+      "Offene Frage: Wo werden Geschosse definiert? Vorschlag: in den Stammdaten des Gebäudes, mit Übernahme in die Lieferung."
+    ],
+    "group": "varianteb",
+    "fullPage": false
+  },
+  {
+    "id": "s11",
+    "code": "B2",
+    "label": "B2 Planlieferung DWG · Erfassung",
+    "title": "Planlieferung DWG: Erfassung",
+    "subtitle": "Architekt · DWG hochladen, Prüfung nach CAD-Richtlinie BBL",
+    "user": {
+      "name": "Alex Beispiel",
+      "initials": "AB",
+      "aufgabenActive": false
+    },
+    "nav": {
+      "active": "au",
+      "infoOpen": true
+    },
+    "annotations": [
+      "Die DWG-Datei wird per Drag & Drop hochgeladen und lokal im Browser geprüft. Einreichen ist erst möglich, wenn keine Regel mit Schweregrad Fehler verletzt ist.",
+      "Ergebnis, Validierung und Viewer aus dem Prototyp plan-check, eingebettet im Stil der CDE Bund. Fehler blockieren die Übernahme, Warnungen nicht.",
+      "Regeln nach CAD-Richtlinie BBL V1.0 (40 Regeln). Klick auf eine Regel markiert die betroffenen Räume im Plan."
+    ],
+    "group": "varianteb",
+    "fullPage": false
+  }
+]

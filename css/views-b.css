@@ -1,0 +1,17 @@
+/* Screen-specific styles (views-b: Excel importieren, dialog of the KV-32 Erfassung). Shared components live in components.css. */
+
+.imp-steps { display: flex; gap: 28px; padding: 14px 24px; border-bottom: 1px solid var(--line-5); font-size: 13.5px; }
+.imp-step { display: flex; gap: 8px; align-items: center; }
+.imp-step-dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; background: #fff; flex: none; }
+.imp-drop { border: 2px dashed var(--line); border-radius: 4px; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; background: #fafbfc; }
+.imp-file { display: flex; align-items: center; gap: 10px; border: 1px solid var(--green-line); background: var(--green-bg-2); border-radius: 3px; padding: 10px 12px; font-size: 13px; }
+.imp-box { border: 1px solid var(--line-3); border-radius: 4px; padding: 14px 16px; position: relative; }
+.imp-format { display: grid; grid-template-columns: 28px 1fr auto; gap: 4px 10px; font-size: 12.5px; }
+.imp-tab { border: 1px solid; border-radius: 3px; padding: 5px 12px; font-size: 13px; font-weight: 600; display: flex; gap: 6px; align-items: center; cursor: pointer; }
+.imp-table { margin: 12px 24px 0; border: 1px solid var(--line-3); border-radius: 3px; height: 520px; overflow: auto; }
+.imp-thead { display: grid; gap: 0 12px; padding: 0 12px; height: 32px; align-items: center; background: var(--head-bg); font-size: 12px; font-weight: 500; position: sticky; top: 0; }
+.imp-trow { display: grid; gap: 0 12px; padding: 0 12px; height: 30px; align-items: center; font-size: 12.5px; border-bottom: 1px solid var(--line-6); font-variant-numeric: tabular-nums; }
+.imp-st { font-size: 12px; border: 1px solid; border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.imp-modes .radio { gap: 7px; }
+.imp-modes .radio-dot { border: 1.5px solid var(--navy); }
+.imp-done { padding: 60px 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }

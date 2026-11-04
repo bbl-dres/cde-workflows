@@ -1,0 +1,145 @@
+{
+  "note": "Datenformulare nach dem Design vom 04.11.2026 (docs/wireframes/261104_CDE-Workflows Datenformular Design.html): eine Struktur für alle Lieferungen mit den Tabs Übersicht · Erfassung · Prüfung · Beteiligte · Dokumente · Verlauf. «kinds» beschreibt die drei Formulararten (Kostenvoranschlag KV-32, Kostenschätzung KS-31, Ökobilanz THG-32), «byProject» welche Formulare ein Projekt hat und wo sie im Workflow stehen (step 0 Erstellt/Offen · 1 In Bearbeitung · 3 Eingereicht · 4 In Prüfung · 5 Freigegeben · 6 Übertragen). Werte kommen aus ebkp.json und sia416.json, für die weiteren Projekte skaliert (js/model/mock.js). FV-32 entfällt: die Flächen kommen aus den Grundrissen (DWG). Personen, Firmen und Werte sind fiktiv.",
+  "steps": ["Erstellt", "In Bearbeitung", "Intern geprüft", "Eingereicht", "In Prüfung", "Freigegeben", "Übertragen"],
+  "people": {
+    "AB": ["Alex Beispiel", "Muster Architekten AG"],
+    "PM": ["Paula Muster", "BBL · Projektleitung"],
+    "RM": ["Reto Muster", "BBL · Projektleitung"],
+    "KB": ["Kai Beispiel", "Kostenplanung Beispiel GmbH"],
+    "GM": ["Gian Muster", "Generalplaner Beispiel AG"],
+    "OB": ["Olivia Beispiel", "Ökobilanz Beispiel AG"],
+    "FM": ["Fiona Muster", "BBL · Fachstelle Nachhaltigkeit"],
+    "BM": ["Bea Muster", "BBL · BIM-Management"],
+    "NB": ["Nora Beispiel", "Planerteam Nord AG"],
+    "LB": ["Luca Beispiel", "Lab Planung AG"],
+    "SB": ["Sara Beispiel", "Atelier Süd GmbH"],
+    "HB": ["Hanna Beispiel", "Holzbau Beispiel AG"],
+    "SYS": ["CDE Bund", "automatisch"]
+  },
+  "reviewers": { "Paula Muster": "PM", "Reto Muster": "RM" },
+  "kinds": {
+    "kv": {
+      "code": "KV-32",
+      "title": "Kostenvoranschlag eBKP-H (SIA 32)",
+      "short": "Kostenvoranschlag",
+      "vorlage": "Kosten eBKP-H · Version 3",
+      "target": "ePPM",
+      "ziel": "ePPM",
+      "tableTitle": "Kosten nach Hauptgruppen · eBKP-H",
+      "qtyLabel": "Menge", "valLabel": "Kosten CHF", "kwLabel": "CHF/m² GF", "cmpUnit": "CHF", "cmpPrevLabel": "KS-31", "totalLabel": "Total",
+      "detailDefault": ["D", "G"],
+      "groupRef": { "B": ["m² GSF", "GSF"], "C": ["m² GF", "GF"], "D": ["m² GF", "GF"], "E": ["m² FAW", "FAW"], "F": ["m² FB", "FB"], "G": ["m² GF", "GF"], "I": ["m² BUF", "BUF"], "J": ["m² NF", "NF"], "V": ["pauschal"], "W": ["m² GF", "GF"], "Y": ["pauschal"] },
+      "accuracy": 10,
+      "targets": [["Kostenziel B–W", "ziel", "#b07a00"], ["KS-31 Kostenschätzung", "prev", "#6b7280"], ["Kostendach Projektauftrag", "dach", "#9b2c44"]],
+      "manual": [["k1", "Kostenziel eingehalten"], ["k2", "Beilage detaillierter KV geprüft"]],
+      "docs": [["Kostenvoranschlag_detail.pdf", "PDF", "Pflicht"], ["Kostenvoranschlag_positionen.xlsx", "Excel", "Optional"]],
+      "foot": "Erfasst wird der Betrag pro Hauptgruppe. «Aufschlüsseln» öffnet die Positionen; der Betrag der Hauptgruppe ist dann ihre Summe. Bezugsmengen aus den Grundrissen (DWG), Gliederung eBKP-H (SN 506 511). A–Z inkl. MWST 8.1 % auf B–Y. Werte fiktiv.",
+      "ov": { "tableTitle": "Kosten nach Hauptgruppen · Vergleich mit Vorphase", "colCur": "KV-32 CHF", "colPrev": "KS-31 CHF", "colKw": "CHF/m² GF", "chartTitle": "Kostenziel", "chartHint": "Ziele werden in ePPM verwaltet", "istLabel": "Ist · KV-32 Erstellungskosten B–W" },
+      "importItems": [["excel", "Excel importieren"], ["ifc", "IFC importieren"], ["dwg", "Bezugsmengen aus den Grundrissen übernehmen"]]
+    },
+    "ks": {
+      "code": "KS-31",
+      "title": "Kostenschätzung eBKP-H (SIA 31)",
+      "short": "Kostenschätzung",
+      "vorlage": "Kosten eBKP-H · Version 3",
+      "target": "ePPM",
+      "ziel": "ePPM",
+      "tableTitle": "Kosten nach Hauptgruppen · eBKP-H",
+      "qtyLabel": "Menge", "valLabel": "Kosten CHF", "kwLabel": "CHF/m² GF", "cmpUnit": "CHF", "cmpPrevLabel": "SIA 21", "totalLabel": "Total",
+      "detailDefault": ["C"],
+      "groupRef": { "B": ["m² GSF", "GSF"], "C": ["m² GF", "GF"], "D": ["m² GF", "GF"], "E": ["m² FAW", "FAW"], "F": ["m² FB", "FB"], "G": ["m² GF", "GF"], "I": ["m² BUF", "BUF"], "J": ["m² NF", "NF"], "V": ["pauschal"], "W": ["m² GF", "GF"], "Y": ["pauschal"] },
+      "accuracy": 15,
+      "targets": [["Kostenziel B–W", "ziel", "#b07a00"], ["Kostengrobschätzung SIA 21", "prev", "#6b7280"], ["Kostendach Projektauftrag", "dach", "#9b2c44"]],
+      "manual": [["k1", "Kostenziel eingehalten"], ["k2", "Beilage Kostenschätzung geprüft"]],
+      "docs": [["Kostenschaetzung_eBKP-H.pdf", "PDF", "Pflicht"]],
+      "foot": "Kostenschätzung nach SIA 31 mit Genauigkeit ±15 %. Erfasst wird der Betrag pro Hauptgruppe; «Aufschlüsseln» öffnet die Positionen. Gliederung eBKP-H (SN 506 511). A–Z inkl. MWST 8.1 % auf B–Y. Werte fiktiv.",
+      "ov": { "tableTitle": "Kosten nach Hauptgruppen · Vergleich mit Vorphase", "colCur": "KS-31 CHF", "colPrev": "SIA 21 CHF", "colKw": "CHF/m² GF", "chartTitle": "Kostenziel", "chartHint": "Ziele werden in ePPM verwaltet", "istLabel": "Ist · KS-31 Erstellungskosten B–W" },
+      "importItems": [["excel", "Excel importieren"], ["ifc", "IFC importieren"], ["dwg", "Bezugsmengen aus den Grundrissen übernehmen"]]
+    },
+    "thg": {
+      "code": "THG-32",
+      "title": "Ökobilanz Bauemissionen (SIA 32)",
+      "short": "Ökobilanz",
+      "vorlage": "Ökobilanz TP2 · Version 1",
+      "reporting": "Modell ecCo · Netto-Null Bundesverwaltung 2040 (GHG Protocol, vor- und nachgelagerte Emissionen)",
+      "target": "SUS",
+      "ziel": "SUS",
+      "tableTitle": "THG-Emissionen nach Hauptgruppen · eBKP-H",
+      "qtyLabel": "Menge", "valLabel": "THG kg CO₂-eq", "kwLabel": "kg/m² EBF·a", "cmpUnit": "t CO₂-eq", "cmpPrevLabel": "SIA 31", "totalLabel": "Summe Positionen",
+      "detailDefault": ["C"],
+      "groupRef": { "B": ["m² GSF", "GSF"], "C": ["m² GF", "GF"], "D": ["m² GF", "GF"], "E": ["m² FAW", "FAW"], "F": ["m² FB", "FB"], "G": ["m² GF", "GF"], "I": ["m² BUF", "BUF"] },
+      "targets": [["Zielwert SIA 390/1 Erstellung", 9.0, "#b07a00"], ["Projektziel BBL", 8.5, "#9b2c44"], ["SIA 31 Vorphase", "prev", "#6b7280"]],
+      "manual": [["t1", "Systemgrenzen nach TP2 eingehalten"], ["t2", "Datengrundlage KBOB/ecobau-Liste 2022, Version 9.0"]],
+      "docs": [["Oekobilanz_TP2_Bericht.pdf", "PDF", "Pflicht"]],
+      "foot": "Erfasst werden die Ergebnisse der Ökobilanz nach Anleitung TP2 mit den KBOB/ecobau-Ökobilanzdaten (Liste 2022, Version 9.0), Herstellung und Entsorgung über 60 Jahre. Kennwert = THG-Emissionen / 60 Jahre / EBF. Die CDE Bund berechnet keine Emissionen. Werte fiktiv.",
+      "ov": { "tableTitle": "THG-Emissionen nach Hauptgruppen · Vergleich mit Vorphase", "colCur": "THG-32 t CO₂-eq", "colPrev": "SIA 31 t CO₂-eq", "colKw": "kg/m² EBF·a", "chartTitle": "Zielwert", "chartHint": "Zielwerte nach SIA 390/1 und Projektvorgabe", "istLabel": "Ist · Endwert THG-Emissionen Erstellung" },
+      "importItems": [["excel", "Excel importieren"], ["ifc", "IFC importieren"], ["kvqty", "Mengen aus KV-32 übernehmen"]]
+    }
+  },
+  "plan": {
+    "vorlage": "CAD-Richtlinie BBL V1.0",
+    "people": [
+      ["AB", "Lieferverantwortlich", "{floor}", "Aktiv"],
+      ["PM", "Prüfend", "–", "Ab Einreichung"],
+      ["BM", "Lesend", "–", "Aktiv"]
+    ],
+    "docs": [
+      ["CAD-Richtlinie_BBL_V1.0.pdf", "PDF", "Vorgabe", "Paula Muster", "12.03.2027"],
+      ["CAD.V01-CAFM-Plan-DE.dwg", "DWG", "Vorlage", "Paula Muster", "12.03.2027"]
+    ],
+    "foot": "Ein Grundriss pro Lieferung. Geprüft wird beim Hochladen nach CAD-Richtlinie BBL V1.0 (40 Regeln: Layer, Raum- und Geschosspolygone, AOID, Geometrie, Text, Stil, Layout, Bemassung, Schraffur). Fehler müssen vor dem Einreichen behoben werden, Warnungen sind zulässig."
+  },
+  "byProject": {
+    "musterhausen": {
+      "ks": { "step": 6, "dates": ["14.01.2026", "20.01.2026", null, "28.02.2026", "02.03.2026", "10.03.2026", "10.03.2026"], "frist": "28.02.2026", "lead": "AB", "docs": [["Kostenschaetzung_Vorprojekt.pdf", "PDF", "Pflicht", "Alex Beispiel", "28.02.2026"]] },
+      "kv": {
+        "step": 1, "dates": ["12.03.2027", "13.03.2027"], "frist": "30.04.2027", "lead": "GM", "kostendach": 19000000,
+        "people": [["GM", "Lieferverantwortlich", "Alle Hauptgruppen", "Aktiv"], ["KB", "Bearbeitend", "Kosten B–Z", "Fertig gemeldet"], ["AB", "Bearbeitend", "Bezugsmengen", "Fertig gemeldet"], ["PM", "Prüfend", "–", "Ab Einreichung"]],
+        "docs": [["KV_Bauprojekt_detail_v3.pdf", "PDF", "Pflicht", "Kai Beispiel", "24.04.2027"], ["kv_bauprojekt_v3.xlsx", "Excel", "Optional", "Kai Beispiel", "20.04.2027"]],
+        "history": [
+          ["12.03.2027", "09:20", "PM", "Lieferung erstellt", "Vorlage Kosten eBKP-H · Version 3, Frist 30.04.2027, Zielsystem ePPM"],
+          ["13.03.2027", "08:45", "GM", "Bearbeitende hinzugefügt", "Kai Beispiel (Kosten), Alex Beispiel (Bezugsmengen)"],
+          ["20.04.2027", "15:12", "KB", "Excel importiert", "kv_bauprojekt_v3.xlsx · 14 Werte übernommen"],
+          ["20.04.2027", "15:20", "KB", "Kosten fertig gemeldet", ""],
+          ["22.04.2027", "10:05", "AB", "Bezugsmengen fertig gemeldet", "GF, GSF, FAW, FB und BUF aus den Grundrissen (DWG)"],
+          ["24.04.2027", "09:30", "KB", "Dokument hochgeladen", "KV_Bauprojekt_detail_v3.pdf"]
+        ]
+      },
+      "thg": {
+        "step": 4, "dates": ["12.03.2027", "15.03.2027", null, "03.05.2027", "04.05.2027"], "frist": "31.05.2027", "lead": "OB",
+        "people": [["OB", "Lieferverantwortlich", "Alle Positionen", "Eingereicht"], ["PM", "Prüfend", "–", "Prüft"], ["FM", "Lesend", "–", "Aktiv"]],
+        "docs": [["Oekobilanz_TP2_Musterhausen_SIA32.pdf", "PDF", "Pflicht", "Olivia Beispiel", "03.05.2027"]],
+        "history": [
+          ["12.03.2027", "09:25", "PM", "Lieferung erstellt", "Vorlage Ökobilanz TP2 · Version 1, Frist 31.05.2027, Zielsystem SUS"],
+          ["15.03.2027", "13:10", "OB", "Erfassung begonnen", ""],
+          ["03.05.2027", "17:45", "OB", "Dokument hochgeladen", "Oekobilanz_TP2_Musterhausen_SIA32.pdf"],
+          ["03.05.2027", "17:52", "OB", "Zur Prüfung eingereicht", "Endwert 9.1 kg CO₂-eq/m² EBF·a"],
+          ["04.05.2027", "08:30", "PM", "Prüfung begonnen", ""]
+        ]
+      }
+    },
+    "eigerplatz": {
+      "kv": { "step": 0, "dates": ["01.04.2027"], "frist": "30.06.2027", "lead": "NB" },
+      "thg": { "step": 1, "dates": ["01.02.2027", "20.02.2027"], "frist": "15.04.2027", "lead": "NB", "overdue": true, "missing": ["thgV:C2", "thgQ:G1", "thgV:I1"] }
+    },
+    "zollanlage-brig": {
+      "thg": { "step": 1, "dates": ["01.03.2027", "15.03.2027"], "frist": "30.06.2027", "lead": "OB", "missing": ["thgV:D5"] },
+      "ks": { "step": 6, "dates": ["22.05.2026", "01.06.2026", null, "30.09.2026", "05.10.2026", "20.10.2026", "20.10.2026"], "frist": "30.09.2026", "lead": "SB" }
+    },
+    "agroscope-posieux": {
+      "thg": { "step": 6, "dates": ["08.09.2025", "01.10.2025", null, "20.02.2027", "23.02.2027", "28.02.2027", "28.02.2027"], "frist": "28.02.2027", "lead": "LB", "endwert": 11.4 },
+      "kv": { "step": 6, "dates": ["08.09.2025", "01.10.2025", null, "15.12.2026", "18.12.2026", "22.12.2026", "22.12.2026"], "frist": "15.12.2026", "lead": "LB" }
+    },
+    "botschaft-wien": {
+      "thg": { "step": 0, "dates": ["17.11.2026"], "frist": "30.09.2027", "lead": "SB" },
+      "ks": { "step": 1, "dates": ["01.04.2027", "10.04.2027"], "frist": "31.05.2027", "lead": "SB", "missing": ["ksV:V", "ksQ:C4"] }
+    },
+    "prangins": {
+      "thg": { "step": 6, "dates": ["02.02.2025", "01.03.2025", null, "15.01.2027", "18.01.2027", "31.01.2027", "31.01.2027"], "frist": "31.01.2027", "lead": "AB", "endwert": 7.8 }
+    },
+    "tenero": {
+      "thg": { "step": 0, "dates": ["05.01.2027"], "frist": "31.10.2027", "lead": "HB", "kann": true },
+      "kv": { "step": 1, "dates": ["15.03.2027", "25.03.2027"], "frist": "31.05.2027", "lead": "HB", "missing": ["kvQ:D7", "kvV:Y"] }
+    }
+  }
+}

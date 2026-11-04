@@ -1,0 +1,43 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg-canvas); font-family: var(--font); color: var(--text); -webkit-font-smoothing: antialiased; font-size: 12px; line-height: 1.6667; font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--primary-ring); outline-offset: 1px; }
+a { transition: color .3s; }
+a { color: var(--link); text-decoration: none; cursor: pointer; }
+a:hover { color: var(--link-hover); text-decoration: none; }
+.table a:hover, .grid-row a:hover, .ant-row a:hover, .table-link:hover { text-decoration: underline; }
+input, button, textarea, select { font-family: inherit; color: inherit; font-size: inherit; }
+input::placeholder, textarea::placeholder { color: var(--placeholder); }
+button { cursor: pointer; }
+h1, h2, h3, p { margin: 0; }
+strong { font-weight: 600; }
+
+/* icon as CSS mask: colour via background */
+.ic { display: inline-block; flex: none; vertical-align: middle; }
+
+.mono { font-family: var(--mono); }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.muted-2 { color: var(--muted-2); }
+.ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nowrap { white-space: nowrap; }
+.right { text-align: right; }
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-1 { flex: 1; min-width: 0; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+.justify-end { justify-content: flex-end; }
+.gap-4 { gap: 4px; } .gap-6 { gap: 6px; } .gap-8 { gap: 8px; } .gap-10 { gap: 10px; } .gap-12 { gap: 12px; } .gap-14 { gap: 14px; } .gap-16 { gap: 16px; }
+.mb-6 { margin-bottom: 6px; } .mb-8 { margin-bottom: 8px; } .mb-10 { margin-bottom: 10px; } .mb-12 { margin-bottom: 12px; } .mb-16 { margin-bottom: 16px; }
+.mt-6 { margin-top: 6px; } .mt-10 { margin-top: 10px; } .mt-14 { margin-top: 14px; }
+.fs-12 { font-size: 12px; } .fs-125 { font-size: 12.5px; } .fs-13 { font-size: 13px; } .fs-135 { font-size: 13.5px; } .fs-14 { font-size: 14px; } .fs-16 { font-size: 16px; }
+.fw-500 { font-weight: 500; } .fw-600 { font-weight: 600; } .fw-700 { font-weight: 700; }
+.rel { position: relative; }
+.hidden { display: none !important; }
+
+.boot-error { max-width: 720px; margin: 80px auto; background: #fff; border-radius: 4px; padding: 24px 28px; font-size: 15px; line-height: 1.6; }
+.boot-error h1 { font-size: 20px; margin-bottom: 8px; }
+.boot-error code { background: var(--field-bg); padding: 1px 5px; border-radius: 2px; font-family: var(--mono); font-size: 13px; }
+.boot-error pre { white-space: pre-wrap; font-size: 12px; background: var(--field-bg); padding: 10px; }

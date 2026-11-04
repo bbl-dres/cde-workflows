@@ -1,0 +1,7 @@
+# Screenshots of the reference system (cde-r.bbl.admin.ch) are kept locally only
+docs/reference/cde-r/
+docs/reference/compare/
+
+# local
+.DS_Store
+Thumbs.db

@@ -1,0 +1,19 @@
+{
+  "note": "Info-Management › Dokumente: Informationsmanagement-Dokumente eines Projekts (AIA, BAP, Verträge, Vereinbarungen). Projekte ohne eigenen Eintrag erhalten 'default'.",
+  "groups": [
+    { "key": "aia", "label": "Auftraggeber-Informationsanforderung" },
+    { "key": "sonstige", "label": "Sonstige Dokumente und Anforderungen" }
+  ],
+  "byProject": {
+    "musterhausen": [
+      { "group": "aia", "name": "Auftraggeber-Informationsanforderung Verwaltungszentrum Musterhausen", "version": 3, "status": "Freigegeben", "responsible": "Paula Muster", "updatedBy": "Paula Muster", "updatedAt": "12.03.2027" },
+      { "group": "aia", "name": "AIA Anhang A · Datenformulare SIA 32 (FV, KV, THG)", "version": 1, "status": "In Prüfung", "responsible": "Bea Muster", "updatedBy": "Bea Muster", "updatedAt": "02.05.2027" },
+      { "group": "sonstige", "name": "BIM-Abwicklungsplan (BAP) Bauprojekt", "version": 2, "status": "Entwurf", "responsible": "Alex Beispiel", "updatedBy": "Alex Beispiel", "updatedAt": "27.04.2027" },
+      { "group": "sonstige", "name": "Generalplanervertrag · Beilage Informationslieferung", "version": 1, "status": "Freigegeben", "responsible": "Paula Muster", "updatedBy": "Gian Muster", "updatedAt": "13.03.2027" },
+      { "group": "sonstige", "name": "Nutzungsvereinbarung CDE Bund", "version": 1, "status": "Freigegeben", "responsible": "Paula Muster", "updatedBy": "Paula Muster", "updatedAt": "03.03.2027" }
+    ],
+    "default": [
+      { "group": "aia", "name": "Auftraggeber-Informationsanforderung", "version": 1, "status": "Entwurf", "responsible": "Paula Muster", "updatedBy": "Paula Muster", "updatedAt": "03.11.2026" }
+    ]
+  }
+}

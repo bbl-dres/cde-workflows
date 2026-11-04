@@ -1,0 +1,1714 @@
+{
+ "note": "Planlieferungen DWG für das CAFM (Projekt Verwaltungszentrum Musterhausen): ein Grundriss = eine Lieferung. «seeds» sind die unveränderten Prüfergebnisse der plan-check-Engine (js/plancheck) für die mitgelieferten Musterdateien (assets/plans), erzeugt unter Node; tests/model.test.mjs prüft, dass sie mit der Engine übereinstimmen. Siehe docs/reviews/2026-11-03-planlieferungen-dwg.md.",
+ "guideline": "CAD-Richtlinie BBL V1.0",
+ "ruleCount": 40,
+ "gate": "no-errors",
+ "orderedBy": "Paula Muster",
+ "orderedAt": "12.03.2027",
+ "supplier": {
+  "name": "Alex Beispiel",
+  "firm": "Muster Architekten AG",
+  "initials": "AB"
+ },
+ "target": "CAFM (Flächenmanagement BBL)",
+ "desc": "DWG nach BBL CAD-Richtlinie · Prüfregeln Flächenmanagement",
+ "steps": [
+  "Bestellt",
+  "In Bearbeitung",
+  "Eingereicht",
+  "In Prüfung",
+  "Freigegeben",
+  "An CAFM übertragen"
+ ],
+ "checklist": [
+  {
+   "key": "c1",
+   "label": "Plan entspricht CAD-Richtlinie BBL V1.0 (Layer, Raumpolygone, AOID)"
+  },
+  {
+   "key": "c2",
+   "label": "Flächen plausibel (Abgleich mit FV-32 und Vorphase)"
+  }
+ ],
+ "samples": {
+  "cadv01": {
+   "name": "CAD.V01-CAFM-Plan-DE.dwg",
+   "src": "assets/plans/CAD.V01-CAFM-Plan-DE.dwg",
+   "label": "Musterplan BBL CAD.V01 (CAFM-Plan DE)"
+  },
+  "office": {
+   "name": "2011-DM-0-A04-6A1.dwg",
+   "src": "assets/plans/2011-DM-0-A04-6A1.dwg",
+   "label": "Plan mit Büro-Layerstruktur (Testdatei plan-check)"
+  }
+ },
+ "floors": [
+  {
+   "key": "UG",
+   "code": "DWG-UG",
+   "ee": "U1",
+   "name": "Grundriss UG (DWG)",
+   "floor": "1. Untergeschoss",
+   "due": "30.04.2027",
+   "status": "uebertragen",
+   "checks": {
+    "c1": true,
+    "c2": true
+   },
+   "seed": "cadv01",
+   "file": "9999.AA.U1_CAFM.dwg",
+   "uploadedAt": "24.03.2027",
+   "submittedAt": "26.03.2027",
+   "reviewedAt": "31.03.2027",
+   "transferredAt": "31.03.2027",
+   "reviewStartedAt": "27.03.2027"
+  },
+  {
+   "key": "EG",
+   "code": "DWG-EG",
+   "ee": "00",
+   "name": "Grundriss EG (DWG)",
+   "floor": "Erdgeschoss",
+   "due": "30.04.2027",
+   "status": "bearbeitung",
+   "checks": {
+    "c1": false,
+    "c2": false
+   },
+   "seed": "office",
+   "file": "9999.AA.00_CAFM.dwg",
+   "uploadedAt": "14.04.2027"
+  },
+  {
+   "key": "OG1",
+   "code": "DWG-OG1",
+   "ee": "01",
+   "name": "Grundriss 1. OG (DWG)",
+   "floor": "1. Obergeschoss",
+   "due": "30.04.2027",
+   "status": "uebertragen",
+   "checks": {
+    "c1": true,
+    "c2": true
+   },
+   "seed": "cadv01",
+   "file": "9999.AA.01_CAFM.dwg",
+   "uploadedAt": "02.04.2027",
+   "submittedAt": "02.04.2027",
+   "reviewedAt": "08.04.2027",
+   "transferredAt": "08.04.2027",
+   "reviewStartedAt": "03.04.2027"
+  },
+  {
+   "key": "OG2",
+   "code": "DWG-OG2",
+   "ee": "02",
+   "name": "Grundriss 2. OG (DWG)",
+   "floor": "2. Obergeschoss",
+   "due": "30.04.2027",
+   "status": "pruefung",
+   "checks": {
+    "c1": false,
+    "c2": false
+   },
+   "seed": "cadv01",
+   "file": "9999.AA.02_CAFM.dwg",
+   "uploadedAt": "20.04.2027",
+   "submittedAt": "21.04.2027",
+   "reviewStartedAt": "22.04.2027"
+  },
+  {
+   "key": "DG",
+   "code": "DWG-DG",
+   "ee": "03",
+   "name": "Grundriss DG (DWG)",
+   "floor": "Dachgeschoss",
+   "due": "15.05.2027",
+   "status": "offen",
+   "checks": {
+    "c1": false,
+    "c2": false
+   },
+   "seed": null,
+   "file": null
+  }
+ ],
+ "seeds": {
+  "cadv01": {
+   "file": {
+    "name": "CAD.V01-CAFM-Plan-DE.dwg",
+    "size": 381509
+   },
+   "version": "AC1032 (AutoCAD Release 2018)",
+   "elapsed": "0.19",
+   "entityCount": 3502,
+   "layerCount": 17,
+   "unit": 4,
+   "summary": {
+    "errorCount": 0,
+    "warningCount": 3,
+    "firedRules": 2,
+    "totalRules": 40,
+    "passedRules": 38,
+    "score": 95,
+    "scoreClass": "success"
+   },
+   "issues": [
+    {
+     "code": "TEXT_001",
+     "severity": "warning",
+     "category": "TEXT",
+     "message": "1 Textelement(e) auf unzulässigem Layer \"A_ELEKTRO\"",
+     "layer": "A_ELEKTRO",
+     "handles": [
+      "E4"
+     ]
+    },
+    {
+     "code": "TEXT_001",
+     "severity": "warning",
+     "category": "TEXT",
+     "message": "4 Textelement(e) auf unzulässigem Layer \"V_REFERENZPUNKT\"",
+     "layer": "V_REFERENZPUNKT",
+     "handles": [
+      "5D56",
+      "5D57",
+      "5D5B",
+      "5D5C"
+     ]
+    },
+    {
+     "code": "STYLE_002",
+     "severity": "warning",
+     "category": "STYLE",
+     "message": "17 Element(e) mit Farbe nicht VONLAYER (Layer: V_PLANLAYOUT, V_BEMASSUNG)",
+     "handles": [
+      "14AD",
+      "14B0",
+      "5179",
+      "517A",
+      "517B",
+      "4BDA",
+      "4BDB",
+      "4BDC",
+      "4BDD",
+      "4BDE",
+      "4BDF",
+      "4BD1",
+      "4BD2",
+      "4BD3",
+      "4BD4",
+      "4BD5",
+      "4BD6"
+     ]
+    }
+   ],
+   "rooms": [
+    {
+     "id": 1,
+     "aoid": "9999.AA.05.002",
+     "area": 3.99,
+     "status": "ok",
+     "handle": "A63"
+    },
+    {
+     "id": 2,
+     "aoid": "9999.AA.05.004",
+     "area": 2.62,
+     "status": "ok",
+     "handle": "A65"
+    },
+    {
+     "id": 3,
+     "aoid": "9999.AA.05.003",
+     "area": 2.44,
+     "status": "ok",
+     "handle": "A66"
+    },
+    {
+     "id": 4,
+     "aoid": "9999.AA.05.030",
+     "area": 2.85,
+     "status": "ok",
+     "handle": "A67"
+    },
+    {
+     "id": 5,
+     "aoid": "9999.AA.05.028",
+     "area": 6.42,
+     "status": "ok",
+     "handle": "A68"
+    },
+    {
+     "id": 6,
+     "aoid": "9999.AA.05.029",
+     "area": 4.79,
+     "status": "ok",
+     "handle": "A69"
+    },
+    {
+     "id": 7,
+     "aoid": "9999.AA.05.027",
+     "area": 15.5,
+     "status": "ok",
+     "handle": "A6A"
+    },
+    {
+     "id": 8,
+     "aoid": "9999.AA.05.005",
+     "area": 26.01,
+     "status": "ok",
+     "handle": "A6B"
+    },
+    {
+     "id": 9,
+     "aoid": "9999.AA.05.006",
+     "area": 20.59,
+     "status": "ok",
+     "handle": "A6C"
+    },
+    {
+     "id": 10,
+     "aoid": "9999.AA.05.007",
+     "area": 13.73,
+     "status": "ok",
+     "handle": "A6D"
+    },
+    {
+     "id": 11,
+     "aoid": "9999.AA.05.008",
+     "area": 20.59,
+     "status": "ok",
+     "handle": "A6E"
+    },
+    {
+     "id": 12,
+     "aoid": "9999.AA.05.009",
+     "area": 13.73,
+     "status": "ok",
+     "handle": "A6F"
+    },
+    {
+     "id": 13,
+     "aoid": "9999.AA.05.011",
+     "area": 27.42,
+     "status": "ok",
+     "handle": "A70"
+    },
+    {
+     "id": 14,
+     "aoid": "9999.AA.05.012",
+     "area": 13.72,
+     "status": "ok",
+     "handle": "A71"
+    },
+    {
+     "id": 15,
+     "aoid": "9999.AA.05.013",
+     "area": 13.73,
+     "status": "ok",
+     "handle": "A72"
+    },
+    {
+     "id": 16,
+     "aoid": "9999.AA.05.014",
+     "area": 13.72,
+     "status": "ok",
+     "handle": "A73"
+    },
+    {
+     "id": 17,
+     "aoid": "9999.AA.05.015",
+     "area": 25.98,
+     "status": "ok",
+     "handle": "A74"
+    },
+    {
+     "id": 18,
+     "aoid": "9999.AA.05.017",
+     "area": 0.59,
+     "status": "ok",
+     "handle": "A75"
+    },
+    {
+     "id": 19,
+     "aoid": "9999.AA.05.016",
+     "area": 10.38,
+     "status": "ok",
+     "handle": "A76"
+    },
+    {
+     "id": 20,
+     "aoid": "9999.AA.05.018",
+     "area": 23.58,
+     "status": "ok",
+     "handle": "A77"
+    },
+    {
+     "id": 21,
+     "aoid": "9999.AA.05.019",
+     "area": 14.99,
+     "status": "ok",
+     "handle": "A78"
+    },
+    {
+     "id": 22,
+     "aoid": "9999.AA.05.020",
+     "area": 20.92,
+     "status": "ok",
+     "handle": "A79"
+    },
+    {
+     "id": 23,
+     "aoid": "9999.AA.05.021",
+     "area": 22.48,
+     "status": "ok",
+     "handle": "A7A"
+    },
+    {
+     "id": 24,
+     "aoid": "9999.AA.05.022",
+     "area": 22.48,
+     "status": "ok",
+     "handle": "A7B"
+    },
+    {
+     "id": 25,
+     "aoid": "9999.AA.05.023",
+     "area": 14.99,
+     "status": "ok",
+     "handle": "A7C"
+    },
+    {
+     "id": 26,
+     "aoid": "9999.AA.05.024",
+     "area": 14.99,
+     "status": "ok",
+     "handle": "A7D"
+    },
+    {
+     "id": 27,
+     "aoid": "9999.AA.05.025",
+     "area": 14.99,
+     "status": "ok",
+     "handle": "A7E"
+    },
+    {
+     "id": 28,
+     "aoid": "9999.AA.05.026",
+     "area": 14.75,
+     "status": "ok",
+     "handle": "A7F"
+    },
+    {
+     "id": 29,
+     "aoid": "9999.AA.05.010",
+     "area": 90.02,
+     "status": "ok",
+     "handle": "A80"
+    },
+    {
+     "id": 30,
+     "aoid": "9999.AA.05.001",
+     "area": 24.07,
+     "status": "ok",
+     "handle": "A81"
+    }
+   ],
+   "areas": [
+    {
+     "id": 1,
+     "aoid": "UV",
+     "area": 572.32,
+     "status": "ok",
+     "handle": "93"
+    }
+   ],
+   "layers": [
+    {
+     "name": "0",
+     "count": 0,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "Defpoints",
+     "count": 0,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "V_REFERENZPUNKT",
+     "count": 10,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "R_AOID",
+     "count": 30,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "R_RAUMPOLYGON",
+     "count": 30,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "R_GESCHOSSPOLYGON",
+     "count": 1,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "A_SCHRAFFUR",
+     "count": 36,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "A_SANITAER",
+     "count": 53,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "V_PLANLAYOUT",
+     "count": 1417,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "V_ACHSEN",
+     "count": 65,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "V_BEMASSUNG",
+     "count": 2,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "V_TEXT",
+     "count": 2,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "A_ARCHITEKTUR",
+     "count": 1848,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "R_RAUMPOLYGON-ABZUG",
+     "count": 2,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "A_ELEKTRO",
+     "count": 3,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "A_HEIZUNG-KUEHLUNG",
+     "count": 2,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "A_LUEFTUNG",
+     "count": 1,
+     "color": "#FFFFFF",
+     "ok": true
+    }
+   ],
+   "entities": [
+    {
+     "type": "LWPOLYLINE",
+     "count": 3230
+    },
+    {
+     "type": "TEXT",
+     "count": 86
+    },
+    {
+     "type": "LINE",
+     "count": 64
+    },
+    {
+     "type": "HATCH",
+     "count": 41
+    },
+    {
+     "type": "CIRCLE",
+     "count": 38
+    },
+    {
+     "type": "MTEXT",
+     "count": 29
+    },
+    {
+     "type": "ARC",
+     "count": 12
+    },
+    {
+     "type": "DIMENSION",
+     "count": 2
+    }
+   ],
+   "kpi": {
+    "hnf": 517.06,
+    "nnf": 0,
+    "vf": 0,
+    "ff": 0,
+    "nf": 517.06,
+    "ngf": 517.06,
+    "gf": 572.32,
+    "kf": 55.26
+   },
+   "src": "assets/plans/CAD.V01-CAFM-Plan-DE.dwg",
+   "checkedAt": "2027-04-20T10:00:00"
+  },
+  "office": {
+   "file": {
+    "name": "2011-DM-0-A04-6A1.dwg",
+    "size": 2017491
+   },
+   "version": "AC1018 (AutoCAD Release 2004)",
+   "elapsed": "0.60",
+   "entityCount": 4599,
+   "layerCount": 32,
+   "unit": 4,
+   "summary": {
+    "errorCount": 3,
+    "warningCount": 43,
+    "firedRules": 13,
+    "totalRules": 40,
+    "passedRules": 27,
+    "score": 68,
+    "scoreClass": "warning"
+   },
+   "issues": [
+    {
+     "code": "LAYER_001",
+     "severity": "error",
+     "category": "LAYER",
+     "message": "Pflicht-Layer fehlt: R_RAUMPOLYGON nicht vorhanden",
+     "layer": "R_RAUMPOLYGON"
+    },
+    {
+     "code": "LAYER_002",
+     "severity": "error",
+     "category": "LAYER",
+     "message": "Pflicht-Layer fehlt: R_AOID nicht vorhanden",
+     "layer": "R_AOID"
+    },
+    {
+     "code": "LAYER_003",
+     "severity": "error",
+     "category": "LAYER",
+     "message": "Pflicht-Layer fehlt: R_GESCHOSSPOLYGON nicht vorhanden",
+     "layer": "R_GESCHOSSPOLYGON"
+    },
+    {
+     "code": "LAYER_004",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Pflicht-Layer fehlt: A_ARCHITEKTUR nicht vorhanden",
+     "layer": "A_ARCHITEKTUR"
+    },
+    {
+     "code": "LAYER_005",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Pflicht-Layer fehlt: V_PLANLAYOUT nicht vorhanden",
+     "layer": "V_PLANLAYOUT"
+    },
+    {
+     "code": "LAYER_006",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Pflicht-Layer fehlt: V_BEMASSUNG nicht vorhanden",
+     "layer": "V_BEMASSUNG"
+    },
+    {
+     "code": "LAYER_007",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Pflicht-Layer fehlt: A_SCHRAFFUR nicht vorhanden",
+     "layer": "A_SCHRAFFUR"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1Z23---E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1Z23---E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1Z21---E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1Z21---E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1------W- ist nicht in der zulässigen Layerliste",
+     "layer": "A1------W-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1E0----E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1E0----E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1E4----E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1E4----E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1E6----E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1E6----E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1I4----E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1I4----E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1M11---E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1M11---E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1M16---E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1M16---E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1E5----E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1E5----E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1------D- ist nicht in der zulässigen Layerliste",
+     "layer": "A1------D-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1E4----H- ist nicht in der zulässigen Layerliste",
+     "layer": "A1E4----H-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1E6----H- ist nicht in der zulässigen Layerliste",
+     "layer": "A1E6----H-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1E64---E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1E64---E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1Z29---T- ist nicht in der zulässigen Layerliste",
+     "layer": "A1Z29---T-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1------N- ist nicht in der zulässigen Layerliste",
+     "layer": "A1------N-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1E00---E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1E00---E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1E2----E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1E2----E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1I6----E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1I6----E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1M62---E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1M62---E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1E00---T- ist nicht in der zulässigen Layerliste",
+     "layer": "A1E00---T-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1------J- ist nicht in der zulässigen Layerliste",
+     "layer": "A1------J-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1------H- ist nicht in der zulässigen Layerliste",
+     "layer": "A1------H-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1M11---H- ist nicht in der zulässigen Layerliste",
+     "layer": "A1M11---H-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1M61---E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1M61---E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1E46---H- ist nicht in der zulässigen Layerliste",
+     "layer": "A1E46---H-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1E46---E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1E46---E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1M3----E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1M3----E-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1E2----H- ist nicht in der zulässigen Layerliste",
+     "layer": "A1E2----H-"
+    },
+    {
+     "code": "LAYER_008",
+     "severity": "warning",
+     "category": "LAYER",
+     "message": "Unbekannter Layer: A1E02---E- ist nicht in der zulässigen Layerliste",
+     "layer": "A1E02---E-"
+    },
+    {
+     "code": "POLY_008",
+     "severity": "warning",
+     "category": "POLY",
+     "message": "Kein Raumpolygon auf R_RAUMPOLYGON vorhanden"
+    },
+    {
+     "code": "GPOLY_004",
+     "severity": "warning",
+     "category": "GPOLY",
+     "message": "Kein Geschosspolygon vorhanden"
+    },
+    {
+     "code": "TEXT_001",
+     "severity": "warning",
+     "category": "TEXT",
+     "message": "72 Textelement(e) auf unzulässigem Layer \"A1E00---T-\"",
+     "layer": "A1E00---T-",
+     "handles": [
+      "13F01",
+      "13F02",
+      "13F03",
+      "13F04",
+      "13F05",
+      "13F06",
+      "13F07",
+      "13F08",
+      "13F09",
+      "13F0A",
+      "13F0B",
+      "13F0C",
+      "13F0D",
+      "13F0E",
+      "13F0F",
+      "13F10",
+      "13F11",
+      "13F12",
+      "13F13",
+      "13F14",
+      "13F15",
+      "13F16",
+      "13F17",
+      "13F18",
+      "13F19",
+      "13F1A",
+      "13F1B",
+      "13F1C",
+      "13F1D",
+      "13F1E",
+      "13F1F",
+      "13F20",
+      "13F21",
+      "13F22",
+      "13F23",
+      "13F24",
+      "13F25",
+      "13F26",
+      "13F27",
+      "13F28",
+      "13F29",
+      "13F2A",
+      "13F2B",
+      "13F2C",
+      "13F2D",
+      "13F2E",
+      "13F2F",
+      "13F30",
+      "13F31",
+      "13F32",
+      "13F33",
+      "13F34",
+      "13F35",
+      "13F36",
+      "13F37",
+      "13F38",
+      "13F39",
+      "13F3A",
+      "13F3B",
+      "13F3C",
+      "13F3D",
+      "13F3E",
+      "13F3F",
+      "13F40",
+      "13F41",
+      "13F42",
+      "13F43",
+      "13F44",
+      "13F45",
+      "13F46",
+      "1444B",
+      "1444C"
+     ]
+    },
+    {
+     "code": "TEXT_001",
+     "severity": "warning",
+     "category": "TEXT",
+     "message": "9 Textelement(e) auf unzulässigem Layer \"A1------J-\"",
+     "layer": "A1------J-",
+     "handles": [
+      "16891",
+      "16892",
+      "16895",
+      "16898",
+      "1689A",
+      "1689C",
+      "1689E",
+      "1689F",
+      "168A1"
+     ]
+    },
+    {
+     "code": "TEXT_001",
+     "severity": "warning",
+     "category": "TEXT",
+     "message": "19 Textelement(e) auf unzulässigem Layer \"A1------N-\"",
+     "layer": "A1------N-",
+     "handles": [
+      "168AB",
+      "168AC",
+      "168AD",
+      "168AF",
+      "168B0",
+      "168B1",
+      "168B2",
+      "168B3",
+      "168B4",
+      "168B5",
+      "168B6",
+      "168B7",
+      "168D6",
+      "168E2",
+      "168E3",
+      "168E4",
+      "18869",
+      "1886A",
+      "1886B"
+     ]
+    },
+    {
+     "code": "TEXT_001",
+     "severity": "warning",
+     "category": "TEXT",
+     "message": "39 Textelement(e) auf unzulässigem Layer \"A1------W-\"",
+     "layer": "A1------W-",
+     "handles": [
+      "188A5",
+      "188AD",
+      "188B2",
+      "188BC",
+      "188BD",
+      "188C5",
+      "188C9",
+      "188CA",
+      "188CB",
+      "188CC",
+      "188D8",
+      "188D9",
+      "188DA",
+      "188DB",
+      "188DF",
+      "188E0",
+      "188E3",
+      "188E5",
+      "188E6",
+      "188E7",
+      "188E8",
+      "188E9",
+      "188EA",
+      "188EB",
+      "188EC",
+      "188ED",
+      "188EE",
+      "188EF",
+      "188FA",
+      "188FB",
+      "188FC",
+      "188FD",
+      "188FE",
+      "18906",
+      "18907",
+      "18908",
+      "18909",
+      "19054",
+      "1B0CF"
+     ]
+    },
+    {
+     "code": "TEXT_001",
+     "severity": "warning",
+     "category": "TEXT",
+     "message": "508 Textelement(e) auf unzulässigem Layer \"0\"",
+     "layer": "0",
+     "handles": [
+      "188F4",
+      "188F5",
+      "188F6",
+      "188FF",
+      "18900",
+      "18901",
+      "1BC64",
+      "1BC65",
+      "1BC67",
+      "1BC6A",
+      "1BC6B",
+      "1BC6C",
+      "1BC6F",
+      "1BC70",
+      "1BC72",
+      "1BC7A",
+      "1BC7B",
+      "1BC7D",
+      "1BC80",
+      "1BC81",
+      "1BC82",
+      "1BC85",
+      "1BC86",
+      "1BC88",
+      "1BC8B",
+      "1BC8C",
+      "1BC8D",
+      "1BC90",
+      "1BC91",
+      "1BC93",
+      "1BC96",
+      "1BC97",
+      "1BC98",
+      "1BC9B",
+      "1BC9C",
+      "1BC9E",
+      "1BCA6",
+      "1BCA7",
+      "1BCA9",
+      "1BCB1",
+      "1BCB2",
+      "1BCB4",
+      "1BCBC",
+      "1BCBD",
+      "1BCBF",
+      "1BCC7",
+      "1BCC8",
+      "1BCCA",
+      "1BCCD",
+      "1BCCE",
+      "1BCCF",
+      "1BCD2",
+      "1BCD3",
+      "1BCD5",
+      "1BCDD",
+      "1BCDE",
+      "1BCDF",
+      "1BCE0",
+      "1BCE8",
+      "1BCE9",
+      "1BCEA",
+      "1BCEB",
+      "1BCEE",
+      "1BCEF",
+      "1BCF0",
+      "1BCF3",
+      "1BCF4",
+      "1BCF6",
+      "1BCFE",
+      "1BCFF",
+      "1BD00",
+      "1BD01",
+      "1BD04",
+      "1BD05",
+      "1BD06",
+      "1BD09",
+      "1BD0A",
+      "1BD0C",
+      "1BD14",
+      "1BD15",
+      "1BD16",
+      "1BD17",
+      "1BD1F",
+      "1BD20",
+      "1BD21",
+      "1BD22",
+      "1BD25",
+      "1BD26",
+      "1BD27",
+      "1BD2A",
+      "1BD2B",
+      "1BD2C",
+      "1BD2D",
+      "1BD30",
+      "1BD31",
+      "1BD32",
+      "1BD35",
+      "1BD36",
+      "1BD37",
+      "1BD38",
+      "1BD3B",
+      "1BD3C",
+      "1BD3D",
+      "1BD40",
+      "1BD41",
+      "1BD42",
+      "1BD43",
+      "1BD46",
+      "1BD47",
+      "1BD48",
+      "1BD4B",
+      "1BD4C",
+      "1BD4D",
+      "1BD4E",
+      "1BD51",
+      "1BD52",
+      "1BD53",
+      "1BD56",
+      "1BD57",
+      "1BD59",
+      "1BD61",
+      "1BD62",
+      "1BD63",
+      "1BD64",
+      "1BD67",
+      "1BD68",
+      "1BD69",
+      "1BD6C",
+      "1BD6D",
+      "1BD6F",
+      "1BD72",
+      "1BD73",
+      "1BD74",
+      "1BD77",
+      "1BD78",
+      "1BD79",
+      "1BD7A",
+      "1BD82",
+      "1BD83",
+      "1BD84",
+      "1BD85",
+      "1BD88",
+      "1BD89",
+      "1BD8A",
+      "1BD8D",
+      "1BD8E",
+      "1BD8F",
+      "1BD90",
+      "1BD93",
+      "1BD94",
+      "1BD95",
+      "1BD98",
+      "1BD99",
+      "1BD9A",
+      "1BD9B",
+      "1BD9E",
+      "1BD9F",
+      "1BDA0",
+      "1BDA3",
+      "1BDA4",
+      "1BDA5",
+      "1BDA6",
+      "1BDA9",
+      "1BDAA",
+      "1BDAB",
+      "1BDAE",
+      "1BDAF",
+      "1BDB0",
+      "1BDB1",
+      "1BDB4",
+      "1BDB5",
+      "1BDB6",
+      "1BDB9",
+      "1BDBA",
+      "1BDBB",
+      "1BDBC",
+      "1BDBF",
+      "1BDC0",
+      "1BDC1",
+      "1BDC4",
+      "1BDC5",
+      "1BDC6",
+      "1BDC7",
+      "1BDCA",
+      "1BDCB",
+      "1BDCC",
+      "1BDCF",
+      "1BDD0",
+      "1BDD1",
+      "1BDD2",
+      "1BDD5",
+      "1BDD6",
+      "1BDD7",
+      "1BDDA",
+      "1BDDB",
+      "1BDDC",
+      "1BDDD",
+      "1BDE0",
+      "1BDE1",
+      "1BDE2",
+      "1BDE5",
+      "1BDE6",
+      "1BDE7",
+      "1BDE8",
+      "1BDEB",
+      "1BDEC",
+      "1BDED",
+      "1BDF0",
+      "1BDF1",
+      "1BDF2",
+      "1BDF3",
+      "1BDF6",
+      "1BDF7",
+      "1BDF8",
+      "1BDFB",
+      "1BDFC",
+      "1BDFD",
+      "1BDFE",
+      "1BE01",
+      "1BE02",
+      "1BE03",
+      "1BE06",
+      "1BE07",
+      "1BE08",
+      "1BE09",
+      "1BE0C",
+      "1BE0D",
+      "1BE0E",
+      "1BE11",
+      "1BE12",
+      "1BE13",
+      "1BE14",
+      "1BE17",
+      "1BE18",
+      "1BE19",
+      "1BE1C",
+      "1BE1D",
+      "1BE1E",
+      "1BE1F",
+      "1BE22",
+      "1BE23",
+      "1BE24",
+      "1BE27",
+      "1BE28",
+      "1BE29",
+      "1BE2A",
+      "1BE2D",
+      "1BE2E",
+      "1BE2F",
+      "1BE32",
+      "1BE33",
+      "1BE34",
+      "1BE35",
+      "1BE3D",
+      "1BE3E",
+      "1BE3F",
+      "1BE40",
+      "1BE43",
+      "1BE53",
+      "1BE54",
+      "1BE55",
+      "1BE56",
+      "1BE59",
+      "1BE5A",
+      "1BE5B",
+      "1BE5E",
+      "1BE5F",
+      "1BE60",
+      "1BE61",
+      "1BE64",
+      "1BE65",
+      "1BE66",
+      "1BE69",
+      "1BE6A",
+      "1BE6B",
+      "1BE6C",
+      "1BE6F",
+      "1BE70",
+      "1BE71",
+      "1BE74",
+      "1BE75",
+      "1BE76",
+      "1BE77",
+      "1BE7A",
+      "1BE7B",
+      "1BE7C",
+      "1BE7F",
+      "1BE80",
+      "1BE81",
+      "1BE82",
+      "1BE85",
+      "1BE86",
+      "1BE87",
+      "1BE8A",
+      "1BE8B",
+      "1BE8D",
+      "1BE95",
+      "1BE96",
+      "1BE97",
+      "1BE98",
+      "1BE9B",
+      "1BE9C",
+      "1BE9D",
+      "1BEA0",
+      "1BEA1",
+      "1BEA3",
+      "1BEAB",
+      "1BEAC",
+      "1BEAD",
+      "1BEAE",
+      "1BEB1",
+      "1BEB2",
+      "1BEB3",
+      "1BEB6",
+      "1BEB7",
+      "1BEB8",
+      "1BEB9",
+      "1BEC1",
+      "1BEC2",
+      "1BEC3",
+      "1BEC4",
+      "1BEC7",
+      "1BEC8",
+      "1BEC9",
+      "1BECC",
+      "1BECD",
+      "1BECE",
+      "1BECF",
+      "1BED2",
+      "1BED3",
+      "1BED4",
+      "1BED7",
+      "1BED8",
+      "1BED9",
+      "1BEDA",
+      "1BEE2",
+      "1BEE3",
+      "1BEE5",
+      "1BEED",
+      "1BEEE",
+      "1BEEF",
+      "1BEF0",
+      "1BEF3",
+      "1BEF4",
+      "1BEF5",
+      "1BEF8",
+      "1BEF9",
+      "1BEFA",
+      "1BEFB",
+      "1BEFE",
+      "1BEFF",
+      "1BF00",
+      "1BF03",
+      "1BF04",
+      "1BF05",
+      "1BF06",
+      "1BF09",
+      "1BF0A",
+      "1BF0B",
+      "1BF0E",
+      "1BF0F",
+      "1BF10",
+      "1BF11",
+      "1BF14",
+      "1BF15",
+      "1BF16",
+      "1BF19",
+      "1BF1A",
+      "1BF1B",
+      "1BF1C",
+      "1BF1F",
+      "1BF20",
+      "1BF21",
+      "1BF24",
+      "1BF25",
+      "1BF26",
+      "1BF27",
+      "1BF2A",
+      "1BF2B",
+      "1BF2C",
+      "1BF2F",
+      "1BF30",
+      "1BF31",
+      "1BF32",
+      "1BF3A",
+      "1BF3B",
+      "1BF3C",
+      "1BF3D",
+      "1BF45",
+      "1BF46",
+      "1BF47",
+      "1BF48",
+      "1BF4B",
+      "1BF4C",
+      "1BF4D",
+      "1BF50",
+      "1BF51",
+      "1BF52",
+      "1BF53",
+      "1BF56"
+     ]
+    },
+    {
+     "code": "LAYOUT_002",
+     "severity": "warning",
+     "category": "LAYOUT",
+     "message": "Kein Planrahmen auf V_PLANLAYOUT erkannt"
+    },
+    {
+     "code": "DIM_001",
+     "severity": "warning",
+     "category": "DIM",
+     "message": "Keine Bemassungen auf V_BEMASSUNG vorhanden"
+    }
+   ],
+   "rooms": [],
+   "areas": [],
+   "layers": [
+    {
+     "name": "0",
+     "count": 12,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "A1Z23---E-",
+     "count": 1,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "Defpoints",
+     "count": 0,
+     "color": "#FFFFFF",
+     "ok": true
+    },
+    {
+     "name": "A1Z21---E-",
+     "count": 85,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1------W-",
+     "count": 77,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1E0----E-",
+     "count": 194,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1E4----E-",
+     "count": 35,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1E6----E-",
+     "count": 68,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1I4----E-",
+     "count": 35,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1M11---E-",
+     "count": 2293,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1M16---E-",
+     "count": 91,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1E5----E-",
+     "count": 51,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1------D-",
+     "count": 74,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1E4----H-",
+     "count": 33,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1E6----H-",
+     "count": 43,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1E64---E-",
+     "count": 1,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1Z29---T-",
+     "count": 105,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1------N-",
+     "count": 19,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1E00---E-",
+     "count": 130,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1E2----E-",
+     "count": 240,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1I6----E-",
+     "count": 43,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1M62---E-",
+     "count": 194,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1E00---T-",
+     "count": 72,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1------J-",
+     "count": 19,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1------H-",
+     "count": 303,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1M11---H-",
+     "count": 103,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1M61---E-",
+     "count": 37,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1E46---H-",
+     "count": 1,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1E46---E-",
+     "count": 2,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1M3----E-",
+     "count": 30,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1E2----H-",
+     "count": 204,
+     "color": "#FFFFFF",
+     "ok": false
+    },
+    {
+     "name": "A1E02---E-",
+     "count": 4,
+     "color": "#FFFFFF",
+     "ok": false
+    }
+   ],
+   "entities": [
+    {
+     "type": "POLYLINE2D",
+     "count": 1730
+    },
+    {
+     "type": "LINE",
+     "count": 994
+    },
+    {
+     "type": "HATCH",
+     "count": 687
+    },
+    {
+     "type": "LWPOLYLINE",
+     "count": 581
+    },
+    {
+     "type": "INSERT",
+     "count": 343
+    },
+    {
+     "type": "TEXT",
+     "count": 145
+    },
+    {
+     "type": "DIMENSION",
+     "count": 74
+    },
+    {
+     "type": "CIRCLE",
+     "count": 39
+    },
+    {
+     "type": "ARC",
+     "count": 6
+    }
+   ],
+   "kpi": {
+    "hnf": 0,
+    "nnf": 0,
+    "vf": 0,
+    "ff": 0,
+    "nf": 0,
+    "ngf": 0,
+    "gf": null,
+    "kf": null
+   },
+   "src": "assets/plans/2011-DM-0-A04-6A1.dwg",
+   "checkedAt": "2027-04-20T10:00:00"
+  }
+ }
+}

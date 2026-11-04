@@ -1,0 +1,115 @@
+{
+  "initialSelected": "kv",
+  "initialActive": {
+    "kv": true,
+    "bkp": false,
+    "thg": true
+  },
+  "templates": {
+    "kv": {
+      "name": "Kosten eBKP-H",
+      "gl": "eBKP-H",
+      "ver": "2.0",
+      "ziel": "ePPM",
+      "pflicht": "ab SIA 31",
+      "pos": [
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "I",
+        "V",
+        "W"
+      ],
+      "opt": [
+        "A",
+        "H",
+        "J",
+        "Y",
+        "Z"
+      ],
+      "fields": [
+        "Menge und Einheit",
+        "Kosten CHF",
+        "Kommentar je Position",
+        "«Nicht zutreffend» mit Begründung",
+        "Beilage detaillierter KV (PDF/Excel)"
+      ],
+      "rules": [
+        "Pflichtpositionen erfasst oder «nicht zutreffend»",
+        "Bezugsmengen aus Grundmengen derselben Phase",
+        "Abweichung zur Vorphase über 10 % je Hauptgruppe: Hinweis",
+        "Kostenziel B–W überschritten: Hinweis"
+      ]
+    },
+    "bkp": {
+      "name": "Kosten BKP",
+      "gl": "BKP",
+      "ver": "1.0",
+      "ziel": "ePPM",
+      "pflicht": "optional",
+      "pos": [
+        "1",
+        "2",
+        "4",
+        "5"
+      ],
+      "opt": [
+        "9"
+      ],
+      "fields": [
+        "Kosten CHF",
+        "Kommentar je Position"
+      ],
+      "rules": [
+        "Pflichtpositionen erfasst"
+      ]
+    },
+    "thg": {
+      "name": "Ökobilanz Bauemissionen",
+      "gl": "eBKP-H B–J",
+      "ver": "1.0",
+      "ziel": "SUS",
+      "pflicht": "ab SIA 32, AK ≥ 1 Mio CHF",
+      "pos": [
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "I"
+      ],
+      "opt": [
+        "H",
+        "J"
+      ],
+      "fields": [
+        "Menge und Einheit",
+        "THG kg CO₂-eq",
+        "Endwert kg CO₂-eq/m² EBF·a",
+        "Bericht PDF (Pflicht)"
+      ],
+      "rules": [
+        "Alle Pflichtpositionen erfasst",
+        "Bericht und Endwert vorhanden",
+        "Abweichung zur Vorphase über 15 %: Hinweis",
+        "Bestellung Muss ab Anlagekosten 1 Mio CHF"
+      ]
+    }
+  },
+  "orderOptions": [
+    {
+      "key": "kv",
+      "title": "Kosten (KS / KV)",
+      "desc": "eBKP-H oder BKP · Menge und Kosten<br>Zielsystem ePPM"
+    },
+    {
+      "key": "thg",
+      "title": "Ökobilanz Bauemissionen",
+      "desc": "eBKP-H · Menge und THG-Emissionen<br>nach Anleitung TP2 NettoNull · Zielsystem SUS"
+    }
+  ]
+}

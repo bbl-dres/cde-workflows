@@ -1,0 +1,181 @@
+[
+  {
+    "id": "n1",
+    "title": "Die Aufgabe Kostenvoranschlag eBKP-H (KV-32) wurde erstellt.",
+    "text": "Paula Muster hat KV-32 bei Ihnen bestellt. Fällig am 30.04.2027.",
+    "date": "12.03.27",
+    "unread": true,
+    "for": [
+      "AB",
+      "GM",
+      "KB"
+    ],
+    "project": "musterhausen",
+    "delivery": "KV-32",
+    "action": "Erfassung öffnen",
+    "tab": "erfassung"
+  },
+  {
+    "id": "n2",
+    "title": "Erinnerung: Grundriss DG (DWG-DG)",
+    "text": "Die Aufgabe DWG-DG muss noch abgeschlossen werden. Fällig am 15.05.2027.",
+    "date": "05.05.27",
+    "unread": false,
+    "for": [
+      "AB"
+    ],
+    "project": "musterhausen",
+    "delivery": "DWG-DG",
+    "action": "Anzeigen",
+    "tab": "erfassung"
+  },
+  {
+    "id": "n3",
+    "title": "Änderungen an Aufgabe Ökobilanz Bauemissionen (THG-32)",
+    "text": "Olivia Beispiel hat THG-32 zur Prüfung eingereicht.",
+    "date": "03.05.27",
+    "unread": true,
+    "for": [
+      "PM",
+      "FM"
+    ],
+    "project": "musterhausen",
+    "delivery": "THG-32",
+    "action": "Prüfen",
+    "tab": "pruefung"
+  },
+  {
+    "id": "n4",
+    "title": "Aufgabe überfällig: Ökobilanz Bauemissionen (THG-32)",
+    "text": "Die Aufgabe THG-32 in Bern, Eigerplatz 1 wurde nicht rechtzeitig abgeschlossen.",
+    "date": "16.04.27",
+    "unread": true,
+    "for": [
+      "PM",
+      "FM"
+    ],
+    "project": "eigerplatz",
+    "delivery": "THG-32",
+    "action": "Anzeigen"
+  },
+  {
+    "id": "n5",
+    "title": "Neue Dateien für Verwaltungszentrum Musterhausen wurden hochgeladen",
+    "text": "Für Verwaltungszentrum Musterhausen wurden neue Dateien hochgeladen: Oekobilanz_TP2_Musterhausen_SIA32.pdf",
+    "date": "03.05.27",
+    "unread": false,
+    "for": [
+      "PM",
+      "BM",
+      "FM",
+      "AB",
+      "GM"
+    ],
+    "project": "musterhausen",
+    "section": "files",
+    "action": "Anzeigen"
+  },
+  {
+    "id": "n6",
+    "title": "Kai Beispiel wurde einer Aufgabe zugewiesen.",
+    "text": "Kai Beispiel wurde hinzugefügt, um eine Aufgabe zu bearbeiten: Kostenvoranschlag eBKP-H (KV-32).",
+    "date": "13.03.27",
+    "unread": false,
+    "for": [
+      "PM",
+      "GM",
+      "KB"
+    ],
+    "project": "musterhausen",
+    "delivery": "KV-32",
+    "action": "Anzeigen",
+    "tab": "beteiligte"
+  },
+  {
+    "id": "n7",
+    "title": "Änderungen an Aufgabe Kostenvoranschlag eBKP-H (KV-32)",
+    "text": "Kai Beispiel und Alex Beispiel haben fertig gemeldet. KV-32 kann zur Prüfung eingereicht werden.",
+    "date": "20.04.27",
+    "unread": true,
+    "for": [
+      "GM"
+    ],
+    "project": "musterhausen",
+    "delivery": "KV-32",
+    "action": "Beteiligte",
+    "tab": "beteiligte"
+  },
+  {
+    "id": "n8",
+    "title": "Neue Dateien für Posieux, Campus Agroscope wurden hochgeladen",
+    "text": "Für Posieux, Campus Agroscope wurden neue Dateien hochgeladen: IFC Fachmodell Architektur.",
+    "date": "02.05.27",
+    "unread": true,
+    "for": [
+      "BM",
+      "FM"
+    ],
+    "project": "agroscope-posieux",
+    "section": "files",
+    "action": "Anzeigen"
+  },
+  {
+    "id": "n9",
+    "title": "Vorlage «Kosten eBKP-H» Version 2.0 veröffentlicht",
+    "text": "Das BIM-Management BBL hat die Vorlage aktualisiert. Aktive Projekte verwenden die neue Version ab der nächsten Bestellung.",
+    "date": "01.03.27",
+    "unread": false,
+    "for": [
+      "PM",
+      "BM",
+      "FM"
+    ],
+    "project": "musterhausen",
+    "settings": "information-requirements",
+    "action": "Anzeigen"
+  },
+  {
+    "id": "n10",
+    "title": "Die Aufgaben Grundrisse DWG (DWG-UG … DWG-DG) wurden erstellt.",
+    "text": "Paula Muster hat fünf Planlieferungen DWG für das CAFM bei Ihnen bestellt, ein Grundriss pro Geschoss. Fällig am 30.04.2027.",
+    "date": "12.03.27",
+    "unread": false,
+    "for": [
+      "AB",
+      "GM"
+    ],
+    "project": "musterhausen",
+    "delivery": "DWG-EG",
+    "action": "Erfassung öffnen",
+    "tab": "erfassung"
+  },
+  {
+    "id": "n11",
+    "title": "Änderungen an Aufgabe Grundriss 2. OG (DWG-OG2)",
+    "text": "Alex Beispiel hat DWG-OG2 zur Prüfung eingereicht: 38 von 40 Prüfregeln bestanden, 0 Fehler, 3 Warnungen.",
+    "date": "21.04.27",
+    "unread": true,
+    "for": [
+      "PM",
+      "BM"
+    ],
+    "project": "musterhausen",
+    "delivery": "DWG-OG2",
+    "action": "Prüfen",
+    "tab": "pruefung"
+  },
+  {
+    "id": "n12",
+    "title": "Prüfung fehlgeschlagen: Grundriss EG (DWG-EG)",
+    "text": "Die hochgeladene Datei 9999.AA.00_CAFM.dwg erfüllt 27 von 40 Prüfregeln (3 Fehler): Pflicht-Layer R_RAUMPOLYGON, R_AOID und R_GESCHOSSPOLYGON fehlen. Bitte im CAD korrigieren und neu hochladen.",
+    "date": "14.04.27",
+    "unread": true,
+    "for": [
+      "AB"
+    ],
+    "project": "musterhausen",
+    "delivery": "DWG-EG",
+    "action": "Erfassung öffnen",
+    "tab": "erfassung"
+  }
+]

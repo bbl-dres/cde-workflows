@@ -1,0 +1,132 @@
+{
+  "tiles": [
+    {
+      "key": "total",
+      "label": "Gesamt",
+      "icon": "file-text"
+    },
+    {
+      "key": "work",
+      "label": "In Bearbeitung",
+      "icon": "pencil"
+    },
+    {
+      "key": "check",
+      "label": "In Prüfung",
+      "icon": "search"
+    },
+    {
+      "key": "done",
+      "label": "Abgeschlossen",
+      "icon": "circle-check"
+    },
+    {
+      "key": "over",
+      "label": "Überfällig",
+      "icon": "circle-alert"
+    }
+  ],
+  "rows": [
+    {
+      "code": "PLN-BP",
+      "name": "Pläne Bauprojekt",
+      "firm": "Muster Architekten AG",
+      "gewerk": "Architektur",
+      "desc": "Grundrisse, Schnitte, Ansichten 1:100",
+      "status": "Abgeschlossen",
+      "isForm": false
+    },
+    {
+      "code": "DWG-UG",
+      "name": "Grundriss UG (DWG)",
+      "firm": "Muster Architekten AG",
+      "gewerk": "Architektur",
+      "desc": "DWG nach BBL CAD-Richtlinie · Prüfregeln Flächenmanagement",
+      "plan": "UG",
+      "isForm": false
+    },
+    {
+      "code": "DWG-EG",
+      "name": "Grundriss EG (DWG)",
+      "firm": "Muster Architekten AG",
+      "gewerk": "Architektur",
+      "desc": "DWG nach BBL CAD-Richtlinie · Prüfregeln Flächenmanagement",
+      "plan": "EG",
+      "isForm": false
+    },
+    {
+      "code": "DWG-OG1",
+      "name": "Grundriss 1. OG (DWG)",
+      "firm": "Muster Architekten AG",
+      "gewerk": "Architektur",
+      "desc": "DWG nach BBL CAD-Richtlinie · Prüfregeln Flächenmanagement",
+      "plan": "OG1",
+      "isForm": false
+    },
+    {
+      "code": "DWG-OG2",
+      "name": "Grundriss 2. OG (DWG)",
+      "firm": "Muster Architekten AG",
+      "gewerk": "Architektur",
+      "desc": "DWG nach BBL CAD-Richtlinie · Prüfregeln Flächenmanagement",
+      "plan": "OG2",
+      "isForm": false
+    },
+    {
+      "code": "DWG-DG",
+      "name": "Grundriss DG (DWG)",
+      "firm": "Muster Architekten AG",
+      "gewerk": "Architektur",
+      "desc": "DWG nach BBL CAD-Richtlinie · Prüfregeln Flächenmanagement",
+      "plan": "DG",
+      "isForm": false
+    },
+    {
+      "code": "KS-31",
+      "name": "Kostenschätzung eBKP-H",
+      "firm": "Muster Architekten AG",
+      "gewerk": "Kostenplanung",
+      "desc": "Datenformular · Betrag je Hauptgruppe eBKP-H, an ePPM übertragen",
+      "isForm": true,
+      "statusKey": "ks"
+    },
+    {
+      "code": "KV-32",
+      "name": "Kostenvoranschlag eBKP-H",
+      "firm": "Generalplaner Beispiel AG",
+      "gewerk": "Kostenplanung",
+      "desc": "Datenformular · Betrag je Hauptgruppe eBKP-H, Ziel ePPM",
+      "statusKey": "kv",
+      "isForm": true,
+      "mark": true,
+      "mark3": true
+    },
+    {
+      "code": "THG-32",
+      "name": "Ökobilanz Bauemissionen",
+      "firm": "Ökobilanz Beispiel AG",
+      "gewerk": "Nachhaltigkeit",
+      "desc": "Datenformular · THG je Hauptgruppe nach TP2, Endwert an SUS",
+      "statusKey": "thg",
+      "isForm": true
+    },
+    {
+      "code": "IFC-ARC",
+      "name": "Fachmodell Architektur",
+      "firm": "Muster Architekten AG",
+      "gewerk": "Architektur",
+      "desc": "IFC 4, LOIN Bauprojekt",
+      "status": "In Bearbeitung",
+      "isForm": false
+    },
+    {
+      "code": "BS-01",
+      "name": "Brandschutzkonzept",
+      "firm": "Brandschutz Beispiel GmbH",
+      "gewerk": "Brandschutz",
+      "desc": "PDF, QSS 2",
+      "status": "Überfällig",
+      "isForm": false
+    }
+  ]
+}

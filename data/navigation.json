@@ -1,0 +1,19 @@
+[
+  { "key": "ue", "label": "Überblick", "icon": "house" },
+  { "key": "ak", "label": "Aktivitäten", "icon": "newspaper" },
+  { "key": "da", "label": "Dateien", "icon": "file" },
+  { "key": "mo", "label": "Modell", "icon": "scan" },
+  { "key": "au", "label": "Aufgaben", "icon": "clipboard-check", "badge": "15", "screen": "s02b" },
+  { "key": "im", "label": "Info-Management", "icon": "panels-top-left", "group": true, "children": [
+    { "key": "loin", "label": "LOIN", "icon": "sliders-horizontal" },
+    { "key": "dok", "label": "Dokumente", "icon": "file-text" },
+    { "key": "ilp", "label": "Informationslieferplan", "icon": "clipboard-list", "screen": "s01" }
+  ] },
+  { "key": "at", "label": "Automatisierung", "icon": "zap" },
+  { "key": "wf", "label": "Workflows", "icon": "layout-panel-left" },
+  { "key": "mi", "label": "Mitglieder", "icon": "users" },
+  { "key": "st", "label": "Stammdaten", "icon": "file-text", "group": true, "children": [
+    { "key": "lo", "label": "Lieferobjekte", "icon": "clipboard-check" }
+  ] },
+  { "key": "ei", "label": "Einstellungen", "icon": "settings", "screen": "s09" }
+]

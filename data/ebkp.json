@@ -1,0 +1,256 @@
+{
+  "ebkp": [
+    {
+      "code": "B",
+      "name": "Vorbereitung",
+      "kids": [
+        {
+          "code": "B6",
+          "name": "Baugrube",
+          "unit": "m³",
+          "qty": 9800,
+          "cost": 412000,
+          "thg": 95000
+        },
+        {
+          "code": "B9",
+          "name": "Gerüst",
+          "unit": "m²",
+          "qty": 3900,
+          "cost": 118000,
+          "thg": 15000
+        }
+      ]
+    },
+    {
+      "code": "C",
+      "name": "Konstruktion Gebäude",
+      "kids": [
+        {
+          "code": "C1",
+          "name": "Bodenplatte, Fundament",
+          "unit": "m²",
+          "qty": 1620,
+          "cost": 486000,
+          "thg": 240000
+        },
+        {
+          "code": "C2",
+          "name": "Wandkonstruktion",
+          "unit": "m²",
+          "qty": 5240,
+          "cost": 1310000,
+          "thg": 400000
+        },
+        {
+          "code": "C3",
+          "name": "Stützenkonstruktion",
+          "unit": "m",
+          "qty": 410,
+          "cost": 164000,
+          "thg": 60000
+        },
+        {
+          "code": "C4",
+          "name": "Decke, Dachkonstruktion",
+          "unit": "m²",
+          "qty": 6480,
+          "cost": 2010000,
+          "thg": 500000
+        }
+      ]
+    },
+    {
+      "code": "D",
+      "name": "Technik Gebäude",
+      "kids": [
+        {
+          "code": "D1",
+          "name": "Elektroanlage",
+          "unit": "m² GF",
+          "qty": 6480,
+          "cost": 1240000,
+          "thg": 230000
+        },
+        {
+          "code": "D5",
+          "name": "Wärmeversorgungsanlage",
+          "unit": "m² GF",
+          "qty": 6480,
+          "cost": 690000,
+          "thg": 180000
+        },
+        {
+          "code": "D7",
+          "name": "Lufttechnische Anlage",
+          "unit": "m² GF",
+          "qty": 6480,
+          "cost": 980000,
+          "thg": 250000
+        },
+        {
+          "code": "D8",
+          "name": "Wasser-, Gasanlage",
+          "unit": "m² GF",
+          "qty": 6480,
+          "cost": 540000,
+          "thg": 140000
+        }
+      ]
+    },
+    {
+      "code": "E",
+      "name": "Äussere Wandbekleidung Gebäude",
+      "kids": [
+        {
+          "code": "E2",
+          "name": "Äussere Wandbekleidung über Terrain",
+          "unit": "m²",
+          "qty": 3120,
+          "cost": 1470000,
+          "thg": 300000
+        },
+        {
+          "code": "E3",
+          "name": "Einbaute zu Aussenwand",
+          "unit": "m²",
+          "qty": 1180,
+          "cost": 1120000,
+          "thg": 140000
+        }
+      ]
+    },
+    {
+      "code": "F",
+      "name": "Bedachung Gebäude",
+      "kids": [
+        {
+          "code": "F1",
+          "name": "Bedachung",
+          "unit": "m²",
+          "qty": 1620,
+          "cost": 520000,
+          "thg": 150000
+        }
+      ]
+    },
+    {
+      "code": "G",
+      "name": "Ausbau Gebäude",
+      "kids": [
+        {
+          "code": "G1",
+          "name": "Trennwand, Tür, Tor",
+          "unit": "m²",
+          "qty": 3960,
+          "cost": 890000,
+          "thg": 150000
+        },
+        {
+          "code": "G2",
+          "name": "Bodenbelag",
+          "unit": "m²",
+          "qty": 5610,
+          "cost": 720000,
+          "thg": 110000
+        },
+        {
+          "code": "G3",
+          "name": "Wandbekleidung",
+          "unit": "m²",
+          "qty": 8200,
+          "cost": 410000,
+          "thg": 40000
+        },
+        {
+          "code": "G4",
+          "name": "Deckenbekleidung",
+          "unit": "m²",
+          "qty": 5610,
+          "cost": 560000,
+          "thg": 60000
+        }
+      ]
+    },
+    {
+      "code": "I",
+      "name": "Umgebung Gebäude",
+      "kids": [
+        {
+          "code": "I1",
+          "name": "Geländebearbeitung",
+          "unit": "m²",
+          "qty": 2400,
+          "cost": 380000,
+          "thg": 31000
+        }
+      ]
+    }
+  ],
+  "extra": [
+    {
+      "code": "J",
+      "name": "Ausstattung Gebäude",
+      "cost": 610000
+    },
+    {
+      "code": "V",
+      "name": "Planungskosten",
+      "cost": 2950000
+    },
+    {
+      "code": "W",
+      "name": "Nebenkosten",
+      "cost": 420000
+    },
+    {
+      "code": "Y",
+      "name": "Reserve",
+      "cost": 1100000
+    }
+  ],
+  "missingInitially": [
+    "D8"
+  ],
+  "ks31": {
+    "B": 500000,
+    "C": 3850000,
+    "D": 2900000,
+    "E": 2650000,
+    "F": 540000,
+    "G": 2500000,
+    "I": 400000,
+    "J": 550000,
+    "V": 2800000,
+    "W": 400000,
+    "Y": 1000000
+  },
+  "prev31": {
+    "B": 100000,
+    "C": 1250000,
+    "D": 650000,
+    "E": 380000,
+    "F": 140000,
+    "G": 330000,
+    "I": 35000
+  },
+  "import": {
+    "file": "kv_bauprojekt_v3.xlsx",
+    "importedOn": "20.04.2027",
+    "changes": {
+      "C2": 1285000,
+      "G2": 742000
+    },
+    "missingQty": [
+      "D8"
+    ],
+    "ignored": [
+      {
+        "code": "X9",
+        "name": "Diverses",
+        "cost": 85000,
+        "note": "Code nicht in eBKP-H"
+      }
+    ]
+  }
+}

@@ -1,0 +1,589 @@
+{
+  "today": "05.05.2027",
+  "note": "Projektnamen der Projekte 2–8 nach den öffentlichen Bautendokumentationen des BBL (bbl.admin.ch/de/bautendokumentationen). Phasen, Werte, Firmen und Personen sind fiktiv.",
+  "map": {
+    "style": "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.lightbasemap.vt/style.json",
+    "fallbackStyle": "https://tiles.openfreemap.org/styles/positron",
+    "center": [
+      8.2,
+      46.8
+    ],
+    "zoom": 6.4,
+    "fitBounds": [
+      [
+        5.9,
+        45.8
+      ],
+      [
+        10.5,
+        47.8
+      ]
+    ]
+  },
+  "projects": [
+    {
+      "id": "musterhausen",
+      "detailed": true,
+      "name": "Verwaltungszentrum Musterhausen",
+      "description": "Erweiterung · Bauprojekt SIA 32",
+      "image": "assets/projects/musterhausen.jpg",
+      "imageCredit": "Hadi, CC0 1.0, via Wikimedia Commons",
+      "number": "TN10/1342.004",
+      "technicalPlace": "TT1086/1342/AA",
+      "designation": "Verwaltungszentrum Musterhausen Erweiterung",
+      "teilportfolio": "ALLG",
+      "teilportfolioLabel": "Allgemeine Bundesverwaltung (ALLG)",
+      "responsible": "Paula Muster",
+      "phase": "32 Bauprojekt",
+      "anlagekostenMio": 24.6,
+      "kostenzielBW": 17000000,
+      "createdAt": "14.01.2026",
+      "updatedAt": "04.05.2027 09:03",
+      "access": "Zugriff",
+      "location": {
+        "lat": 46.948,
+        "lng": 7.447,
+        "place": "Bern"
+      },
+      "members": [
+        "PM",
+        "AB",
+        "KB",
+        "OB",
+        "GM",
+        "BM",
+        "FM"
+      ],
+      "issues": 2,
+      "communication": 4
+    },
+    {
+      "id": "eigerplatz",
+      "name": "Bern, Eigerplatz 1",
+      "description": "Instandsetzung Etappe 2 · Bauprojekt SIA 32",
+      "image": "assets/projects/eigerplatz.jpg",
+      "imageCredit": "Cmdr Zod, CC BY-SA 4.0, via Wikimedia Commons",
+      "number": "TN20/0871.002",
+      "technicalPlace": "TT1086/0871/AA",
+      "designation": "Eigerplatz 1 Bern Instandsetzung",
+      "teilportfolio": "ALLG",
+      "teilportfolioLabel": "Allgemeine Bundesverwaltung (ALLG)",
+      "responsible": "Paula Muster",
+      "phase": "32 Bauprojekt",
+      "anlagekostenMio": 38.2,
+      "kostenzielBW": 26500000,
+      "createdAt": "03.03.2026",
+      "updatedAt": "28.04.2027 16:40",
+      "access": "Zugriff",
+      "location": {
+        "lat": 46.9414,
+        "lng": 7.433,
+        "place": "Bern"
+      },
+      "members": [
+        "PM",
+        "BM",
+        "FM"
+      ],
+      "issues": 5,
+      "communication": 7,
+      "deliveries": [
+        {
+          "code": "PLN-BP",
+          "name": "Pläne Bauprojekt",
+          "firm": "Planerteam Nord AG",
+          "gewerk": "Architektur",
+          "desc": "Grundrisse, Schnitte, Ansichten 1:100",
+          "status": "In Bearbeitung"
+        },
+        {
+          "code": "KV-32",
+          "name": "Kostenvoranschlag eBKP-H",
+          "firm": "Planerteam Nord AG",
+          "gewerk": "Kostenplanung",
+          "desc": "Datenformular · Menge + Kosten, Ziel ePPM",
+          "status": "Offen",
+          "isForm": true
+        },
+        {
+          "code": "THG-32",
+          "name": "Ökobilanz Bauemissionen",
+          "firm": "Planerteam Nord AG",
+          "gewerk": "Nachhaltigkeit",
+          "desc": "Datenformular · Menge + THG nach TP2, Ziel SUS",
+          "status": "Überfällig",
+          "isForm": true
+        },
+        {
+          "code": "IFC-ARC",
+          "name": "Fachmodell Architektur",
+          "firm": "Planerteam Nord AG",
+          "gewerk": "Architektur",
+          "desc": "IFC 4, LOIN Bauprojekt",
+          "status": "In Bearbeitung"
+        }
+      ],
+      "tasks": [
+        {
+          "name": "Ökobilanz Bauemissionen",
+          "desc": "THG-32 · Menge + THG",
+          "status": "Überfällig",
+          "typ": "Datenformular",
+          "zug": "Planerteam Nord AG",
+          "fuer": "Paula Muster",
+          "kat": "SIA 32",
+          "start": "01.02.2027 08:00",
+          "ende": "15.04.2027 17:00",
+          "upd": "16.04.2027 08:00",
+          "delivery": "THG-32"
+        },
+        {
+          "name": "Kostenvoranschlag eBKP-H",
+          "desc": "KV-32 · Menge + Kosten",
+          "status": "Offen",
+          "typ": "Datenformular",
+          "zug": "Planerteam Nord AG",
+          "fuer": "Paula Muster",
+          "kat": "SIA 32",
+          "start": "01.04.2027 08:00",
+          "ende": "30.06.2027 17:00",
+          "upd": "01.04.2027 08:00",
+          "delivery": "KV-32"
+        },
+        {
+          "name": "Koordinationssitzung Fachplaner",
+          "desc": "Protokoll ablegen",
+          "status": "Offen",
+          "typ": "Aufgabe",
+          "zug": "Paula Muster",
+          "fuer": "Bea Muster",
+          "kat": "",
+          "start": "",
+          "ende": "12.05.2027 17:00",
+          "upd": "02.05.2027 11:10"
+        }
+      ]
+    },
+    {
+      "id": "zollanlage-brig",
+      "name": "Brig-Glis, Bielstrasse 1, Zollanlage",
+      "description": "Erweiterung Revisionsgebäude · Bauprojekt SIA 32",
+      "image": "assets/projects/zollanlage-brig.jpg",
+      "imageCredit": "Bob Tan, CC BY-SA 4.0, via Wikimedia Commons",
+      "number": "TN10/1190.001",
+      "technicalPlace": "TT1086/1190/AA",
+      "designation": "Zollanlage Brig-Glis Erweiterung",
+      "teilportfolio": "ZOLL",
+      "teilportfolioLabel": "Bundesamt für Zoll und Grenzsicherheit (ZOLL)",
+      "responsible": "Paula Muster",
+      "phase": "32 Bauprojekt",
+      "anlagekostenMio": 6.8,
+      "kostenzielBW": 4900000,
+      "createdAt": "22.05.2026",
+      "updatedAt": "30.04.2027 14:25",
+      "access": "Zugriff",
+      "location": {
+        "lat": 46.3159,
+        "lng": 7.9876,
+        "place": "Brig-Glis"
+      },
+      "members": [
+        "PM",
+        "OB",
+        "FM"
+      ],
+      "issues": 1,
+      "communication": 2,
+      "deliveries": [
+        {
+          "code": "THG-32",
+          "name": "Ökobilanz Bauemissionen",
+          "firm": "Ökobilanz Beispiel AG",
+          "gewerk": "Nachhaltigkeit",
+          "desc": "Datenformular · Menge + THG nach TP2, Ziel SUS",
+          "status": "In Bearbeitung",
+          "isForm": true
+        },
+        {
+          "code": "KS-31",
+          "name": "Kostenschätzung eBKP-H",
+          "firm": "Atelier Süd GmbH",
+          "gewerk": "Kostenplanung",
+          "desc": "Datenformular · Menge + Kosten, an ePPM übertragen",
+          "status": "Abgeschlossen",
+          "isForm": true
+        }
+      ],
+      "tasks": [
+        {
+          "name": "Ökobilanz Bauemissionen",
+          "desc": "THG-32 · Menge + THG",
+          "status": "In Bearbeitung",
+          "typ": "Datenformular",
+          "zug": "Olivia Beispiel",
+          "fuer": "Paula Muster",
+          "kat": "SIA 32",
+          "start": "01.03.2027 08:00",
+          "ende": "30.06.2027 17:00",
+          "upd": "30.04.2027 14:25",
+          "delivery": "THG-32"
+        },
+        {
+          "name": "Verkehrsführung Bauphase",
+          "desc": "Abstimmung mit dem Kanton",
+          "status": "Abgeschlossen",
+          "typ": "Aufgabe",
+          "zug": "Paula Muster",
+          "fuer": "Paula Muster",
+          "kat": "",
+          "start": "",
+          "ende": "31.03.2027 17:00",
+          "upd": "28.03.2027 09:40"
+        }
+      ]
+    },
+    {
+      "id": "agroscope-posieux",
+      "name": "Posieux, Campus Agroscope",
+      "description": "Verpflegungs- und Konferenzgebäude · Ausschreibung SIA 41",
+      "image": "assets/projects/agroscope-posieux.jpg",
+      "imageCredit": "Quadrien, CC0 1.0, via Wikimedia Commons",
+      "number": "TN30/0412.003",
+      "technicalPlace": "TT1086/0412/AA",
+      "designation": "Campus Agroscope Posieux Verpflegungs- und Konferenzgebäude",
+      "teilportfolio": "BLW",
+      "teilportfolioLabel": "Landwirtschaft, Agroscope (BLW)",
+      "responsible": "Reto Muster",
+      "phase": "41 Ausschreibung",
+      "anlagekostenMio": 52.0,
+      "kostenzielBW": 36000000,
+      "createdAt": "08.09.2025",
+      "updatedAt": "02.05.2027 10:12",
+      "access": "Zugriff",
+      "location": {
+        "lat": 46.7696,
+        "lng": 7.1078,
+        "place": "Posieux"
+      },
+      "members": [
+        "BM",
+        "FM"
+      ],
+      "issues": 8,
+      "communication": 11,
+      "deliveries": [
+        {
+          "code": "THG-32",
+          "name": "Ökobilanz Bauemissionen",
+          "firm": "Lab Planung AG",
+          "gewerk": "Nachhaltigkeit",
+          "desc": "Datenformular · Menge + THG nach TP2, an SUS übertragen",
+          "status": "Abgeschlossen",
+          "isForm": true
+        },
+        {
+          "code": "KV-32",
+          "name": "Kostenvoranschlag eBKP-H",
+          "firm": "Lab Planung AG",
+          "gewerk": "Kostenplanung",
+          "desc": "Datenformular · Menge + Kosten, an ePPM übertragen",
+          "status": "Abgeschlossen",
+          "isForm": true
+        },
+        {
+          "code": "IFC-ARC",
+          "name": "Fachmodell Architektur",
+          "firm": "Lab Planung AG",
+          "gewerk": "Architektur",
+          "desc": "IFC 4, LOIN Ausschreibung",
+          "status": "In Prüfung"
+        }
+      ],
+      "tasks": [
+        {
+          "name": "Fachmodell Architektur",
+          "desc": "IFC 4 hochladen",
+          "status": "In Prüfung",
+          "typ": "Aufgabe",
+          "zug": "Lab Planung AG",
+          "fuer": "Bea Muster",
+          "kat": "",
+          "start": "",
+          "ende": "15.05.2027 17:00",
+          "upd": "02.05.2027 10:12"
+        },
+        {
+          "name": "Kollision Lüftung Küche",
+          "desc": "Durchbruch anpassen",
+          "status": "Offen",
+          "typ": "Modell-Issue",
+          "zug": "Lab Planung AG",
+          "fuer": "Bea Muster",
+          "kat": "",
+          "start": "",
+          "ende": "20.05.2027 17:00",
+          "upd": "29.04.2027 15:30"
+        }
+      ]
+    },
+    {
+      "id": "botschaft-wien",
+      "name": "Wien, Schweizer Botschaft",
+      "description": "Umbau und Sanierung · Vorprojekt SIA 31",
+      "image": "assets/projects/botschaft-wien.jpg",
+      "imageCredit": "Gugerell, CC0 1.0, via Wikimedia Commons",
+      "number": "TN10/1288.001",
+      "technicalPlace": "TT1086/1288/AA",
+      "designation": "Schweizer Botschaft Wien Umbau und Sanierung",
+      "teilportfolio": "AUSL",
+      "teilportfolioLabel": "Auslandbauten (AUSL)",
+      "responsible": "Paula Muster",
+      "phase": "31 Vorprojekt",
+      "anlagekostenMio": 3.1,
+      "kostenzielBW": 2200000,
+      "createdAt": "17.11.2026",
+      "updatedAt": "21.04.2027 13:05",
+      "access": "Zugriff",
+      "location": {
+        "lat": 48.2082,
+        "lng": 16.3738,
+        "place": "Wien"
+      },
+      "members": [
+        "PM",
+        "FM"
+      ],
+      "issues": 0,
+      "communication": 1,
+      "deliveries": [
+        {
+          "code": "THG-32",
+          "name": "Ökobilanz Bauemissionen",
+          "firm": "Atelier Süd GmbH",
+          "gewerk": "Nachhaltigkeit",
+          "desc": "Datenformular · Menge + THG nach TP2, Ziel SUS",
+          "status": "Offen",
+          "isForm": true
+        },
+        {
+          "code": "KS-31",
+          "name": "Kostenschätzung eBKP-H",
+          "firm": "Atelier Süd GmbH",
+          "gewerk": "Kostenplanung",
+          "desc": "Datenformular · Menge + Kosten, Ziel ePPM",
+          "status": "In Bearbeitung",
+          "isForm": true
+        }
+      ],
+      "tasks": [
+        {
+          "name": "Kostenschätzung eBKP-H",
+          "desc": "KS-31 · Menge + Kosten",
+          "status": "In Bearbeitung",
+          "typ": "Datenformular",
+          "zug": "Atelier Süd GmbH",
+          "fuer": "Paula Muster",
+          "kat": "SIA 31",
+          "start": "01.04.2027 08:00",
+          "ende": "31.05.2027 17:00",
+          "upd": "21.04.2027 13:05",
+          "delivery": "KS-31"
+        }
+      ]
+    },
+    {
+      "id": "prangins",
+      "name": "Prangins, Château de Prangins",
+      "description": "Schweizerisches Nationalmuseum, Sanierung · Ausführungsprojekt SIA 51",
+      "image": "assets/projects/prangins.jpg",
+      "imageCredit": "Henk Monster, CC BY 3.0, via Wikimedia Commons",
+      "number": "TN30/0388.001",
+      "technicalPlace": "TT1086/0388/AA",
+      "designation": "Château de Prangins Nationalmuseum Sanierung",
+      "teilportfolio": "KULT",
+      "teilportfolioLabel": "Kultur, Museen (KULT)",
+      "responsible": "Reto Muster",
+      "phase": "51 Ausführungsprojekt",
+      "anlagekostenMio": 14.5,
+      "kostenzielBW": 10200000,
+      "createdAt": "02.02.2025",
+      "updatedAt": "27.04.2027 08:50",
+      "access": "Zugriff",
+      "location": {
+        "lat": 46.3968,
+        "lng": 6.2519,
+        "place": "Prangins"
+      },
+      "members": [
+        "AB",
+        "BM",
+        "FM"
+      ],
+      "issues": 3,
+      "communication": 6,
+      "deliveries": [
+        {
+          "code": "THG-32",
+          "name": "Ökobilanz Bauemissionen",
+          "firm": "Muster Architekten AG",
+          "gewerk": "Nachhaltigkeit",
+          "desc": "Datenformular · Menge + THG nach TP2, an SUS übertragen",
+          "status": "Abgeschlossen",
+          "isForm": true
+        },
+        {
+          "code": "PLN-AP",
+          "name": "Pläne Ausführungsprojekt",
+          "firm": "Muster Architekten AG",
+          "gewerk": "Architektur",
+          "desc": "Grundrisse, Schnitte 1:50",
+          "status": "In Bearbeitung"
+        }
+      ],
+      "tasks": [
+        {
+          "name": "Pläne Ausführungsprojekt",
+          "desc": "Grundrisse, Schnitte 1:50",
+          "status": "In Bearbeitung",
+          "typ": "Aufgabe",
+          "zug": "Alex Beispiel",
+          "fuer": "Bea Muster",
+          "kat": "",
+          "start": "01.04.2027 08:00",
+          "ende": "31.05.2027 17:00",
+          "upd": "27.04.2027 08:50"
+        },
+        {
+          "name": "Durchbruch Dachstock Nord",
+          "desc": "Lage mit Denkmalpflege prüfen",
+          "status": "Offen",
+          "typ": "Modell-Issue",
+          "zug": "Alex Beispiel",
+          "fuer": "Bea Muster",
+          "kat": "",
+          "start": "",
+          "ende": "10.05.2027 17:00",
+          "upd": "26.04.2027 17:12"
+        }
+      ]
+    },
+    {
+      "id": "tenero",
+      "name": "Tenero, Sportzentrum CST, Gebäude Brere",
+      "description": "Instandsetzung · Bauprojekt SIA 32",
+      "image": "assets/projects/tenero.jpg",
+      "imageCredit": "Weblibas, CC BY-SA 4.0, via Wikimedia Commons",
+      "number": "TN20/0950.001",
+      "technicalPlace": "TT1086/0950/AA",
+      "designation": "CST Tenero Gebäude Brere Instandsetzung",
+      "teilportfolio": "BASPO",
+      "teilportfolioLabel": "Bundesamt für Sport (BASPO)",
+      "responsible": "Paula Muster",
+      "phase": "32 Bauprojekt",
+      "anlagekostenMio": 0.9,
+      "kostenzielBW": 650000,
+      "createdAt": "05.01.2027",
+      "updatedAt": "19.04.2027 11:20",
+      "access": "Zugriff",
+      "location": {
+        "lat": 46.1762,
+        "lng": 8.8537,
+        "place": "Tenero"
+      },
+      "members": [
+        "PM",
+        "FM"
+      ],
+      "issues": 0,
+      "communication": 0,
+      "deliveries": [
+        {
+          "code": "THG-32",
+          "name": "Ökobilanz Bauemissionen",
+          "firm": "Holzbau Beispiel AG",
+          "gewerk": "Nachhaltigkeit",
+          "desc": "Datenformular · Kann, nur Ablage",
+          "status": "Offen",
+          "isForm": true
+        },
+        {
+          "code": "KV-32",
+          "name": "Kostenvoranschlag eBKP-H",
+          "firm": "Holzbau Beispiel AG",
+          "gewerk": "Kostenplanung",
+          "desc": "Datenformular · Betrag je Hauptgruppe eBKP-H, Ziel ePPM",
+          "status": "In Bearbeitung",
+          "isForm": true
+        }
+      ],
+      "tasks": [
+        {
+          "name": "Kostenvoranschlag eBKP-H",
+          "desc": "KV-32 · Betrag je Hauptgruppe",
+          "status": "In Bearbeitung",
+          "typ": "Datenformular",
+          "zug": "Holzbau Beispiel AG",
+          "fuer": "Paula Muster",
+          "kat": "SIA 32",
+          "start": "15.03.2027 08:00",
+          "ende": "31.05.2027 17:00",
+          "upd": "19.04.2027 11:20",
+          "delivery": "KV-32"
+        }
+      ]
+    },
+    {
+      "id": "zollikofen",
+      "name": "Zollikofen, Eichenweg 5, Verwaltungsgebäude",
+      "description": "Fassadenunterhalt · Vorprojekt SIA 31",
+      "image": "assets/projects/zollikofen.jpg",
+      "imageCredit": "Uto, CC0 1.0, via Wikimedia Commons",
+      "number": "TN10/1301.002",
+      "technicalPlace": "TT1086/1301/AA",
+      "designation": "Verwaltungsgebäude Eichenweg 5 Zollikofen Fassade",
+      "teilportfolio": "ALLG",
+      "teilportfolioLabel": "Allgemeine Bundesverwaltung (ALLG)",
+      "responsible": "Reto Muster",
+      "phase": "31 Vorprojekt",
+      "anlagekostenMio": 0.6,
+      "kostenzielBW": 420000,
+      "createdAt": "12.02.2027",
+      "updatedAt": "08.04.2027 09:15",
+      "access": "Zugriff",
+      "location": {
+        "lat": 46.9969,
+        "lng": 7.459,
+        "place": "Zollikofen"
+      },
+      "members": [
+        "FM"
+      ],
+      "issues": 0,
+      "communication": 0,
+      "deliveries": [
+        {
+          "code": "PLN-VP",
+          "name": "Pläne Vorprojekt",
+          "firm": "Atelier Süd GmbH",
+          "gewerk": "Architektur",
+          "desc": "Ansichten, Fassadenschnitte",
+          "status": "Offen"
+        }
+      ],
+      "tasks": [
+        {
+          "name": "Pläne Vorprojekt",
+          "desc": "Ansichten, Fassadenschnitte",
+          "status": "Offen",
+          "typ": "Aufgabe",
+          "zug": "Atelier Süd GmbH",
+          "fuer": "Reto Muster",
+          "kat": "",
+          "start": "",
+          "ende": "30.06.2027 17:00",
+          "upd": "08.04.2027 09:15"
+        }
+      ]
+    }
+  ]
+}
