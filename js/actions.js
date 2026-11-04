@@ -52,6 +52,8 @@ export function makeActions(store, data, nav) {
   const backToEntry = (kind, rejected, text, detail) => logEv(kind, me(), text, detail, f => ({ step: 1, dates: f.dates.slice(0, 2), checks: {}, rejected }));
   const vm = kind => { const p = projectOf(pid()); return p ? formModel(s(), data, p)[kind] : null; };
   const setSrc = (id, patch) => setP(p => ({ thgSrc: (p.thgSrc || []).map(x => (x.id === id ? { ...x, ...patch } : x)) }));
+  /** Typed numbers are stored as numbers (rounded to `decimals`), so they render with thousands separators; other text stays as typed. */
+  const normNum = (raw, decimals = 0) => { const n = num(raw); if (n == null) return String(raw ?? '').trim(); const f = 10 ** decimals; return Math.round(n * f) / f; };
 
   // ---- Planlieferungen DWG: one floor plan = one delivery; files are checked locally with js/plancheck ----
   const planOf = key => (s().plans || {})[key];
@@ -107,10 +109,19 @@ export function makeActions(store, data, nav) {
     dismissToast: () => ui({ toast: null }),
 
     // ---- Inputs of the Datenformulare (values of the current project) ----
-    setMap: (ds, el) => setP(p => ({ [ds.key]: { ...(p[ds.key] || {}), [ds.code]: el.value } })),
+    setMap: (ds, el) => setP(p => ({ [ds.key]: { ...(p[ds.key] || {}), [ds.code]: normNum(el.value) } })),
 
     // ---- Datenformulare: Erfassung (KV-32, KS-31) ----
-    formGroupVal: (ds, el) => setForm(ds.form, f => ({ gvals: { ...f.gvals, [ds.group]: el.value } })),
+    formGroupVal: (ds, el) => setForm(ds.form, f => ({ gvals: { ...f.gvals, [ds.group]: normNum(el.value) } })),
+    /** The code of a position is a dropdown: choosing another eBKP-H element group replaces the position by an edited row with the same values. */
+    formPosCode: (ds, el) => {
+      const kind = ds.form, f = formOf(kind), code = el.value;
+      if (!f || !editable(kind) || !code || code === ds.code) return;
+      setP(p => {
+        const [qKey, vKey] = KEYS[kind], n = (f.nNew || 0) + 1;
+        return { forms: { ...p.forms, [kind]: { ...f, nNew: n, removed: { ...(f.removed || {}), [ds.code]: true }, added: [...(f.added || []), { id: `kn${n}`, grp: ds.group, code, q: p[qKey][ds.code] ?? '', v: p[vKey][ds.code] ?? '' }] } } };
+      });
+    },
     /** KV/KS: «Aufschlüsseln» opens the positions of a Hauptgruppe, «Zusammenfassen» keeps their sum as the group amount
      *  (a group without positions keeps its Pauschalbetrag plus the Kostenelemente added). THG: opens or closes the group. */
     formMode: ds => {
@@ -130,7 +141,7 @@ export function makeActions(store, data, nav) {
       logEv(kind, me(), 'Kostenelement entfernt', `${k.code} ${k.name}`, { removed: { ...(f.removed || {}), [ds.code]: true } });
     },
     formAddPos: ds => { if (editable(ds.form)) setForm(ds.form, f => { const n = (f.nNew || 0) + 1; return { nNew: n, added: [...(f.added || []), { id: `kn${n}`, grp: ds.group, code: '', q: '', v: '' }] }; }); },
-    formNewVal: (ds, el) => setForm(ds.form, f => ({ added: (f.added || []).map(a => (a.id === ds.id ? { ...a, [ds.field]: el.value } : a)) })),
+    formNewVal: (ds, el) => setForm(ds.form, f => ({ added: (f.added || []).map(a => (a.id === ds.id ? { ...a, [ds.field]: ds.field === 'code' ? el.value : normNum(el.value) } : a)) })),
     formDropNew: ds => setForm(ds.form, f => ({ added: (f.added || []).filter(a => a.id !== ds.id) })),
     formToggleMissing: ds => setForm(ds.key, f => ({ missingOnly: !f.missingOnly })),
     toggleImportMenu: () => ui({ importMenu: !s().ui.importMenu, userMenu: false, notif: false }),
@@ -156,7 +167,7 @@ export function makeActions(store, data, nav) {
     // ---- Datenformulare: Erfassung (THG-32, Emissionsquellen je eBKP-H-Elementgruppe) ----
     thgHead: (ds, el) => setP(p => ({ thgHead: { ...(p.thgHead || {}), [ds.key]: el.value } })),
     thgVal: (ds, el) => {
-      const patch = { [ds.field]: el.value };
+      const patch = { [ds.field]: ds.field === 'q' ? normNum(el.value) : ds.field === 'h' || ds.field === 'e' ? normNum(el.value, 1) : el.value };
       if (ds.field === 'code') { const eg = egOf(data, el.value); Object.assign(patch, { name: eg ? eg[1] : '', unit: eg ? eg[2] : '', a: eg ? eg[3] : null }); }
       setSrc(ds.id, patch);
     },

@@ -136,7 +136,9 @@ const chevron = (F, r) => (r.canToggle
 const groupAttrs = (F, r) => (r.canToggle ? html`data-action="formMode" data-form="${F.id}" data-group="${r.code}"` : '');
 const delBtn = (action, attrs, label) => html`<span class="ent-del-cell"><button type="button" class="ent-del" data-action="${action}" ${attrs} aria-label="${label}" title="${label}">${icon('trash-2', 15, '#6b7280')}</button></span>`;
 const addRow = (F, r, action) => html`<div class="ent-add"><button type="button" class="btn-link" data-action="${action}" data-form="${F.id}" data-group="${r.grp}">${r.label}</button></div>`;
-const optionList = (r, empty) => html`<option value="" ${r.code ? '' : raw('selected')}>${empty}</option>${r.opts.map(o => html`<option value="${o.v}" ${o.sel ? raw('selected') : ''}>${o.label}</option>`)}`;
+const optionList = (r, empty) => html`${r.code ? '' : html`<option value="" selected>${empty}</option>`}${r.opts.map(o => html`<option value="${o.v}" ${o.sel ? raw('selected') : ''}>${o.label}</option>`)}`;
+/** Code + name of a position as one readable dropdown over the eBKP-H element groups of its Hauptgruppe (spans both columns). */
+const codeSelect = (F, r, attrs, fid) => html`<span class="ent-cell-input ent-code-cell"><select class="ent-select ent-code-select${r.code ? '' : ' is-missing'}" aria-label="Kostenelement${r.code ? ' ' + r.code : ''}" ${attrs} data-form="${F.id}" data-group="${r.grp}" data-fid="${fid}" ${DIS(F)}>${optionList(r, 'Kostenelement wählen…')}</select></span>`;
 
 const groupRow = (F, r, ro) => html`<div class="ent-group${r.canToggle ? ' is-toggle' : ''}" style="${COLS};background:${r.bg}" ${groupAttrs(F, r)}>
   <span class="ent-code">${chevron(F, r)}${r.code}</span>
@@ -152,8 +154,9 @@ const groupRow = (F, r, ro) => html`<div class="ent-group${r.canToggle ? ' is-to
 
 /** A position: base position of the eBKP-H, or the Pauschalbetrag of a Hauptgruppe without positions (not removable). */
 const posRow = (F, r, ro) => html`<div class="ent-pos${r.pauschal ? ' ent-pauschal' : ''}" style="${COLS}">
-  <span class="ent-pos-code">${r.pauschal ? '' : r.code}</span>
-  <span class="ellipsis${r.pauschal ? ' muted' : ''}">${r.name}</span>
+  ${r.pauschal || F.locked
+    ? html`<span class="ent-pos-code">${r.pauschal ? '' : r.code}</span><span class="ellipsis${r.pauschal ? ' muted' : ''}">${r.name}</span>`
+    : codeSelect(F, r, html`data-change="formPosCode" data-code="${r.code}"`, `${r.vKey}-code-${r.code}`)}
   <span class="muted fs-12">${r.unit}</span>
   ${r.hasQty ? html`<span class="ent-cell-input"><input class="ent-input" aria-label="Menge ${r.code}" value="${r.qStr}" placeholder="fehlt" style="border-color:${r.qBd};background:${F.erf.inputBg}" data-change="setMap" data-key="${r.qKey}" data-code="${r.code}" data-fid="${r.qKey}-${r.code}" ${ro}></span>` : html`<span class="right muted fs-12">–</span>`}
   <span class="ent-cell-input"><input class="ent-input" aria-label="${F.erf.valLabel} ${r.pauschal ? r.name + ' ' : ''}${r.code}" value="${r.vStr}" placeholder="fehlt" style="border-color:${r.vBd};background:${F.erf.inputBg}" data-change="setMap" data-key="${r.vKey}" data-code="${r.code}" data-fid="${r.vKey}-${r.code}" ${ro}></span>
@@ -163,8 +166,7 @@ const posRow = (F, r, ro) => html`<div class="ent-pos${r.pauschal ? ' ent-pausch
 
 /** A Kostenelement added in the Erfassung: eBKP-H element group from the list, Menge and Kosten. */
 const newPosRow = (F, r, ro) => html`<div class="ent-pos ent-new" style="${COLS}">
-  <span class="ent-cell-input pl30"><select class="ent-select" aria-label="Kostenelement" style="border-color:${r.codeBd}" data-change="formNewVal" data-form="${F.id}" data-id="${r.id}" data-field="code" data-fid="${F.id}-new-${r.id}-code" ${DIS(F)}>${optionList(r, 'wählen…')}</select></span>
-  <span class="ellipsis">${r.name}</span>
+  ${codeSelect(F, r, html`data-change="formNewVal" data-id="${r.id}" data-field="code"`, `${F.id}-new-${r.id}-code`)}
   <span class="muted fs-12">${r.unit}</span>
   ${r.hasQty ? html`<span class="ent-cell-input"><input class="ent-input" aria-label="Menge" value="${r.qStr}" placeholder="fehlt" style="border-color:${r.qBd};background:${F.erf.inputBg}" data-change="formNewVal" data-form="${F.id}" data-id="${r.id}" data-field="q" data-fid="${F.id}-new-${r.id}-q" ${ro}></span>` : html`<span class="right muted fs-12">–</span>`}
   <span class="ent-cell-input"><input class="ent-input" aria-label="${F.erf.valLabel}" value="${r.vStr}" placeholder="fehlt" style="border-color:${r.vBd};background:${F.erf.inputBg}" data-change="formNewVal" data-form="${F.id}" data-id="${r.id}" data-field="v" data-fid="${F.id}-new-${r.id}-v" ${ro}></span>

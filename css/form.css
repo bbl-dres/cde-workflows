@@ -112,6 +112,10 @@
 .ent-select:focus { border-color: #21485c !important; box-shadow: 0 0 0 2px var(--primary-ring); }
 .ent-select[disabled] { color: var(--muted); }
 .ent-new { background: #fcfcfd; }
+.ent-code-cell { grid-column: 1 / span 2; padding-left: 30px !important; }
+.ent-code-select { font-size: 13px; color: var(--text); padding-left: 4px; border-color: transparent; background: transparent; width: auto; max-width: 100%; }
+.ent-code-select:hover:not([disabled]), .ent-code-select:focus { border-color: #21485c; background: #fff; }
+.ent-code-select.is-missing { border-color: #ffa39e; background: #fff; color: #b4242f; }
 .ent-src { min-height: 48px; }
 .ent-two { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 4px 10px !important; }
 .ent-add { display: flex; align-items: center; min-height: 36px; padding: 0 14px 0 34px; border-bottom: 1px solid var(--line-4); }

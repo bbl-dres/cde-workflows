@@ -74,13 +74,17 @@ test('actions: Kostenelemente add, edit, remove; nothing on a locked form', () =
   assert.deepEqual(P().forms.kv.added, [{ id: 'kn1', grp: 'G', code: '', q: '', v: '' }]);
   actions.formNewVal({ form: 'kv', id: 'kn1', field: 'code' }, { value: 'G05' });
   actions.formNewVal({ form: 'kv', id: 'kn1', field: 'q' }, { value: '120' });
-  assert.equal(P().forms.kv.added[0].code, 'G05'); assert.equal(F('kv').erf.rows.find(r => r.isNewPos).name, 'Einbauten, Schutzeinrichtung zu Ausbau');
+  assert.equal(P().forms.kv.added[0].code, 'G05'); assert.equal(P().forms.kv.added[0].q, 120);
+  // the code of a base position is a dropdown too: another element group replaces the position, values stay
+  actions.formPosCode({ form: 'kv', code: 'G02', group: 'G' }, { value: 'G06' });
+  assert.equal(P().forms.kv.removed.G02, true); assert.ok(P().forms.kv.added.some(a => a.code === 'G06' && a.v === P().kvV.G02));
+  assert.ok(F('kv').erf.rows.find(r => r.isPos && r.code === 'G01').opts.some(o => o.v === 'G02'), 'the freed code is offered again'); assert.equal(F('kv').erf.rows.find(r => r.isNewPos).name, 'Einbauten, Schutzeinrichtung zu Ausbau');
   actions.formRemovePos({ form: 'kv', code: 'G03' });
   assert.equal(P().forms.kv.removed.G03, true); assert.ok(eventTitles(P().forms.kv).includes('Kostenelement entfernt'));
   actions.formRemovePos({ form: 'kv', code: 'XX' });
-  assert.equal(Object.keys(P().forms.kv.removed).length, 1, 'unknown code ignored');
+  assert.equal(Object.keys(P().forms.kv.removed).length, 2, 'unknown code ignored (G02 recoded, G03 removed)');
   actions.formDropNew({ form: 'kv', id: 'kn1' });
-  assert.equal(P().forms.kv.added.length, 0);
+  assert.equal(P().forms.kv.added.length, 1, 'only the recoded G06 row stays');
   store.setIn('projects', { musterhausen: { ...P(), forms: { ...P().forms, kv: { ...P().forms.kv, step: LOCKED_FROM } } } });
   const before = JSON.stringify(P());
   actions.formAddPos({ form: 'kv', group: 'G' }); actions.formRemovePos({ form: 'kv', code: 'G01' }); actions.formMode({ form: 'kv', group: 'B' });
@@ -94,8 +98,12 @@ test('actions: Emissionsquellen (THG-32) add, edit, flag, remove, Grundlagen; lo
   assert.ok(n1 && n1.id === 'n1' && n1.grp === 'C'); assert.equal(P().forms.thg.nNew, 1);
   actions.thgVal({ id: 'n1', field: 'code' }, { value: 'C03' });
   assert.deepEqual([n1.code, P().thgSrc.find(s => s.id === 'n1').name, P().thgSrc.find(s => s.id === 'n1').unit, P().thgSrc.find(s => s.id === 'n1').a], ['', 'Stützenkonstruktion', 'm', 60]);
-  actions.thgVal({ id: 'n1', field: 'h' }, { value: '13.3' });
-  assert.equal(P().thgSrc.find(s => s.id === 'n1').h, '13.3');
+  actions.thgVal({ id: 'n1', field: 'h' }, { value: '13,27' });
+  assert.equal(P().thgSrc.find(s => s.id === 'n1').h, 13.3, 'typed numbers are stored as numbers, one decimal for t CO₂-eq');
+  actions.thgVal({ id: 'n1', field: 'q' }, { value: "1'234.6" });
+  assert.equal(P().thgSrc.find(s => s.id === 'n1').q, 1235);
+  actions.thgVal({ id: 'n1', field: 'q' }, { value: 'abc' });
+  assert.equal(P().thgSrc.find(s => s.id === 'n1').q, 'abc', 'unparsable text stays as typed (and counts as missing)');
   actions.thgToggleHs({ id: 'n1' });
   assert.equal(P().thgSrc.find(s => s.id === 'n1').hs, true);
   actions.thgRemove({ id: 'C01-3' });

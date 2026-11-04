@@ -139,12 +139,12 @@ function costPart(kind, P, f, data, T, M, ref, locked, bd) {
     };
     if (direct) { fields++; const v = num(gval); if (v == null) { missing++; G.gMiss = true; } else G.sum = v; }
     else {
-      base.forEach(k => addPos({ code: k.code, name: k.name, unit: k.unit, q: Q[k.code], v: V[k.code] }, { isPos: true, canDel: !locked }));
+      const used = new Set([...base.map(k => k.code), ...extra.map(a => a.code)]), elements = E.elements[g.code] || [];
+      base.forEach(k => addPos({ code: k.code, name: k.name, unit: k.unit, q: Q[k.code], v: V[k.code] }, { isPos: true, grp: g.code, canDel: !locked, opts: optsOf(elements, k.code, used) }));
       if (!hasKids) addPos({ code: g.code, name: 'Pauschalbetrag', unit: '', q: null, v: V[g.code] }, { isPos: true, pauschal: true, canDel: false });   // the direct amount stays part of the total
-      const used = new Set([...base.map(k => k.code), ...extra.map(a => a.code)]);
       extra.forEach(a => {
-        const el = (E.elements[g.code] || []).find(x => x[0] === a.code);
-        addPos({ code: a.code, name: el ? el[1] : '', unit: el ? el[2] : '', q: a.q, v: a.v }, { isNewPos: true, id: a.id, opts: optsOf(E.elements[g.code] || [], a.code, used) });
+        const el = elements.find(x => x[0] === a.code);
+        addPos({ code: a.code, name: el ? el[1] : '', unit: el ? el[2] : '', q: a.q, v: a.v }, { isNewPos: true, id: a.id, grp: g.code, opts: optsOf(elements, a.code, used) });
       });
     }
     total += G.sum;
