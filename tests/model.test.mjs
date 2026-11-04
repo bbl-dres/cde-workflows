@@ -158,7 +158,7 @@ test('KV-32: Übersicht and Prüfung figures', () => {
 test('THG-32: Emissionsquellen, Endwert, Zielwerte and the review flow', () => {
   const thg = vm.forms.thg, S = data.thg.sources, EBF = data.sia416.initial.EBF;
   const total60 = S.reduce((a, s) => a + (s.h + s.e) * 1000 / s.a * 60, 0);
-  assert.equal(thg.status, 'In Prüfung'); assert.equal(thg.step, 4); assert.equal(thg.locked, true);
+  assert.equal(thg.status, 'In Bearbeitung'); assert.equal(thg.step, 1); assert.equal(thg.locked, false, 'the demo project keeps its Ökobilanz open');
   assert.equal(thg.nSrc, 25); assert.equal(thg.fields, 75); assert.equal(thg.missing, 0);
   assert.ok(Math.abs(thg.total - total60) < 1, 'Erstellung über 60 Jahre = Σ (h + e) × 1000 / a × 60');
   assert.equal(thg.endwertStr, (Math.round(total60 / 60 / EBF * 10) / 10).toFixed(1)); assert.equal(thg.endwertStr, '7.6', 'Endwert for SUS = Erstellung pro Jahr / EBF');
@@ -168,17 +168,19 @@ test('THG-32: Emissionsquellen, Endwert, Zielwerte and the review flow', () => {
   assert.ok(thg.autoChecks.every(c => c.ok) && thg.autoChecks[0].label === 'Alle 25 Emissionsquellen mit Elementgruppe und KBOB-Datensatz');
   assert.equal(thg.autoChecks.length, 5); assert.equal(thg.devPct, 15);
   assert.equal(thg.cmp.find(c => c.code === 'D').hi, false, 'Technik deviates 11 % from SIA 31, below the 15 % threshold of the Ökobilanz');
-  assert.equal(thg.rv.notSubmitted, false);
+  assert.equal(thg.rv.notSubmitted, true);
   assert.equal(thg.manual.length, 4); assert.equal(thg.docs.length, 2);
-  assert.equal(thg.rv.canReview, true); assert.equal(thg.rv.canApprove, false);
+  assert.equal(thg.rv.canReview, false); assert.equal(thg.rv.canApprove, false); assert.equal(thg.bar.canSubmit, true, 'complete → Einreichen possible');
   // Erfassung rows: C and E opened, derived rows, head fields with EBF/GF read-only
   const E = thg.erf;
-  assert.ok(E.isTHG && E.rows.filter(r => r.isGroupRow).length === 6 && E.rows.filter(r => r.isSrc).length === 14 && E.rows.filter(r => r.isAdd).length === 0, 'locked: no add rows');
-  assert.equal(E.head.length, 8); assert.equal(E.head.find(h => h.key === 'EBF').val, "5'600 m²"); assert.ok(E.head.every(h => h.ro), 'locked: all head fields read-only');
+  assert.ok(E.isTHG && E.rows.filter(r => r.isGroupRow).length === 6 && E.rows.filter(r => r.isSrc).length === 14 && E.rows.filter(r => r.isAdd).length === 2, 'open groups C and E get «Emissionsquelle hinzufügen»');
+  assert.equal(E.head.length, 8); assert.equal(E.head.find(h => h.key === 'EBF').val, "5'600 m²"); assert.ok(E.head.filter(h => h.ro).length === 2 && E.head.filter(h => h.isSelect).every(h => !h.ro), 'only EBF and GF read-only');
   assert.equal(E.derived[0].kw, '7.6'); assert.equal(E.tot.h, S.reduce((a, s) => a + s.h, 0).toLocaleString('de-CH', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
-  assert.equal(vm.ilpRows.find(r => r.code === 'THG-32').status, 'In Prüfung');
-  assert.equal(vm.auRows.find(t => t.delivery === 'THG-32').status, 'In Prüfung');
+  assert.equal(vm.ilpRows.find(r => r.code === 'THG-32').status, 'In Bearbeitung');
+  assert.equal(vm.auRows.find(t => t.delivery === 'THG-32').status, 'In Bearbeitung');
   const st = structuredClone(base);
+  st.projects.musterhausen.forms.thg.step = 4; st.projects.musterhausen.forms.thg.dates = ['12.03.2027', '15.03.2027', null, '03.05.2027', '04.05.2027'];
+  let v0 = vmFor(st); assert.equal(v0.forms.thg.status, 'In Prüfung'); assert.equal(v0.forms.thg.locked, true); assert.equal(v0.forms.thg.rv.canReview, true); assert.equal(v0.forms.thg.erf.rows.filter(r => r.isAdd).length, 0, 'locked: no add rows');
   st.projects.musterhausen.forms.thg.checks = { t1: true, t2: true, t3: true, t4: true };
   let v = vmFor(st);
   assert.equal(v.forms.thg.rv.canApprove, true);

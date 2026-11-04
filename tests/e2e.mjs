@@ -139,6 +139,11 @@ try {
   // 4. Reviews as Paula: THG-32 (Prüfung → Freigeben → Übertragen), KV-32 (review starts, reject)
   await go('/'); await click('[data-action="toggleUserMenu"]'); await click('[data-action="setUser"][data-key="PM"]');
   await go('/projects/musterhausen/deliveries/thg-32'); await sleep(100); check('THG lands on Übersicht as PM', (await hash()).endsWith('/thg-32/uebersicht') && (await count('.tgt-dot')) === 5 && (await bodyText()).includes('Erstellung über 60 Jahre'));
+  await go('/projects/musterhausen/deliveries/thg-32/erfassung');
+  check('THG-32 In Bearbeitung: head selects enabled, add rows, complete → Einreichen enabled', (await count('.thg-head select:not([disabled])')) === 6 && (await count('.ent-add')) === 2 && (await count('.ent-input[readonly]')) < 10 && await enabled('[data-action="formSubmit"]'));
+  await click('.ent-add [data-action="thgAdd"], [data-action="thgAdd"]'); check('new Emissionsquelle offers every Elementgruppe and Element of its Hauptgruppe', await evaluate(`(() => { const s = document.querySelector('.ent-select[data-field="code"]'); return !!s && s.options.length > 20 && [...s.options].some(o => /^C02\.01 /.test(o.textContent)); })()`));
+  await click('[data-action="thgRemove"][title="Neue Zeile verwerfen"]'); await shot('e2e-thg-erfassung-offen');
+  await click('[data-action="formSubmit"]'); check('THG submitted → Eingereicht', (await state()).projects.musterhausen.forms.thg.step === 3 && (await text('.page-title')).includes('Eingereicht'));
   await go('/projects/musterhausen/deliveries/thg-32/pruefung');
   check('Prüfung: comparison, checks, Freigeben disabled', (await count('.fm-tr')) >= 6 && (await disabled('[data-action="formApprove"]')) && (await bodyText()).includes('Erst alle Prüfpunkte bestätigen') && (await bodyText()).includes('Alle 25 Emissionsquellen'));
   for (const k of ['t1', 't2', 't3', 't4']) await click(`[data-action="formToggleCheck"][data-key="${k}"]`);
