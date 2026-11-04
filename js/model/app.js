@@ -95,7 +95,7 @@ export function appModel(state, data, project, user, base) {
   ].map(l => ({ ...l, projectId: pGuid, message: '-' })).sort((a, b) => dateKey(b.at) - dateKey(a.at));
 
   // ---- Activities (project feed) ----
-  const activities = auRows.map(t => ({ date: t.upd, text: `${t.zug}: ${t.name} · ${t.status}`, href: t.href }))
+  const activities = auRows.map(t => ({ date: t.upd, who: t.zug, name: t.name, status: t.status, pill: t.pill || pillSpec(t.status), text: `${t.zug}: ${t.name} · ${t.status}`, href: t.href }))
     .sort((a, b) => dateKey(b.date) - dateKey(a.date));
 
   return {

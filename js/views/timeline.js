@@ -1,4 +1,5 @@
-import { html, icon, searchBox, filterBtn, filterField } from '../ui.js';
+import { html, icon, searchBox, filterBtn, filterField, pill } from '../ui.js';
+const ACT_COLS = 'grid-template-columns:130px minmax(0,1fr) minmax(0,1.6fr) 140px;min-width:560px';   // Aktivitäten: banded table like the other lists
 import { pageHead, tabs, pagination, emptyState } from '../shell.js';
 import { tableIconbar } from './parts/taskTable.js';
 
@@ -35,7 +36,10 @@ export default {
         <div class="pane-pager" style="padding:16px 8px 8px">${pagination(logs.length, { page, size: 10, href: p => `${base}/logs?page=${p}` })}</div>
       </div>` : html`<div class="card card-page card-narrow">
         <div class="card-head">Letzte Aktivitäten</div>
-        ${vm.activities.map(a => html`<div class="act-row"><span class="act-date">${a.date}</span><a href="#${a.href}" data-nav="${a.href}">${a.text}</a></div>`)}
+        <div class="ant-table ant-table-striped scroll-x">
+          <div class="ant-head" style="${ACT_COLS}"><span>Datum</span><span>Person</span><span>Aufgabe</span><span>Status</span></div>
+          ${vm.activities.map(a => html`<div class="ant-row act-row" style="${ACT_COLS}"><span class="muted" style="font-variant-numeric:tabular-nums">${a.date}</span><span class="ellipsis">${a.who}</span><a class="ellipsis" href="#${a.href}" data-nav="${a.href}" title="${a.name}">${a.name}</a><span>${pill(a.pill, { size: 'sm' })}</span></div>`)}
+        </div>
         ${vm.activities.length === 0 ? html`<div style="padding:28px 0">${emptyState()}</div>` : ''}
       </div>`}`;
   },
