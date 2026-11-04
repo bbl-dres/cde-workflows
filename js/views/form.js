@@ -266,13 +266,13 @@ function pruefung(ctx, F) {
       ${card(html`<span class="flex-1">Prüfung BBL</span>${hint(`${F.reviewer}, BBL`)}`, html`<div class="card-body flex-col" style="gap:10px">
         ${F.rv.notSubmitted ? html`<div class="note note-grey">Wartet auf die Einreichung durch ${F.leadName}.</div>` : F.autoChecks.map(check)}
         <div class="rv-manual">${F.manual.map(m => checkbox({ checked: m.checked, label: m.label, action: A.toggle, key: m.key, arg: F.id, disabled: m.disabled }))}</div>
+        ${F.rv.done && !F.rv.transferred ? html`<div class="rv-note rv-note-green">${F.rv.doneText}</div>` : ''}
         <textarea class="rv-textarea" placeholder="Kommentar an Lieferant (bei Rückweisung Pflicht)" aria-label="Kommentar an Lieferant" data-change="${A.comment}" data-key="${F.id}" data-fid="${F.id}-comment" ${F.rv.decide ? '' : raw('readonly')}>${F.rv.comment}</textarea>
         ${F.rv.decide ? html`<div class="rv-actions">
           <span class="fs-12 muted flex-1" style="min-width:120px">${F.rv.reason}</span>
           ${btn({ label: 'Zurückweisen', action: A.reject, key: F.id, disabled: !F.rv.canReview })}
           ${btn({ label: 'Freigeben', kind: 'primary', action: A.approve, key: F.id, disabled: !F.rv.canApprove })}
         </div>` : ''}
-        ${F.rv.done ? html`<div class="rv-note rv-note-green">${F.rv.doneText} ${linkBtn({ label: 'Zurücksetzen', action: A.reset, key: F.id })}</div>` : ''}
       </div>`)}
       ${card('Übergabe', html`<div style="padding:4px 0 6px">${kvRow('Zielsystem', F.handover.ziel)}${kvRow('Wert', F.handover.value)}${kvRow('Status', F.handover.status)}</div>${F.canTransfer ? html`<div style="padding:0 14px 14px">${btn({ label: `An ${F.target} übertragen`, kind: 'primary', action: A.transfer, key: F.id })}</div>` : ''}`)}
     </div>

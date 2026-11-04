@@ -76,7 +76,7 @@ function nextStep(step, target, reviewer, open) {
 const reviewOf = ({ step, canReview, allChecked, target, reviewer, notSubmitted, comment }) => ({
   decide: step < 5, canReview, canApprove: canReview && allChecked, notSubmitted, comment: comment || '',
   reason: !canReview ? 'Erst nach der Einreichung möglich' : allChecked ? '' : 'Erst alle Prüfpunkte bestätigen',
-  done: step >= 5, doneText: step >= 6 ? `Freigegeben und an ${target} übertragen. Lieferung abgeschlossen.` : `Freigegeben durch ${reviewer}.`,
+  done: step >= 5, transferred: step >= 6, doneText: step >= 6 ? `Freigegeben und an ${target} übertragen. Lieferung abgeschlossen.` : `Freigegeben durch ${reviewer}.`,
 });
 /** Sticky bar at the end of the Erfassung. */
 const barOf = ({ editing, locked, canFilter, canSubmit, reason, comp, reviewer }) => ({
@@ -339,7 +339,7 @@ export function planForm(plan, data) {
     : errors ? { sym: '×', bg: '#fff1f0', fg: '#9b2c44', title: `${errors} Fehler`, sub: `${passed} von ${total} Regeln bestanden · ${warnings} Warnungen` }
     : { sym: '✓', bg: '#e2efed', fg: '#1f4a3b', title: 'Keine Fehler', sub: `${passed} von ${total} Regeln bestanden · ${warnings} Warnungen, zulässig` };
   const reviewIssues = plan.rules.failed.map(x => ({ icon: x.status === 'fail' ? 'circle-x' : 'triangle-alert', color: x.status === 'fail' ? '#9b2c44' : '#8a6100', text: x.text, code: x.code, count: x.count }));
-  const rv = reviewOf({ step, canReview: plan.isReviewable, allChecked: !plan.approveDisabled, target: 'das CAFM', reviewer, notSubmitted: step < LOCKED_FROM && !rejected, comment: plan.comment });
+  const rv = reviewOf({ step, canReview: plan.isReviewable, allChecked: !plan.approveDisabled, target: 'SAP RE-FX', reviewer, notSubmitted: step < LOCKED_FROM && !rejected, comment: plan.comment });
   const bar = barOf({ editing: !locked, locked, canFilter: false, canSubmit: plan.canSubmit, reviewer,
     reason: !r ? 'Einreichen erst, wenn eine DWG-Datei geprüft wurde' : errors ? 'Einreichen erst, wenn der Plan keine Fehler hat' : '',
     comp: { text: r ? `${passed} von ${total} Prüfregeln bestanden · ${errors} Fehler · ${warnings} Warnungen` : 'Noch keine DWG-Datei geprüft', w: comp.w, bar: comp.bar } });
@@ -348,7 +348,7 @@ export function planForm(plan, data) {
     kind: 'plan', id: plan.key, plan, code: plan.code, codeLc: plan.codeLc, title: plan.name, short: plan.floor, lead: sup.initials, leadName: `${sup.name} (${sup.firm})`, reviewer, target: 'CAFM',
     step, locked, rejected, status, pill: plan.pill, act: ACT_PLAN,
     badges: badgesOf(r && errors && !locked ? errors : 0, locked, docs.length),
-    steps: stepRows(D.steps, step, dates, rejected), next: nextStep(step, 'das CAFM', reviewer, open),
+    steps: stepRows(D.steps, step, dates, rejected), next: nextStep(step, 'SAP RE-FX', reviewer, open),
     kpis, comp, meta, people: peopleShort(people, peopleList), peopleRows: peopleRows(people, peopleList, sc => sc.replace('{floor}', plan.name)), docs, hist,
     planOv: { sia, cats },
     erf: { tableTitle: `${plan.name} · ${plan.floor}`, fileMeta, isTHG: false },

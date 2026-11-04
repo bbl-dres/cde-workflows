@@ -39,7 +39,7 @@ export function initialState(data) {
     // Dialogs / flows
     orderType: 'thg',
     imp: { step: 1, filter: 'alle', mode: 'ueber', done: false, applied: 0 },
-    plans: initialPlans(data),                          // Planlieferungen DWG für das CAFM (DWG-UG … DWG-DG, Musterhausen)
+    plans: initialPlans(data),                          // Planlieferungen DWG für das Flächenmanagement (SAP RE-FX) (DWG-UG … DWG-DG, Musterhausen)
     // Settings
     tplSel: data.templates.initialSelected,
     tplOn: { ...data.templates.initialActive },

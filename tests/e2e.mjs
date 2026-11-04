@@ -210,7 +210,7 @@ try {
   await go('/projects/eigerplatz/deliveries/thg-32'); await sleep(100);
   check('other project: THG-32 form with mock data (Eingereicht after the flow above)', (await hash()).endsWith('/eigerplatz/deliveries/thg-32/uebersicht') && (await text('.page-title')).includes('Eingereicht') && (await count('.st-row')) === 6 && (await count('.pp-row')) === 2);
   await go('/projects/agroscope-posieux/deliveries/kv-32/erfassung'); check('other project: KV-32 Abgeschlossen, locked, no Musterhausen note', (await text('.page-title')).includes('Abgeschlossen') && (await count('.ent-group')) === 13 && (await count('.ent-input:not([readonly])')) === 0 && (await count('.ent-del')) === 0 && !(await bodyText()).includes('nur für das Projekt'));
-  await go('/projects/zollanlage-brig/deliveries/ks-31/pruefung'); check('other project: KS-31 Prüfung compares with SIA 21', (await count('.fm-tr')) >= 7 && (await bodyText()).includes('SIA 21') && (await bodyText()).includes('Freigegeben und an ePPM übertragen'));
+  await go('/projects/zollanlage-brig/deliveries/ks-31/pruefung'); check('other project: KS-31 Prüfung compares with SIA 21', (await count('.fm-tr')) >= 7 && (await bodyText()).includes('SIA 21') && (await text('.page-title')).includes('Abgeschlossen') && !(await bodyText()).includes('Lieferung abgeschlossen'));
   await go('/projects/tenero/deliveries/kv-32/erfassung'); await setInput('[data-fid="kvV-Y"]', '25000'); check('other project: values are stored per project', String((await state()).projects.tenero.kvV.Y) === '25000' && (await state()).projects.musterhausen.kvV.Y !== '25000');
   // Kostenelemente: add a row to G, pick an element group, remove a position
   const nPos = await count('.ent-pos');
@@ -458,7 +458,10 @@ try {
   await evaluate(`document.querySelector('#ov-map').style.width = ''`);
   await send('Emulation.setDeviceMetricsOverride', { width: 1100, height: 900, deviceScaleFactor: 1, mobile: false }); await go('/projects/musterhausen/overview'); await sleep(200);
   check('1100 px: Projektbild and Projektdaten side by side, Verknüpfungen full width, map 340 px', await evaluate(`(() => { const s = document.querySelector('.overview-side'); const c = s.querySelectorAll(':scope > .card'); const r = i => c[i].getBoundingClientRect(); return getComputedStyle(s).display === 'grid' && Math.abs(r(0).top - r(1).top) < 2 && r(2).width > r(0).width * 1.8 && document.querySelector('#ov-map').clientHeight === 340; })()`));
+  await go('/tasks/all'); await sleep(200);
+  check('1100 px: sticky actions column of the task table stays at the right edge at every scroll position', await evaluate(`(() => { const t = document.querySelector('.task-table'); const ra = document.querySelector('.task-row .row-actions'); if (!t || !ra || t.scrollWidth <= t.clientWidth) return false; const tr = Math.round(t.getBoundingClientRect().right); const at = () => Math.round(ra.getBoundingClientRect().right); const r0 = at(); t.scrollLeft = 200; const r1 = at(); t.scrollLeft = 1e5; const r2 = at(); t.scrollLeft = 0; return Math.abs(r0 - tr) <= 1 && r0 === r1 && r0 === r2; })()`));
   await send('Emulation.setDeviceMetricsOverride', { width: 2000, height: 900, deviceScaleFactor: 1, mobile: false }); await sleep(200);
+  await go('/projects/musterhausen/overview'); await sleep(200);
   check('2000 px: full page width as in the CDE Bund, topbar icons at the right edge', await evaluate(`(() => { const u = document.querySelector('.topbar-user').getBoundingClientRect(), o = document.querySelector('.overview').getBoundingClientRect(); return u.right > innerWidth - 40 && o.right > innerWidth - 60; })()`));
   await send('Emulation.setDeviceMetricsOverride', { width: 1536, height: 1000, deviceScaleFactor: 1, mobile: false });
   await go('/projects/eigerplatz/deliveries/dwg-eg'); check('DWG code on another project → generic page without error', await noError());

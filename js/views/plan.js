@@ -4,7 +4,7 @@ import { planSession } from '../plansession.js';
 import { canvasImage } from '../plancheck/report.js';
 import { planLists } from '../model/plan.js';
 
-// Planlieferungen DWG für das CAFM: the pieces of the Erfassung tab of a floor plan delivery (DWG-UG … DWG-DG):
+// Planlieferungen DWG für das Flächenmanagement (SAP RE-FX): the pieces of the Erfassung tab of a floor plan delivery (DWG-UG … DWG-DG):
 // upload zone, result strip, sub tabs (40 Prüfregeln, Fehlermeldungen, Räume, Layer, Kennzahlen SIA 416) with the
 // plan viewer, the list toolbar (search, toggle-all) and the status filter, and the mount logic (viewer, drag & drop,
 // list interactions). The page itself is views/form.js.

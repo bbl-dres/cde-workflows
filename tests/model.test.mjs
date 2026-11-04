@@ -341,7 +341,7 @@ test('task table columns', () => {
   assert.equal(new Set(keys).size, keys.length, 'column keys are unique');
 });
 
-// ---- Planlieferungen DWG für das CAFM (one floor plan = one delivery, checked by js/plancheck) ----
+// ---- Planlieferungen DWG für das Flächenmanagement (SAP RE-FX) (one floor plan = one delivery, checked by js/plancheck) ----
 // ---- Topbar search ----
 test('search: groups by topic, limits, ranking and links', () => {
   assert.deepEqual(searchModel('', data).groups, []); assert.equal(searchModel('  ', data).total, 0);
@@ -428,7 +428,7 @@ test('plans: Datenformular shape (Übersicht, Prüfung) of a floor plan', () => 
   assert.equal(eg.badges.erfassung.n, 3); assert.equal(eg.rv.notSubmitted, true); assert.match(eg.bar.reason, /keine Fehler/);
   assert.equal(ug.status, 'Abgeschlossen'); assert.equal(ug.step, 6); assert.equal(ug.kpis[0].v, '30'); assert.equal(ug.kpis[1].v, '572.3');
   assert.ok(ug.steps.slice(0, 5).every(s => s.sym === '✓')); assert.equal(ug.docs[0].name, '9999.AA.U1_CAFM.dwg'); assert.equal(ug.docs[0].req, 'Pflicht');
-  assert.ok(ug.hist.some(h => h.t === 'An CAFM übertragen') && ug.hist[0].t === 'An CAFM übertragen', 'newest first');
+  assert.ok(ug.hist.some(h => h.t === 'An SAP RE-FX übertragen') && ug.hist[0].t === 'An SAP RE-FX übertragen', 'newest first');
   assert.equal(dg.comp.pct, '–'); assert.equal(dg.res.title, 'Kein Prüfergebnis'); assert.equal(dg.peopleRows[0].scope, 'Grundriss DG (DWG)');
 });
 

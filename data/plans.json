@@ -1,5 +1,5 @@
 {
- "note": "Planlieferungen DWG für das CAFM (Projekt Verwaltungszentrum Musterhausen): ein Grundriss = eine Lieferung. «seeds» sind die unveränderten Prüfergebnisse der plan-check-Engine (js/plancheck) für die mitgelieferten Musterdateien (assets/plans), erzeugt unter Node; tests/model.test.mjs prüft, dass sie mit der Engine übereinstimmen. Siehe docs/reviews/2026-11-03-planlieferungen-dwg.md. «beheizt»: false markiert ein Geschoss ausserhalb der thermischen Gebäudehülle (EBF nach SIA 416/1 = 0, z. B. UG); sonst gilt EBF = GF.",
+ "note": "Planlieferungen DWG für das Flächenmanagement (SAP RE-FX) (Projekt Verwaltungszentrum Musterhausen): ein Grundriss = eine Lieferung. «seeds» sind die unveränderten Prüfergebnisse der plan-check-Engine (js/plancheck) für die mitgelieferten Musterdateien (assets/plans), erzeugt unter Node; tests/model.test.mjs prüft, dass sie mit der Engine übereinstimmen. Siehe docs/reviews/2026-11-03-planlieferungen-dwg.md. «beheizt»: false markiert ein Geschoss ausserhalb der thermischen Gebäudehülle (EBF nach SIA 416/1 = 0, z. B. UG); sonst gilt EBF = GF.",
  "guideline": "CAD-Richtlinie BBL V1.0",
  "ruleCount": 40,
  "gate": "no-errors",
@@ -10,7 +10,7 @@
   "firm": "Muster Architekten AG",
   "initials": "AB"
  },
- "target": "CAFM (Flächenmanagement BBL)",
+ "target": "ERP SAP RE-FX (Flächenmanagement BBL)",
  "desc": "DWG nach BBL CAD-Richtlinie · Prüfregeln Flächenmanagement",
  "steps": [
   "Bestellt",
@@ -18,7 +18,7 @@
   "Eingereicht",
   "In Prüfung",
   "Freigegeben",
-  "An CAFM übertragen"
+  "An SAP RE-FX übertragen"
  ],
  "checklist": [
   {

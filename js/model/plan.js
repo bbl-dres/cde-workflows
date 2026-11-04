@@ -1,4 +1,4 @@
-// Planlieferungen DWG für das CAFM: one floor plan = one delivery (DWG-UG … DWG-DG).
+// Planlieferungen DWG für das Flächenmanagement (SAP RE-FX): one floor plan = one delivery (DWG-UG … DWG-DG).
 // State per floor (state.plans[key]): { status, checks: {c1, c2}, result: null | engine result, busy, error }.
 // A floor without an own result shows the precomputed seed of data/plans.json (engine result of a sample plan).
 import { pillSpec } from './pill.js';
@@ -148,7 +148,7 @@ export function planModel(s, data) {
     if (idx >= 2 || status === 'zurueck') history.push({ d: f.submittedAt || 'heute', who: sup.initials, t: 'Zur Prüfung eingereicht', detail: '' });
     if (idx >= 3 || status === 'zurueck') history.push({ d: f.reviewStartedAt || 'heute', who: 'PM', t: 'Prüfung begonnen', detail: '' });
     if (idx >= 4) history.push({ d: f.reviewedAt || 'heute', who: 'PM', t: 'Freigegeben', detail: '' });
-    if (idx >= 6) history.push({ d: f.transferredAt || 'heute', who: 'SYS', t: 'An CAFM übertragen', detail: 'Raumpolygone, AOID und Flächen SIA 416' });
+    if (idx >= 6) history.push({ d: f.transferredAt || 'heute', who: 'SYS', t: 'An SAP RE-FX übertragen', detail: 'Raumpolygone, AOID und Flächen SIA 416' });
     if (status === 'zurueck') history.push({ d: 'heute', who: 'PM', t: 'Zurückgewiesen', detail: 'Erfassung wieder offen' });
 
     const statusLabel = st.label;

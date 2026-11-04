@@ -284,7 +284,7 @@ export function makeActions(store, data, nav) {
     tplSelect: ds => store.set({ tplSel: ds.key }),
     tplToggle: ds => store.setIn('tplOn', { [ds.key]: !s().tplOn[ds.key] }),
 
-    // ---- Planlieferungen DWG für das CAFM (DWG-UG … DWG-DG); the gates come from the plan model ----
+    // ---- Planlieferungen DWG für das Flächenmanagement (SAP RE-FX) (DWG-UG … DWG-DG); the gates come from the plan model ----
     planTab: ds => ui({ planTab: ds.arg, planSearch: '' }),                 // the search belongs to one list (plan-check resets it too)
     planFilter: ds => ui({ planFilter: ds.arg }),                            // 'all' | 'warnings' | 'errors', for every list tab
     planSearch: (ds, el) => ui({ planSearch: el.value }),
@@ -307,7 +307,7 @@ export function makeActions(store, data, nav) {
     planToggleCheck: ds => { const pv = planVm(ds.arg); if (!pv || !pv.isReviewable) return; setPlan(ds.arg, { checks: { ...planOf(ds.arg).checks, [ds.key]: !planOf(ds.arg).checks[ds.key] }, status: 'pruefung' }); },
     planApprove: ds => { const pv = planVm(ds.key); if (!pv || !pv.isReviewable || pv.approveDisabled) return; setPlan(ds.key, { status: 'freigegeben' }); toast(`${pv.code} freigegeben.`); },
     planReject: ds => { const pv = planVm(ds.key); if (!pv || !pv.isReviewable) return; setPlan(ds.key, { status: 'zurueck', checks: { c1: false, c2: false } }); toast(`${pv.code} zurückgewiesen. ${supplier.name} wurde benachrichtigt.`); },
-    planTransfer: ds => { const pv = planVm(ds.key); if (!pv || !pv.isFrei) return; setPlan(ds.key, { status: 'uebertragen' }); toast(`${pv.code}: Raumpolygone, AOID und Flächen an das CAFM übertragen.`); },
+    planTransfer: ds => { const pv = planVm(ds.key); if (!pv || !pv.isFrei) return; setPlan(ds.key, { status: 'uebertragen' }); toast(`${pv.code}: Raumpolygone, AOID und Flächen an SAP RE-FX übertragen.`); },
     planResetReview: ds => { const f = floorOf(ds.key); if (f) setPlan(ds.key, { status: f.status, checks: { ...f.checks }, comment: '' }); },
     /** Prüfbericht (PDF) of the checked plan with the drawing images of the viewer; opts.save = false returns the Blob only (tests). */
     planReport: async (ds, el, ev, opts = {}) => {

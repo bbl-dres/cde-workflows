@@ -113,7 +113,10 @@ a.filter-btn { color: var(--navy); }
 /* Row actions: fixed right column (ant «fix-right»): sticky cell, continuous shadow drawn by ::after over the row borders */
 .row-actions, .row-actions-head { position: sticky; right: 0; z-index: 1; height: 100%; background: inherit; }
 .row-actions::after, .row-actions-head::after { content: ''; position: absolute; top: 0; bottom: -1px; left: 0; width: 30px; transform: translateX(-100%); box-shadow: inset -10px 0 8px -8px rgba(5,5,5,.08); pointer-events: none; }
-.row-actions { display: flex; justify-content: flex-end; align-items: center; gap: 4px; padding: 0 6px 0 10px; }
+.row-actions { display: flex; justify-content: flex-end; align-items: center; gap: 4px; padding: 0 12px 0 10px; }
+/* The row's right padding would lie outside the sticky cell, so the cell would jump left at the end of the scroll range:
+   rows with a sticky action column carry no right padding, the cell brings its own. */
+.grid-row:has(> .row-actions), .grid-head:has(> .row-actions-head), .ant-row:has(> .row-actions), .ant-head:has(> .row-actions-head), .table-row:has(> .row-actions), .table-head:has(> .row-actions-head) { padding-right: 0; }
 .row-actions .btn-icon { cursor: pointer; }
 .row-actions-inline { display: inline-flex; gap: 4px; justify-content: flex-end; }
 .btn-icon-danger { border-color: #ff3162; }

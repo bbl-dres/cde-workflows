@@ -25,7 +25,7 @@ Sign in as one of seven sample personas (name at the top right) to follow a deli
 - Enter costs per eBKP-H Hauptgruppe or per Kostenelement (open the group, add or remove positions), import an Excel file, see completeness and missing values live.
 - Enter the Ökobilanz as emission sources per eBKP-H element group (KBOB dataset, quantity, production and disposal, amortisation after SIA 2032) with the Grundlagen of the calculation; the Endwert for SUS is derived, a Tool-Export import brings the sources in. All eight projects carry complete, plausible mock data (KV-32, KS-31, THG-32) in different workflow states.
 - Upload DWG floor plans (one delivery per floor) and check them locally in the browser against the 40 rules of the CAD-Richtlinie BBL, with plan viewer, rooms, floor-area polygons, layers, SIA 416 figures and a downloadable Prüfbericht (PDF).
-- Submit, review (automatic checks, checklist, approve or reject) and hand over to ePPM, SUS or the CAFM; statuses flow into the Informationslieferplan, tasks and notifications.
+- Submit, review (automatic checks, checklist, approve or reject) and hand over to ePPM, SUS or SAP RE-FX; statuses flow into the Informationslieferplan, tasks and notifications.
 - Übersicht per delivery with KPIs, comparison with the previous phase, Kostenziel or Zielwert chart, workflow steps and participants; project overview with photo and location map.
 - Application shell of the CDE Bund: start page with map, projects, tasks with configurable columns, project pages (Aktivitäten, Dokumente, LOIN, Mitglieder, Einstellungen), responsive below 1024 px.
 
@@ -41,7 +41,7 @@ Open <http://localhost:8080/>. The mock data is loaded with `fetch()`, so the ap
 
 - [Bedienung, Routen, Struktur und Tests (DE)](docs/entwicklung.md)
 - [Datenformular-Design vom 04.11.2026: Umsetzung (DE)](docs/reviews/2026-11-04-datenformular-design.md)
-- [Planlieferungen DWG für das CAFM (DE)](docs/reviews/2026-11-03-planlieferungen-dwg.md)
+- [Planlieferungen DWG für das Flächenmanagement (SAP RE-FX) (DE)](docs/reviews/2026-11-03-planlieferungen-dwg.md)
 - [Code-Review Datenformulare, Zustand, Oberfläche (DE)](docs/reviews/2026-11-04-code-review-datenformulare.md)
 - [Design-Review, Gap-Analyse und frühere Reviews (DE)](docs/reviews/)
 - [Research: THG-Reporting und Ökobilanz Bauemissionen (DE)](docs/research/)
