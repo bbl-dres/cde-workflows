@@ -167,6 +167,15 @@ function renderPage() {
   restoreFocus(focus);
   focusOverlay(state, focus);
   document.title = `${view.title ? view.title(ctx) : 'CDE Bund'} · CDE Bund`;
+  showSpinner(state.ui.busy || (Object.values(state.plans || {}).find(p => p && p.busy) || {}).busy);
+}
+
+/** Global loading indicator (#spin in index.html): shown while the data loads at start and whenever something is busy. */
+function showSpinner(text) {
+  const el = document.getElementById('spin');
+  if (!el) return;
+  el.hidden = !text;
+  if (text) el.querySelector('.spin-text').textContent = text;
 }
 
 function overlays(ctx) {

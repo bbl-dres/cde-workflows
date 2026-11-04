@@ -27,6 +27,8 @@
 <body>
   <div id="app"></div>
   <div id="study"></div>
+  <!-- Global loading indicator (Ant Design spin, as in the CDE Bund): visible while the data loads, then driven by the state -->
+  <div id="spin" class="spin-overlay" role="status" aria-live="polite"><div class="spin-dot" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="spin-text">Lädt…</div></div>
   <noscript><div class="boot-error">Dieser Prototyp benötigt JavaScript.</div></noscript>
   <script type="module" src="js/app.js"></script>
 </body>

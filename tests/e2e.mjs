@@ -349,7 +349,9 @@ try {
   await click('[data-action="planTab"][data-arg="issues"]'); check('Fehlermeldungen tab', (await count('.plan-list [data-plan-locate]')) >= 10 && (await state()).ui.planTab === 'issues');
   await click('.plan-list .plan-row.is-locatable'); check('issue row locates in the viewer', (await count('.plan-list .plan-row.is-selected')) === 1);
   await click('[data-action="planTab"][data-arg="layers"]'); check('Layer tab lists unknown layers', (await count('.plan-list input[data-plan-layer]')) >= 30);
+  check('spinner hidden after the start', await evaluate(`document.getElementById('spin').hidden === true`));
   await click('[data-action="planLoadSample"][data-key="EG"]');
+  check('global spinner while the plan is parsed', await evaluate(`(() => { const s = document.getElementById('spin'); return s.hidden === false && /geprüft/.test(s.textContent); })()`));
   const egChecked = await waitFor(`window.cde.state.plans.EG.result?.file?.name === 'CAD.V01-CAFM-Plan-DE.dwg' && !window.cde.state.plans.EG.busy`);
   const egPlan = (await state()).plans.EG;
   check('Musterplan checked by the engine (38/40, 0 errors, 30 rooms)', egChecked && egPlan.result.summary.errorCount === 0 && egPlan.result.summary.passedRules === 38 && egPlan.result.rooms.length === 30, JSON.stringify(egPlan.result && egPlan.result.summary));

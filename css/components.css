@@ -62,6 +62,19 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 .table-row:hover { background: var(--row-hover) !important; }
 .table-row:last-child { border-bottom: 0; }
 
+/* ---- Global loading indicator: centred Ant Design spin (four dots) over a translucent page, as in the CDE Bund ---- */
+.spin-overlay { position: fixed; inset: 0; z-index: 95; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: rgba(255,255,255,.6); }
+.spin-overlay[hidden] { display: none; }
+.spin-dot { position: relative; width: 40px; height: 40px; animation: spin-rotate 1.2s linear infinite; }
+.spin-dot i { position: absolute; width: 16px; height: 16px; border-radius: 50%; background: var(--navy); opacity: .3; animation: spin-pulse 1s linear infinite alternate; }
+.spin-dot i:nth-child(1) { top: 0; left: 0; }
+.spin-dot i:nth-child(2) { top: 0; right: 0; animation-delay: .4s; }
+.spin-dot i:nth-child(3) { bottom: 0; right: 0; animation-delay: .8s; }
+.spin-dot i:nth-child(4) { bottom: 0; left: 0; animation-delay: 1.2s; }
+.spin-text { font-size: 13px; color: var(--text-3); max-width: 420px; text-align: center; padding: 0 16px; }
+@keyframes spin-rotate { to { transform: rotate(405deg); } }
+@keyframes spin-pulse { to { opacity: 1; } }
+
 /* ---- Horizontal scrolling for wide tables and tab rows: thin scrollbar, and where the browser supports
    scroll-driven animations a fade on the edge that still hides content (no JavaScript, no effect without overflow). ---- */
 .scroll-x { overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }

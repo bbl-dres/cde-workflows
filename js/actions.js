@@ -295,11 +295,13 @@ export function makeActions(store, data, nav) {
       const pv = planVm(ds.key), f = floorOf(ds.key), project = projectOf(pid());
       if (!pv || !pv.result || !f) { toast('Noch kein Prüfergebnis für den Prüfbericht.'); return null; }
       const model = buildReportModel(pv.result, { project: project ? project.name : '', code: pv.code, name: pv.name, floor: `${pv.floor} (Ebene ${pv.ee})`, status: pv.statusLabel, reviewer: `${planReviewer}, BBL`, due: pv.due, guideline: data.plans.guideline, uploadedAt: pv.uploadedAt || '' });
+      ui({ busy: 'Prüfbericht wird erstellt…' });
       try {
         const blob = await downloadPlanReport(model, { capture: captureViewerImage, save: opts.save !== false });
         if (opts.save !== false) toast(`Prüfbericht ${model.baseName}_Pruefbericht.pdf erstellt.`);
         return blob;
       } catch (err) { console.error(err); toast(`Prüfbericht konnte nicht erstellt werden: ${err.message}`); return null; }
+      finally { ui({ busy: null }); }
     },
 
     // ---- Study panel ----

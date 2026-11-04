@@ -28,7 +28,7 @@ export function initialState(data) {
     __v: STATE_VERSION,
     // Application shell
     user: data.users.defaultUser,
-    ui: { studyOpen: false, dialog: null, notif: false, notifUnreadOnly: false, userMenu: false, navOpen: {}, toast: null, sideOpen: false, planTab: 'rules', planFilter: 'all', planSearch: '', importMenu: false },
+    ui: { studyOpen: false, dialog: null, notif: false, notifUnreadOnly: false, userMenu: false, navOpen: {}, toast: null, sideOpen: false, planTab: 'rules', planFilter: 'all', planSearch: '', importMenu: false, busy: null },
     favorites: ['musterhausen'],
     taskCols: [...DEFAULT_TASK_COLS],
     notifRead: [],

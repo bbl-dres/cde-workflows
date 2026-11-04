@@ -35,7 +35,7 @@ function setup(pid = 'musterhausen') {
 const eventTitles = f => f.events.map(e => e[3]);
 
 test('actions: Hauptgruppen toggle and sums (KV-32)', () => {
-  const { actions, P, F } = setup();
+  const { actions, P, F, store } = setup();
   actions.formMode({ form: 'kv', group: 'C' });
   assert.equal(P().forms.kv.modes.C, 'detail');
   actions.formMode({ form: 'kv', group: 'C' });
