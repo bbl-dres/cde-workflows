@@ -107,8 +107,8 @@ Skip-Link, `aria-expanded` und `aria-current` in der Navigation.
 - **Standortkarte**: 340 px statt 260 px hoch (280 px auf Phones).
 - **Sehr breite Bildschirme**: die Karten hatten uneinheitliche Breiten (720–1100 px). Ein allgemeines Breitenlimit wurde
   ausprobiert und wieder verworfen: der Seiteninhalt nutzt wie in der CDE Bund die volle Breite, nur Lese- und Formularkarten
-  sind einheitlich 900 px breit (`--narrow-max`, `.card-narrow`: Lieferung, Verlauf, Dokumente der Lieferung, Stammdaten,
-  Zeitplan, Einstellungen); die Inline-Breiten sind entfernt. Browser-Tests bei 1100 und 2000 px.
+  sind einheitlich 900 px breit (`--narrow-max`, `.card-narrow`: Lieferung, Stammdaten, Einstellungen; Tabellen wie
+  Aktivitäten, Verlauf und Dokumente nutzen die volle Breite); die Inline-Breiten sind entfernt. Browser-Tests bei 1100 und 2000 px.
 
 ## 6. Grenzen des Reviews
 

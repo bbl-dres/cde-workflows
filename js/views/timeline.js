@@ -34,7 +34,7 @@ export default {
           </div>`)}
         </div>
         <div class="pane-pager" style="padding:16px 8px 8px">${pagination(logs.length, { page, size: 10, href: p => `${base}/logs?page=${p}` })}</div>
-      </div>` : html`<div class="card card-page card-narrow">
+      </div>` : html`<div class="card card-page">
         <div class="card-head">Letzte Aktivitäten</div>
         <div class="ant-table ant-table-striped scroll-x">
           <div class="ant-head" style="${ACT_COLS}"><span>Datum</span><span>Person</span><span>Aufgabe</span><span>Status</span></div>
