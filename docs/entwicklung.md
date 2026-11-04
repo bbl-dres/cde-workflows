@@ -35,7 +35,7 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   Elementgruppen der Hauptgruppe ergänzen. Importieren (Excel-Dialog), «Nur fehlende Werte anzeigen», Leiste mit
   Vollständigkeit und «Zur Prüfung einreichen».
 - **Ökobilanz erfassen (THG-32)**: Karte «Grundlagen der Ökobilanz» (Gebäudekategorie, Projektart, EBF/GF aus den Grundrissen,
-  Systemgrenze, KBOB-Liste, Tool, Datenqualität) und die Emissionsquellen je eBKP-H-Elementgruppe (SIA 2032) mit KBOB-Datensatz,
+  Systemgrenze, KBOB-Liste, Tool, Datenqualität) und die Emissionsquellen je eBKP-H-Elementgruppe (SIA 2032) mit Ökobilanzdaten-Position (Bezeichnung · ID der gewählten Liste),
   Hersteller-Flag, Menge, THG Herstellung und Entsorgung (t CO₂-eq), Amortisation und Kennwert; Hauptgruppen B–G zum Auf- und
   Zuklappen, «+ Emissionsquelle hinzufügen», Papierkorb, Total B–G, «Erstellung pro Jahr» und «Erstellung absolut». Der
   Endwert für das SUS wird berechnet (Erstellung pro Jahr je m² EBF). «Tool-Export importieren» holt die Quellen des Projekts

@@ -5,7 +5,7 @@
     ["art", "Projektart", "Neubau", ["Neubau", "Neubau auf bestehendem UG", "Erneuerung", "Auskernung"]],
     ["EBF", "EBF · aus den Grundrissen", null],
     ["GF", "GF · aus den Grundrissen", null],
-    ["sys", "Systemgrenze", "SIA 2032 · A1–A3, A4–A5, B4, C1–C4", ["SIA 2032 · A1–A3, A4–A5, B4, C1–C4", "Abweichend, im Bericht begründet"]],
+    ["sys", "Systemgrenze", "SIA 2032", ["SIA 2032", "Abweichend, im Bericht begründet"]],
     [
       "kbob",
       "Ökobilanzdaten",

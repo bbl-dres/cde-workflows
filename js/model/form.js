@@ -241,7 +241,7 @@ function thgPart(P, f, data, T, M, ref, locked, bd, nDocs) {
   const DEF = Object.fromEntries(TH.head.filter(h => h[2] != null).map(h => [h[0], h[2]]));
   const stdBasis = H.kbob === DEF.kbob && H.sys === DEF.sys;
   const autoChecks = [
-    ck(nSrc > 0 && missing === 0, !nSrc ? 'Keine Emissionsquellen erfasst' : missing ? missingText(missing) : `Alle ${nSrc} Emissionsquellen mit Elementgruppe und KBOB-Datensatz`),
+    ck(nSrc > 0 && missing === 0, !nSrc ? 'Keine Emissionsquellen erfasst' : missing ? missingText(missing) : `Alle ${nSrc} Emissionsquellen mit Elementgruppe und Ökobilanzdaten-Position`),
     ck(nDocs >= 2, nDocs >= 2 ? 'Ökobilanz-Bericht und Tool-Export hochgeladen' : nDocs === 1 ? 'Tool-Export fehlt' : 'Ökobilanz-Bericht und Tool-Export fehlen'),
     ck(stdBasis, stdBasis ? `${DEF.kbob}, Systemgrenze SIA 2032` : `Abweichende Grundlagen: ${H.kbob || '–'} · ${H.sys || '–'}`),
     ck(C.hiCodes.length === 0, C.hiCodes.length ? `Abweichung zu ${T.cmpPrevLabel} über ${limit} % bei ${C.hiCodes.join(', ')}` : `Abweichungen zu ${T.cmpPrevLabel} unter ${limit} %`),

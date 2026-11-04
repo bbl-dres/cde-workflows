@@ -166,7 +166,7 @@ test('THG-32: Emissionsquellen, Endwert, Zielwerte and the review flow', () => {
   assert.equal(thg.kpis[0].v, '7.6'); assert.equal(thg.kpis[1].k, 'Erstellung über 60 Jahre'); assert.equal(thg.kpis[1].v, "2'553");
   assert.equal(thg.chart.targets.length, 5); assert.equal(thg.chart.targets[0].label, 'SIA 390/1 Richtwert Basis'); assert.equal(thg.chart.hasBand, false);
   assert.equal(thg.autoChecks.find(c => /390\/1/.test(c.label)).ok, true, '7.6 is below the SIA 390/1 Basis 9.0');
-  assert.ok(thg.autoChecks.every(c => c.ok) && thg.autoChecks[0].label === 'Alle 25 Emissionsquellen mit Elementgruppe und KBOB-Datensatz');
+  assert.ok(thg.autoChecks.every(c => c.ok) && thg.autoChecks[0].label === 'Alle 25 Emissionsquellen mit Elementgruppe und Ökobilanzdaten-Position');
   assert.equal(thg.autoChecks.length, 5); assert.equal(thg.devPct, 15);
   assert.equal(thg.cmp.find(c => c.code === 'D').hi, false, 'Technik deviates 11 % from SIA 31, below the 15 % threshold of the Ökobilanz');
   assert.equal(thg.rv.notSubmitted, true);

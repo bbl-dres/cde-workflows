@@ -187,7 +187,7 @@ const thgHeadCard = F => card('Grundlagen der Ökobilanz', html`<div class="thg-
 const thgTable = F => {
   const E = F.erf, ro = RO(F);
   return html`<div class="ent ent-thg">
-    <div class="ent-th" style="${COLS_THG}"><span>Code</span><span>KBOB-Datensatz</span><span class="center" title="Herstellerspezifischer Datensatz oder EPD statt KBOB-Durchschnitt">Hersteller</span><span class="right">Menge</span><span>Einheit</span><span class="right">Herstellung</span><span class="right">Entsorgung</span><span class="right">Amort.</span><span class="right">kg/m² EBF·a</span><span></span></div>
+    <div class="ent-th" style="${COLS_THG}"><span>Code</span><span title="Position der gewählten Ökobilanzdaten (Bezeichnung · ID), z. B. KBOB/ecobau-Liste 2022">Ökobilanzdaten</span><span class="center" title="Herstellerspezifischer Datensatz oder EPD statt KBOB-Durchschnitt">Hersteller</span><span class="right">Menge</span><span>Einheit</span><span class="right">Herstellung</span><span class="right">Entsorgung</span><span class="right">Amort.</span><span class="right">kg/m² EBF·a</span><span></span></div>
     ${E.rows.map(r => (r.isGroupRow ? thgGroupRow(F, r) : r.isAdd ? addRow(F, r, 'thgAdd') : thgSrcRow(F, r, ro)))}
     ${E.rows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine fehlenden Werte.</div>` : ''}
     <div class="ent-total" style="${COLS_THG}"><span></span><span>${E.totalLabel}</span><span></span><span></span><span></span><span class="right pr18">${E.tot.h}</span><span class="right pr18">${E.tot.e}</span><span></span><span class="right muted">${E.tot.kw}</span><span></span></div>
@@ -215,7 +215,7 @@ const numCell = (F, r, field, label, str, bdc, ro) => html`<span class="ent-cell
 const thgSrcRow = (F, r, ro) => html`<div class="ent-pos ent-src${r.isNew ? ' ent-new' : ''}" style="${COLS_THG}">
   ${!F.locked
     ? html`<span class="ent-cell-input ent-code-cell">${codeControl(r.code, html`<select class="ent-select" aria-label="Elementgruppe${r.code ? ' ' + r.code : ''}" data-change="thgVal" data-id="${r.id}" data-field="code" data-fid="thg-${r.id}-code" ${DIS(F)}>${optionList(r, 'wählen…')}</select>`)}</span>
-      <span class="ent-cell-input pl6"><input class="ent-text" aria-label="KBOB-Datensatz" value="${r.dataset}" placeholder="KBOB-Datensatz (ID oder Name)…" style="border-color:${r.kbobBd};background:${F.erf.inputBg}" data-change="thgVal" data-id="${r.id}" data-field="dataset" data-fid="thg-${r.id}-kbob" ${ro}></span>`
+      <span class="ent-cell-input pl6"><input class="ent-text" aria-label="Ökobilanzdaten-Position" value="${r.dataset}" placeholder="Position der Ökobilanzdaten (Bezeichnung oder ID)…" style="border-color:${r.kbobBd};background:${F.erf.inputBg}" data-change="thgVal" data-id="${r.id}" data-field="dataset" data-fid="thg-${r.id}-kbob" ${ro}></span>`
     : html`<span class="ent-pos-code">${r.code}</span>
       <span class="ent-two"><span class="ellipsis">${r.name}</span><span class="fs-12 muted ellipsis" title="${r.kbob}">${r.kbob}</span></span>`}
   ${hsBox(F, r)}
