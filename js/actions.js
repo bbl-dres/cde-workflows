@@ -5,6 +5,7 @@
 //   <a data-study="s05">                                          → actions.studyGo: switch persona + open the study screen
 // Conventions of the data-* attributes: key = identifier of the thing acted on (form kind, plan key, check id, user key),
 // arg = option or value (dialog name, import item, tab), id = row id (Emissionsquelle, Kostenelement, notification),
+import { searchModel } from './model/search.js';
 // group / code / field = Hauptgruppe, position code and field of a value.
 // The Datenformulare act on the project of the current route (nav.currentPid()); the THG-32 keeps its Emissionsquellen
 // in state.projects[pid].thgSrc (thgVal, thgAdd, thgRemove …), the cost forms their positions in kvQ/kvV and ksQ/ksV.
@@ -87,7 +88,19 @@ export function makeActions(store, data, nav) {
     // ---- Shell ----
     setUser: ds => { store.set({ user: ds.key }); ui({ userMenu: false, notif: false, importMenu: false }); },
     toggleUserMenu: () => ui({ userMenu: !s().ui.userMenu, notif: false, importMenu: false }),
-    closeMenus: () => ui({ userMenu: false, notif: false, importMenu: false, sideOpen: false }),
+    closeMenus: () => ui({ userMenu: false, notif: false, importMenu: false, sideOpen: false, searchOpen: false }),
+
+    // ---- Topbar search: suggestions while typing, arrow keys, Enter opens the active (or first) hit ----
+    searchType: (ds, el) => ui({ search: el.value, searchOpen: !!el.value.trim(), searchIdx: -1 }),
+    searchClear: () => ui({ search: '', searchOpen: false, searchIdx: -1 }),
+    searchClose: () => ui({ searchOpen: false }),
+    searchMove: ds => { const n = searchModel(s().ui.search, data).items.length; if (!n) return; const d = Number(ds.dir) || 1; ui({ searchOpen: true, searchIdx: ((s().ui.searchIdx + d) % n + n) % n }); },
+    searchGo: () => {
+      const m = searchModel(s().ui.search, data), it = m.items[Math.max(0, s().ui.searchIdx)];
+      if (!it) { ui({ searchOpen: !!m.query }); return; }
+      ui({ search: '', searchOpen: false, searchIdx: -1 });
+      nav.navigate(it.href);
+    },
     toggleNotif: () => ui({ notif: !s().ui.notif, userMenu: false, importMenu: false }),
     notifUnreadOnly: () => ui({ notifUnreadOnly: !s().ui.notifUnreadOnly }),
     markRead: ds => store.set({ notifRead: [...new Set([...(s().notifRead || []), ds.id])] }),

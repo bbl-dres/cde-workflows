@@ -242,6 +242,23 @@ try {
   await click('[data-action="toggleStudy"]'); check('study panel closed', (await state()).ui.studyOpen === false);
   await go('/study/review'); check('review page', await noError()); await go('/study/qs'); check('qs page', await noError()); await go('/study/variant-b'); check('variant-b page', await noError());
 
+  // Topbar search: suggestions grouped by topic, keyboard, clear button
+  await go('/');
+  await evaluate(`(() => { const el = document.querySelector('.topbar-search-input'); el.focus(); el.value = 'eiger'; el.dispatchEvent(new Event('input', { bubbles: true })); })()`); await settle();
+  check('search suggestions grouped by topic', (await count('.search-pop')) === 1 && (await text('.search-group')) === 'Projekte' && (await text('.search-item')).includes('Bern, Eigerplatz 1') && (await count('.topbar-search-clear')) === 1 && await evaluate(`document.activeElement === document.querySelector('.topbar-search-input')`));
+  await evaluate(`document.querySelector('.topbar-search-input').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }))`); await settle();
+  await shot('e2e-search');
+  check('ArrowDown marks the first hit', (await count('.search-item.is-active')) === 1 && await evaluate(`document.querySelector('.topbar-search-input').getAttribute('aria-activedescendant') === 'search-opt-0'`));
+  await evaluate(`document.querySelector('.topbar-search-input').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))`); await settle();
+  check('Enter opens the hit and clears the search', (await hash()) === '#/projects/eigerplatz/overview' && (await count('.search-pop')) === 0 && await evaluate(`document.querySelector('.topbar-search-input').value === ''`));
+  await evaluate(`(() => { const el = document.querySelector('.topbar-search-input'); el.value = 'kv-32'; el.dispatchEvent(new Event('input', { bubbles: true })); })()`); await settle();
+  check('hits limited to 5 per group and 12 in total', (await count('.search-item')) <= 12 && await evaluate(`[...document.querySelectorAll('.search-group')].length >= 2`));
+  await click('.topbar-search-clear'); check('clear button empties the field and closes the list', (await count('.search-pop')) === 0 && await evaluate(`document.querySelector('.topbar-search-input').value === ''`));
+  await evaluate(`(() => { const el = document.querySelector('.topbar-search-input'); el.value = 'zzzz'; el.dispatchEvent(new Event('input', { bubbles: true })); })()`); await settle();
+  check('no hits → note', (await text('.search-empty')).includes('Keine Treffer'));
+  await evaluate(`document.querySelector('.topbar-search-input').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`); await settle(); check('Escape closes the suggestions', (await count('.search-pop')) === 0);
+  await click('.topbar-search-clear');
+
   // 8. Code review: map lifecycle, task table (columns, row actions), canonical URLs, robustness
   await go('/'); let mapOk = false;
   for (let i = 0; i < 60 && !mapOk; i++) { await sleep(250); mapOk = await evaluate(`(() => { const m = document.querySelector('#dash-map')?.__map; return !!(m && m.loaded()); })()`); }

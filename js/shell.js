@@ -2,6 +2,7 @@
 // breadcrumb, tabs, notification drawer, user menu, toast. Geometry follows docs/reviews/2026-11-03-gap-analysis-pixel.md.
 import { html, icon, avatar, raw } from './ui.js';
 import { SECTIONS, link, sectionKeyFor } from './links.js';
+import { searchModel } from './model/search.js';
 
 export const PROJECT_PAGES = ['overview', 'projectTasks', 'ilp', 'delivery', 'settings', 'section', 'documents', 'loin', 'timeline'];
 export const BANNER_TEXT = 'Prototyp, fiktive oder öffentlich verfügbare Inhalte — nur zur Demonstration';
@@ -23,7 +24,7 @@ export function topbar(ctx, hasSidebar) {
     <a class="swiss-logo" href="#/" data-nav="/" aria-label="CDE Bund · Startseite"></a>
     <a class="topbar-link" href="#/projects/all" data-nav="/projects/all" style="font-weight:${inProjects ? 500 : 400}">Projekte</a>
     <a class="topbar-link rel" href="#/tasks/all" data-nav="/tasks/all" style="font-weight:${inTasks ? 500 : 400}">Aufgaben${vm.dash.open ? html`<span class="topbar-badge">${vm.dash.open}</span>` : ''}</a>
-    <div class="topbar-search"><div class="topbar-search-input">Suchen nach Projekten und Bestandsdaten...</div><div class="topbar-search-btn">${icon('search', 16, '#1f2937')}</div></div>
+    ${searchBox(ctx)}
     <div class="topbar-icons">
       <button type="button" class="topbar-iconbtn rel" data-action="toggleNotif" aria-label="Benachrichtigungen" aria-expanded="${state.ui.notif ? 'true' : 'false'}">${icon('bell', 20, '#fff')}${vm.unreadCount ? html`<span class="topbar-dot"></span>` : ''}</button>
       <span class="topbar-iconbtn" title="Hilfe" aria-hidden="true">${icon('book', 20, '#fff')}</span>
@@ -31,6 +32,19 @@ export function topbar(ctx, hasSidebar) {
     </div>
     <button type="button" class="topbar-user" data-action="toggleUserMenu" aria-haspopup="menu" aria-expanded="${state.ui.userMenu ? 'true' : 'false'}">${avatar(user.initials, 28, '#ccc')}<span class="topbar-username">${user.name}</span></button>
   </header>`;
+}
+
+/** Topbar search: input with clear button, suggestions grouped by topic below it (combobox + listbox for screen readers). */
+function searchBox(ctx) {
+  const { state, data } = ctx;
+  const q = state.ui.search || '', open = !!(state.ui.searchOpen && q.trim()), idx = state.ui.searchIdx;
+  const m = open ? searchModel(q, data) : null;
+  return html`<div class="topbar-search${open ? ' is-open' : ''}" role="search">
+    <input class="topbar-search-input" type="text" value="${q}" placeholder="Suchen nach Projekten und Bestandsdaten..." aria-label="Suchen nach Projekten und Bestandsdaten" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="${open ? 'true' : 'false'}" aria-controls="search-list" aria-autocomplete="list" ${open && idx >= 0 ? html`aria-activedescendant="search-opt-${idx}"` : ''} data-input="searchType" data-fid="topbar-search">
+    ${q ? html`<button type="button" class="topbar-search-clear" data-action="searchClear" aria-label="Suche löschen" title="Suche löschen">${icon('x', 14, '#1f2937')}</button>` : ''}
+    <button type="button" class="topbar-search-btn" data-action="searchGo" aria-label="Suchen">${icon('search', 16, '#1f2937')}</button>
+    ${open ? html`<div class="search-pop" id="search-list" role="listbox" aria-label="Vorschläge">${m.total ? m.groups.map(g => html`<div class="search-group" role="presentation">${g.label}</div>${g.items.map(it => html`<a class="search-item${it.idx === idx ? ' is-active' : ''}" id="search-opt-${it.idx}" role="option" aria-selected="${it.idx === idx ? 'true' : 'false'}" href="#${it.href}" data-nav="${it.href}"><span class="ellipsis">${it.label}</span>${it.sub ? html`<span class="search-sub ellipsis">${it.sub}</span>` : ''}</a>`)}`) : html`<div class="search-empty">Keine Treffer für «${m.query}»</div>`}</div>` : ''}
+  </div>`;
 }
 
 // ---- Sidebars ----

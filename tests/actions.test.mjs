@@ -34,6 +34,18 @@ function setup(pid = 'musterhausen') {
 }
 const eventTitles = f => f.events.map(e => e[3]);
 
+test('actions: topbar search (type, move, open, clear)', () => {
+  const { actions, nav, store, el } = setup();
+  const ui = () => store.get().ui;
+  actions.searchType({}, el('eiger')); assert.equal(ui().search, 'eiger'); assert.equal(ui().searchOpen, true); assert.equal(ui().searchIdx, -1);
+  actions.searchMove({ dir: 1 }); assert.equal(ui().searchIdx, 0);
+  actions.searchMove({ dir: -1 }); assert.ok(ui().searchIdx >= 0, 'wraps around');
+  actions.searchGo(); assert.equal(nav.last, '/projects/eigerplatz/overview'); assert.equal(ui().search, ''); assert.equal(ui().searchOpen, false);
+  actions.searchType({}, el('xyzxyz')); actions.searchGo(); assert.equal(nav.last, '/projects/eigerplatz/overview', 'no hit: stays'); assert.equal(ui().searchOpen, true);
+  actions.searchClear(); assert.equal(ui().search, ''); assert.equal(ui().searchOpen, false);
+  actions.searchType({}, el('kv')); actions.closeMenus(); assert.equal(ui().searchOpen, false, 'closeMenus closes the suggestions');
+});
+
 test('actions: Hauptgruppen toggle and sums (KV-32)', () => {
   const { actions, P, F, store } = setup();
   actions.formMode({ form: 'kv', group: 'C' });

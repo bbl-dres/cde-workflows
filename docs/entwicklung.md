@@ -53,6 +53,9 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
 - **Projektseiten** wie in der CDE Bund: Überblick, Aktivitäten (Feed und Logs), Dateien, Modell, Aufgaben, Info-Management
   (LOIN, Dokumente, Informationslieferplan), Automatisierung, Workflows, Mitglieder, Stammdaten, Einstellungen. Oberhalb der
   Topbar steht der rote Hinweis «Prototyp …», unten rechts der Quellcode-Link.
+- **Suche**: das Suchfeld der Topbar schlägt beim Tippen Treffer vor, gruppiert nach Projekten, Lieferungen, Aufgaben und
+  Dokumenten (höchstens 5 je Gruppe, 12 insgesamt; `js/model/search.js`), mit Pfeiltasten, Enter, Escape und einem
+  Löschen-Knopf im Feld (`ui.search`, flüchtig).
 - **Laden**: ein zentrierter Ladeindikator (Ant-Design-Spin wie in der CDE Bund, `#spin` in `index.html`) liegt über der Seite,
   solange die Daten beim Start geladen werden, ein Plan geprüft oder der Prüfbericht erstellt wird (`ui.busy`, flüchtig).
 - **Responsiv**: unter 1024 px klappt das Projektmenü ein (Menü-Knopf in der Topbar, Escape schliesst), unter 1280 px werden

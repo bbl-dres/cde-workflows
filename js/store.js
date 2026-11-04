@@ -3,7 +3,7 @@
 // Transient fields (a running plan check, the toast) are not persisted: they would survive a reload as stale locks.
 
 const KEY = 'cde-bund-prototyp-state';
-const TRANSIENT = new Set(['busy', 'toast']);
+const TRANSIENT = new Set(['busy', 'toast', 'search', 'searchOpen', 'searchIdx']);
 const UNSAFE_SEGMENT = new Set(['__proto__', 'constructor', 'prototype']);
 
 export function createStore(initial) {

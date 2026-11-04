@@ -19,6 +19,7 @@ const { matchRoute, parseHash, routeOverrides } = await mod('js/router.js');
 const { LEGACY, screenIdFor, defaultDeliveryTab, FORM_TABS, link } = await mod('js/links.js');
 const { TASK_COLUMNS, DEFAULT_TASK_COLS } = await mod('js/model/columns.js');
 const { planLists } = await mod('js/model/plan.js');
+const { searchModel } = await mod('js/model/search.js');
 
 const detailed = data.projects.projects.find(p => p.detailed);
 const userOf = key => data.users.users.find(u => u.key === key);
@@ -341,6 +342,23 @@ test('task table columns', () => {
 });
 
 // ---- Planlieferungen DWG für das CAFM (one floor plan = one delivery, checked by js/plancheck) ----
+// ---- Topbar search ----
+test('search: groups by topic, limits, ranking and links', () => {
+  assert.deepEqual(searchModel('', data).groups, []); assert.equal(searchModel('  ', data).total, 0);
+  const e = searchModel('eiger', data);
+  assert.equal(e.groups[0].key, 'projects'); assert.equal(e.groups[0].label, 'Projekte'); assert.equal(e.groups[0].items[0].label, 'Bern, Eigerplatz 1'); assert.equal(e.groups[0].items[0].href, '/projects/eigerplatz/overview');
+  const kv = searchModel('kv-32', data);
+  const del = kv.groups.find(g => g.key === 'deliveries');
+  assert.ok(del && del.items.length <= 5 && del.items.every(it => /^KV-32 · /.test(it.label) && /\/deliveries\/kv-32$/.test(it.href)), 'deliveries of every project, 5 at most');
+  assert.ok(kv.groups.find(g => g.key === 'tasks'), 'tasks mention KV-32 in their description');
+  assert.ok(kv.total <= 12 && kv.items.length === kv.total && kv.items.every((it, i) => it.idx === i), '12 in total, flat index for the keyboard');
+  const a = searchModel('ökobilanz', data), b = searchModel('Okobilanz', data);
+  assert.ok(a.total > 0 && a.total === b.total, 'diacritics-insensitive');
+  const m = searchModel('muster', data);
+  assert.ok(m.groups[0].items[0].label.toLowerCase().startsWith('muster') || m.groups[0].items[0].label.includes('Musterhausen'), 'prefix hits first');
+  assert.equal(searchModel('xyzxyz', data).total, 0);
+});
+
 // ---- eBKP-H directory (SN 506 511:2020) — docs/reference/sources/eBKP-H_2020_Verzeichnis.md ----
 test('ebkp: every Hauptgruppe A–Z with all its Elementgruppen; A and H are groups of the cost form', () => {
   const EXPECT = { A: 2, B: 9, C: 5, D: 12, E: 3, F: 2, G: 6, H: 9, I: 6, J: 4, V: 3, W: 7, Y: 2, Z: 1 };

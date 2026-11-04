@@ -74,7 +74,7 @@ function onHashChange(initial) {
   if (initial !== true) {
     window.scrollTo(0, 0);
     const ui = store.get().ui;
-    if (ui.userMenu || ui.sideOpen || ui.importMenu || ui.dialog === 'columns') store.setIn('ui', { userMenu: false, sideOpen: false, importMenu: false, dialog: ui.dialog === 'columns' ? null : ui.dialog });   // page-local overlays close on navigation
+    if (ui.userMenu || ui.sideOpen || ui.importMenu || ui.searchOpen || ui.dialog === 'columns') store.setIn('ui', { userMenu: false, sideOpen: false, importMenu: false, searchOpen: false, dialog: ui.dialog === 'columns' ? null : ui.dialog });   // page-local overlays close on navigation
   }
   render();
 }
@@ -242,6 +242,7 @@ function run(name, ds, el, ev) {
 
 function bindEvents() {
   document.body.addEventListener('click', e => {
+    if (store.get().ui.searchOpen && !e.target.closest('.topbar-search')) actions.searchClose();   // click outside closes the suggestions
     const a = e.target.closest('[data-action],[data-nav],[data-study],[data-screen-link]');
     if (!a) return;
     if (a !== e.target && e.target.closest('input,select,textarea,label')) return;   // a field inside a clickable row (Hauptgruppe) keeps its own behaviour
@@ -264,9 +265,15 @@ function bindEvents() {
     if (el) run(el.dataset.input, el.dataset, el, e);
   });
   document.body.addEventListener('keydown', e => {
+    if (e.target.matches && e.target.matches('.topbar-search-input')) {   // combobox keys of the search
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); actions.searchMove({ dir: e.key === 'ArrowDown' ? 1 : -1 }); return; }
+      if (e.key === 'Enter') { e.preventDefault(); actions.searchGo(); return; }
+      if (e.key === 'Escape') { actions.searchClose(); return; }
+    }
     if (e.key === 'Escape') {
       const ui = store.get().ui;
-      if (ui.dialog) actions.closeDialog();
+      if (ui.searchOpen) actions.searchClose();
+      else if (ui.dialog) actions.closeDialog();
       else if (ui.notif || ui.userMenu || ui.sideOpen) actions.closeMenus();
       return;
     }
