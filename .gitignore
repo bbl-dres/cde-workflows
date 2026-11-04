@@ -5,3 +5,6 @@ docs/reference/compare/
 # local
 .DS_Store
 Thumbs.db
+
+# downloaded third-party sources of the research notes (KBOB, ecobau, CRB, BAFU) are kept locally only
+docs/reference/sources/
