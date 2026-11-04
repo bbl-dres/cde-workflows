@@ -315,13 +315,9 @@ function dokumente(F) {
 }
 
 function verlauf(F) {
-  const C = 'grid-template-columns:120px 220px minmax(0,1fr)';
-  return card(html`<span class="flex-1">Verlauf</span>${hint(`${F.hist.length} Ereignisse, neueste zuerst`)}`, html`<div class="fm-table"><div style="min-width:620px">
-    <div class="fm-th" style="${C};gap:0 14px"><span>Datum</span><span>Person</span><span>Ereignis</span></div>
-    ${F.hist.map(h => html`<div class="hist-row" style="${C}">
-      <span class="flex-col"><span>${h.d}</span>${h.time ? html`<span class="fs-12 muted">${h.time}</span>` : ''}</span>
-      <span class="flex items-center gap-8 min-w-0">${avatar(h.ini, 26, '#e5e7eb', '#374151')}<span class="flex-col min-w-0"><span class="ellipsis">${h.name}</span><span class="fs-12 muted ellipsis">${h.firm}</span></span></span>
-      <span class="flex-col" style="gap:2px"><span class="fw-500">${h.t}</span>${h.detail ? html`<span class="fs-125 muted">${h.detail}</span>` : ''}</span>
-    </div>`)}
-  </div></div>`, { style: 'max-width:1040px' });
+  const C = 'grid-template-columns:140px 170px minmax(0,1fr) minmax(0,1.5fr)';
+  return card(html`<span class="flex-1">Verlauf</span>${hint(`${F.hist.length} Ereignisse, neueste zuerst`)}`, html`<div class="fm-table"><div style="min-width:720px">
+    <div class="fm-th" style="${C}"><span>Datum</span><span>Person</span><span>Ereignis</span><span>Details</span></div>
+    ${F.hist.map(h => html`<div class="fm-tr hist-row" style="${C}"><span>${h.d}${h.time ? ' ' + h.time : ''}</span><span class="ellipsis" title="${h.firm}">${h.name}</span><span class="fw-500 ellipsis" title="${h.t}">${h.t}</span><span class="muted ellipsis" title="${h.detail}">${h.detail}</span></div>`)}
+  </div></div>`, { style: 'max-width:1100px' });
 }

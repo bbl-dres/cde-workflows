@@ -32,9 +32,8 @@ export default {
       ${view === 'card' ? html`<div class="project-cards">
         ${rows.map(p => html`<div class="project-card">
           <a class="project-card-body" href="#${p.href}" data-nav="${p.href}">
-            ${p.image ? html`<img class="project-card-img" src="${p.image}" alt="" loading="lazy">` : ''}
-            <span class="project-card-name">${p.name}</span>
-            <span class="project-card-desc">${p.description}</span>
+            <span class="project-card-text"><span class="project-card-name">${p.name}</span><span class="project-card-desc">${p.description}</span></span>
+            ${p.image ? html`<img class="project-card-img" src="${p.image}" alt="" loading="lazy">` : html`<span class="project-card-img"></span>`}
           </a>
           <div class="project-card-foot"><span title="${p.access}">${icon('lock-open', 15, '#3f8f8b')}</span>${star(p)}</div>
         </div>`)}
