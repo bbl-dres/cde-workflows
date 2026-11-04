@@ -48,7 +48,7 @@ export default {
       case 'st':
         return html`${head}<div class="card card-page card-narrow">
           <div class="card-head">Projektdaten</div>
-          <div style="padding:8px 12px 12px">${[['Projektnummer', project.number], ['Technischer Platz', project.technicalPlace], ['Projektbezeichnung', project.designation], ['Teilportfolio', project.teilportfolioLabel], ['SIA-Phase', project.phase], ['Anlagekosten', 'CHF ' + project.anlagekostenMio.toLocaleString('de-CH', { minimumFractionDigits: 1 }) + ' Mio'], ['Kostenziel B–W', 'CHF ' + (project.kostenzielBW / 1e6).toLocaleString('de-CH', { minimumFractionDigits: 2 }) + ' Mio'], ['Standort', project.location.place], ['Verantwortlicher', project.responsible]]
+          <div style="padding:4px 0 6px">${[['Projektnummer', project.number], ['Technischer Platz', project.technicalPlace], ['Projektbezeichnung', project.designation], ['Teilportfolio', project.teilportfolioLabel], ['SIA-Phase', project.phase], ['Anlagekosten', 'CHF ' + project.anlagekostenMio.toLocaleString('de-CH', { minimumFractionDigits: 1 }) + ' Mio'], ['Kostenziel B–W', 'CHF ' + (project.kostenzielBW / 1e6).toLocaleString('de-CH', { minimumFractionDigits: 2 }) + ' Mio'], ['Standort', project.location.place], ['Verantwortlicher', project.responsible]]
             .map(([k, v], i) => html`<div class="meta-row" style="grid-template-columns:190px 1fr;background:${i % 2 ? 'transparent' : '#f6f7f9'}"><span class="meta-k">${k}</span><span>${v}</span></div>`)}</div>
           <div class="card-foot">Die Anlagekosten steuern die Pflicht zur Ökobilanz (ab CHF 1 Mio). Im Prototyp über das Studien-Panel änderbar.</div>
         </div>`;

@@ -24,7 +24,7 @@ function generic(ctx, code) {
     ${tab === 'verlauf' ? verlauf([['–', `Bestellt durch ${ctx.project.responsible}`], ['–', `Status: ${d.status}`]])
       : tab === 'dokumente' ? dokumente()
       : html`<div class="flex items-start gap-14">
-        <div class="card flex-1 card-narrow"><div class="card-head">Lieferung</div><div style="padding:8px 12px 12px">${[['Kürzel', d.code], ['Name', d.name], ['Lieferverantwortlicher', d.firm], ['Gewerk', d.gewerk], ['Beschreibung', d.desc], ['Status', d.status]].map(([k, v], i) => html`<div class="meta-row" style="grid-template-columns:170px 1fr;background:${i % 2 ? 'transparent' : '#f6f7f9'}"><span class="meta-k">${k}</span><span>${v}</span></div>`)}</div></div>
+        <div class="card flex-1 card-narrow"><div class="card-head">Lieferung</div><div style="padding:4px 0 6px">${[['Kürzel', d.code], ['Name', d.name], ['Lieferverantwortlicher', d.firm], ['Gewerk', d.gewerk], ['Beschreibung', d.desc], ['Status', d.status]].map(([k, v], i) => html`<div class="meta-row" style="grid-template-columns:170px 1fr;background:${i % 2 ? 'transparent' : '#f6f7f9'}"><span class="meta-k">${k}</span><span>${v}</span></div>`)}</div></div>
         <div class="note note-grey" style="width:330px;display:block">Klassische Lieferung (Dokumente, Modelle): Ablage und Status im Informationslieferplan, ohne Datenformular.</div>
       </div>`}`;
 }

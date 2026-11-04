@@ -54,7 +54,7 @@ export default {
           </div>
           <div class="card">
             <div class="card-head">Projektdaten</div>
-            <div style="padding:8px 12px 12px">${data.map(([k, v], i) => html`<div class="meta-row meta-row-wide" style="background:${i % 2 ? 'transparent' : '#f6f7f9'}"><span class="meta-k">${k}</span><span>${v}</span></div>`)}</div>
+            <div style="padding:4px 0 6px">${data.map(([k, v], i) => html`<div class="meta-row meta-row-wide" style="background:${i % 2 ? 'transparent' : '#f6f7f9'}"><span class="meta-k">${k}</span><span>${v}</span></div>`)}</div>
           </div>
           <div class="card">
             <div class="card-head"><span class="flex-1">Verknüpfungen</span><span class="btn btn-secondary btn-sm">Hinzufügen</span></div>

@@ -41,7 +41,7 @@ function uebersicht(ctx, F) {
       ${F.kind === 'plan' ? planOverview(F, L) : costOverview(F, L)}
     </div>
     <div class="fm-side">
-      ${card('Lieferung', html`<div style="padding:8px 12px 12px">${metaRows(F.meta)}</div>`)}
+      ${card('Lieferung', html`<div style="padding:4px 0 6px">${metaRows(F.meta)}</div>`)}
       ${card(html`<span class="flex-1">Verlauf</span>${headLink('Alle Ereignisse', L('verlauf'))}`, stepsList(F, L))}
       ${card(html`<span class="flex-1">Beteiligte</span>${headLink('Verwalten', L('beteiligte'))}`, html`<div class="pp-list">${F.people.map(p => html`<div class="pp-row">${avatar(p.ini, 28, '#e5e7eb', '#374151')}<div class="flex-1 min-w-0 flex-col"><span class="pp-name">${p.name}</span><span class="pp-firm">${p.firm}</span></div><span class="pp-role">${p.role}</span></div>`)}</div>`)}
     </div>
@@ -271,7 +271,7 @@ function pruefung(ctx, F) {
         </div>` : ''}
         ${F.rv.done ? html`<div class="rv-note rv-note-green">${F.rv.doneText} ${linkBtn({ label: 'Zurücksetzen', action: A.reset, key: F.id })}</div>` : ''}
       </div>`)}
-      ${card('Übergabe', html`<div style="padding:8px 12px 12px">${kvRow('Zielsystem', F.handover.ziel)}${kvRow('Wert', F.handover.value)}${kvRow('Status', F.handover.status)}</div>${F.canTransfer ? html`<div style="padding:0 14px 14px">${btn({ label: `An ${F.target} übertragen`, kind: 'primary', action: A.transfer, key: F.id })}</div>` : ''}`)}
+      ${card('Übergabe', html`<div style="padding:4px 0 6px">${kvRow('Zielsystem', F.handover.ziel)}${kvRow('Wert', F.handover.value)}${kvRow('Status', F.handover.status)}</div>${F.canTransfer ? html`<div style="padding:0 14px 14px">${btn({ label: `An ${F.target} übertragen`, kind: 'primary', action: A.transfer, key: F.id })}</div>` : ''}`)}
     </div>
   </div>`;
 }
