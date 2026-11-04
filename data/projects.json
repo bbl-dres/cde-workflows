@@ -2,23 +2,28 @@
   "today": "05.05.2027",
   "note": "Projektnamen der Projekte 2–8 nach den öffentlichen Bautendokumentationen des BBL (bbl.admin.ch/de/bautendokumentationen). Phasen, Werte, Firmen und Personen sind fiktiv.",
   "map": {
-    "style": "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.lightbasemap.vt/style.json",
-    "fallbackStyle": "https://tiles.openfreemap.org/styles/positron",
+    "style": "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+    "fallbackStyle": {
+      "version": 8,
+      "name": "Esri World Light Gray (Raster)",
+      "sources": {
+        "esri": {
+          "type": "raster",
+          "tiles": ["https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"],
+          "tileSize": 256,
+          "maxzoom": 16,
+          "attribution": "Tiles © Esri — Esri, HERE, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors"
+        }
+      },
+      "layers": [{ "id": "esri-light-gray", "type": "raster", "source": "esri" }]
+    },
     "center": [
       8.2,
       46.8
     ],
     "zoom": 6.4,
-    "fitBounds": [
-      [
-        5.9,
-        45.8
-      ],
-      [
-        10.5,
-        47.8
-      ]
-    ]
+    "maxZoom": 8.5,
+    "projectZoom": 15
   },
   "projects": [
     {

@@ -6,6 +6,12 @@ import { fmtNum } from './util.js';
 
 export const DASH = '—';
 
+/** DIN 277 usage groups (areas per group come from the room stamp, which the prototype does not read yet). */
+export const DIN277_GROUPS = [
+    ['HNF 1', 'Wohnen und Aufenthalt'], ['HNF 2', 'Büroarbeit'], ['HNF 3', 'Produktion'], ['HNF 4', 'Lagern, Verteilen, Verkaufen'], ['HNF 5', 'Bildung, Unterricht, Kultur'],
+    ['HNF 6', 'Heilen, Pflegen'], ['NNF 7', 'Sonstige Nutzungen'], ['FF 8', 'Betriebstechnische Anlagen'], ['VF 9', 'Verkehrserschliessung und -sicherung'], ['BUF 10', 'Verschiedene Nutzungen'],
+];
+
 export const SIA_LABELS = {
     GF: 'Geschossfläche', KF: 'Konstruktionsfläche', NGF: 'Nettogeschossfläche', NF: 'Nutzfläche',
     HNF: 'Hauptnutzfläche', NNF: 'Nebennutzfläche', VF: 'Verkehrsfläche', FF: 'Funktionsfläche', GV: 'Gebäudevolumen',
@@ -39,6 +45,8 @@ export function buildKpiSections(k) {
             areaRow('GF', k.gf), areaRow('KF', k.kf), areaRow('NGF', ifRooms(k.ngf)), areaRow('NF', ifRooms(k.nf)),
             areaRow('HNF', ifRooms(k.hnf)), areaRow('NNF', ifRooms(k.nnf)), areaRow('VF', ifRooms(k.vf)), areaRow('FF', ifRooms(k.ff)),
         ],
+        volume: [{ abbr: 'GV', label: SIA_LABELS.GV, value: null, total: null }],
+        din277: DIN277_GROUPS.map(([abbr, label]) => ({ abbr, label, value: (k.din277 || {})[abbr] ?? null, total: k.gf })),
         economy: [
             { abbr: 'NGF / GF', label: 'Nettogeschossfläche / Geschossfläche', ratio: (k.gf && k.hasRooms) ? k.ngf / k.gf : null },
             { abbr: 'KF / GF', label: 'Konstruktionsfläche / Geschossfläche', ratio: (k.gf && k.kf != null) ? k.kf / k.gf : null },
@@ -62,4 +70,9 @@ export function formatShare(value, total) {
 
 export function formatRatio(ratio) {
     return ratio == null ? DASH : ratio.toFixed(2);
+}
+
+/** Objektübersicht: entity type, count and the first layers it appears on. */
+export function buildEntityRows(entities) {
+    return (entities || []).map(e => ({ type: e.type, count: e.count, layers: (e.layers || []).slice(0, 3).join(', ') + ((e.layers || []).length > 3 ? ' …' : '') }));
 }

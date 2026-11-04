@@ -250,6 +250,10 @@ function bindEvents() {
     const el = e.target.closest('[data-change]');
     if (el) run(el.dataset.change, el.dataset, el, e);
   });
+  document.body.addEventListener('input', e => {                      // live fields (search), focus survives the re-render by data-fid
+    const el = e.target.closest('[data-input]');
+    if (el) run(el.dataset.input, el.dataset, el, e);
+  });
   document.body.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       const ui = store.get().ui;

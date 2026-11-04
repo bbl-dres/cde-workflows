@@ -18,6 +18,7 @@ const { compute } = await mod('js/model/index.js');
 const { matchRoute, parseHash, routeOverrides } = await mod('js/router.js');
 const { LEGACY, screenIdFor, defaultDeliveryTab, FORM_TABS, link } = await mod('js/links.js');
 const { TASK_COLUMNS, DEFAULT_TASK_COLS } = await mod('js/model/columns.js');
+const { planLists } = await mod('js/model/plan.js');
 
 const detailed = data.projects.projects.find(p => p.detailed);
 const userOf = key => data.users.users.find(u => u.key === key);
@@ -376,6 +377,35 @@ test('plans: Datenformular shape (Übersicht, Prüfung) of a floor plan', () => 
   assert.equal(dg.comp.pct, '–'); assert.equal(dg.res.title, 'Kein Prüfergebnis'); assert.equal(dg.peopleRows[0].scope, 'Grundriss DG (DWG)');
 });
 
+test('plans: status filter and search of the sub-tab lists (planLists, as in plan-check)', () => {
+  const eg = vm.plans.EG;   // office seed: 3 errors + 43 warnings in 13 rules, 32 layers (30 unknown), no rooms
+  const all = planLists(eg, { planFilter: 'all', planSearch: '' });
+  assert.equal(all.rules.failed.length + all.rules.passed.length, 40); assert.equal(all.issues.length, 46); assert.equal(all.layers.length, 32);
+  assert.deepEqual([all.counts.rules, all.counts.issues, all.counts.layers, all.counts.rooms], ['13 offen', '46', '32', '0']);
+  assert.equal(all.issues[0].it.severity, 'error', 'errors first');
+  const errRules = [...eg.rules.failed, ...eg.rules.passed].filter(r => r.severity === 'error').length;
+  const err = planLists(eg, { planFilter: 'errors' });
+  assert.ok(err.rules.failed.length >= 1 && err.rules.failed.every(r => r.severity === 'error')); assert.equal(err.rules.passed.length, 0, 'passed rules only without filter');
+  assert.equal(err.rules.total, errRules); assert.equal(err.issues.length, 3); assert.ok(err.issues.every(x => x.it.severity === 'error'));
+  assert.equal(err.layers.length, 0, 'layers never carry errors'); assert.equal(err.counts.issues, '3');
+  const warn = planLists(eg, { planFilter: 'warnings' });
+  assert.equal(warn.layers.length, 30, 'unknown layers are the warnings of the Layer tab'); assert.equal(warn.issues.length, 43); assert.ok(warn.rules.failed.every(r => r.severity === 'warning'));
+  const q = planLists(eg, { planFilter: 'all', planSearch: 'layer_00' });
+  const qRules = [...q.rules.failed, ...q.rules.passed];
+  assert.equal(qRules.length, 8); assert.ok(qRules.every(r => r.code.startsWith('LAYER_00')));
+  assert.equal(q.counts.rules, all.counts.rules, 'tab counts follow the filter, not the search');
+  assert.ok(planLists(eg, { planSearch: 'Pflicht-Layer' }).rules.failed.length >= 1, 'search matches the rule text');
+  const ln = eg.result.layers[3].name; assert.ok(planLists(eg, { planSearch: ln.toLowerCase() }).layers.some(l => l.name === ln), 'layer search is case-insensitive');
+  const ug = vm.plans.UG;   // Musterplan: 30 rooms (ok), 1 floor area «UV», 3 warnings
+  const rooms = planLists(ug, { planSearch: '05.00' });
+  assert.ok(rooms.rooms.length > 0 && rooms.rooms.length < 30 && rooms.rooms.every(r => r.aoid.includes('05.00')));
+  assert.equal(planLists(ug, { planFilter: 'errors' }).rooms.length, 0); assert.equal(planLists(ug, { planFilter: 'errors' }).counts.rooms, '0');
+  assert.equal(planLists(ug, { planFilter: 'all' }).areas.length, 1); assert.equal(planLists(ug, { planSearch: 'brutto' }).areas.length, 1, 'the floor area matches «Bruttogeschossfläche» too');
+  assert.equal(planLists(ug, { planFilter: 'warnings' }).rules.failed.length, 2); assert.equal(planLists(ug, { planFilter: 'warnings' }).rules.total, 40 - errRules);
+  const dg = vm.plans.DG;   // no result yet
+  assert.deepEqual(planLists(dg, {}).counts, { rules: 'alle', issues: '0', rooms: '0', areas: '0', layers: '0', kpi: '' });
+});
+
 test('plans: submit gate (no errors), locking and review flow', () => {
   const eg = vm.plans.EG, ug = vm.plans.UG, og2 = vm.plans.OG2, dg = vm.plans.DG;
   assert.equal(eg.errors, 3, 'EG seed (office layer structure) has 3 errors');
@@ -417,7 +447,8 @@ test('plans: Prüfbericht model from a seed result', async () => {
   const m = buildReportModel(seed, { project: 'Verwaltungszentrum Musterhausen', code: 'DWG-EG', name: 'Grundriss EG (DWG)', floor: 'Erdgeschoss', status: 'In Bearbeitung', reviewer: 'Paula Muster, BBL', due: '30.04.2027', guideline: 'CAD-Richtlinie BBL V1.0', uploadedAt: 'heute' });
   assert.equal(m.fileName, seed.file.name); assert.ok(m.baseName && !m.baseName.includes('.dwg'));
   assert.equal(m.rules.passed.length + m.rules.failed.length, 40); assert.equal(m.summary.passedRules, 38);
-  assert.equal(m.rooms.length, 30); assert.ok(m.kpi.areas.length === 8 && m.kpi.economy.length === 4);
+  assert.equal(m.rooms.length, 30); assert.ok(m.kpi.areas.length === 8 && m.kpi.economy.length === 4 && m.kpi.din277.length === 10 && m.kpi.volume.length === 1);
+  assert.ok(m.entities.length > 0 && typeof m.entities[0].layers === 'string');
   assert.ok(m.info.some(([k, v]) => k === 'Projekt' && v === 'Verwaltungszentrum Musterhausen') && m.info.some(([k]) => k === 'DWG-Version'));
   assert.ok(!JSON.stringify(m.info).includes('undefined'));
 });

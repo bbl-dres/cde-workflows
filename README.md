@@ -24,7 +24,7 @@ Sign in as one of seven sample personas (name at the top right) to follow a deli
 - Order a data delivery in the Informationslieferplan with a template (Kosten eBKP-H, Ökobilanz Bauemissionen nach SIA 2032) and the rule «mandatory from CHF 1 Mio».
 - Enter costs per eBKP-H Hauptgruppe or per Kostenelement (open the group, add or remove positions), import an Excel file, see completeness and missing values live.
 - Enter the Ökobilanz as emission sources per eBKP-H element group (KBOB dataset, quantity, production and disposal, amortisation after SIA 2032) with the Grundlagen of the calculation; the Endwert for SUS is derived, a Tool-Export import brings the sources in. All eight projects carry complete, plausible mock data (KV-32, KS-31, THG-32) in different workflow states.
-- Upload DWG floor plans (one delivery per floor) and check them locally in the browser against the 40 rules of the CAD-Richtlinie BBL, with plan viewer, rooms, layers, SIA 416 figures and a downloadable Prüfbericht (PDF).
+- Upload DWG floor plans (one delivery per floor) and check them locally in the browser against the 40 rules of the CAD-Richtlinie BBL, with plan viewer, rooms, floor-area polygons, layers, SIA 416 figures and a downloadable Prüfbericht (PDF).
 - Submit, review (automatic checks, checklist, approve or reject) and hand over to ePPM, SUS or the CAFM; statuses flow into the Informationslieferplan, tasks and notifications.
 - Übersicht per delivery with KPIs, comparison with the previous phase, Kostenziel or Zielwert chart, workflow steps and participants; project overview with photo and location map.
 - Application shell of the CDE Bund: start page with map, projects, tasks with configurable columns, project pages (Aktivitäten, Dokumente, LOIN, Mitglieder, Einstellungen), responsive below 1024 px.
@@ -48,7 +48,7 @@ Open <http://localhost:8080/>. The mock data is loaded with `fetch()`, so the ap
 
 ## Data and map sources
 
-Project names follow the public [Bautendokumentationen des BBL](https://www.bbl.admin.ch/de/bautendokumentationen); phases, values, firms and people are fictional. The cost structure uses the eBKP-H element groups (CRB, SN 506 511:2020), the Ökobilanz the KBOB/ecobau-Liste 2022, Version 9.0 ([kbob.admin.ch](https://www.kbob.admin.ch/de/oekobilanzdaten-im-baubereich)) with the amortisation periods of SIA 2032; sources and derivations are in [docs/research/](docs/research/). Maps: swisstopo vector tiles (fallback OpenFreeMap) through MapLibre GL; photos with their licences in [assets/projects/ATTRIBUTION.md](assets/projects/ATTRIBUTION.md).
+Project names follow the public [Bautendokumentationen des BBL](https://www.bbl.admin.ch/de/bautendokumentationen); phases, values, firms and people are fictional. The cost structure uses the eBKP-H element groups (CRB, SN 506 511:2020), the Ökobilanz the KBOB/ecobau-Liste 2022, Version 9.0 ([kbob.admin.ch](https://www.kbob.admin.ch/de/oekobilanzdaten-im-baubereich)) with the amortisation periods of SIA 2032; sources and derivations are in [docs/research/](docs/research/). Maps: CARTO «Positron» vector tiles (worldwide, fallback Esri World Light Gray raster tiles) through MapLibre GL; photos with their licences in [assets/projects/ATTRIBUTION.md](assets/projects/ATTRIBUTION.md).
 
 ## License
 

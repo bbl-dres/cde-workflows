@@ -531,35 +531,75 @@
    "entities": [
     {
      "type": "LWPOLYLINE",
-     "count": 3230
+     "count": 3230,
+     "layers": [
+      "A_ARCHITEKTUR",
+      "R_GESCHOSSPOLYGON",
+      "A_ELEKTRO",
+      "V_ACHSEN"
+     ]
     },
     {
      "type": "TEXT",
-     "count": 86
+     "count": 86,
+     "layers": [
+      "V_PLANLAYOUT",
+      "R_AOID",
+      "V_REFERENZPUNKT"
+     ]
     },
     {
      "type": "LINE",
-     "count": 64
+     "count": 64,
+     "layers": [
+      "A_ARCHITEKTUR",
+      "V_PLANLAYOUT",
+      "A_SANITAER",
+      "A_ELEKTRO"
+     ]
     },
     {
      "type": "HATCH",
-     "count": 41
+     "count": 41,
+     "layers": [
+      "A_SCHRAFFUR",
+      "V_PLANLAYOUT"
+     ]
     },
     {
      "type": "CIRCLE",
-     "count": 38
+     "count": 38,
+     "layers": [
+      "V_ACHSEN",
+      "A_ARCHITEKTUR",
+      "A_SANITAER",
+      "A_LUEFTUNG"
+     ]
     },
     {
      "type": "MTEXT",
-     "count": 29
+     "count": 29,
+     "layers": [
+      "V_TEXT",
+      "A_ELEKTRO",
+      "V_ACHSEN"
+     ]
     },
     {
      "type": "ARC",
-     "count": 12
+     "count": 12,
+     "layers": [
+      "A_SANITAER",
+      "V_PLANLAYOUT",
+      "V_REFERENZPUNKT"
+     ]
     },
     {
      "type": "DIMENSION",
-     "count": 2
+     "count": 2,
+     "layers": [
+      "V_BEMASSUNG"
+     ]
     }
    ],
    "kpi": {
@@ -1662,39 +1702,87 @@
    "entities": [
     {
      "type": "POLYLINE2D",
-     "count": 1730
+     "count": 1730,
+     "layers": [
+      "A1M16---E-",
+      "A1E0----E-",
+      "A1E6----E-",
+      "A1E4----E-"
+     ]
     },
     {
      "type": "LINE",
-     "count": 994
+     "count": 994,
+     "layers": [
+      "A1E00---E-",
+      "A1E0----E-",
+      "A1M62---E-",
+      "A1M16---E-"
+     ]
     },
     {
      "type": "HATCH",
-     "count": 687
+     "count": 687,
+     "layers": [
+      "A1------H-",
+      "A1E6----H-",
+      "A1E4----H-",
+      "A1E2----H-"
+     ]
     },
     {
      "type": "LWPOLYLINE",
-     "count": 581
+     "count": 581,
+     "layers": [
+      "A1E2----E-",
+      "A1E4----E-",
+      "A1E6----E-",
+      "A1M16---E-"
+     ]
     },
     {
      "type": "INSERT",
-     "count": 343
+     "count": 343,
+     "layers": [
+      "A1M16---E-",
+      "A1E0----E-",
+      "A1M61---E-",
+      "A1I4----E-"
+     ]
     },
     {
      "type": "TEXT",
-     "count": 145
+     "count": 145,
+     "layers": [
+      "A1E00---T-",
+      "A1------J-",
+      "A1------N-",
+      "A1------W-"
+     ]
     },
     {
      "type": "DIMENSION",
-     "count": 74
+     "count": 74,
+     "layers": [
+      "A1------D-"
+     ]
     },
     {
      "type": "CIRCLE",
-     "count": 39
+     "count": 39,
+     "layers": [
+      "A1E2----E-",
+      "A1M61---E-"
+     ]
     },
     {
      "type": "ARC",
-     "count": 6
+     "count": 6,
+     "layers": [
+      "A1M16---E-",
+      "A1I4----E-",
+      "0"
+     ]
     }
    ],
    "kpi": {

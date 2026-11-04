@@ -3,7 +3,7 @@
 // A floor without an own result shows the precomputed seed of data/plans.json (engine result of a sample plan).
 import { pillSpec } from './pill.js';
 import { mkSteps } from './steps.js';
-import { ruleRows, fmtNum } from '../plancheck/index.js';
+import { ruleRows, fmtNum, buildKpiSections, buildEntityRows, formatArea, formatShare, formatRatio } from '../plancheck/index.js';
 
 // idx: step of the plan stepper (data/plans.json steps); formStep: step of the Datenformular (0 Erstellt … 6 Übertragen)
 export const PLAN_STATUS = {
@@ -25,6 +25,43 @@ const share = (v, t) => (v == null || !t ? '' : Math.round(v / t * 100) + ' %');
 const ok = (o, label, warn = false) => ({ label, ok: o, icon: o ? 'circle-check' : warn ? 'triangle-alert' : 'circle-x', color: o ? '#2f7d63' : warn ? '#c49a1c' : '#9b2c44' });
 
 /** Initial per-floor state from data/plans.json. */
+/** Status filter of the Prüfplattform ('all' | 'warnings' | 'errors') against a status ('ok' | 'warning' | 'error'). */
+const matchesFilter = (filter, status) => filter === 'all' || (filter === 'errors' ? status === 'error' : status === 'warning');
+const STATUS_RANK = { error: 0, warning: 1, ok: 2 };
+const byStatus = (a, b) => STATUS_RANK[a.status] - STATUS_RANK[b.status] || String(a.aoid || '').localeCompare(String(b.aoid || ''));
+
+/**
+ * The sub-tab lists of a checked plan under the status filter and the search of the list toolbar (as in plan-check):
+ * rules by severity (passed rules only without filter), issues by severity, rooms and floor areas by status, layers only
+ * for «Warnungen» (unknown layers). The tab counts follow the filter but not the search.
+ */
+export function planLists(plan, { planFilter: filter = 'all', planSearch: search = '' } = {}) {
+  const q = String(search || '').trim().toLowerCase();
+  const hit = text => !q || String(text).toLowerCase().includes(q);
+  const res = plan.result || { issues: [], rooms: [], areas: [], layers: [] };
+  const sev = filter === 'errors' ? 'error' : 'warning';
+  const failed = plan.rules.failed.filter(r => matchesFilter(filter, r.severity));
+  const passed = filter === 'all' ? plan.rules.passed : [];
+  const total = filter === 'all' ? plan.rules.total : plan.rules.failed.concat(plan.rules.passed).filter(r => r.severity === sev).length;
+  const rooms = new Map(res.rooms.map(r => [r.id, r]));
+  const refOf = it => it.roomId ? (rooms.get(it.roomId) || {}).aoid || '' : it.layer ? it.layer : it.handle ? 'H:' + it.handle : it.handles ? `${it.handles.length} Elemente` : '';
+  const issues = res.issues.map((it, i) => ({ it, i, ref: refOf(it) })).filter(x => matchesFilter(filter, x.it.severity))
+    .sort((a, b) => STATUS_RANK[a.it.severity] - STATUS_RANK[b.it.severity] || a.i - b.i);
+  const roomsF = res.rooms.filter(r => matchesFilter(filter, r.status)).sort(byStatus);
+  const areasF = res.areas.filter(a => matchesFilter(filter, a.status)).sort(byStatus);
+  const layersF = res.layers.filter(l => matchesFilter(filter, l.ok ? 'ok' : 'warning'));
+  const ruleText = r => `${r.code} ${r.text} ${r.category}`;
+  return {
+    filter, query: q,
+    counts: { rules: failed.length ? `${failed.length} offen` : 'alle', issues: String(issues.length), rooms: String(roomsF.length), areas: String(areasF.length), layers: String(layersF.length), kpi: '' },
+    rules: { failed: failed.filter(r => hit(ruleText(r))), passed: passed.filter(r => hit(ruleText(r))), total },
+    issues: issues.filter(x => hit(`${x.it.code} ${x.it.message} ${x.ref}`)),
+    rooms: roomsF.filter(r => hit(r.aoid + (r.duplicate ? ' Duplikat' : ''))),
+    areas: areasF.filter(a => hit(`${a.aoid || ''} Bruttogeschossfläche`)),
+    layers: layersF.filter(l => hit(l.name)),
+  };
+}
+
 export const initialPlans = data => Object.fromEntries((data.plans?.floors || []).map(f => [f.key, { status: f.status, checks: { ...f.checks }, result: null, busy: null, error: null }]));
 
 export function planModel(s, data) {
@@ -88,6 +125,13 @@ export function planModel(s, data) {
     const segs = k ? [['HNF', k.hnf], ['NNF', k.nnf], ['VF', k.vf], ['FF', k.ff], ['KF', k.kf]].filter(([, v]) => v != null && v > 0) : [];
     const segTotal = segs.reduce((a, [, v]) => a + v, 0) || 1;
     const siaSegs = segs.map(([label, v]) => ({ label, pct: (v / segTotal * 100).toFixed(1) + '%', text: `${label} ${Math.round(v / segTotal * 100)} %`, bg: SIA_COLORS[label] }));
+    const sections = k ? buildKpiSections({ ...k, hasRooms, hasAreaPolys: hasAreas }) : null;
+    const kpiRow = r => ({ abbr: r.abbr, label: r.label, value: formatArea(r.value), share: formatShare(r.value, r.total), sum: ['GF', 'NGF', 'NF'].includes(r.abbr) });
+    const kpiDash = sections ? {
+      volume: sections.volume.map(kpiRow), areas: sections.areas.map(kpiRow), din277: sections.din277.map(kpiRow),
+      economy: sections.economy.map(r => ({ abbr: r.abbr, label: r.label, value: formatRatio(r.ratio) })),
+      entities: buildEntityRows(result.entities),
+    } : null;
     const ratios = k ? [
       ['NGF / GF', k.gf && hasRooms ? (k.ngf / k.gf).toFixed(2) : '–'], ['KF / GF', k.gf && k.kf != null ? (k.kf / k.gf).toFixed(2) : '–'],
       ['NF / NGF', hasRooms && k.ngf > 0 ? (k.nf / k.ngf).toFixed(2) : '–'], ['HNF / NGF', hasRooms && k.ngf > 0 ? (k.hnf / k.ngf).toFixed(2) : '–'],
@@ -121,7 +165,7 @@ export function planModel(s, data) {
       isReviewable: REVIEWABLE.has(status), isFrei: status === 'freigegeben', isUeber: status === 'uebertragen', isZurueck: status === 'zurueck', notSubmitted: idx < 2 && status !== 'zurueck',
       approveDisabled: !manualChecks.every(m => m.checked),
       transferStatus: status === 'uebertragen' ? 'Übertragen, ' + (f.transferredAt || 'heute') : status === 'freigegeben' ? 'Bereit zur Übertragung' : 'Wartet auf Freigabe',
-      steps, dates, siaRows, siaSegs, ratios, history, comment: p.comment || '',
+      steps, dates, siaRows, siaSegs, ratios, kpiDash, history, comment: p.comment || '',
       meta: [['Kürzel', f.code], ['Geschoss', `${f.floor} (Ebene ${f.ee})`], ['Bestellt von', P.orderedBy], ['Lieferant', `${sup.name}, ${sup.firm}`], ['Fällig', f.due], ['Grundlage', P.guideline], ['Prüfung', `${P.ruleCount} Prüfregeln, lokal im Browser`], ['Zielsystem', P.target]]
         .map(([k2, v], i) => ({ k: k2, v, bg: i % 2 ? 'transparent' : '#f6f7f9' })),
     };

@@ -24,10 +24,27 @@
 .plan-tab.is-active { border-bottom-color: var(--navy); color: var(--navy); font-weight: 600; }
 .plan-tab-count { display: inline-block; margin-left: 5px; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--row-alt); color: var(--muted); font-size: 11px; line-height: 18px; text-align: center; font-weight: 500; }
 .plan-tab.is-active .plan-tab-count { background: var(--navy); color: #fff; }
+/* Status filter «Alle | Warnungen | Fehler» at the right of the sub tabs (segmented control, as in plan-check) */
+.plan-filter { margin-left: auto; align-self: center; display: inline-flex; flex: none; margin-bottom: 4px; border: 1px solid var(--line-2); border-radius: 4px; overflow: hidden; background: #fff; }
+.plan-filter button { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border: 0; background: #fff; font: inherit; font-size: 12px; color: var(--text-3); cursor: pointer; white-space: nowrap; }
+.plan-filter button + button { border-left: 1px solid var(--line-2); }
+.plan-filter button:hover { background: var(--row-alt); }
+.plan-filter button[aria-pressed="true"], .plan-filter button[aria-pressed="true"]:hover { background: var(--navy); color: #fff; font-weight: 600; }
+.plan-filter button:focus-visible { outline: 2px solid var(--navy); outline-offset: -2px; }
 
 /* Split: list left, viewer right */
 .plan-split { display: flex; min-height: 520px; height: 560px; }
-.plan-list { width: 400px; flex: none; border-right: 1px solid var(--line-4); overflow: auto; display: flex; flex-direction: column; }
+.plan-list { width: 400px; flex: none; border-right: 1px solid var(--line-4); overflow: hidden; display: flex; flex-direction: column; }
+/* List toolbar: toggle-all (Layer, Räume, Geschossflächen) and search; the rows scroll below it */
+.plan-toolbar { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line-4); flex: none; background: #fff; }
+.plan-toggle-all, .plan-row input[type="checkbox"] { width: 15px; height: 15px; margin: 0; flex: none; accent-color: var(--navy); cursor: pointer; }
+.plan-search { flex: 1; min-width: 0; height: 30px; border: 1px solid var(--line-2); border-radius: 4px; padding: 0 10px; font: inherit; font-size: 12.5px; color: var(--text-2); background: #fff; transition: border-color .3s; }
+.plan-search::placeholder { color: var(--placeholder); }
+.plan-search:hover { border-color: #21485c; }
+.plan-search:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 2px rgba(16,56,79,.15); }
+.plan-rows { flex: 1; min-height: 0; overflow: auto; }
+.plan-row.is-hidden > :not(input) { opacity: .45; }
+.plan-row[role="button"]:focus-visible { outline: 2px solid var(--navy); outline-offset: -2px; }
 .plan-group { display: flex; justify-content: space-between; padding: 7px 12px; background: var(--row-alt-2); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); position: sticky; top: 0; z-index: 1; }
 .plan-row { display: flex; gap: 8px; align-items: center; padding: 6px 14px; border-bottom: 1px solid var(--line-4); font-size: 13px; line-height: 1.35; min-height: 40px; text-align: left; width: 100%; background: #fff; border-left: 0; border-right: 0; border-top: 0; }
 .plan-row.is-locatable { cursor: pointer; }
@@ -51,7 +68,6 @@
 .plan-tools button { width: 26px; height: 26px; border: 0; background: none; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
 .plan-tools button:hover { background: var(--row-alt); }
 .plan-tools .is-on { background: var(--navy); }
-.plan-tools-sep { width: 1px; background: var(--line-3); margin: 3px 2px; }
 .plan-coords { position: absolute; left: 8px; top: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted); background: rgba(255,255,255,.85); padding: 2px 6px; border-radius: 3px; pointer-events: none; }
 .plan-popup { position: absolute; z-index: 3; display: none; background: #fff; border: 1px solid var(--line-3); border-radius: 4px; box-shadow: var(--shadow-pop); padding: 8px 10px; min-width: 170px; max-width: 260px; font-size: 12px; pointer-events: none; }
 .plan-popup.is-visible { display: block; }
@@ -59,20 +75,24 @@
 .plan-popup-row { display: flex; justify-content: space-between; gap: 12px; padding: 1px 0; }
 .plan-popup-row span:first-child { color: var(--muted); }
 .plan-popup-row span:last-child { font-family: var(--mono); font-size: 11.5px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.plan-log { font-family: var(--mono); font-size: 11px; color: var(--muted); padding: 6px 12px; border-top: 1px solid var(--line-4); max-height: 54px; overflow: auto; line-height: 1.5; }
 
-/* Kennzahlen (SIA 416) */
+/* Kennzahlen (SIA 416 / DIN 277): two columns, no viewer */
+.plan-kpi-dash { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; padding: 12px 14px 16px; align-items: start; }
+.plan-kpi-card { border: 1px solid var(--line-3); border-radius: 4px; background: #fff; margin-bottom: 14px; overflow: hidden; }
 .plan-kpi-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-.plan-kpi-table td { padding: 5px 8px; border-bottom: 1px solid var(--line-6); }
+.plan-kpi-table td { padding: 7px 10px; border-bottom: 1px solid var(--line-5); }
+.plan-kpi-table tr:last-child td { border-bottom: 0; }
 .plan-kpi-table td.right { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.plan-kpi-table td.abbr { font-family: var(--mono); font-size: 11.5px; width: 52px; }
+.plan-kpi-table td.abbr { font-weight: 600; width: 64px; white-space: nowrap; }
+.plan-kpi-table td.ellipsis { max-width: 0; }
 .plan-kpi-table tr.is-sum td { font-weight: 600; }
-.plan-kpi-section { padding: 8px 12px 10px; }
-.plan-kpi-title { font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); margin: 6px 0 4px; }
-.plan-bar { display: flex; height: 18px; border-radius: 3px; overflow: hidden; margin: 8px 0 4px; }
-.plan-bar > span { display: flex; align-items: center; justify-content: center; font-size: 11px; color: #1f2937; white-space: nowrap; overflow: hidden; }
-.plan-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 11.5px; color: var(--text-3); }
-.plan-legend span::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; background: var(--c); }
+.plan-kpi-title { font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); margin: 6px 0 6px; }
+.plan-kpi-donut { display: flex; align-items: center; gap: 24px; margin: 6px 0 18px; }
+.plan-kpi-donut svg { width: 150px; height: 150px; flex: none; }
+.plan-kpi-legend { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; }
+.plan-kpi-legend span { display: flex; align-items: center; gap: 8px; }
+.plan-kpi-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.plan-kpi-legend b { font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; margin-left: 6px; }
 
 /* Right column: Prüfung card checks */
 
@@ -87,4 +107,7 @@
   .plan-viewer { height: 420px; }
   .plan-result { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .plan-result > div { border-bottom: 1px solid var(--line-4); }
+}
+@media (max-width: 1023.98px) {
+  .plan-kpi-dash { grid-template-columns: minmax(0, 1fr); }
 }

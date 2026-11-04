@@ -266,7 +266,9 @@ export function makeActions(store, data, nav) {
     tplToggle: ds => store.setIn('tplOn', { [ds.key]: !s().tplOn[ds.key] }),
 
     // ---- Planlieferungen DWG für das CAFM (DWG-UG … DWG-DG); the gates come from the plan model ----
-    planTab: ds => ui({ planTab: ds.arg }),
+    planTab: ds => ui({ planTab: ds.arg, planSearch: '' }),                 // the search belongs to one list (plan-check resets it too)
+    planFilter: ds => ui({ planFilter: ds.arg }),                            // 'all' | 'warnings' | 'errors', for every list tab
+    planSearch: (ds, el) => ui({ planSearch: el.value }),
     planFile: (ds, el) => {
       const file = el && el.files && el.files[0];
       if (el && 'value' in el) { try { el.value = ''; } catch { /* drop event stand-in */ } }

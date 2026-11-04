@@ -1,5 +1,6 @@
 // One map slot for the pages with a MapLibre GL map (Startseite «Einblicke», Projekt › Überblick «Standort»):
-// swisstopo base map as vector tiles, OpenFreeMap as fallback style, a text fallback without network.
+// worldwide base map: CARTO «Positron» vector style (public, no key), Esri World Light Gray raster tiles as fallback
+// style, a text fallback without network. The projects are worldwide (Auslandbauten), so no Swiss-only tiles.
 // The map is expensive (WebGL context, style download), so the live element survives re-renders of the same page:
 // it is moved into the fresh DOM instead of being rebuilt, and removed when the page is left (unmount).
 let live = null;           // { map, el, key, host, loaded }
@@ -37,7 +38,7 @@ export function mountMap(host, { key, cfg = {}, center, zoom, fallback, build })
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
   live = { map, el, key, host, loaded: false };
   host.__map = map;   // diagnostics / tests
-  // Fall back to a global style only if the style itself cannot be loaded (offline, blocked).
+  // Fall back to the second style only if the first cannot be loaded (offline, blocked); an object style is applied as is.
   let fellBack = false;
   map.on('error', e => {
     const err = e && e.error;

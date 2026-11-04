@@ -14,7 +14,7 @@ import { RULES, splitRulesByOutcome } from './rules.js';
 
 export { RULES, CATEGORIES, splitRulesByOutcome, summarizeValidation } from './rules.js';
 export { loadLibreDwg, MAX_FILE_SIZE } from './dwg.js';
-export { computeKpis, buildKpiSections, formatArea, formatShare, formatRatio, SIA_LABELS } from './kpi.js';
+export { computeKpis, buildKpiSections, buildEntityRows, formatArea, formatShare, formatRatio, SIA_LABELS, DIN277_GROUPS } from './kpi.js';
 export { fmtNum, fmtArea, fmtSize } from './util.js';
 
 const MAX_HANDLES = 400;   // handles kept per aggregated issue (enough to locate; keeps the state small)
@@ -39,7 +39,7 @@ export function toResult(file, parsed, drawing, validation) {
         rooms: rooms.map(r => ({ id: r.id, aoid: r.aoid, area: r.area, status: r.status, handle: r.handle, duplicate: r.isDuplicate || undefined })),
         areas: areas.map(a => ({ id: a.id, aoid: a.aoid, area: a.area, status: a.status, handle: a.handle })),
         layers: drawing.layerInfo.map(l => ({ name: l.name, count: l.count, color: l.colorHex, ok: layerStatus(l.name) === 'ok' })),
-        entities: drawing.entitySummary.map(e => ({ type: e.type, count: e.count })),
+        entities: drawing.entitySummary.map(e => ({ type: e.type, count: e.count, layers: (e.layers || []).slice(0, 4) })),
         kpi: { hnf: kpi.hnf, nnf: kpi.nnf, vf: kpi.vf, ff: kpi.ff, nf: kpi.nf, ngf: kpi.ngf, gf: kpi.gf, kf: kpi.kf },
     };
 }

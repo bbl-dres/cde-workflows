@@ -138,6 +138,7 @@ export class PlanViewer {
         this.highlightedItems = null;
         this.selectedPolygon = null;
         this.hiddenLayers = new Set();
+        this.hiddenRooms = new Set(); this.hiddenAreas = new Set();   // polygon ids hidden from the list (toggle-all, row checkboxes)
         this.container = null; this.canvas = null; this.ctx = null;
         this.viewWidth = 1; this.viewHeight = 1;
         this.renderPending = false;
@@ -156,6 +157,7 @@ export class PlanViewer {
         this.rooms = data ? data.rooms || [] : [];
         this.areas = data ? data.areas || [] : [];
         this.hiddenLayers = new Set(this.drawing ? this.drawing.hiddenLayers : []);
+        this.hiddenRooms = new Set(); this.hiddenAreas = new Set();
         this.clearSelection(false);
         if (!keepCamera) this.zoomExtents();
         this.render();
@@ -289,15 +291,33 @@ export class PlanViewer {
     locateRoom(id) {
         const room = this.rooms.find(r => r.id === id);
         if (!room) return false;
+        this.hiddenRooms.delete(id);
         if (this.overlay !== 'rooms') this.overlay = 'rooms';
         this.selectPolygon(room);
         return true;
     }
 
-    setLayerVisible(name, visible) {
-        if (visible) this.hiddenLayers.delete(name); else this.hiddenLayers.add(name);
+    locateArea(id) {
+        const area = this.areas.find(a => a.id === id);
+        if (!area) return false;
+        this.hiddenAreas.delete(id);
+        if (this.overlay !== 'areas') this.overlay = 'areas';
+        this.selectPolygon(area);
+        return true;
+    }
+
+    hiddenSet(kind) { return kind === 'layers' ? this.hiddenLayers : kind === 'rooms' ? this.hiddenRooms : this.hiddenAreas; }
+    isHidden(kind, id) { return this.hiddenSet(kind).has(id); }
+
+    /** Shows or hides layers ('layers', by name) or polygons ('rooms' | 'areas', by id) in a single render. */
+    setVisible(kind, ids, visible) {
+        const set = this.hiddenSet(kind);
+        for (const id of ids) { if (visible) set.delete(id); else set.add(id); }
+        if (!visible && kind !== 'layers' && kind === this.overlay && this.selectedPolygon && ids.includes(this.selectedPolygon.id)) this.clearSelection(false);
         this.render();
     }
+
+    setLayerVisible(name, visible) { this.setVisible('layers', [name], visible); }
 
     // ── Rendering ──
 
@@ -352,8 +372,9 @@ export class PlanViewer {
     }
 
     visibleOverlayEntries() {
-        const entries = this.overlay === 'rooms' ? this.rooms : this.overlay === 'areas' ? this.areas : [];
-        return entries.filter(e => !this.hiddenLayers.has(e.layer));
+        if (this.overlay !== 'rooms' && this.overlay !== 'areas') return [];
+        const entries = this.overlay === 'rooms' ? this.rooms : this.areas, hidden = this.hiddenSet(this.overlay);
+        return entries.filter(e => !this.hiddenLayers.has(e.layer) && !hidden.has(e.id));
     }
 
     drawPolygonOverlays(ctx, cam) {

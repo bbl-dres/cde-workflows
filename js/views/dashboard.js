@@ -2,7 +2,7 @@ import { html, icon, esc } from '../ui.js';
 import { mountMap, unmountMap } from './parts/map.js';
 
 // Startseite nach dem Login: Begrüssung, offene Aufgaben, Meine Projekte, Einblicke mit Karte (MapLibre GL,
-// swisstopo-Basiskarte als Vektorkacheln; Fallback OpenFreeMap; ohne Netz eine Ortsliste).
+// weltweite CARTO-Basiskarte «Positron» als Vektorkacheln; Fallback Esri World Light Gray; ohne Netz eine Ortsliste).
 //
 // The map lives in the shared map slot (views/parts/map.js) and survives re-renders of the dashboard.
 
@@ -69,11 +69,10 @@ export default {
             .setHTML(`<strong>${esc(p.name)}</strong><br>${esc(p.location.place)} · ${esc(p.phase)}<br><a href="#${esc(p.href)}">Projekt öffnen</a>`);
           new maplibregl.Marker({ element: pin }).setLngLat([p.location.lng, p.location.lat]).setPopup(popup).addTo(map);
         });
-        // Frame the projects inside Switzerland (projects abroad keep their pin but do not zoom the map out).
-        const [sw, ne] = cfg.fitBounds || [[5.9, 45.8], [10.5, 47.8]];
+        // Frame every project: the portfolio is worldwide (Auslandbauten), so the map zooms out as far as needed.
         const bounds = new maplibregl.LngLatBounds();
-        projects.forEach(p => { const { lng, lat } = p.location; if (lng >= sw[0] && lng <= ne[0] && lat >= sw[1] && lat <= ne[1]) bounds.extend([lng, lat]); });
-        if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 56, maxZoom: 8.5, duration: 0 });
+        projects.forEach(p => bounds.extend([p.location.lng, p.location.lat]));
+        if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 56, maxZoom: cfg.maxZoom || 8.5, duration: 0 });
       },
     });
   },

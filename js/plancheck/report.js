@@ -4,7 +4,7 @@
 // Port of js/export.js of plan-check (MIT, https://github.com/bbl-dres/plan-check) to the result shape of this
 // prototype. jsPDF and jspdf-autotable (both MIT) are loaded from jsDelivr on first use, with SRI hashes.
 // =============================================
-import { ruleRows, buildKpiSections, formatArea, formatShare, formatRatio, fmtNum, fmtSize } from './index.js';
+import { ruleRows, buildKpiSections, buildEntityRows, formatArea, formatShare, formatRatio, fmtNum, fmtSize } from './index.js';
 
 const SCRIPTS = [
   ['https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js', 'sha384-en/ztfPSRkGfME4KIm05joYXynqzUgbsG5nMrj/xEFAHXkeZfO3yMK8QQ+mP7p1/'],
@@ -84,7 +84,7 @@ export function buildReportModel(result, delivery = {}) {
     areas: result.areas,
     kpi,
     kpiRaw: { ...k, hasRooms },
-    entities: result.entities || [],
+    entities: buildEntityRows(result.entities),
     links: LINKS,
   };
 }
@@ -309,6 +309,14 @@ export async function buildPlanReport(model, { capture = () => null } = {}) {
     let ky = sectionSubtitle('Gebäudeflächen', contentTop + 2);
     table({ title: continuation, startY: ky, head: kpiHead, body: model.kpi.areas.map(areaRow), columnStyles: kpiColumns });
     tableCaption('Gebäudeflächen nach SIA 416');
+    ky = ensureSpace(doc.lastAutoTable.finalY + 10, 25, continuation);
+    ky = sectionSubtitle('Gebäudevolumen', ky);
+    table({ title: continuation, startY: ky, head: [['Kürzel', 'Bezeichnung', 'Volumen', 'Anteil']], body: model.kpi.volume.map(r => [r.abbr, r.label, DASH, DASH]), columnStyles: kpiColumns });
+    tableCaption('Gebäudevolumen nach SIA 416');
+    ky = ensureSpace(doc.lastAutoTable.finalY + 10, 80, continuation);
+    ky = sectionSubtitle('Flächen DIN 277', ky);
+    table({ title: continuation, startY: ky, head: kpiHead, body: model.kpi.din277.map(areaRow), columnStyles: kpiColumns });
+    tableCaption('Flächen nach DIN 277 Nutzungsgruppen');
     ky = ensureSpace(doc.lastAutoTable.finalY + 10, 45, continuation);
     ky = sectionSubtitle('Wirtschaftlichkeitskennzahlen', ky);
     table({ title: continuation, startY: ky, head: [['Kennzahl', 'Bezeichnung', 'Wert']], body: model.kpi.economy.map(r => [r.abbr, r.label, formatRatio(r.ratio)]), columnStyles: { 0: { fontStyle: 'bold', cellWidth: 22 }, 2: { halign: 'right', cellWidth: 22 } } });
@@ -316,7 +324,7 @@ export async function buildPlanReport(model, { capture = () => null } = {}) {
     if (model.entities.length > 0) {
       ky = ensureSpace(doc.lastAutoTable.finalY + 10, 50, continuation);
       ky = sectionSubtitle('Objektübersicht', ky);
-      table({ title: continuation, startY: ky, tableWidth: 'wrap', head: [['Typ', 'Anzahl']], body: model.entities.map(e => [e.type, String(e.count)]), columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 }, 1: { cellWidth: 20, halign: 'right' } } });
+      table({ title: continuation, startY: ky, head: [['Typ', 'Anzahl', 'Layer']], body: model.entities.map(e => [e.type, String(e.count), e.layers]), columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 }, 1: { cellWidth: 20, halign: 'right' } } });
       tableCaption('Objektübersicht — CAD-Entitäten nach Typ');
     }
   });

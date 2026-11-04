@@ -11,7 +11,7 @@ export const banner = () => html`<div class="proto-banner" role="note">${BANNER_
 
 /** Footer: source link at the right. */
 export const REPO_URL = 'https://github.com/bbl-dres/cde-workflows';
-export const footer = () => html`<footer class="app-footer"><span>Quellcode: <a href="${REPO_URL}" target="_blank" rel="noopener">${REPO_URL.replace('https://', '')}</a></span></footer>`;
+export const footer = () => html`<footer class="app-footer"><span class="app-footer-note">Prototyp – nur zur Demonstration</span><span>Quellcode: <a href="${REPO_URL}" target="_blank" rel="noopener">${REPO_URL.replace('https://', '')}</a></span></footer>`;
 
 // ---- Topbar ----
 export function topbar(ctx, hasSidebar) {

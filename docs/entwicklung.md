@@ -12,7 +12,7 @@ python -m http.server 8080      # oder: npm start · npx serve .
 
 Dann `http://localhost:8080` öffnen (Chromium-Browser: Edge, Brave, Chrome). Die Mock-Daten werden per `fetch()` aus `data/*.json`
 geladen; über `file://` funktioniert das nicht. Die Karte der Startseite lädt MapLibre GL JS (cdnjs) und die Vektorkacheln der
-swisstopo-Basiskarte; fällt der Stil aus, wird OpenFreeMap «Positron» geladen, ohne Netz erscheint eine Ortsliste
+weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlüssel; die Projekte liegen weltweit); fällt der Stil aus, werden Esri-Rasterkacheln «World Light Gray» geladen, ohne Netz erscheint eine Ortsliste
 (Konfiguration in `data/projects.json` unter `map`).
 
 ## Bedienung
@@ -42,7 +42,10 @@ swisstopo-Basiskarte; fällt der Stil aus, wird OpenFreeMap «Positron» geladen
   (bei einem offenen Formular alle 25, sonst die fehlenden Werte).
 - **Planlieferungen DWG**: ein Grundriss pro Lieferung. Die DWG-Datei wird per Drag & Drop hochgeladen und lokal im Browser gegen
   die 40 Prüfregeln der CAD-Richtlinie BBL V1.0 geprüft (LibreDWG WebAssembly, nichts wird hochgeladen), mit Plan-Viewer,
-  Fehlermeldungen, Räumen, Layern und Kennzahlen SIA 416. Einreichen ist erst ohne Regel mit Schweregrad Fehler möglich;
+  Fehlermeldungen, Räumen, Geschossflächen (Bruttogeschossfläche als Polygon), Layern und Kennzahlen SIA 416. Wie in
+  plan-check hat jede Liste eine Suche, die Viewer-Listen (Layer, Räume, Geschossflächen) ein «Alle ein-/ausblenden»,
+  und rechts der Sub-Tabs filtert «Alle | Warnungen | Fehler» alle Listen (Prüfregeln und Fehlermeldungen nach
+  Schweregrad, Räume und Flächen nach Status, Layer nur bei Warnungen). Referenz: `docs/reference/plan-check/`. Einreichen ist erst ohne Regel mit Schweregrad Fehler möglich;
   «Musterplan laden» prüft den offiziellen BBL-Musterplan CAD.V01 (38/40, 0 Fehler). «Prüfbericht» lädt das Prüfergebnis als
   PDF herunter (Deckblatt mit Lieferung und Zusammenfassung, Prüfregeln, Fehlermeldungen, Layer, Räume und Flächen mit
   Bildern aus dem Viewer, Kennzahlen SIA 416; jsPDF von jsDelivr, erst beim ersten Klick geladen). Flächen und Volumen
