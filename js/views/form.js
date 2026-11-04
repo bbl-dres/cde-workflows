@@ -9,6 +9,7 @@ import { dropZone, resultPanel } from './plan.js';
 // Beteiligte, Dokumente, Verlauf: tables.
 
 const COLS = 'grid-template-columns:68px minmax(0,1fr) 72px 120px 140px 100px 36px';
+const SIA_COLS = 'grid-template-columns:52px minmax(0,1fr) 90px 56px';   // Flächen SIA 416: the same grid table as Projektaufgaben
 const COLS_THG = 'grid-template-columns:84px minmax(0,1fr) 72px 88px 60px 96px 96px 56px 92px 36px';
 const check = c => html`<div class="rv-check">${icon(c.icon, 16, c.color)}<span class="flex-1">${c.label}</span></div>`;
 const devCell = c => html`<span class="right${c.hi ? ' is-over' : ''}" ${c.hi ? raw('title="Abweichung über dem Schwellenwert, Begründung nötig"') : ''}>${c.delta}</span>`;
@@ -84,7 +85,7 @@ const targetChart = F => {
 function planOverview(F, L) {
   const P = F.planOv;
   return html`
-    ${card(html`<span class="flex-1">Flächen SIA 416</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div style="padding:4px 0 8px"><div class="sia-row sia-head"><span style="grid-column:1/3">Flächenart</span><span class="right">Fläche</span><span class="right" title="Anteil an der Geschossfläche GF">% GF</span></div>${P.sia.map(a => html`<div class="sia-row" style="background:${a.bg};font-weight:${a.fw}"><span class="fw-600">${a.ab}</span><span>${a.name}</span><span class="right">${a.val}</span><span class="right muted">${a.share}</span></div>`)}</div>`)}
+    ${card(html`<span class="flex-1">Flächen SIA 416</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div class="sia-tbl"><div class="grid-head" style="${SIA_COLS};background:#f4f5f7;height:34px;font-size:12.5px"><span style="grid-column:1/3">Flächenart</span><span class="right">Fläche</span><span class="right" title="Anteil an der Geschossfläche GF">% GF</span></div>${P.sia.map((a, i) => html`<div class="grid-row" style="${SIA_COLS};height:30px;background:${i % 2 ? '#f6f7f9' : '#fff'};border:0;font-weight:${a.fw}"><span class="fw-600">${a.ab}</span><span class="ellipsis">${a.name}</span><span class="right">${a.val}</span><span class="right muted">${a.share}</span></div>`)}</div>`)}
     ${card(html`<span class="flex-1">Prüfregeln nach Kategorie</span>${hint('CAD-Richtlinie BBL V1.0')}`, html`<div class="cat-list">${P.cats.map(c => html`<div class="cat-row"><span>${c.name}</span><div class="cat-bar"><div style="width:${c.wOk};background:#7fb69a"></div><div style="width:${c.wWarn};background:#e0b54a"></div><div style="width:${c.wErr};background:#cf1322"></div></div><span class="right muted">${c.ratio}</span></div>`)}
       <div class="cat-legend"><span><span class="cat-sw" style="background:#7fb69a"></span>Bestanden</span><span><span class="cat-sw" style="background:#e0b54a"></span>Warnung</span><span><span class="cat-sw" style="background:#cf1322"></span>Fehler</span></div></div>`)}`;
 }

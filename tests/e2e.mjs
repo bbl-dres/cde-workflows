@@ -354,7 +354,7 @@ try {
   check('ILP tiles count the plans', (await tile('total')) === 11 && (await tile('check')) >= 1 && (await tile('done')) >= 4, `${await tile('total')} ${await tile('check')} ${await tile('done')}`);
   await go('/projects/musterhausen/deliveries/dwg-eg'); await sleep(100);
   check('DWG canonical URL (Übersicht)', (await hash()) === '#/projects/musterhausen/deliveries/dwg-eg/uebersicht', await hash());
-  check('DWG Übersicht: Flächen SIA 416, Prüfregeln nach Kategorie, 3 errors badge', (await count('.sia-row:not(.sia-head)')) === 8 && (await count('.cat-row')) === 10 && (await count('.kpi')) === 3 && (await text('.tab-badge')) === '3');
+  check('DWG Übersicht: Flächen SIA 416, Prüfregeln nach Kategorie, 3 errors badge', (await count('.sia-tbl .grid-row')) === 8 && (await text('.sia-tbl .grid-head')).includes('Flächenart') && (await count('.cat-row')) === 10 && (await count('.kpi')) === 3 && (await text('.tab-badge')) === '3');
   await shot('e2e-dwg-uebersicht');
   await go('/projects/musterhausen/deliveries/dwg-eg/erfassung');
   check('EG: failed rules listed, submit locked', (await count('.plan-list .plan-row')) === 40 && (await bodyText()).includes('LAYER_001') && (await disabled('[data-action="planSubmit"]')) && (await bodyText()).includes('Einreichen erst, wenn der Plan keine Fehler hat'));
