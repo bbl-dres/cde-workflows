@@ -1,0 +1,82 @@
+{
+  "note": "Ökobilanz Bauemissionen THG-32 nach dem Design vom 04.11.2026 (Emissionsquellen je eBKP-H-Elementgruppe): «sources» sind die Emissionsquellen des Projekts Verwaltungszentrum Musterhausen (5 600 m² EBF) mit Menge in der Bezugseinheit des KBOB-Datensatzes, THG Herstellung (h) und Entsorgung (e) in t CO₂-eq und Amortisationszeit (a) nach SIA 2032 Anhang C; «hs» = herstellerspezifischer Datensatz. Kennwert = (h + e) × 1000 / a / EBF kg CO₂-eq/m² EBF·a, Betrachtungszeitraum 60 Jahre inkl. Ersatz. «eg» sind die Elementgruppen der SIA-2032-Liste je Hauptgruppe [Code, Name, Einheit, Amortisation], «head» die Grundlagen der Ökobilanz [Schlüssel, Label, Vorgabe, Optionen], «prev31» die Werte der Vorphase SIA 31 je Hauptgruppe (kg CO₂-eq über 60 Jahre). KBOB-IDs nach der KBOB/ecobau-Liste 2022, Version 9.0 (docs/research); Mengen und Ergebnisse sind fiktiv.",
+  "head": [
+    ["kat", "Gebäudekategorie", "Verwaltung", ["Verwaltung", "Schule", "Wohnen MFH", "Verkauf", "Restaurant", "Spital", "Sonstige"]],
+    ["art", "Projektart", "Neubau", ["Neubau", "Neubau auf bestehendem UG", "Erneuerung", "Auskernung"]],
+    ["EBF", "EBF · aus den Grundrissen", null],
+    ["GF", "GF · aus den Grundrissen", null],
+    ["sys", "Systemgrenze", "SIA 2032 · A1–A3, A4–A5, B4, C1–C4", ["SIA 2032 · A1–A3, A4–A5, B4, C1–C4", "Abweichend, im Bericht begründet"]],
+    ["kbob", "Ökobilanzdaten", "KBOB/ecobau-Liste 2022, Version 9.0", ["KBOB/ecobau-Liste 2022, Version 9.0", "KBOB/ecobau-Liste 2022, Version 8.02"]],
+    ["tool", "Berechnungstool", "Modell ecCo (THG-Tool Bund)", ["Modell ecCo (THG-Tool Bund)", "Lesosai", "Thermo", "GREG", "Enerweb 380/1 ECO", "One Click LCA", "SNBS-Hilfstool 311", "greenBIM (Revit, ArchiCAD)", "Sonstiges"]],
+    ["dq", "Datenqualität", "geplant (SIA 32)", ["geschätzt", "geplant (SIA 32)", "ausgeführt"]]
+  ],
+  "eg": {
+    "B": [
+      ["B06.01", "Nicht kontaminierter Aushub", "m³", 60],
+      ["B06.04", "Baugrubenabschluss", "m²", 60],
+      ["B07.02", "Pfählung", "m", 60]
+    ],
+    "C": [
+      ["C01", "Fundament, Bodenplatte", "m²", 60],
+      ["C02.01", "Aussenwandkonstruktion", "m²", 60],
+      ["C02.02", "Innenwandkonstruktion", "m²", 60],
+      ["C03", "Stützenkonstruktion", "m", 60],
+      ["C04.01", "Geschossdecke", "m²", 60],
+      ["C04.04", "Konstruktion Flachdach", "m²", 60],
+      ["C04.05", "Konstruktion geneigtes Dach", "m²", 60],
+      ["C04.08", "Aussen liegende Konstruktion, Vordach", "m²", 60]
+    ],
+    "D": [
+      ["D01", "Elektroanlage", "m² EBF", 30],
+      ["D05.02", "Wärmeerzeugung", "Stk.", 20],
+      ["D05.04", "Wärmeverteilung", "m² EBF", 30],
+      ["D07", "Lufttechnische Anlage", "m² EBF", 30],
+      ["D08", "Wassertechnische Anlage", "m² EBF", 30]
+    ],
+    "E": [
+      ["E01", "Äussere Wandbekleidung unter Terrain", "m²", 40],
+      ["E02.02", "Aussenwärmedämmsystem", "m²", 30],
+      ["E02.03", "Fassadenbekleidung", "m²", 40],
+      ["E03.01", "Fenster", "m²", 30],
+      ["E03.02", "Aussentür", "m²", 30]
+    ],
+    "F": [
+      ["F01.02", "Bedachung Flachdach", "m²", 30],
+      ["F01.03", "Bedachung geneigtes Dach", "m²", 40]
+    ],
+    "G": [
+      ["G01", "Trennwand, Innentür, Innentor", "m²", 30],
+      ["G02", "Bodenbelag", "m²", 30],
+      ["G03", "Wandbekleidung", "m²", 30],
+      ["G04", "Deckenbekleidung", "m²", 30]
+    ]
+  },
+  "sources": [
+    {"id": "B06.01-1", "grp": "B", "code": "B06.01", "name": "Aushub maschinell, Durchschnitt", "kbob": "KBOB 62.001", "unit": "m³", "a": 60, "q": 5850, "h": 2.5, "e": 0.0},
+    {"id": "C01-1", "grp": "C", "code": "C01", "name": "Hochbaubeton (ohne Bewehrung)", "kbob": "KBOB 01.002", "unit": "kg", "a": 60, "q": 1480100, "h": 131.3, "e": 18.7},
+    {"id": "C01-2", "grp": "C", "code": "C01", "name": "Armierungsstahl", "kbob": "KBOB 06.003", "unit": "kg", "a": 60, "q": 64400, "h": 49.8, "e": 0.8},
+    {"id": "C01-3", "grp": "C", "code": "C01", "name": "Polystyrol extrudiert (XPS)", "kbob": "KBOB 10.005", "unit": "kg", "a": 60, "q": 5790, "h": 45.7, "e": 17.9},
+    {"id": "C02.01-1", "grp": "C", "code": "C02.01", "name": "Hochbaubeton (ohne Bewehrung)", "kbob": "KBOB 01.002", "unit": "kg", "a": 60, "q": 1017000, "h": 90.2, "e": 12.8},
+    {"id": "C02.01-2", "grp": "C", "code": "C02.01", "name": "Armierungsstahl", "kbob": "KBOB 06.003", "unit": "kg", "a": 60, "q": 35400, "h": 27.3, "e": 0.4},
+    {"id": "C02.02-1", "grp": "C", "code": "C02.02", "name": "Hochbaubeton (ohne Bewehrung)", "kbob": "KBOB 01.002", "unit": "kg", "a": 60, "q": 498100, "h": 44.2, "e": 6.3},
+    {"id": "C02.02-2", "grp": "C", "code": "C02.02", "name": "Backstein", "kbob": "KBOB 02.001", "unit": "kg", "a": 60, "q": 437100, "h": 111.0, "e": 5.6},
+    {"id": "C04.01-1", "grp": "C", "code": "C04.01", "name": "Hochbaubeton zirkulit® NPK A, 280 kg CEM II/C-M", "kbob": "KBOB 01.002.05", "unit": "kg", "a": 60, "q": 2984900, "h": 189.6, "e": 38.8, "hs": true},
+    {"id": "C04.01-2", "grp": "C", "code": "C04.01", "name": "Armierungsstahl", "kbob": "KBOB 06.003", "unit": "kg", "a": 60, "q": 148700, "h": 114.9, "e": 1.8},
+    {"id": "D01-1", "grp": "D", "code": "D01", "name": "Elektroanlagen Büro", "kbob": "KBOB 34.002", "unit": "m² EBF", "a": 30, "q": 5600, "h": 126.5, "e": 8.3},
+    {"id": "D05.02-1", "grp": "D", "code": "D05.02", "name": "Erdsonden für Sole-Wasser-Wärmepumpe", "kbob": "KBOB 31.016", "unit": "m", "a": 40, "q": 1650, "h": 34.1, "e": 4.2},
+    {"id": "D07-1", "grp": "D", "code": "D07", "name": "Lüftungsanlage, spez. Luftmenge 4 m³/h·m² EBF", "kbob": "KBOB 32.006", "unit": "m² EBF", "a": 30, "q": 5600, "h": 166.9, "e": 4.2},
+    {"id": "D08-1", "grp": "D", "code": "D08", "name": "Sanitäranlagen Büro", "kbob": "KBOB Gebäudetechnik 33", "unit": "m² EBF", "a": 30, "q": 5600, "h": 60.8, "e": 4.2},
+    {"id": "E02.03-1", "grp": "E", "code": "E02.03", "name": "Steinwolle", "kbob": "KBOB 10.008", "unit": "kg", "a": 40, "q": 25200, "h": 19.1, "e": 1.5},
+    {"id": "E02.03-2", "grp": "E", "code": "E02.03", "name": "Faserzementplatte", "kbob": "KBOB 03.003", "unit": "kg", "a": 40, "q": 30200, "h": 18.2, "e": 0.6, "hs": true},
+    {"id": "E02.03-3", "grp": "E", "code": "E02.03", "name": "Aluminiumprofil, blank", "kbob": "KBOB 06.002", "unit": "kg", "a": 40, "q": 5250, "h": 29.9, "e": 0.1},
+    {"id": "E03.01-1", "grp": "E", "code": "E03.01", "name": "Fensterrahmen Holz-Metall", "kbob": "KBOB 05.006", "unit": "m²", "a": 30, "q": 298, "h": 105.5, "e": 12.8},
+    {"id": "E03.01-2", "grp": "E", "code": "E03.01", "name": "Flachglas beschichtet", "kbob": "KBOB 03.005", "unit": "kg", "a": 30, "q": 26800, "h": 31.7, "e": 0.5},
+    {"id": "F01.02-1", "grp": "F", "code": "F01.02", "name": "Polystyrol expandiert (EPS)", "kbob": "KBOB 10.004", "unit": "kg", "a": 30, "q": 6440, "h": 29.0, "e": 19.9},
+    {"id": "G01-1", "grp": "G", "code": "G01", "name": "Gipskartonplatte", "kbob": "KBOB 03.008", "unit": "kg", "a": 30, "q": 170900, "h": 48.4, "e": 3.2},
+    {"id": "G01-2", "grp": "G", "code": "G01", "name": "Glaswolle", "kbob": "KBOB 10.001", "unit": "kg", "a": 30, "q": 4830, "h": 5.0, "e": 0.3},
+    {"id": "G02-1", "grp": "G", "code": "G02", "name": "Unterlagsboden Anhydrit", "kbob": "KBOB 04.005", "unit": "kg", "a": 30, "q": 662700, "h": 53.0, "e": 7.9},
+    {"id": "G02-2", "grp": "G", "code": "G02", "name": "Linoleum, 2.5 mm", "kbob": "KBOB 11.014", "unit": "m²", "a": 30, "q": 5520, "h": 32.2, "e": 2.8},
+    {"id": "G04-1", "grp": "G", "code": "G04", "name": "Gipskartonplatte", "kbob": "KBOB 03.008", "unit": "kg", "a": 30, "q": 58700, "h": 16.6, "e": 1.1}
+  ],
+  "prev31": {"B": 3000, "C": 944000, "D": 719000, "E": 417000, "F": 96000, "G": 348000}
+}

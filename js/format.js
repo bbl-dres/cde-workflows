@@ -18,6 +18,7 @@ export const num = x => {
 
 // Display a stored value: numbers formatted, strings as typed.
 export const disp = x => typeof x === 'number' ? FMT(x) : (x ?? '');
+export const disp1 = x => typeof x === 'number' ? FMT1(x) : (x ?? '');
 
 // Signed percentage with one decimal: +12.3 %
 export const pctS = d => (d > 0 ? '+' : '') + (d * 100).toLocaleString('de-CH', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' %';

@@ -106,7 +106,7 @@
       "name": "Ökobilanz Bauemissionen",
       "firm": "Ökobilanz Beispiel AG",
       "gewerk": "Nachhaltigkeit",
-      "desc": "Datenformular · THG je Hauptgruppe nach TP2, Endwert an SUS",
+      "desc": "Datenformular · Emissionsquellen je eBKP-H-Elementgruppe nach SIA 2032, Endwert an SUS",
       "statusKey": "thg",
       "isForm": true
     },

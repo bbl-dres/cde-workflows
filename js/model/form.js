@@ -1,10 +1,10 @@
 // Datenformulare (design of 04.11.2026): one view-model shape for the Kostenvoranschlag KV-32, the Kostenschätzung
 // KS-31, the Ökobilanz THG-32 and the DWG floor plans, with the tabs Übersicht · Erfassung · Prüfung · Beteiligte ·
 // Dokumente · Verlauf. Every project has its own slice in state.projects[pid]:
-//   { kvQ, kvV, ksQ, ksV, thgQ, thgV, sia, endwert, forms: { kind: { step, dates[], modes{}, gvals{}, checks{}, rejected, missingOnly, events[] } } }
+//   { kvQ, kvV, ksQ, ksV, thgSrc[], thgHead{}, sia, forms: { kind: { step, dates[], modes{}, gvals{}, checks{}, rejected, missingOnly, events[], removed{}, added[] } } }
 // Steps: 0 Erstellt (Offen), 1 In Bearbeitung, 2 Intern geprüft (only with a GP mandate, not used), 3 Eingereicht,
 // 4 In Prüfung, 5 Freigegeben, 6 Übertragen (Abgeschlossen). Which forms a project has comes from data/forms.json.
-import { FMT, FMT1, FMT2, num, disp, mio } from '../format.js';
+import { FMT, FMT1, FMT2, num, disp, disp1, mio } from '../format.js';
 import { pillSpec } from './pill.js';
 import { RULES } from '../plancheck/rules.js';
 import { mockProject, KEYS, KIND_OF } from './mock.js';
@@ -17,6 +17,7 @@ const CAT = [['LAYER', 'Layer'], ['POLY', 'Raumpolygone'], ['GPOLY', 'Geschosspo
 const ST_COLOR = { 'Fertig gemeldet': '#2f6b12', Eingereicht: '#2f6b12', Prüft: '#8a6100', 'Ab Einreichung': '#6b7280' };
 const ACT_FORM = { submit: 'formSubmit', reopen: 'formReopen', toggle: 'formToggleCheck', approve: 'formApprove', reject: 'formReject', transfer: 'formTransfer', reset: 'formResetReview' };
 const ACT_PLAN = { submit: 'planSubmit', reopen: 'planReopen', toggle: 'planToggleCheck', approve: 'planApprove', reject: 'planReject', transfer: 'planTransfer', reset: 'planResetReview' };
+export const SIA_BASIS = 9.0;                                       // SIA 390/1 Richtwert Erstellung Basis, kg CO₂-eq/m² EBF·a
 
 const pct = (a, b) => (b ? a / b * 100 : 0);
 const signed = d => (d > 0 ? '+' : d < 0 ? '−' : '±') + FMT1(Math.abs(d)) + ' %';
@@ -27,6 +28,7 @@ function dRow(cur, pv, dv = 1) {
 }
 const ck = (ok, label) => ({ label, ok, icon: ok ? 'circle-check' : 'triangle-alert', color: ok ? '#2f7d63' : '#c49a1c' });
 const alt = i => (i % 2 ? 'transparent' : '#f6f7f9');
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 /** Rows of the «Verlauf» card: the six visible steps with symbol, colours, date and the current marker. */
 export function stepRows(labels, step, dates, rejected) {
@@ -78,112 +80,199 @@ function instanceOf(D, kind, project, f) {
   return { T, I, reviewer, reviewerName: person(people, reviewer)[0], lead, leadName, leadFirm: person(people, lead)[1], docs, history, peopleList, frist: I.frist || '–', overdue: !!I.overdue, kann: !!I.kann };
 }
 
-// ---- KV-32 / KS-31 / THG-32 of one project ----
-function dataForm(kind, P, data, project) {
-  const D = data.forms, f = P.forms[kind], E = data.ebkp, people = D.people;
-  const X = instanceOf(D, kind, project, f), T = X.T;
-  const M = mockProject(project, data);
-  const isTHG = kind === 'thg', isCost = !isTHG;
-  const [qKey, vKey] = KEYS[kind], Q = P[qKey], V = P[vKey];
-  const sn = k => num(P.sia[k]) || 0;
-  const ref = { GSF: sn('GSF'), GF: sn('GF'), FAW: sn('FAW'), FB: sn('FB'), BUF: sn('BUF'), NF: sn('HNF') + sn('NNF'), EBF: sn('EBF') };
-  const GF = ref.GF || 1, EBF = ref.EBF || 1;
-  const prev = M.prev[kind] || {}, dv = isTHG ? 1000 : 1;
-  const kwOf = v => (isTHG ? FMT1(v / 60 / EBF) : FMT(v / GF));
-  const step = f.step, locked = step >= LOCKED_FROM, rejected = !!f.rejected;
-  const bd = miss => (!locked && miss ? '#ffa39e' : '#d9d9d9');
-  const status = X.overdue && step <= 1 && !rejected ? 'Überfällig' : statusOfStep(step, rejected);
-  const reviewer = X.reviewerName;
+/** Target chart (Kostenziel / Zielwert): ist value, optional accuracy band, numbered targets. */
+function targetChart(ist, tv, opts) {
+  const { band, fmtV, unit, step: st } = opts;
+  const vals = tv.map(x => x.v);
+  const bl = band ? band[0] : ist, bh = band ? band[1] : ist;
+  const lo = Math.min(ist, bl, ...vals), hi = Math.max(ist, bh, ...vals);
+  const x0 = Math.max(0, Math.floor(lo * (band ? 0.97 : 0.85) / st) * st), x1 = Math.max(x0 + st, Math.ceil(hi * (band ? 1.02 : 1.08) / st) * st);
+  const X = v => ((v - x0) / (x1 - x0) * 100).toFixed(2) + '%';
+  return { ist: fmtV(ist) + unit, istW: X(ist), hasBand: !!band, bandL: band ? X(bl) : '0%', bandW: band ? ((bh - bl) / (x1 - x0) * 100).toFixed(2) + '%' : '0%', min: fmtV(x0), max: fmtV(x1),
+    targets: tv.map((m, i) => { const d = pct(ist - m.v, m.v); return { ...m, n: String(i + 1), x: X(m.v), ly: i % 2 ? '48px' : '0px', val: fmtV(m.v), delta: ist ? signed(d) : '–', dc: d > 0 ? '#9b2c44' : '#2f6b12' }; }) };
+}
 
-  // Hauptgruppen: a direct amount (one field) or the detailed positions (quantity + value per position)
-  const defs = isCost ? [...E.ebkp, ...E.extra] : E.ebkp;
+// ---- Kosten (KV-32, KS-31): Hauptgruppen with a direct amount or the positions, Kostenelemente added or removed ----
+function costPart(kind, P, f, data, T, M, ref, locked, bd) {
+  const E = data.ebkp, [qKey, vKey] = KEYS[kind], Q = P[qKey], V = P[vKey];
+  const removed = f.removed || {}, added = f.added || [];
+  const GF = ref.GF || 1, prev = M.prev[kind] || {};
+  const kwOf = v => FMT(v / GF);
   let fields = 0, missing = 0, total = 0;
-  const groups = defs.map(g => {
-    const kids = g.kids || null, direct = !kids || (f.modes[g.code] || 'direct') === 'direct';
-    const gval = kids ? f.gvals[g.code] : V[g.code];
-    const G = { code: g.code, name: g.name, kids, direct, sum: 0, gval, gMiss: false, pos: [] };
+  const groups = [...E.ebkp, ...E.extra].map(g => {
+    const hasKids = !!g.kids, base = (g.kids || []).filter(k => !removed[k.code]), extra = added.filter(a => a.grp === g.code);
+    const direct = (f.modes[g.code] || 'direct') === 'direct';
+    const gval = hasKids ? f.gvals[g.code] : V[g.code];              // groups with positions keep their amount in gvals, the others in the value map
+    const G = { code: g.code, name: g.name, direct, hasKids, sum: 0, gval, gMiss: false, pos: [] };
     if (direct) { fields++; const v = num(gval); if (v == null) { missing++; G.gMiss = true; } else G.sum = v; }
-    else kids.forEach(k => {
-      const hasQty = !!k.unit, q = Q[k.code], v = V[k.code];
-      const qMiss = hasQty && num(q) == null, vMiss = num(v) == null, vn = num(v) || 0;
-      fields += hasQty ? 2 : 1; missing += (qMiss ? 1 : 0) + (vMiss ? 1 : 0); G.sum += vn;
-      G.pos.push({ isPos: true, code: k.code, name: k.name, unit: k.unit || '', hasQty, qStr: disp(q), vStr: disp(v), kw: vMiss ? '' : kwOf(vn), qBd: bd(qMiss), vBd: bd(vMiss), miss: qMiss || vMiss, qKey, vKey });
-    });
+    else {
+      base.forEach(k => {
+        const hasQty = !!k.unit, q = Q[k.code], v = V[k.code];
+        const qMiss = hasQty && num(q) == null, vMiss = num(v) == null, vn = num(v) || 0;
+        fields += hasQty ? 2 : 1; missing += (qMiss ? 1 : 0) + (vMiss ? 1 : 0); G.sum += vn;
+        G.pos.push({ isPos: true, code: k.code, name: k.name, unit: k.unit || '', hasQty, qStr: disp(q), vStr: disp(v), kw: vMiss ? '' : kwOf(vn), qBd: bd(qMiss), vBd: bd(vMiss), miss: qMiss || vMiss, qKey, vKey, canDel: !locked });
+      });
+      const used = new Set([...base.map(k => k.code), ...extra.map(a => a.code)]);
+      extra.forEach(a => {
+        const el = (E.elements[g.code] || []).find(x => x[0] === a.code);
+        const unit = el ? el[2] : '', hasQty = !!unit;
+        const codeMiss = !a.code, qMiss = hasQty && num(a.q) == null, vMiss = num(a.v) == null, vn = num(a.v) || 0;
+        fields += 2 + (hasQty ? 1 : 0); missing += (codeMiss ? 1 : 0) + (qMiss ? 1 : 0) + (vMiss ? 1 : 0); G.sum += vn;
+        G.pos.push({ isNewPos: true, id: a.id, code: a.code, name: el ? el[1] : '', unit, hasQty, qStr: disp(a.q), vStr: disp(a.v), kw: vMiss ? '' : kwOf(vn), codeBd: bd(codeMiss), qBd: bd(qMiss), vBd: bd(vMiss), miss: codeMiss || qMiss || vMiss,
+          opts: (E.elements[g.code] || []).filter(x => x[0] === a.code || !used.has(x[0])).map(x => ({ v: x[0], label: `${x[0]} ${x[1]}`, sel: x[0] === a.code })) });
+      });
+    }
     total += G.sum;
     return G;
   });
   const sumOf = (set, src) => groups.filter(G => set.includes(G.code)).reduce((a, G) => a + (src ? (src[G.code] || 0) : G.sum), 0);
   const prevTotal = Object.values(prev).reduce((a, b) => a + b, 0);
   const mwst = data.project.mwstRate || 0.081;
-  const bw = isCost ? sumOf('BCDEFGHIJVW') : total;
-  const endwert = num(P.endwert), control = total && EBF ? total / 60 / EBF : null;
+  const bw = sumOf('BCDEFGHIJVW');
 
-  // Erfassung rows
+  // Erfassung rows: group row, its positions when opened, «Kostenelement hinzufügen»
   const rows = [];
   groups.forEach(G => {
     const rf = T.groupRef[G.code] || ['pauschal'];
-    rows.push({ isGroupRow: true, code: G.code, name: G.name, unit: rf[0], bez: rf[1] ? FMT(ref[rf[1]]) : '', direct: G.direct, canToggle: !!G.kids, gStr: disp(G.gval), gBd: bd(G.gMiss), gKey: G.kids ? '' : vKey, sum: FMT(G.sum), kw: G.direct && G.gMiss ? '' : kwOf(G.sum), chev: G.direct ? 'chevron-right' : 'chevron-down', toggleLabel: G.direct ? 'Aufschlüsseln' : 'Zusammenfassen', sub: G.direct ? '' : `Summe aus ${G.kids.length} Positionen`, bg: G.direct ? '#fff' : '#f3f4f6', miss: G.gMiss || G.pos.some(p => p.miss) });
-    if (!G.direct) rows.push(...G.pos);
+    rows.push({ isGroupRow: true, code: G.code, name: G.name, unit: rf[0], bez: rf[1] ? FMT(ref[rf[1]]) : '', direct: G.direct, canToggle: true, gStr: disp(G.gval), gBd: bd(G.gMiss), gKey: G.hasKids ? '' : vKey, sum: FMT(G.sum), kw: G.direct && G.gMiss ? '' : kwOf(G.sum), chev: G.direct ? 'chevron-right' : 'chevron-down', toggleLabel: G.direct ? 'Aufschlüsseln' : 'Zusammenfassen', bg: G.direct ? '#fff' : '#f3f4f6', miss: G.gMiss || G.pos.some(p => p.miss) });
+    if (!G.direct) { rows.push(...G.pos); if (!locked && !f.missingOnly) rows.push({ isAdd: true, grp: G.code, label: '+ Kostenelement hinzufügen' }); }
   });
   const shownRows = f.missingOnly ? rows.filter(r => r.miss) : rows;
   const SUBS = [['C–G', 'Bauwerkskosten', 'CDEFG', false], ['B–W', 'Erstellungskosten', 'BCDEFGHIJVW', false], ['A–Z', 'Anlagekosten', 'BCDEFGHIJVWY', true]];
-  const subtotals = isCost ? SUBS.map(([code, name, set, withMwst]) => { const cur = sumOf(set) * (withMwst ? 1 + mwst : 1), pv = withMwst ? null : sumOf(set, prev); return { code, name, kw: FMT(cur / GF), ...dRow(cur, pv) }; }) : [];
+  const subtotals = SUBS.map(([code, name, set, withMwst]) => { const cur = sumOf(set) * (withMwst ? 1 + mwst : 1), pv = withMwst ? null : sumOf(set, prev); return { code, name, kw: FMT(cur / GF), ...dRow(cur, pv) }; });
 
-  // Übersicht
-  const kpis = isCost ? [{ k: 'Erstellungskosten B–W', v: bw ? FMT1(bw / 1e6) : '–', u: 'Mio CHF' }, { k: 'Kennwert B–W', v: bw ? FMT(bw / GF) : '–', u: 'CHF/m² GF' }]
-    : [{ k: 'Endwert für SUS', v: endwert == null ? '–' : FMT1(endwert), u: 'kg CO₂-eq/m² EBF·a' }, { k: 'Summe Positionen', v: total ? FMT(total / 1000) : '–', u: 't CO₂-eq' }];
-  const filled = fields - missing, compPct = fields ? Math.round(filled / fields * 100) : 100;
-  const comp = { label: 'Vollständigkeit', pct: compPct + ' %', w: compPct + '%', bar: missing ? '#d48806' : '#2f7d63', fg: missing ? '#8a6100' : '#2f6b12', text: missing ? `${filled} von ${fields} Werten erfasst · ${missing} fehlen` : `Alle ${fields} Werte erfasst` };
-  const costRows = groups.map((G, i) => ({ code: G.code, name: G.name, cur: FMT(G.sum / dv), prev: prev[G.code] != null ? FMT(prev[G.code] / dv) : '–', kw: kwOf(G.sum), bg: i % 2 ? '#fafbfc' : '#fff' }));
-  const totalRow = { cur: FMT(total / dv), prev: FMT(prevTotal / dv), kw: kwOf(total) };
-  let chart;
-  if (isCost) {
-    const Tz = M.kostenziel, acc = T.accuracy, prevBW = sumOf('BCDEFGHIJVW', prev);
-    const tv = T.targets.map(([label, v, c]) => ({ label, c, v: v === 'ziel' ? Tz : v === 'prev' ? prevBW : v === 'dach' ? M.kostendach : v }));
-    const bl = Tz * (1 - acc / 100), bh = Tz * (1 + acc / 100);
-    const lo = Math.min(bw, bl, ...tv.map(x => x.v)), hi = Math.max(bw, bh, ...tv.map(x => x.v));
-    const x0 = Math.max(0, Math.floor(lo * 0.97 / 1e5) * 1e5), x1 = Math.max(x0 + 1e5, Math.ceil(hi * 1.02 / 1e5) * 1e5), X = v => ((v - x0) / (x1 - x0) * 100).toFixed(2) + '%';
-    chart = { ist: mio(bw), istW: X(bw), hasBand: true, bandL: X(bl), bandW: ((bh - bl) / (x1 - x0) * 100).toFixed(2) + '%', min: mio(x0), max: mio(x1), acc, band: `${FMT2(bl / 1e6)}–${FMT2(bh / 1e6)} Mio`,
-      targets: tv.map((m, i) => { const d = pct(bw - m.v, m.v); return { ...m, n: String(i + 1), x: X(m.v), ly: i % 2 ? '48px' : '0px', val: mio(m.v), delta: bw ? signed(d) : '–', dc: d > 0 ? '#9b2c44' : '#2f6b12' }; }) };
-  } else {
-    const ann = v => v / 60 / EBF, ist = endwert != null ? endwert : ann(total);
-    const tv = T.targets.map(([label, v, c]) => ({ label, c, v: v === 'prev' ? ann(prevTotal) : v }));
-    const lo = Math.min(ist, ...tv.map(x => x.v)), hi = Math.max(ist, ...tv.map(x => x.v));
-    const x0 = Math.max(0, Math.floor(lo * 0.85)), x1 = Math.max(x0 + 1, Math.ceil(hi * 1.08)), X = v => ((v - x0) / (x1 - x0) * 100).toFixed(2) + '%', kg = v => FMT1(v) + ' kg';
-    chart = { ist: kg(ist) + ' CO₂-eq/m² EBF·a', istW: X(ist), hasBand: false, bandL: '0%', bandW: '0%', min: kg(x0), max: kg(x1), acc: 0, band: '',
-      targets: tv.map((m, i) => { const d = pct(ist - m.v, m.v); return { ...m, n: String(i + 1), x: X(m.v), ly: i % 2 ? '48px' : '0px', val: kg(m.v), delta: ist ? signed(d) : '–', dc: d > 0 ? '#9b2c44' : '#2f6b12' }; }) };
-  }
-  const open = step === 0 && missing === fields ? { text: 'Noch keine Werte erfasst. Die Erfassung ist offen.', btn: 'Erfassung öffnen', tab: 'erfassung' }
-    : missing ? { text: `${missing} ${missing === 1 ? 'Wert fehlt' : 'Werte fehlen'} noch. Danach zur Prüfung einreichen.`, btn: 'Erfassung fortsetzen', tab: 'erfassung' }
-    : { text: 'Alle Werte sind erfasst.', btn: 'Zur Prüfung einreichen', tab: 'erfassung' };
-  const meta = [['Kürzel', T.code], ['Vorlage', T.vorlage], ['Lieferverantwortlich', `${X.leadName}, ${X.leadFirm}`], ['Prüfend', `${reviewer}, BBL`], ['Frist', X.frist], ['Zielsystem', T.ziel], ...(T.reporting ? [['Berichterstattung', T.reporting]] : []), ...(X.kann ? [['Pflicht', 'Kann · nur Ablage (Anlagekosten unter CHF 1 Mio)']] : [])].map(([k, v], i) => ({ k, v, bg: alt(i) }));
-
-  // Prüfung
-  const cmp = groups.map(G => ({ code: G.code, name: G.name, ...dRow(G.sum, prev[G.code], dv) }));
-  const cmpT = dRow(total, prevTotal, dv);
+  // Übersicht and Prüfung
+  const kpis = [{ k: 'Erstellungskosten B–W', v: bw ? FMT1(bw / 1e6) : '–', u: 'Mio CHF' }, { k: 'Kennwert B–W', v: bw ? FMT(bw / GF) : '–', u: 'CHF/m² GF' }];
+  const costRows = groups.map((G, i) => ({ code: G.code, name: G.name, cur: FMT(G.sum), prev: prev[G.code] != null ? FMT(prev[G.code]) : '–', kw: kwOf(G.sum), bg: i % 2 ? '#fafbfc' : '#fff' }));
+  const totalRow = { cur: FMT(total), prev: FMT(prevTotal), kw: kwOf(total) };
+  const Tz = M.kostenziel, acc = T.accuracy, prevBW = sumOf('BCDEFGHIJVW', prev);
+  const tv = T.targets.map(([label, v, c]) => ({ label, c, v: v === 'ziel' ? Tz : v === 'prev' ? prevBW : v === 'dach' ? M.kostendach : v }));
+  const bl = Tz * (1 - acc / 100), bh = Tz * (1 + acc / 100);
+  const chart = { ...targetChart(bw, tv, { band: [bl, bh], fmtV: mio, unit: '', step: 1e5 }), acc, band: `${FMT2(bl / 1e6)}–${FMT2(bh / 1e6)} Mio` };
+  const cmp = groups.map(G => ({ code: G.code, name: G.name, ...dRow(G.sum, prev[G.code]) }));
+  const cmpT = dRow(total, prevTotal);
   const hiCodes = cmp.filter(c => c.hi).map(c => c.code);
   const kwv = bw / GF;
-  const autoChecks = isCost ? [
-    ck(missing === 0, missing ? `${missing} ${missing === 1 ? 'Wert fehlt' : 'Werte fehlen'}` : 'Alle Hauptgruppen erfasst'),
+  const autoChecks = [
+    ck(missing === 0, missing ? plural(missing, 'Wert fehlt', 'Werte fehlen') : 'Alle Hauptgruppen erfasst'),
     ck(kwv >= 2400 && kwv <= 3600, `Kennwert ${FMT(kwv)} CHF/m² GF B–W im Bereich Verwaltungsbauten (2’400–3’600)`),
     ck(hiCodes.length === 0, hiCodes.length ? `Abweichung zu ${T.cmpPrevLabel} über 10 % bei ${hiCodes.join(', ')}` : `Abweichungen zu ${T.cmpPrevLabel} unter 10 %`),
     ck(true, 'Bezugsmengen aus den Grundrissen (DWG) übernommen'),
-  ] : [
-    ck(endwert != null, 'Endwert für SUS erfasst'),
-    ck(X.docs.length > 0, X.docs.length ? 'Ökobilanz-Bericht hochgeladen' : 'Ökobilanz-Bericht fehlt'),
-    ck(endwert != null && control != null && Math.abs(endwert - control) / control <= 0.05, `Endwert entspricht dem Kontrollwert ${control == null ? '–' : FMT1(control)} (± 5 %)`),
-    ck(endwert != null && endwert <= 9.0, 'Endwert unter Zielwert SIA 390/1 Erstellung (9.0)'),
   ];
+  const value = `Erstellungskosten B–W CHF ${FMT(bw)}`;
+  return { fields, missing, total, bw, groups: groups.map(G => ({ code: G.code, direct: G.direct, sum: G.sum })), subtotals, kpis, costRows, totalRow, chart, cmp, cmpT, autoChecks,
+    handoverValue: value, submitDetail: value, canSubmitData: missing === 0, reason: 'Einreichen erst, wenn alle Werte erfasst sind', endwert: null, endwertStr: '–',
+    erf: { isTHG: false, qtyLabel: T.qtyLabel, valLabel: T.valLabel, kwLabel: T.kwLabel, rows: shownRows, allRows: rows, totalStr: FMT(total), totalKw: kwOf(total) } };
+}
+
+// ---- Ökobilanz (THG-32): Emissionsquellen je eBKP-H-Elementgruppe, Grundlagen, Endwert = Erstellung pro Jahr / EBF ----
+function thgPart(P, f, data, T, M, ref, locked, bd, nDocs) {
+  const TH = data.thg, EGS = TH.eg, S = P.thgSrc || [], H = P.thgHead || {};
+  const EBF = ref.EBF || 1, prev = M.prev.thg || {};
+  const kwOf = v => FMT1(v / 60 / EBF);
+  const names = Object.fromEntries(data.ebkp.ebkp.map(g => [g.code, g.name]));
+  const egOf = code => { for (const list of Object.values(EGS)) { const x = list.find(y => y[0] === code); if (x) return x; } return null; };
+  let fields = 0, missing = 0, total = 0;
+  const groups = Object.keys(EGS).map(code => ({ code, name: names[code] || code, open: (f.modes[code] || 'direct') === 'detail', sum: 0, h: 0, e: 0, n: 0, miss: 0, src: [] }));
+  const byG = Object.fromEntries(groups.map(g => [g.code, g]));
+  S.forEach(s => {
+    const G = byG[s.grp]; if (!G) return;
+    const isNew = !!s.isNew, eg = isNew ? egOf(s.code) : null;
+    const unit = isNew ? (eg ? eg[2] : '') : s.unit, A = isNew ? (eg ? eg[3] : null) : s.a;
+    const q = num(s.q), h = num(s.h), e = num(s.e);
+    const codeMiss = isNew && !s.code, kbobMiss = isNew && !String(s.kbob || '').trim(), qMiss = q == null, hMiss = h == null, eMiss = e == null;
+    const m = [codeMiss, kbobMiss, qMiss, hMiss, eMiss].filter(Boolean).length;
+    fields += isNew ? 5 : 3; missing += m; G.n++; G.miss += m;
+    if (h != null) G.h += h;
+    if (e != null) G.e += e;
+    const v60 = h != null && e != null && A ? (h + e) * 1000 / A * 60 : 0;    // kg CO₂-eq over 60 years incl. replacement
+    G.sum += v60; total += v60;
+    G.src.push({ isSrc: !isNew, isNew, id: s.id, code: s.code, name: s.name || '', kbob: s.kbob || '', unit, amort: A ? `${A} a` : '–', hs: !!s.hs,
+      qStr: disp(s.q), hStr: disp1(s.h), eStr: disp1(s.e), qBd: bd(qMiss), hBd: bd(hMiss), eBd: bd(eMiss), codeBd: bd(codeMiss), kbobBd: bd(kbobMiss), kw: v60 ? kwOf(v60) : '', miss: m > 0,
+      opts: isNew ? (EGS[s.grp] || []).map(x => ({ v: x[0], label: `${x[0]} ${x[1]}`, sel: x[0] === s.code })) : [] });
+  });
+  const nSrc = S.length, endwert = total ? total / 60 / EBF : null, endwertStr = endwert == null ? '–' : FMT1(endwert);
+
+  // Erfassung rows: group row (B–G), its Emissionsquellen when opened, «Emissionsquelle hinzufügen»
+  const rows = [];
+  groups.forEach(G => {
+    if (f.missingOnly && !G.miss) return;
+    const open = G.open || !!f.missingOnly;
+    rows.push({ isGroupRow: true, code: G.code, name: G.name, canToggle: true, direct: !open, sub: plural(G.n, 'Emissionsquelle', 'Emissionsquellen'), h: FMT1(G.h), e: FMT1(G.e), kw: G.sum ? kwOf(G.sum) : '', chev: open ? 'chevron-down' : 'chevron-right', toggleLabel: open ? 'Zuklappen' : 'Aufklappen', bg: open ? '#f3f4f6' : '#fff', miss: G.miss > 0 });
+    if (!open) return;
+    rows.push(...(f.missingOnly ? G.src.filter(r => r.miss) : G.src));
+    if (!locked && !f.missingOnly) rows.push({ isAdd: true, grp: G.code, label: '+ Emissionsquelle hinzufügen' });
+  });
+  const sumH = groups.reduce((a, G) => a + G.h, 0), sumE = groups.reduce((a, G) => a + G.e, 0);
+  const tot = { h: FMT1(sumH), e: FMT1(sumE), kw: total ? kwOf(total) : '' };
+  const derived = [{ name: 'Erstellung pro Jahr', v: total ? FMT1(total / 60 / 1000) : '–', u: 't CO₂-eq/a', kw: endwertStr, ku: 'kg/m² EBF·a' },
+    { name: 'Erstellung absolut, 60 Jahre inkl. Ersatz', v: total ? FMT(total / 1000) : '–', u: 't CO₂-eq', kw: total ? FMT(total / EBF) : '–', ku: 'kg/m² EBF' }];
+  const head = TH.head.map(([key, label, def, opts]) => {
+    const ro = def == null || locked, val = def == null ? FMT(ref[key]) + ' m²' : (H[key] ?? '');
+    return { key, label, isSelect: !!opts, opts: (opts || []).map(o => ({ v: o, sel: o === val })), val, ro, bg: ro ? '#f3f4f6' : '#fff' };
+  });
+
+  // Übersicht and Prüfung
+  const kpis = [{ k: 'Endwert für SUS', v: endwertStr, u: 'kg CO₂-eq/m² EBF·a' }, { k: 'Erstellung über 60 Jahre', v: total ? FMT(total / 1000) : '–', u: 't CO₂-eq' }];
+  const costRows = groups.map((G, i) => ({ code: G.code, name: G.name, cur: FMT(G.sum / 1000), prev: prev[G.code] != null ? FMT(prev[G.code] / 1000) : '–', kw: kwOf(G.sum), bg: i % 2 ? '#fafbfc' : '#fff' }));
+  const prevTotal = Object.values(prev).reduce((a, b) => a + b, 0);
+  const totalRow = { cur: FMT(total / 1000), prev: FMT(prevTotal / 1000), kw: kwOf(total) };
+  const tv = T.targets.map(([label, v, c]) => ({ label, c, v: v === 'prev' ? prevTotal / 60 / EBF : v }));
+  const kg = v => FMT1(v) + ' kg';
+  const chart = { ...targetChart(endwert || 0, tv, { band: null, fmtV: kg, unit: ' CO₂-eq/m² EBF·a', step: 1 }), acc: 0, band: '' };
+  if (endwert == null) chart.ist = '–';
+  const cmp = groups.map(G => ({ code: G.code, name: G.name, ...dRow(G.sum, prev[G.code], 1000) }));
+  const cmpT = dRow(total, prevTotal, 1000);
+  const DEF = Object.fromEntries(TH.head.filter(h => h[2] != null).map(h => [h[0], h[2]]));
+  const stdBasis = H.kbob === DEF.kbob && H.sys === DEF.sys;
+  const autoChecks = [
+    ck(nSrc > 0 && missing === 0, !nSrc ? 'Keine Emissionsquellen erfasst' : missing ? plural(missing, 'Wert fehlt', 'Werte fehlen') : `Alle ${nSrc} Emissionsquellen mit Elementgruppe und KBOB-Datensatz`),
+    ck(nDocs >= 2, nDocs >= 2 ? 'Ökobilanz-Bericht und Tool-Export hochgeladen' : nDocs === 1 ? 'Tool-Export fehlt' : 'Ökobilanz-Bericht und Tool-Export fehlen'),
+    ck(stdBasis, stdBasis ? `${DEF.kbob}, Systemgrenze SIA 2032` : `Abweichende Grundlagen: ${H.kbob || '–'} · ${H.sys || '–'}`),
+    ck(endwert != null && endwert <= SIA_BASIS, endwert == null ? 'Kein Endwert' : `Endwert ${endwertStr} ${endwert <= SIA_BASIS ? 'unter' : 'über'} SIA 390/1 Richtwert Basis ${FMT1(SIA_BASIS)}`),
+  ];
+  const value = `${endwertStr} kg CO₂-eq/m² EBF·a`;
+  return { fields, missing, total, bw: total, groups: groups.map(G => ({ code: G.code, open: G.open, sum: G.sum, n: G.n })), subtotals: [], kpis, costRows, totalRow, chart, cmp, cmpT, autoChecks,
+    handoverValue: value, submitDetail: `Endwert ${value} · ${plural(nSrc, 'Emissionsquelle', 'Emissionsquellen')}`, canSubmitData: nSrc > 0 && missing === 0,
+    reason: nSrc ? 'Einreichen erst, wenn alle Werte erfasst sind' : 'Einreichen erst, wenn Emissionsquellen erfasst sind', endwert, endwertStr, nSrc,
+    erf: { isTHG: true, rows, allRows: rows, head, tot, derived, nSrc },
+    open: nSrc === 0 ? { text: 'Noch keine Emissionsquellen erfasst. Tool-Export importieren oder die Quellen von Hand erfassen.', btn: 'Erfassung öffnen', tab: 'erfassung' } : undefined };
+}
+
+// ---- KV-32 / KS-31 / THG-32 of one project ----
+function dataForm(kind, P, data, project) {
+  const D = data.forms, f = P.forms[kind], people = D.people;
+  const X = instanceOf(D, kind, project, f), T = X.T;
+  const M = mockProject(project, data);
+  const isTHG = kind === 'thg';
+  const sn = k => num(P.sia[k]) || 0;
+  const ref = { GSF: sn('GSF'), GF: sn('GF'), FAW: sn('FAW'), FB: sn('FB'), BUF: sn('BUF'), NF: sn('HNF') + sn('NNF'), EBF: sn('EBF') };
+  const step = f.step, locked = step >= LOCKED_FROM, rejected = !!f.rejected;
+  const bd = miss => (!locked && miss ? '#ffa39e' : '#d9d9d9');
+  const status = X.overdue && step <= 1 && !rejected ? 'Überfällig' : statusOfStep(step, rejected);
+  const reviewer = X.reviewerName;
+  const C = isTHG ? thgPart(P, f, data, T, M, ref, locked, bd, X.docs.length) : costPart(kind, P, f, data, T, M, ref, locked, bd);
+  const { fields, missing } = C;
+
+  const filled = fields - missing, compPct = fields ? Math.round(filled / fields * 100) : 0;
+  const comp = { label: 'Vollständigkeit', pct: compPct + ' %', w: compPct + '%', bar: missing || !fields ? '#d48806' : '#2f7d63', fg: missing || !fields ? '#8a6100' : '#2f6b12',
+    text: !fields ? (isTHG ? 'Noch keine Emissionsquellen erfasst' : 'Noch keine Werte erfasst') : missing ? `${filled} von ${fields} Werten erfasst · ${missing} fehlen` : `Alle ${fields} Werte erfasst` };
+  const open = C.open || (step === 0 && missing === fields ? { text: 'Noch keine Werte erfasst. Die Erfassung ist offen.', btn: 'Erfassung öffnen', tab: 'erfassung' }
+    : missing ? { text: `${plural(missing, 'Wert fehlt', 'Werte fehlen')} noch. Danach zur Prüfung einreichen.`, btn: 'Erfassung fortsetzen', tab: 'erfassung' }
+    : { text: 'Alle Werte sind erfasst.', btn: 'Zur Prüfung einreichen', tab: 'erfassung' });
+  const meta = [['Kürzel', T.code], ['Vorlage', T.vorlage], ['Lieferverantwortlich', `${X.leadName}, ${X.leadFirm}`], ['Prüfend', `${reviewer}, BBL`], ['Frist', X.frist], ['Zielsystem', T.ziel], ...(T.reporting ? [['Berichterstattung', T.reporting]] : []), ...(X.kann ? [['Pflicht', 'Kann · nur Ablage (Anlagekosten unter CHF 1 Mio)']] : [])].map(([k, v], i) => ({ k, v, bg: alt(i) }));
+
+  // Prüfung, Übergabe, Leiste
   const canReview = step === 3 || step === 4;
   const manual = T.manual.map(([key, label]) => ({ key, label, checked: !!f.checks[key], disabled: !canReview }));
   const allChecked = manual.every(m => m.checked);
   const rv = { decide: step < 5, canReview, canApprove: canReview && allChecked, notSubmitted: false,
     reason: !canReview ? 'Erst nach der Einreichung möglich' : allChecked ? '' : 'Erst alle Prüfpunkte bestätigen',
     done: step >= 5, doneText: step >= 6 ? `Freigegeben und an ${T.target} übertragen. Lieferung abgeschlossen.` : `Freigegeben durch ${reviewer}.` };
-  const handover = { ziel: T.ziel, value: isCost ? `Erstellungskosten B–W CHF ${FMT(bw)}` : `${endwert == null ? '–' : FMT1(endwert)} kg CO₂-eq/m² EBF·a`, status: handoverStatus(step, f.dates[6]) };
-  const canSubmit = step <= 1 && missing === 0 && (!isTHG || endwert != null);
+  const handover = { ziel: T.ziel, value: C.handoverValue, status: handoverStatus(step, f.dates[6]) };
+  const canSubmit = step <= 1 && C.canSubmitData;
   const bar = { editing: step <= 1, locked, canFilter: missing > 0 || !!f.missingOnly, label: 'Zur Prüfung einreichen', canSubmit,
-    reason: canSubmit || step > 1 ? '' : missing ? 'Einreichen erst, wenn alle Werte erfasst sind' : 'Endwert für SUS fehlt',
+    reason: canSubmit || step > 1 ? '' : C.reason,
     compText: comp.text, compW: comp.w, compBar: comp.bar, lockedText: `Eingereicht. Die Erfassung ist gesperrt, bis ${reviewer} freigibt oder zurückweist.` };
 
   return {
@@ -191,12 +280,12 @@ function dataForm(kind, P, data, project) {
     step, locked, rejected, status, pill: pillSpec(status), act: ACT_FORM,
     badges: { erfassung: missing && !locked ? { n: missing, bg: '#fff1f0', fg: '#9b2c44' } : null, dokumente: { n: X.docs.length, bg: '#f3f4f6', fg: '#374151' } },
     steps: stepRows(D.steps, step, f.dates, rejected), next: nextStep(step, T.target, reviewer, open),
-    kpis, comp, meta, people: peopleShort(people, X.peopleList), peopleRows: peopleRows(people, X.peopleList), docs: docRows(X.docs), hist: histRows(people, [...X.history, ...f.events]),
-    ov: T.ov, costRows, totalRow, subtotals, chart,
-    erf: { tableTitle: T.tableTitle, qtyLabel: T.qtyLabel, valLabel: T.valLabel, kwLabel: T.kwLabel, totalLabel: T.totalLabel, foot: T.foot, rows: shownRows, allRows: rows, totalStr: FMT(total), totalKw: kwOf(total), missingOnly: !!f.missingOnly, importItems: T.importItems, hasEndwert: isTHG, endwert: P.endwert, control: control == null ? '–' : FMT1(control), inputBg: locked ? '#f3f4f6' : '#fff' },
-    bar, cmp, cmpT, cmpPrevLabel: T.cmpPrevLabel, cmpUnit: T.cmpUnit, autoChecks, manual, rv, handover, canTransfer: step === 5,
-    missing, fields, total, bw, groups: groups.map(G => ({ code: G.code, direct: G.direct, sum: G.sum })),
-    submitDetail: isCost ? `Erstellungskosten B–W CHF ${FMT(bw)}` : `Endwert ${P.endwert} kg CO₂-eq/m² EBF·a`,
+    kpis: C.kpis, comp, meta, people: peopleShort(people, X.peopleList), peopleRows: peopleRows(people, X.peopleList), docs: docRows(X.docs), hist: histRows(people, [...X.history, ...f.events]),
+    ov: T.ov, costRows: C.costRows, totalRow: C.totalRow, subtotals: C.subtotals, chart: C.chart,
+    erf: { tableTitle: T.tableTitle, totalLabel: T.totalLabel, foot: T.foot || '', missingOnly: !!f.missingOnly, importItems: T.importItems, inputBg: locked ? '#f3f4f6' : '#fff', ...C.erf },
+    bar, cmp: C.cmp, cmpT: C.cmpT, cmpPrevLabel: T.cmpPrevLabel, cmpUnit: T.cmpUnit, autoChecks: C.autoChecks, manual, rv, handover, canTransfer: step === 5,
+    missing, fields, total: C.total, bw: C.bw, groups: C.groups, endwert: C.endwert, endwertStr: C.endwertStr, nSrc: C.nSrc || 0,
+    submitDetail: C.submitDetail,
   };
 }
 
@@ -256,7 +345,7 @@ export function planForm(plan, s, data) {
     steps: stepRows(D.steps, step, dates, rejected), next: nextStep(step, 'das CAFM', 'Paula Muster', open),
     kpis, comp, meta, people: peopleShort(people, peopleList), peopleRows: peopleRows(people, peopleList, sc => sc.replace('{floor}', plan.name)), docs, hist,
     planOv: { sia, cats },
-    erf: { tableTitle: `${plan.name} · ${plan.floor}`, fileMeta, foot: PF.foot, hasEndwert: false },
+    erf: { tableTitle: `${plan.name} · ${plan.floor}`, fileMeta, foot: PF.foot, isTHG: false },
     bar, res, reviewIssues, autoChecks: plan.autoChecks, manual: plan.manualChecks, rv,
     handover: { ziel: P.target, value: r ? `${plan.roomCount} Raumpolygone mit AOID, NGF ${plan.ngf}, GF ${plan.gf}` : '–', status: plan.transferStatus },
     canTransfer: plan.isFrei,

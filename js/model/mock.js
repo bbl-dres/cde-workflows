@@ -1,11 +1,15 @@
 // Deterministic mock values for the Datenformulare of every project: the Musterhausen base data (data/ebkp.json,
-// data/sia416.json) scaled by the project's Anlagekosten and jittered per project, so that all projects open with
-// plausible, complete and consistent positions, Bezugsmengen, Vorphasenwerte and Zielwerte. Musterhausen keeps its
-// base values unchanged. Which forms a project has (kv, ks, thg) and their workflow state come from data/forms.json
-// (byProject); a form at step 0 («Offen») has no values yet, `missing` blanks single fields of forms in progress.
+// data/thg.json, data/sia416.json) scaled by the project's Anlagekosten and jittered per project, so that all projects
+// open with plausible, complete and consistent positions, Emissionsquellen, Bezugsmengen, Vorphasenwerte and Zielwerte.
+// Musterhausen keeps its base values unchanged. Which forms a project has (kv, ks, thg) and their workflow state come
+// from data/forms.json (byProject); a form at step 0 («Offen») has no values yet, `missing` blanks single fields of
+// forms in progress («kvQ:D08» for the cost maps, «thg:C01-1:h» for a field of an Emissionsquelle).
 export const BASE_AK = 24.6;
+export const BASE_EBF = 5600;
 export const KIND_OF = { 'KV-32': 'kv', 'KS-31': 'ks', 'THG-32': 'thg' };
-export const KEYS = { kv: ['kvQ', 'kvV'], ks: ['ksQ', 'ksV'], thg: ['thgQ', 'thgV'] };
+/** Value maps of the cost forms (quantities, values per position); the THG keeps its Emissionsquellen in thgSrc + thgHead. */
+export const KEYS = { kv: ['kvQ', 'kvV'], ks: ['ksQ', 'ksV'] };
+export const THG_KEYS = ['thgSrc', 'thgHead'];
 
 function rng(seed) {
   let h = 2166136261;
@@ -13,47 +17,63 @@ function rng(seed) {
   return () => { h = (h + 0x6D2B79F5) >>> 0; let t = h; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
 const roundTo = (v, step) => Math.round(v / step) * step;
+const round1 = v => Math.round(v * 10) / 10;
+const roundQ = v => (v >= 20000 ? roundTo(v, 100) : v >= 500 ? roundTo(v, 10) : Math.max(1, Math.round(v)));
 const sum = o => Object.values(o).reduce((a, b) => a + (b || 0), 0);
+/** THG over 60 years incl. replacement of a list of Emissionsquellen (kg CO₂-eq): Σ (h + e) × 1000 / Amortisation × 60. */
+export const thgTotal60 = srcs => srcs.reduce((a, s) => a + ((Number(s.h) || 0) + (Number(s.e) || 0)) * 1000 / (Number(s.a) || 60) * 60, 0);
 
-/** Values, previous-phase figures and cost targets of one project (pure function of the data). */
-export function mockProject(project, data) {
-  const E = data.ebkp, base = !!project.detailed;
+/** Values, previous-phase figures and cost targets of one project (pure function of the data).
+ *  opts.complete: keep every value (no blanks for `missing`, Emissionsquellen also for an open THG-32), e.g. for the Tool-Export import. */
+export function mockProject(project, data, opts = {}) {
+  const E = data.ebkp, TH = data.thg, base = !!project.detailed;
   const scale = base ? 1 : (project.anlagekostenMio || BASE_AK) / BASE_AK;
   const r = rng(project.id);
   const jit = (lo, hi) => (base ? 1 : lo + (hi - lo) * r());
   const inst = (data.forms.byProject || {})[project.id] || {};
   const sia = Object.fromEntries(Object.entries(data.sia416.initial).map(([k, v]) => [k, base ? v : Math.max(10, roundTo(v * scale * jit(0.95, 1.05), 10))]));
-  const kvQ = {}, kvV = {}, ksQ = {}, ksV = {}, thgQ = {}, thgV = {};
+  const kvQ = {}, kvV = {}, ksQ = {}, ksV = {};
   const ksFactor = {};
   E.ebkp.forEach(g => { const s = g.kids.reduce((a, k) => a + k.cost, 0); ksFactor[g.code] = (E.ks31[g.code] || s * 0.93) / s; });
   E.ebkp.forEach(g => g.kids.forEach(k => {
     const q = Math.max(10, roundTo(k.qty * scale * jit(0.95, 1.05), 10));
-    kvQ[k.code] = q; ksQ[k.code] = q; thgQ[k.code] = q;
+    kvQ[k.code] = q; ksQ[k.code] = q;
     kvV[k.code] = Math.max(1000, roundTo(k.cost * scale * jit(0.9, 1.1), 1000));
     ksV[k.code] = Math.max(1000, roundTo(k.cost * ksFactor[g.code] * scale * jit(0.9, 1.1), 1000));
-    thgV[k.code] = Math.max(1000, roundTo(k.thg * scale * jit(0.9, 1.1), 1000));
   }));
   E.extra.forEach(k => {
     kvV[k.code] = Math.max(1000, roundTo(k.cost * scale * jit(0.9, 1.1), 1000));
     ksV[k.code] = Math.max(1000, roundTo(kvV[k.code] * (E.ks31[k.code] ? E.ks31[k.code] / k.cost : 0.93), 1000));
   });
-  // THG calibrated to the Endwert of the instance (kg CO₂-eq/m² EBF·a over 60 years)
+  // THG: the Emissionsquellen of the design, scaled with the quantities of the project (per m² EBF for the Gebäudetechnik),
+  // then calibrated to the Endwert of the instance (kg CO₂-eq/m² EBF·a over 60 years) when one is given
   const thgInst = inst.thg || {}, EBF = sia.EBF || 1;
-  if (thgInst.endwert != null && sum(thgV)) { const f = thgInst.endwert * 60 * EBF / sum(thgV); Object.keys(thgV).forEach(c => { thgV[c] = Math.max(1000, roundTo(thgV[c] * f, 1000)); }); }
-  const control = sum(thgV) / 60 / EBF;
-  const endwert = thgInst.step === 0 ? '' : thgInst.endwert != null ? String(thgInst.endwert) : base ? '9.1' : (Math.round(control * jit(0.98, 1.02) * 10) / 10).toFixed(1);
+  let thgSrc = TH.sources.map(s => {
+    if (base) return { ...s };
+    const fq = s.unit === 'm² EBF' ? EBF / BASE_EBF : scale * jit(0.95, 1.05), fe = fq * jit(0.97, 1.03);
+    return { ...s, q: s.unit === 'm² EBF' ? EBF : roundQ(s.q * fq), h: round1(s.h * fe), e: round1(s.e * fe) };
+  });
+  if (thgInst.endwert != null && thgTotal60(thgSrc)) { const f = thgInst.endwert * 60 * EBF / thgTotal60(thgSrc); thgSrc.forEach(s => { s.h = round1(s.h * f); s.e = round1(s.e * f); }); }
+  const thgHead = { ...Object.fromEntries(TH.head.filter(h => h[2] != null).map(h => [h[0], h[2]])), ...(thgInst.head || {}) };
   // Previous phases: KS-31 for the KV, Kostengrobschätzung SIA 21 for the KS, SIA 31 for the THG
   const prev = { kv: {}, ks: {}, thg: {} };
   Object.entries(E.ks31).forEach(([c, v]) => { prev.kv[c] = base ? v : Math.max(1000, roundTo(v * scale * jit(0.9, 1.05), 1000)); prev.ks[c] = Math.max(1000, roundTo(prev.kv[c] * (base ? 0.9 : jit(0.85, 0.95)), 1000)); });
-  Object.entries(E.prev31).forEach(([c, v]) => { prev.thg[c] = base ? v : Math.max(1000, roundTo(v * scale * jit(0.9, 1.1), 1000)); });
+  Object.entries(TH.prev31).forEach(([c, v]) => { prev.thg[c] = base ? v : Math.max(1000, roundTo(v * scale * jit(0.9, 1.1), 1000)); });
   // Missing values (forms in progress) and empty forms (step 0)
-  const values = { kvQ, kvV, ksQ, ksV, thgQ, thgV };
-  const missing = [...(base ? (E.missingInitially || []).map(c => 'kvQ:' + c) : []), ...Object.values(inst).flatMap(i => i.missing || [])];
-  missing.forEach(spec => { const [k, c] = spec.split(':'); if (values[k] && c in values[k]) values[k][c] = null; });
-  Object.entries(inst).forEach(([kind, i]) => { if (i.step === 0) (KEYS[kind] || []).forEach(k => Object.keys(values[k]).forEach(c => { values[k][c] = null; })); });
+  const values = { kvQ, kvV, ksQ, ksV };
+  const missing = opts.complete ? [] : [...(base ? (E.missingInitially || []).map(c => 'kvQ:' + c) : []), ...Object.values(inst).flatMap(i => i.missing || [])];
+  missing.forEach(spec => {
+    const [k, c, field] = spec.split(':');
+    if (k === 'thg') { const s = thgSrc.find(x => x.id === c); if (s && field in s) s[field] = null; }
+    else if (values[k] && c in values[k]) values[k][c] = null;
+  });
+  if (!opts.complete) {
+    Object.entries(inst).forEach(([kind, i]) => { if (i.step === 0) (KEYS[kind] || []).forEach(k => Object.keys(values[k]).forEach(c => { values[k][c] = null; })); });
+    if (thgInst.step === 0) thgSrc = [];                     // an open THG-32 has no Emissionsquellen yet (Tool-Export or manual entry)
+  }
   const kostenziel = project.kostenzielBW || roundTo(sum(prev.kv) * 1.03, 1e5);
   const kostendach = (inst.kv && inst.kv.kostendach) || roundTo(kostenziel * 1.1, 1e5);
-  return { scale, sia, endwert, ...values, prev, kostenziel, kostendach };
+  return { scale, sia, ...values, thgSrc, thgHead, prev, kostenziel, kostendach };
 }
 
 /** Group amounts for the direct entry mode: the sum of the positions of each Hauptgruppe ('' when nothing is entered). */

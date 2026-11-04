@@ -110,7 +110,7 @@
           "name": "Ökobilanz Bauemissionen",
           "firm": "Planerteam Nord AG",
           "gewerk": "Nachhaltigkeit",
-          "desc": "Datenformular · Menge + THG nach TP2, Ziel SUS",
+          "desc": "Datenformular · Emissionsquellen nach SIA 2032, Ziel SUS",
           "status": "Überfällig",
           "isForm": true
         },
@@ -200,7 +200,7 @@
           "name": "Ökobilanz Bauemissionen",
           "firm": "Ökobilanz Beispiel AG",
           "gewerk": "Nachhaltigkeit",
-          "desc": "Datenformular · Menge + THG nach TP2, Ziel SUS",
+          "desc": "Datenformular · Emissionsquellen nach SIA 2032, Ziel SUS",
           "status": "In Bearbeitung",
           "isForm": true
         },
@@ -277,7 +277,7 @@
           "name": "Ökobilanz Bauemissionen",
           "firm": "Lab Planung AG",
           "gewerk": "Nachhaltigkeit",
-          "desc": "Datenformular · Menge + THG nach TP2, an SUS übertragen",
+          "desc": "Datenformular · Emissionsquellen nach SIA 2032, an SUS übertragen",
           "status": "Abgeschlossen",
           "isForm": true
         },
@@ -361,7 +361,7 @@
           "name": "Ökobilanz Bauemissionen",
           "firm": "Atelier Süd GmbH",
           "gewerk": "Nachhaltigkeit",
-          "desc": "Datenformular · Menge + THG nach TP2, Ziel SUS",
+          "desc": "Datenformular · Emissionsquellen nach SIA 2032, Ziel SUS",
           "status": "Offen",
           "isForm": true
         },
@@ -427,7 +427,7 @@
           "name": "Ökobilanz Bauemissionen",
           "firm": "Muster Architekten AG",
           "gewerk": "Nachhaltigkeit",
-          "desc": "Datenformular · Menge + THG nach TP2, an SUS übertragen",
+          "desc": "Datenformular · Emissionsquellen nach SIA 2032, an SUS übertragen",
           "status": "Abgeschlossen",
           "isForm": true
         },

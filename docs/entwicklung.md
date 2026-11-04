@@ -28,10 +28,19 @@ swisstopo-Basiskarte; fällt der Stil aus, wird OpenFreeMap «Positron» geladen
   Pflicht-Regel ab CHF 1 Mio Anlagekosten.
 - **Datenformulare** (Kostenvoranschlag KV-32, Kostenschätzung KS-31, Ökobilanz THG-32, Grundrisse DWG-UG … DWG-DG) haben dieselben Tabs: Übersicht (Kennzahlen, Hauptgruppen im
   Vergleich mit der Vorphase, Kostenziel oder Zielwert, Lieferung, Verlauf mit dem nächsten Schritt, Beteiligte), Erfassung
-  (Betrag pro Hauptgruppe oder Positionen mit «Aufschlüsseln», Importieren, Leiste mit Vollständigkeit und «Zur Prüfung
-  einreichen»), Prüfung (Vergleich mit der Vorphase oder Prüfergebnis des Plans, Prüfung BBL mit Checkliste, Übergabe),
-  Beteiligte, Dokumente (mit Pflicht), Verlauf (alle Ereignisse). Die Erfassung ist nach dem Einreichen gesperrt; «Erfassung
-  wieder öffnen (Prototyp)» und «Zurücksetzen» stellen den Ausgangszustand her.
+  (siehe unten), Prüfung (Vergleich mit der Vorphase oder Prüfergebnis des Plans, Prüfung BBL mit automatischen Prüfungen
+  und Checkliste, Übergabe), Beteiligte, Dokumente (mit Pflicht), Verlauf (alle Ereignisse). Die Erfassung ist nach dem
+  Einreichen gesperrt; «Erfassung wieder öffnen (Prototyp)» und «Zurücksetzen» stellen den Ausgangszustand her.
+- **Kosten erfassen (KV-32, KS-31)**: Betrag pro Hauptgruppe oder, nach Klick auf die Zeile, die Positionen (Menge + Kosten)
+  nach eBKP-H 2020 (B02, C01 …); Positionen lassen sich entfernen (Papierkorb) und mit «+ Kostenelement hinzufügen» aus den
+  Elementgruppen der Hauptgruppe ergänzen. Importieren (Excel-Dialog), «Nur fehlende Werte anzeigen», Leiste mit
+  Vollständigkeit und «Zur Prüfung einreichen».
+- **Ökobilanz erfassen (THG-32)**: Karte «Grundlagen der Ökobilanz» (Gebäudekategorie, Projektart, EBF/GF aus den Grundrissen,
+  Systemgrenze, KBOB-Liste, Tool, Datenqualität) und die Emissionsquellen je eBKP-H-Elementgruppe (SIA 2032) mit KBOB-Datensatz,
+  Hersteller-Flag, Menge, THG Herstellung und Entsorgung (t CO₂-eq), Amortisation und Kennwert; Hauptgruppen B–G zum Auf- und
+  Zuklappen, «+ Emissionsquelle hinzufügen», Papierkorb, Total B–G, «Erstellung pro Jahr» und «Erstellung absolut». Der
+  Endwert für das SUS wird berechnet (Erstellung pro Jahr je m² EBF). «Tool-Export importieren» holt die Quellen des Projekts
+  (bei einem offenen Formular alle 25, sonst die fehlenden Werte).
 - **Planlieferungen DWG**: ein Grundriss pro Lieferung. Die DWG-Datei wird per Drag & Drop hochgeladen und lokal im Browser gegen
   die 40 Prüfregeln der CAD-Richtlinie BBL V1.0 geprüft (LibreDWG WebAssembly, nichts wird hochgeladen), mit Plan-Viewer,
   Fehlermeldungen, Räumen, Layern und Kennzahlen SIA 416. Einreichen ist erst ohne Regel mit Schweregrad Fehler möglich;
@@ -69,17 +78,18 @@ vorgeben (Deep-Links, Screenshots): `#/projects/musterhausen/deliveries/thg-32/p
 
 ## Prüfen
 
-- `node --test` prüft ohne Browser das Rechenmodell der Datenformulare (Hauptgruppen, Vollständigkeit, Vergleich, Zielwerte,
-  Workflow, alle Projekte), die Datenkonsistenz, den Router, die Zuordnung der Studien-Screens und die DWG-Prüf-Engine gegen
-  die vorberechneten Ergebnisse (16 Tests, Node 22+).
+- `node --test` prüft ohne Browser das Rechenmodell der Datenformulare (Hauptgruppen, Kostenelemente, Emissionsquellen,
+  Vollständigkeit, Vergleich, Zielwerte, Workflow, alle Projekte), die Datenkonsistenz, den Router, die Zuordnung der
+  Studien-Screens und die DWG-Prüf-Engine gegen die vorberechneten Ergebnisse (16 Tests, Node 22+).
 - `node tests/e2e.mjs` fährt bei laufendem Server einen Headless-Browser (Edge/Chrome/Brave) durch die Anwendung: Startseite mit
-  Karte, Bestellen-Drawer, Rollenwechsel, Benachrichtigungen, KV-32 (Übersicht, Erfassung mit Aufschlüsseln und Filter,
-  Excel-Import, Einreichen), Prüfungen (THG-32 freigeben und übertragen, KV-32 zurückweisen), Planlieferungen DWG (Parsen,
-  Hochladen, Einreichen, Prüfung), die Datenformulare der weiteren Projekte, Aufgabenliste, Projektseiten, Hover-Zustände,
-  responsives Layout, Studien-Panel (≈170 Checks).
+  Karte, Bestellen-Drawer, Rollenwechsel, Benachrichtigungen, KV-32 (Übersicht, Erfassung mit Aufschlüsseln, Kostenelemente,
+  Filter, Excel-Import, Einreichen), THG-32 (Emissionsquellen, Tool-Export, neue Quelle, Hersteller-Flag, Einreichen),
+  Prüfungen (THG-32 freigeben und übertragen, KV-32 zurückweisen), Planlieferungen DWG (Parsen, Hochladen, Einreichen,
+  Prüfung), die Datenformulare der weiteren Projekte, Aufgabenliste, Projektseiten, Hover-Zustände, responsives Layout,
+  Studien-Panel (≈200 Checks).
 - `node tests/refshots.mjs` erzeugt Screenshots in den Fenstergrössen der Referenz-Screenshots der CDE Bund und legt
   Vergleichsbilder in `docs/reference/compare/` ab (Python mit Pillow nötig); Basis der pixelgenauen Gap-Analyse.
-- In der Browser-Konsole steht `cde` zur Verfügung: `cde.state`, `cde.store.set({ endwert: '8.9' })`, `cde.navigate('/tasks/all')`.
+- In der Browser-Konsole steht `cde` zur Verfügung: `cde.state`, `cde.store.setIn('ui', { notif: true })`, `cde.navigate('/tasks/all')`.
 
 ## Struktur
 
@@ -93,13 +103,14 @@ js/links.js           Link-Builder, Sidebar-Sektionen, Tabs der Datenformulare, 
 js/store.js           Zustand + sessionStorage · js/data.js lädt data/*.json · js/ui.js html``-Templating und UI-Atome
 js/shell.js           Topbar, Sidebars, Seitenkopf, Breadcrumb, Tabs, Benachrichtigungs-Drawer, Benutzermenü, Toast
 js/actions.js         alle Benutzeraktionen (Datenformulare, Bestellen, Import, Planlieferungen, Studie)
-js/model/             form.js (Datenformulare KV-32, KS-31, THG-32 und Planlieferungen in einer Form), mock.js (Werte je Projekt), plan.js (DWG-Prüfung),
-                      app.js (Projekte, Aufgaben, Benachrichtigungen, Dokumente, LOIN, Logs), import.js, templates.js, state.js
+js/model/             form.js (Datenformulare: costPart KV-32/KS-31, thgPart THG-32, planForm DWG in einer Form), mock.js (Werte je Projekt),
+                      plan.js (DWG-Prüfung), app.js (Projekte, Aufgaben, Benachrichtigungen, Dokumente, LOIN, Logs), import.js, templates.js, state.js
 js/views/             delivery (Seite einer Lieferung) + form (die sechs Tabs) + plan (Upload, Prüfergebnis, Viewer); parts/projectMap (Standort);
                       dashboard, projects, overview, tasks, timeline, documents, loin, section, settings, s01 (ILP), order, columns,
                       s03c/s03d (Excel-Import), s06 (Kontrolle), s09 (Vorlagen), Studienseiten home, review, qs, varb
 js/plancheck/         Prüf-Engine aus plan-check (MIT) · js/vendor/libredwg-web/ LibreDWG WebAssembly (GPL-3.0)
-data/                 forms (Datenformulare), ebkp (Positionen, KS-31, SIA 31), sia416 (Bezugsmengen), plans (DWG, Prüfergebnisse),
+data/                 forms (Datenformulare), ebkp (Positionen eBKP-H 2020, Elementgruppen, KS-31), thg (Emissionsquellen, Elementgruppen SIA 2032,
+                      Grundlagen, SIA 31), sia416 (Bezugsmengen), plans (DWG, Prüfergebnisse),
                       projects, users, notifications, ilp, tasks, documents, loin, templates, portfolio, screens, study
 tests/                model.test.mjs (node:test), e2e.mjs (Headless-Browser), refshots.mjs (Vergleichsbilder)
 docs/                 wireframes (Design), reviews, research, reference (Referenz-Screenshots, lokal)
@@ -108,10 +119,12 @@ docs/                 wireframes (Design), reviews, research, reference (Referen
 ## Daten
 
 Das Projekt «Verwaltungszentrum Musterhausen» trägt den vollständigen Workflow (KS-31, KV-32, THG-32, DWG-UG … DWG-DG) mit den
-Basiswerten aus `data/ebkp.json` (Positionen, KS-31, SIA 31) und `data/sia416.json` (Bezugsmengen). Die sieben weiteren
-Projekte haben eigene Datenformulare in verschiedenen Workflow-Zuständen (`data/forms.json` › `byProject`: Schritt, Daten,
-Lieferverantwortliche, überfällig, Endwert); ihre Werte leitet `js/model/mock.js` deterministisch aus den Basiswerten ab,
-skaliert mit den Anlagekosten des Projekts. Der Zustand jedes Projekts liegt in `state.projects[id]`. Projektnamen folgen den
+Basiswerten aus `data/ebkp.json` (Positionen, KS-31), `data/thg.json` (25 Emissionsquellen mit KBOB-IDs, SIA 31) und
+`data/sia416.json` (Bezugsmengen). Die sieben weiteren Projekte haben eigene Datenformulare in verschiedenen
+Workflow-Zuständen (`data/forms.json` › `byProject`: Schritt, Daten, Lieferverantwortliche, überfällig, fehlende Werte,
+Endwert, Grundlagen); ihre Werte leitet `js/model/mock.js` deterministisch aus den Basiswerten ab, skaliert mit den
+Anlagekosten des Projekts (Emissionsquellen auf den Endwert der Instanz kalibriert). Der Zustand jedes Projekts liegt in
+`state.projects[id]` (`kvQ/kvV`, `ksQ/ksV`, `thgSrc`, `thgHead`, `sia`, `forms`). Projektnamen folgen den
 öffentlichen [Bautendokumentationen des BBL](https://www.bbl.admin.ch/de/bautendokumentationen); Phasen, Werte, Firmen und
 Personen sind fiktiv. Projektfotos in `assets/projects/` (freie Lizenzen, Nachweise in `assets/projects/ATTRIBUTION.md`),
 Planlieferungen mit vorberechneten Prüfergebnissen in `data/plans.json`.

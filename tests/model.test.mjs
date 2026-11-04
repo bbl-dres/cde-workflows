@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const mod = p => import(pathToFileURL(join(ROOT, p)).href);
-const FILES = ['project', 'projects', 'users', 'notifications', 'navigation', 'ilp', 'tasks', 'templates', 'ebkp', 'sia416', 'portfolio', 'screens', 'study', 'documents', 'loin', 'plans', 'forms'];
+const FILES = ['project', 'projects', 'users', 'notifications', 'navigation', 'ilp', 'tasks', 'templates', 'ebkp', 'sia416', 'portfolio', 'screens', 'study', 'documents', 'loin', 'plans', 'forms', 'thg'];
 const data = Object.fromEntries(FILES.map(f => [f, JSON.parse(readFileSync(join(ROOT, 'data', f + '.json'), 'utf8'))]));
 
 const { initialState } = await mod('js/model/state.js');
@@ -39,7 +39,16 @@ test('data files are consistent', () => {
   for (const r of data.portfolio.rows) if (r.project) assert.ok(data.projects.projects.some(p => p.id === r.project), `portfolio row ${r.name} project exists`);
   for (const r of [...data.tasks.rows, ...data.ilp.rows]) assert.ok(!r.statusKey || ['kv', 'ks', 'thg'].includes(r.statusKey), `status key ${r.statusKey} of «${r.name}» is known`);
   assert.ok(!data.ilp.rows.some(r => r.code === 'FV-32') && !data.tasks.rows.some(r => r.delivery === 'FV-32'), 'FV-32 entfällt (Flächen aus den Grundrissen)');
-  for (const [kind, T] of Object.entries(data.forms.kinds)) for (const g of (T.detailDefault || [])) assert.ok(data.ebkp.ebkp.some(x => x.code === g), `${kind}: detailed group ${g} exists`);
+  for (const [kind, T] of Object.entries(data.forms.kinds)) for (const g of (T.detailDefault || [])) assert.ok((kind === 'thg' ? Object.keys(data.thg.eg) : data.ebkp.ebkp.map(x => x.code)).includes(g), `${kind}: detailed group ${g} exists`);
+  for (const g of data.ebkp.ebkp) for (const k of g.kids) assert.ok(/^[A-Z]\d{2}$/.test(k.code) && (data.ebkp.elements[g.code] || []).some(e => e[0] === k.code), `${k.code} is an eBKP-H element group of ${g.code}`);
+  const ids = data.thg.sources.map(s => s.id);
+  assert.equal(new Set(ids).size, ids.length, 'source ids are unique');
+  for (const s of data.thg.sources) assert.ok(data.thg.eg[s.grp] && s.q > 0 && s.h >= 0 && s.e >= 0 && s.a > 0 && /^KBOB /.test(s.kbob), `source ${s.id} is complete`);
+  for (const [pid, inst] of Object.entries(data.forms.byProject)) for (const I of Object.values(inst)) for (const spec of (I.missing || [])) {
+    const [k, c, field] = spec.split(':');
+    if (k === 'thg') assert.ok(ids.includes(c) && ['q', 'h', 'e'].includes(field), `${pid}: missing spec ${spec}`);
+    else assert.ok(['kvQ', 'kvV', 'ksQ', 'ksV'].includes(k) && [...data.ebkp.ebkp.flatMap(g => g.kids), ...data.ebkp.extra].some(x => x.code === c), `${pid}: missing spec ${spec}`);
+  }
   const KIND = { 'KV-32': 'kv', 'KS-31': 'ks', 'THG-32': 'thg' };
   for (const [pid, inst] of Object.entries(data.forms.byProject)) {
     assert.ok(data.projects.projects.some(p => p.id === pid), `forms for project ${pid}`);
@@ -61,14 +70,16 @@ test('KV-32: Hauptgruppen, totals and completeness', () => {
   assert.equal(kv.kind, 'data'); assert.equal(kv.status, 'In Bearbeitung'); assert.equal(kv.step, 1);
   assert.equal(kv.total, 19100000); assert.equal(kv.bw, 18000000, 'Erstellungskosten B–W incl. J');
   assert.equal(kv.fields, 25, '9 direct groups + 2 detailed groups × 4 positions × (Menge + Kosten)');
-  assert.equal(kv.missing, 1, 'D8 Menge fehlt'); assert.equal(kv.bar.canSubmit, false);
+  assert.equal(kv.missing, 1, 'D08 Menge fehlt'); assert.equal(kv.bar.canSubmit, false);
   assert.deepEqual(kv.badges.erfassung, { n: 1, bg: '#fff1f0', fg: '#9b2c44' });
   const rows = kv.erf.rows;
   assert.equal(rows.filter(r => r.isGroupRow).length, 11); assert.equal(rows.filter(r => r.isPos).length, 8);
-  assert.ok(rows.find(r => r.code === 'D').canToggle && !rows.find(r => r.code === 'D').direct && rows.find(r => r.code === 'V').direct && !rows.find(r => r.code === 'V').canToggle);
+  assert.equal(rows.filter(r => r.isAdd).length, 2, '«Kostenelement hinzufügen» under each opened group');
+  assert.ok(rows.find(r => r.code === 'D').canToggle && !rows.find(r => r.code === 'D').direct && rows.find(r => r.code === 'V').direct && rows.find(r => r.code === 'V').canToggle);
   assert.equal(rows.find(r => r.code === 'B').bez, "4'200", 'Bezugsmenge GSF from sia416');
   assert.equal(kv.subtotals.find(u => u.code === 'B–W').cur, "18'000'000");
   assert.equal(kv.subtotals.find(u => u.code === 'A–Z').prev, '–', 'no KS-31 for Anlagekosten');
+  assert.equal(kv.erf.foot, '', 'no footer text (design)');
   // Filling the missing quantity enables the submit button; the filter shows only missing rows.
   const filled = structuredClone(base);
   for (const c of data.ebkp.missingInitially || []) filled.projects.musterhausen.kvQ[c] = 1;
@@ -76,7 +87,7 @@ test('KV-32: Hauptgruppen, totals and completeness', () => {
   assert.equal(v.forms.kv.missing, 0); assert.equal(v.forms.kv.bar.canSubmit, true); assert.equal(v.forms.kv.badges.erfassung, null);
   const only = structuredClone(base); only.projects.musterhausen.forms.kv.missingOnly = true;
   v = vmFor(only);
-  assert.deepEqual(v.forms.kv.erf.rows.map(r => r.code), ['D', 'D8']);
+  assert.deepEqual(v.forms.kv.erf.rows.map(r => r.code), ['D', 'D08']);
   // «Aufschlüsseln» of C adds its four positions (Menge + Kosten) and drops the direct field.
   const det = structuredClone(base); det.projects.musterhausen.forms.kv.modes.C = 'detail';
   v = vmFor(det);
@@ -86,6 +97,23 @@ test('KV-32: Hauptgruppen, totals and completeness', () => {
   const empty = structuredClone(base); empty.projects.musterhausen.forms.kv.gvals.B = '';
   v = vmFor(empty);
   assert.equal(v.forms.kv.missing, 2); assert.match(v.forms.kv.bar.reason, /alle Werte/);
+  // Positions can be removed and Kostenelemente added (eBKP-H element groups of the Hauptgruppe not yet in the table).
+  const ed = structuredClone(base); ed.projects.musterhausen.kvQ.D08 = 6480;
+  ed.projects.musterhausen.forms.kv.removed = { D08: true };
+  ed.projects.musterhausen.forms.kv.added = [{ id: 'kn1', grp: 'G', code: '', q: '', v: '' }];
+  v = vmFor(ed);
+  assert.equal(v.forms.kv.erf.rows.filter(r => r.isPos).length, 7); assert.equal(v.forms.kv.fields, 25 - 2 + 2, 'D08 gone, new row counts code + Kosten (Menge once the element group has a unit)');
+  assert.equal(v.forms.kv.missing, 2);
+  const nr = v.forms.kv.erf.rows.find(r => r.isNewPos);
+  assert.ok(nr && nr.opts.length === 2 && nr.opts.map(o => o.v).join() === 'G05,G06', 'only element groups not yet in G');
+  ed.projects.musterhausen.forms.kv.added[0] = { id: 'kn1', grp: 'G', code: 'G05', q: '120', v: '240000' };
+  v = vmFor(ed);
+  assert.equal(v.forms.kv.missing, 0); assert.equal(v.forms.kv.fields, 26); assert.equal(v.forms.kv.total, 19100000 - 540000 + 240000);
+  assert.equal(v.forms.kv.erf.rows.find(r => r.isNewPos).name, 'Einbauten, Schutzeinrichtung zu Ausbau');
+  // Opening a group without positions (V Planungskosten) shows only the add row; its amount stays in the value map.
+  ed.projects.musterhausen.forms.kv.modes.V = 'detail';
+  v = vmFor(ed);
+  assert.equal(v.forms.kv.erf.rows.filter(r => r.isAdd).length, 3); assert.equal(v.forms.kv.groups.find(g => g.code === 'V').sum, 0);
 });
 
 test('KV-32: Übersicht and Prüfung figures', () => {
@@ -106,17 +134,29 @@ test('KV-32: Übersicht and Prüfung figures', () => {
   assert.equal(kv.meta.find(m => m.k === 'Lieferverantwortlich').v, 'Gian Muster, Generalplaner Beispiel AG');
 });
 
-test('THG-32: Endwert, Zielwerte and the review flow', () => {
-  const thg = vm.forms.thg;
+test('THG-32: Emissionsquellen, Endwert, Zielwerte and the review flow', () => {
+  const thg = vm.forms.thg, S = data.thg.sources, EBF = data.sia416.initial.EBF;
+  const total60 = S.reduce((a, s) => a + (s.h + s.e) * 1000 / s.a * 60, 0);
   assert.equal(thg.status, 'In Prüfung'); assert.equal(thg.step, 4); assert.equal(thg.locked, true);
-  assert.equal(thg.total, 3091000); assert.equal(thg.erf.control, '9.2'); assert.equal(thg.kpis[0].v, '9.1');
-  assert.equal(thg.chart.targets.map(t => t.label)[0], 'Zielwert SIA 390/1 Erstellung'); assert.equal(thg.chart.hasBand, false);
+  assert.equal(thg.nSrc, 25); assert.equal(thg.fields, 75); assert.equal(thg.missing, 0);
+  assert.ok(Math.abs(thg.total - total60) < 1, 'Erstellung über 60 Jahre = Σ (h + e) × 1000 / a × 60');
+  assert.equal(thg.endwertStr, (Math.round(total60 / 60 / EBF * 10) / 10).toFixed(1)); assert.equal(thg.endwertStr, '7.6', 'Endwert for SUS = Erstellung pro Jahr / EBF');
+  assert.equal(thg.kpis[0].v, '7.6'); assert.equal(thg.kpis[1].k, 'Erstellung über 60 Jahre'); assert.equal(thg.kpis[1].v, "2'553");
+  assert.equal(thg.chart.targets.length, 5); assert.equal(thg.chart.targets[0].label, 'SIA 390/1 Richtwert Basis'); assert.equal(thg.chart.hasBand, false);
+  assert.equal(thg.autoChecks.find(c => /390\/1/.test(c.label)).ok, true, '7.6 is below the SIA 390/1 Basis 9.0');
+  assert.ok(thg.autoChecks.every(c => c.ok) && thg.autoChecks[0].label === 'Alle 25 Emissionsquellen mit Elementgruppe und KBOB-Datensatz');
+  assert.equal(thg.cmp.find(c => c.code === 'D').hi, true, 'Technik deviates more than 10 % from SIA 31');
+  assert.equal(thg.manual.length, 4); assert.equal(thg.docs.length, 2);
   assert.equal(thg.rv.canReview, true); assert.equal(thg.rv.canApprove, false);
-  assert.equal(thg.autoChecks.find(c => /390\/1/.test(c.label)).ok, false, '9.1 is above the SIA 390/1 target');
+  // Erfassung rows: C and E opened, derived rows, head fields with EBF/GF read-only
+  const E = thg.erf;
+  assert.ok(E.isTHG && E.rows.filter(r => r.isGroupRow).length === 6 && E.rows.filter(r => r.isSrc).length === 14 && E.rows.filter(r => r.isAdd).length === 0, 'locked: no add rows');
+  assert.equal(E.head.length, 8); assert.equal(E.head.find(h => h.key === 'EBF').val, "5'600 m²"); assert.ok(E.head.every(h => h.ro), 'locked: all head fields read-only');
+  assert.equal(E.derived[0].kw, '7.6'); assert.equal(E.tot.h, S.reduce((a, s) => a + s.h, 0).toLocaleString('de-CH', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
   assert.equal(vm.ilpRows.find(r => r.code === 'THG-32').status, 'In Prüfung');
   assert.equal(vm.auRows.find(t => t.delivery === 'THG-32').status, 'In Prüfung');
   const st = structuredClone(base);
-  st.projects.musterhausen.forms.thg.checks = { t1: true, t2: true };
+  st.projects.musterhausen.forms.thg.checks = { t1: true, t2: true, t3: true, t4: true };
   let v = vmFor(st);
   assert.equal(v.forms.thg.rv.canApprove, true);
   st.projects.musterhausen.forms.thg.step = 5;
@@ -124,15 +164,37 @@ test('THG-32: Endwert, Zielwerte and the review flow', () => {
   assert.equal(v.forms.thg.status, 'Freigegeben'); assert.equal(v.forms.thg.canTransfer, true); assert.equal(v.forms.thg.handover.status, 'Bereit zur Übertragung');
   st.projects.musterhausen.forms.thg.step = 6;
   v = vmFor(st);
-  assert.equal(v.forms.thg.status, 'Abgeschlossen'); assert.equal(v.pfRows[0].sus, 'übertragen'); assert.equal(v.pfRows[0].ew, '9.1');
+  assert.equal(v.forms.thg.status, 'Abgeschlossen'); assert.equal(v.pfRows[0].sus, 'übertragen'); assert.equal(v.pfRows[0].ew, '7.6');
   assert.ok(v.forms.thg.steps.slice(0, 5).every(s => s.sym === '✓'));
   st.projects.musterhausen.forms.thg.step = 1; st.projects.musterhausen.forms.thg.rejected = true;
   v = vmFor(st);
   assert.equal(v.forms.thg.status, 'Zurückgewiesen'); assert.equal(v.forms.thg.pill.label, 'Zurückgewiesen'); assert.equal(v.forms.thg.locked, false);
   assert.equal(v.ilpRows.find(r => r.code === 'THG-32').status, 'Zurückgewiesen');
-  st.projects.musterhausen.forms.thg.rejected = false; st.projects.musterhausen.endwert = '';
+  assert.equal(v.forms.thg.erf.rows.filter(r => r.isAdd).length, 2, 'open groups get «Emissionsquelle hinzufügen»');
+  assert.ok(v.forms.thg.erf.head.filter(h => !h.ro).length === 6, 'editable head fields');
+  // A missing value blocks the submission; without any Emissionsquelle the form cannot be submitted.
+  st.projects.musterhausen.forms.thg.rejected = false; st.projects.musterhausen.thgSrc[0].h = '';
   v = vmFor(st);
-  assert.equal(v.forms.thg.bar.canSubmit, false); assert.equal(v.forms.thg.bar.reason, 'Endwert für SUS fehlt');
+  assert.equal(v.forms.thg.missing, 1); assert.equal(v.forms.thg.bar.canSubmit, false); assert.equal(v.forms.thg.badges.erfassung.n, 1);
+  st.projects.musterhausen.forms.thg.missingOnly = true;
+  v = vmFor(st);
+  assert.deepEqual(v.forms.thg.erf.rows.map(r => r.code), ['B', 'B06.01'], 'filter shows the group and the row with the missing value');
+  st.projects.musterhausen.forms.thg.missingOnly = false; st.projects.musterhausen.thgSrc = [];
+  v = vmFor(st);
+  assert.equal(v.forms.thg.fields, 0); assert.equal(v.forms.thg.bar.canSubmit, false); assert.equal(v.forms.thg.bar.reason, 'Einreichen erst, wenn Emissionsquellen erfasst sind');
+  assert.equal(v.forms.thg.kpis[0].v, '–'); assert.equal(v.forms.thg.next.btn, 'Erfassung öffnen');
+  // A new Emissionsquelle needs element group, KBOB dataset, Menge, Herstellung and Entsorgung; the amortisation comes from the element group.
+  st.projects.musterhausen.thgSrc = [{ id: 'n1', grp: 'D', isNew: true, code: '', kbob: '', q: '', h: '', e: '', hs: false }];
+  v = vmFor(st);
+  assert.equal(v.forms.thg.fields, 5); assert.equal(v.forms.thg.missing, 5);
+  st.projects.musterhausen.thgSrc = [{ id: 'n1', grp: 'D', isNew: true, code: 'D01', kbob: 'KBOB 34.002', q: '5600', h: '126.6', e: '8.2', hs: false }];
+  st.projects.musterhausen.forms.thg.modes.D = 'detail';
+  v = vmFor(st);
+  assert.equal(v.forms.thg.missing, 0); assert.equal(v.forms.thg.erf.rows.find(r => r.isNew).amort, '30 a');
+  assert.equal(v.forms.thg.endwertStr, (Math.round((126.6 + 8.2) * 1000 / 30 / EBF * 10) / 10).toFixed(1));
+  st.projects.musterhausen.thgHead.kbob = 'KBOB/ecobau-Liste 2022, Version 8.02';
+  v = vmFor(st);
+  assert.equal(v.forms.thg.autoChecks[2].ok, false, 'other KBOB list version is flagged');
 });
 
 test('every project: complete, plausible Datenformulare', () => {
@@ -144,12 +206,14 @@ test('every project: complete, plausible Datenformulare', () => {
     assert.deepEqual(Object.keys(v.forms).sort(), Object.keys(inst).sort(), `${p.id}: forms`);
     for (const [kind, F] of Object.entries(v.forms)) {
       assert.ok(KNOWN.has(F.status), `${p.id}/${kind}: status ${F.status}`);
-      assert.ok(F.fields > 0 && F.steps.length === 6 && F.hist.length >= 1 && F.peopleRows.length >= 2 && F.kpis.length === 2, `${p.id}/${kind}: shape`);
+      assert.ok((F.fields > 0 || (kind === 'thg' && F.step === 0)) && F.steps.length === 6 && F.hist.length >= 1 && F.peopleRows.length >= 2 && F.kpis.length === 2, `${p.id}/${kind}: shape`);
       if (F.step >= 3) assert.equal(F.missing, 0, `${p.id}/${kind}: complete once submitted`);
       if (F.step === 0) assert.equal(F.missing, F.fields, `${p.id}/${kind}: Offen has no values`);
       if (F.step === 1 && !inst[kind].missing && !p.detailed) assert.equal(F.missing, 0, `${p.id}/${kind}: complete unless values are marked missing`);
       if (F.step >= 1) assert.ok(F.docs.length >= 1, `${p.id}/${kind}: documents`);
-      assert.ok(F.chart.targets.length === 3 && F.costRows.length >= 7, `${p.id}/${kind}: Übersicht`);
+      assert.ok(F.chart.targets.length === (kind === 'thg' ? 5 : 3) && F.costRows.length >= 6, `${p.id}/${kind}: Übersicht`);
+      if (kind === 'thg' && F.step >= 1) assert.ok(F.nSrc === data.thg.sources.length && F.endwert > 4 && F.endwert < 14, `${p.id}/thg: plausible Endwert ${F.endwertStr}`);
+      if (kind === 'thg' && F.step === 0) assert.equal(F.nSrc, 0, `${p.id}/thg: open form without Emissionsquellen`);
       assert.ok(!/undefined|NaN/.test(JSON.stringify([F.kpis, F.meta, F.hist, F.handover, F.next])), `${p.id}/${kind}: no undefined/NaN`);
     }
     for (const d of (p.deliveries || [])) {
@@ -161,9 +225,10 @@ test('every project: complete, plausible Datenformulare', () => {
     for (const t of (p.tasks || [])) if (t.delivery && v.forms[KIND[t.delivery]]) assert.equal(v.auRows.find(r => r.delivery === t.delivery).status, v.forms[KIND[t.delivery]].status, `${p.id}: task ${t.delivery}`);
   }
   const eiger = vmFor(base, data.projects.projects.find(p => p.id === 'eigerplatz'));
-  assert.equal(eiger.forms.thg.status, 'Überfällig'); assert.equal(eiger.forms.thg.missing, 2, "C2 (detailed) and I1 (its group amount)"); assert.equal(eiger.forms.kv.status, 'Offen'); assert.equal(eiger.forms.kv.kpis[0].v, '–');
+  assert.equal(eiger.forms.thg.status, 'Überfällig'); assert.equal(eiger.forms.thg.missing, 3, 'three fields of three Emissionsquellen'); assert.equal(eiger.forms.kv.status, 'Offen'); assert.equal(eiger.forms.kv.kpis[0].v, '–');
   const agro = vmFor(base, data.projects.projects.find(p => p.id === 'agroscope-posieux'));
-  assert.equal(agro.forms.thg.status, 'Abgeschlossen'); assert.equal(agro.forms.thg.erf.endwert, '11.4'); assert.equal(agro.forms.kv.locked, true); assert.equal(agro.forms.thg.reviewer, 'Reto Muster');
+  assert.equal(agro.forms.thg.status, 'Abgeschlossen'); assert.equal(agro.forms.thg.endwertStr, '11.4', 'calibrated to the Endwert of the instance'); assert.equal(agro.forms.kv.locked, true); assert.equal(agro.forms.thg.reviewer, 'Reto Muster');
+  assert.equal(agro.forms.thg.erf.head.find(h => h.key === 'tool').val, 'Lesosai'); assert.equal(agro.forms.thg.autoChecks[3].ok, false, '11.4 is above SIA 390/1 Basis');
   assert.equal(vm.pfRows.find(r => r.project === 'agroscope-posieux').ew, '11.4'); assert.equal(vm.pfRows.find(r => r.project === 'eigerplatz').status, 'Überfällig'); assert.equal(vm.pfRows.find(r => r.project === 'zollikofen').status, 'Nicht bestellt');
   assert.equal(vmFor(base, data.projects.projects.find(p => p.id === 'prangins')).formByCode('kv-32'), null, 'no KV-32 in Prangins');
   assert.equal(vm.forms.ks.status, 'Abgeschlossen'); assert.equal(vm.forms.ks.cmpPrevLabel, 'SIA 21');

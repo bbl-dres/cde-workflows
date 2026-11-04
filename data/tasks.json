@@ -16,7 +16,7 @@
     },
     {
       "name": "Ökobilanz Bauemissionen",
-      "desc": "THG-32 · THG je Hauptgruppe, Endwert",
+      "desc": "THG-32 · Emissionsquellen je Elementgruppe, Endwert",
       "typ": "Datenformular",
       "zug": "Olivia Beispiel",
       "fuer": "Paula Muster",

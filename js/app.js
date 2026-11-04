@@ -219,6 +219,7 @@ function bindEvents() {
   document.body.addEventListener('click', e => {
     const a = e.target.closest('[data-action],[data-nav],[data-study],[data-screen-link]');
     if (!a) return;
+    if (a !== e.target && e.target.closest('input,select,textarea,label')) return;   // a field inside a clickable row (Hauptgruppe) keeps its own behaviour
     if (a.hasAttribute('data-screen-link')) return;                       // plain #sXX link → hashchange → studyGo
     if (a.dataset.study) { e.preventDefault(); actions.studyGo({ study: a.dataset.study }); return; }
     if (a.dataset.nav) { e.preventDefault(); navTo(a.dataset.nav); return; }

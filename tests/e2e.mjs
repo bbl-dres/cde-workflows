@@ -111,20 +111,24 @@ try {
   await shot('e2e-kv-uebersicht');
   await clickText('.tab', 'Erfassung');
   check('Erfassung: 11 Hauptgruppen, D and G detailed', (await hash()).endsWith('/erfassung') && (await count('.ent-group')) === 11 && (await count('.ent-pos')) === 8);
-  check('submit disabled while D8 missing', (await disabled('[data-action="formSubmit"]')) && (await bodyText()).includes('Einreichen erst, wenn alle Werte erfasst sind'));
-  await click('[data-action="formToggleMissing"]'); check('filter shows only missing rows', (await count('.ent-pos')) === 1 && (await count('.ent-group')) === 1 && (await state()).projects.musterhausen.forms.kv.missingOnly === true);
+  check('submit disabled while D08 missing', (await disabled('[data-action="formSubmit"]')) && (await bodyText()).includes('Einreichen erst, wenn alle Werte erfasst sind'));
+  await click('[data-action="formToggleMissing"]'); check('filter shows only missing rows', (await count('.ent-pos')) === 1 && (await count('.ent-group')) === 1 && (await count('.ent-add')) === 0 && (await state()).projects.musterhausen.forms.kv.missingOnly === true);
   await click('[data-action="formToggleMissing"]');
-  await setInput('[data-fid="kvQ-D8"]', '6480');
-  check('D8 filled → complete', /Alle 25 Werte erfasst/.test(await bodyText()) && (await count('.tab-badge')) === 1 && (await enabled('[data-action="formSubmit"]')));
-  check('focus restored', await evaluate(`document.activeElement?.dataset?.fid === 'kvQ-D8'`));
-  await click('.ent-toggle[data-group="C"]'); check('Aufschlüsseln opens the positions of C', (await state()).projects.musterhausen.forms.kv.modes.C === 'detail' && (await count('.ent-pos')) === 12);
+  await setInput('[data-fid="kvQ-D08"]', '6480');
+  check('D08 filled → complete', /Alle 25 Werte erfasst/.test(await bodyText()) && (await count('.tab-badge')) === 1 && (await enabled('[data-action="formSubmit"]')));
+  check('focus restored', await evaluate(`document.activeElement?.dataset?.fid === 'kvQ-D08'`));
+  await click('.ent-toggle[data-group="C"]'); check('Aufschlüsseln opens the positions of C', (await state()).projects.musterhausen.forms.kv.modes.C === 'detail' && (await count('.ent-pos')) === 12 && (await count('.ent-add')) === 3);
   await click('.ent-toggle[data-group="C"]'); check('Zusammenfassen keeps the sum as the group amount', (await state()).projects.musterhausen.forms.kv.modes.C === 'direct' && Number((await state()).projects.musterhausen.forms.kv.gvals.C) === 3970000 && (await count('.ent-pos')) === 8);
+  await click('[data-fid="kv-g-B"]'); check('click into the amount field does not toggle the group', (await state()).projects.musterhausen.forms.kv.modes.B === 'direct');
+  await click('.ent-group[data-group="B"]'); check('click on the group row opens its positions', (await state()).projects.musterhausen.forms.kv.modes.B === 'detail' && (await count('.ent-pos')) === 10);
+  await click('.ent-group[data-group="B"]'); check('second click closes with the sum', (await state()).projects.musterhausen.forms.kv.modes.B === 'direct' && Number((await state()).projects.musterhausen.forms.kv.gvals.B) === 530000);
   await setInput('[data-fid="kv-g-B"]', '600000'); check('direct group amount editable', String((await state()).projects.musterhausen.forms.kv.gvals.B) === '600000');
+  check('no footer text, no Aufschlüsseln links', !(await bodyText()).includes('Werte fiktiv') && (await count('.ent-name a')) === 0);
   await click('[data-action="toggleImportMenu"]'); check('import menu opens', (await count('.dd-menu')) === 1 && (await count('.dd-item')) === 3);
   await click('[data-action="importItem"][data-arg="excel"]'); check('import dialog step 1', (await count('.dialog')) === 1 && (await state()).imp.step === 1 && (await state()).ui.importMenu === false);
   await clickText('button', 'Weiter'); check('import step 2', (await state()).imp.step === 2);
   await clickText('button', 'Übernehmen'); const st3 = await state();
-  check('apply writes C2/G2 and opens C in detail', st3.imp.done && Number(st3.projects.musterhausen.kvV.C2) === 1285000 && Number(st3.projects.musterhausen.kvV.G2) === 742000 && st3.projects.musterhausen.forms.kv.modes.C === 'detail');
+  check('apply writes C02/G02 and opens C in detail', st3.imp.done && Number(st3.projects.musterhausen.kvV.C02) === 1285000 && Number(st3.projects.musterhausen.kvV.G02) === 742000 && st3.projects.musterhausen.forms.kv.modes.C === 'detail');
   await clickText('button', 'Schliessen'); check('close import', (await state()).ui.dialog === null && (await count('.ent-pos')) === 12);
   await shot('e2e-kv-erfassung');
   await click('[data-action="formSubmit"]'); check('KV submitted → Eingereicht, Erfassung locked', (await state()).projects.musterhausen.forms.kv.step === 3 && (await text('.page-title')).includes('Eingereicht') && (await bodyText()).includes('Die Erfassung ist gesperrt') && (await count('.ent-input:not([readonly])')) === 0);
@@ -134,15 +138,15 @@ try {
 
   // 4. Reviews as Paula: THG-32 (Prüfung → Freigeben → Übertragen), KV-32 (review starts, reject)
   await go('/'); await click('[data-action="toggleUserMenu"]'); await click('[data-action="setUser"][data-key="PM"]');
-  await go('/projects/musterhausen/deliveries/thg-32'); await sleep(100); check('THG lands on Übersicht as PM', (await hash()).endsWith('/thg-32/uebersicht') && (await count('.tgt-dot')) === 3);
+  await go('/projects/musterhausen/deliveries/thg-32'); await sleep(100); check('THG lands on Übersicht as PM', (await hash()).endsWith('/thg-32/uebersicht') && (await count('.tgt-dot')) === 5 && (await bodyText()).includes('Erstellung über 60 Jahre'));
   await go('/projects/musterhausen/deliveries/thg-32/pruefung');
-  check('Prüfung: comparison, checks, Freigeben disabled', (await count('.fm-tr')) >= 7 && (await disabled('[data-action="formApprove"]')) && (await bodyText()).includes('Erst alle Prüfpunkte bestätigen'));
-  await click('[data-action="formToggleCheck"][data-key="t1"]'); await click('[data-action="formToggleCheck"][data-key="t2"]');
+  check('Prüfung: comparison, checks, Freigeben disabled', (await count('.fm-tr')) >= 6 && (await disabled('[data-action="formApprove"]')) && (await bodyText()).includes('Erst alle Prüfpunkte bestätigen') && (await bodyText()).includes('Alle 25 Emissionsquellen'));
+  for (const k of ['t1', 't2', 't3', 't4']) await click(`[data-action="formToggleCheck"][data-key="${k}"]`);
   check('checklist enables Freigeben', await enabled('[data-action="formApprove"]'));
   await shot('e2e-thg-pruefung');
   await click('[data-action="formApprove"]'); check('THG freigegeben', (await state()).projects.musterhausen.forms.thg.step === 5 && (await bodyText()).includes('Freigegeben durch Paula Muster') && (await count('[data-action="formTransfer"]')) === 1);
   await click('[data-action="formTransfer"]'); check('THG transferred → Abgeschlossen', (await state()).projects.musterhausen.forms.thg.step === 6 && (await text('.page-title')).includes('Abgeschlossen'));
-  await go('/tasks/all?type=thg'); check('portfolio reflects transfer', (await bodyText()).includes('übertragen') && (await bodyText()).includes('9.1'));
+  await go('/tasks/all?type=thg'); check('portfolio reflects transfer', (await bodyText()).includes('übertragen') && (await bodyText()).includes('7.6'));
   await go('/projects/musterhausen/deliveries/kv-32/pruefung');
   await click('[data-action="formToggleCheck"][data-key="k1"]'); check('first check starts the review → In Prüfung', (await state()).projects.musterhausen.forms.kv.step === 4 && (await text('.page-title')).includes('In Prüfung'));
   await click('[data-action="formReject"]'); check('KV rejected → open again', (await state()).projects.musterhausen.forms.kv.step === 1 && (await state()).projects.musterhausen.forms.kv.rejected === true && (await bodyText()).includes('Zurückgewiesen durch Paula Muster'));
@@ -150,9 +154,34 @@ try {
 
   // 5. Templates; locked THG Erfassung; Beteiligte and Dokumente tabs
   await go('/projects/musterhausen/settings/information-requirements'); await clickText('[data-action="tplSelect"]', 'Ökobilanz'); check('template selected', (await state()).tplSel === 'thg');
-  await go('/projects/musterhausen/deliveries/thg-32/erfassung'); check('THG Erfassung locked after transfer', (await count('.ent-input[readonly]')) >= 8 && (await bodyText()).includes('Weitere Angaben') && (await count('[data-action="formSubmit"]')) === 0);
+  await go('/projects/musterhausen/deliveries/thg-32/erfassung');
+  check('THG Erfassung locked after transfer', (await count('.ent-input[readonly]')) >= 30 && (await count('.thg-head select[disabled]')) === 6 && (await bodyText()).includes('Grundlagen der Ökobilanz') && (await count('[data-action="formSubmit"]')) === 0 && (await count('.ent-add')) === 0);
+  check('THG table: Emissionsquellen of C and E, totals and derived rows', (await count('.ent-src')) === 14 && (await count('.ent-group')) === 6 && (await bodyText()).includes('Total B–G') && (await bodyText()).includes('Erstellung absolut, 60 Jahre inkl. Ersatz') && (await count('.hs-box.is-on')) === 2);
   await go('/projects/musterhausen/deliveries/thg-32/beteiligte'); check('Beteiligte table', (await count('.fm-tr')) === 3 && (await bodyText()).includes('Lieferverantwortlich'));
-  await go('/projects/musterhausen/deliveries/thg-32/dokumente'); check('Dokumente with Pflicht column', (await bodyText()).includes('Pflicht') && (await bodyText()).includes('Oekobilanz_TP2'));
+  await go('/projects/musterhausen/deliveries/thg-32/dokumente'); check('Dokumente with Pflicht column', (await bodyText()).includes('Pflicht') && (await bodyText()).includes('Oekobilanz_Bericht') && (await bodyText()).includes('Oekobilanz_Toolexport'));
+  // THG-32 of another project: missing values, Tool-Export import, new Emissionsquelle, Hersteller flag, removal, submission
+  await go('/projects/eigerplatz/deliveries/thg-32/erfassung');
+  check('eigerplatz THG: 3 missing values, groups C and E open', (await text('.tab-badge')) === '3' && (await count('.ent-group')) === 6 && (await count('.ent-add')) === 2 && (await disabled('[data-action="formSubmit"]')));
+  await click('.ent-group[data-group="G"]'); check('group row opens G', (await state()).projects.eigerplatz.forms.thg.modes.G === 'detail' && (await count('.ent-add')) === 3);
+  await click('[data-action="formToggleMissing"]'); check('filter: only the three rows with missing values', (await count('.ent-src')) === 3 && (await count('.ent-add')) === 0);
+  await click('[data-action="formToggleMissing"]');
+  await click('[data-action="toggleImportMenu"]'); check('THG import menu has the Tool-Export', (await count('.dd-item')) === 4 && (await bodyText()).includes('Tool-Export importieren'));
+  await click('[data-action="importItem"][data-arg="tool"]'); check('Tool-Export fills the missing values', (await count('.tab-badge')) === 1 && /Alle 75 Werte erfasst/.test(await bodyText()) && (await enabled('[data-action="formSubmit"]')) && (await count('.toast')) === 1);
+  await click('[data-action="thgAdd"][data-group="C"]'); check('new Emissionsquelle row', (await count('.ent-new')) === 1 && (await disabled('[data-action="formSubmit"]')) && (await state()).projects.eigerplatz.thgSrc.some(s => s.isNew));
+  await setInput('[data-fid="thg-n1-code"]', 'C03'); check('element group sets unit and amortisation', (await state()).projects.eigerplatz.thgSrc.find(s => s.id === 'n1').code === 'C03' && (await text('.ent-new')).includes('60 a') && (await text('.ent-new')).includes(' m '));
+  await setInput('[data-fid="thg-n1-kbob"]', 'KBOB 06.012 Stahlprofil, blank'); await setInput('[data-fid="thg-n1-q"]', '18000'); await setInput('[data-fid="thg-n1-h"]', '13.3'); await setInput('[data-fid="thg-n1-e"]', '0.1');
+  check('new row complete → submit enabled again', (await enabled('[data-action="formSubmit"]')) && /Alle 80 Werte erfasst/.test(await bodyText()));
+  await click('[data-action="thgToggleHs"][data-id="n1"]'); check('Hersteller flag toggles', (await state()).projects.eigerplatz.thgSrc.find(s => s.id === 'n1').hs === true && (await count('.ent-new .hs-box.is-on')) === 1);
+  await click('[data-action="thgRemove"][data-id="C01-3"]'); check('Emissionsquelle removed with Verlauf entry', !(await state()).projects.eigerplatz.thgSrc.some(s => s.id === 'C01-3') && (await state()).projects.eigerplatz.forms.thg.events.some(e => e[3] === 'Emissionsquelle entfernt'));
+  await click('[data-action="thgRemove"][data-id="n1"]'); check('new row dropped without event', (await count('.ent-new')) === 0 && (await state()).projects.eigerplatz.forms.thg.events.filter(e => e[3] === 'Emissionsquelle entfernt').length === 1);
+  await evaluate(`(() => { const s = document.querySelector('[data-fid="thg-head-tool"]'); s.value = 'Lesosai'; s.dispatchEvent(new Event('change', { bubbles: true })); })()`); await settle();
+  check('Grundlagen editable', (await state()).projects.eigerplatz.thgHead.tool === 'Lesosai');
+  await click('[data-action="formSubmit"]'); check('eigerplatz THG submitted', (await state()).projects.eigerplatz.forms.thg.step === 3 && (await text('.page-title')).includes('Eingereicht') && (await count('.ent-input:not([readonly])')) === 0);
+  await go('/projects/botschaft-wien/deliveries/thg-32/erfassung');
+  check('open THG without Emissionsquellen', (await bodyText()).includes('Noch keine Emissionsquellen erfasst') && (await count('.ent-src')) === 0 && (await count('.ent-group')) === 6 && (await bodyText()).includes('Einreichen erst, wenn Emissionsquellen erfasst sind'));
+  await click('[data-action="toggleImportMenu"]'); await click('[data-action="importItem"][data-arg="tool"]');
+  check('Tool-Export brings the 25 Emissionsquellen', (await state()).projects['botschaft-wien'].thgSrc.length === 25 && /Alle 75 Werte erfasst/.test(await bodyText()));
+  await clickText('.tab', 'Verlauf'); check('Verlauf lists the Tool-Export', (await bodyText()).includes('Tool-Export importiert') && (await bodyText()).includes('25 Emissionsquellen übernommen'));
 
   // 6. Tasks pages, favorites, sections
   await go('/tasks/all'); check('my tasks', (await count('.grid-row')) >= 5);
@@ -166,10 +195,18 @@ try {
   }
 
   await go('/projects/eigerplatz/deliveries/thg-32'); await sleep(100);
-  check('other project: THG-32 form with mock data (Überfällig, 2 missing)', (await hash()).endsWith('/eigerplatz/deliveries/thg-32/uebersicht') && (await text('.page-title')).includes('Überfällig') && (await text('.tab-badge')) === '2' && (await count('.st-row')) === 6 && (await count('.pp-row')) === 2);
-  await go('/projects/agroscope-posieux/deliveries/kv-32/erfassung'); check('other project: KV-32 Abgeschlossen, locked, no Musterhausen note', (await text('.page-title')).includes('Abgeschlossen') && (await count('.ent-group')) === 11 && (await count('.ent-input:not([readonly])')) === 0 && !(await bodyText()).includes('nur für das Projekt'));
+  check('other project: THG-32 form with mock data (Eingereicht after the flow above)', (await hash()).endsWith('/eigerplatz/deliveries/thg-32/uebersicht') && (await text('.page-title')).includes('Eingereicht') && (await count('.st-row')) === 6 && (await count('.pp-row')) === 2);
+  await go('/projects/agroscope-posieux/deliveries/kv-32/erfassung'); check('other project: KV-32 Abgeschlossen, locked, no Musterhausen note', (await text('.page-title')).includes('Abgeschlossen') && (await count('.ent-group')) === 11 && (await count('.ent-input:not([readonly])')) === 0 && (await count('.ent-del')) === 0 && !(await bodyText()).includes('nur für das Projekt'));
   await go('/projects/zollanlage-brig/deliveries/ks-31/pruefung'); check('other project: KS-31 Prüfung compares with SIA 21', (await count('.fm-tr')) >= 7 && (await bodyText()).includes('SIA 21') && (await bodyText()).includes('Freigegeben und an ePPM übertragen'));
   await go('/projects/tenero/deliveries/kv-32/erfassung'); await setInput('[data-fid="kvV-Y"]', '25000'); check('other project: values are stored per project', String((await state()).projects.tenero.kvV.Y) === '25000' && (await state()).projects.musterhausen.kvV.Y !== '25000');
+  // Kostenelemente: add a row to G, pick an element group, remove a position
+  const nPos = await count('.ent-pos');
+  await click('[data-action="formAddPos"][data-group="G"]'); check('Kostenelement hinzufügen adds a row', (await count('.ent-new')) === 1 && (await count('.ent-pos')) === nPos + 1);
+  await setInput('[data-fid="kv-new-kn1-code"]', 'G05'); check('element group chosen → name and unit', (await text('.ent-new')).includes('Einbauten, Schutzeinrichtung zu Ausbau') && (await state()).projects.tenero.forms.kv.added[0].code === 'G05');
+  await setInput('[data-fid="kv-new-kn1-q"]', '120'); await setInput('[data-fid="kv-new-kn1-v"]', '240000');
+  check('new Kostenelement counts in the group', (await state()).projects.tenero.forms.kv.added[0].v === '240000' && (await text('.ent-group[data-group="G"]')).includes("'"));
+  await click('[data-action="formRemovePos"][data-code="G03"]'); check('position removed with Verlauf entry', (await state()).projects.tenero.forms.kv.removed.G03 === true && (await count('.ent-pos')) === nPos && (await state()).projects.tenero.forms.kv.events.some(e => e[3] === 'Kostenelement entfernt'));
+  await click('[data-action="formDropNew"][data-id="kn1"]'); check('new row dropped', (await count('.ent-new')) === 0 && (await state()).projects.tenero.forms.kv.added.length === 0);
   await go('/projects/prangins/deliveries/kv-32'); check('project without KV-32 → not found page', (await bodyText()).includes('keine Lieferung') && await noError());
   await go('/projects/agroscope-posieux/deliveries/ifc-arc'); check('classic delivery keeps the generic page', (await bodyText()).includes('Klassische Lieferung') && !(await bodyText()).includes('nur für das Projekt'));
 

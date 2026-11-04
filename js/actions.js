@@ -3,12 +3,13 @@
 //   <input data-change="setMap" data-key="kvV" data-code="C2">    → actions.setMap(dataset, el, event) on change
 //   <a data-nav="/projects/all">  or  data-nav="s03" (study id)   → navigate
 //   <a data-study="s05">                                          → actions.studyGo: switch persona + open the study screen
-// The Datenformulare act on the project of the current route (nav.currentPid()).
+// The Datenformulare act on the project of the current route (nav.currentPid()); the THG-32 keeps its Emissionsquellen
+// in state.projects[pid].thgSrc (thgVal, thgAdd, thgRemove …), the cost forms their positions in kvQ/kvV and ksQ/ksV.
 import { LEGACY } from './links.js';
 import { TASK_COLUMNS } from './model/columns.js';
 import { formModel } from './model/form.js';
 import { initProject } from './model/state.js';
-import { KEYS } from './model/mock.js';
+import { KEYS, mockProject } from './model/mock.js';
 import { num } from './format.js';
 import { planSession } from './plansession.js';
 
@@ -48,10 +49,17 @@ export function makeActions(store, data, nav) {
     return { step: to, dates, rejected: false, events: [...f.events, ev(who, text, detail)] };
   });
   const vm = kind => { const p = projectOf(pid()); return p ? formModel(s(), data, p)[kind] : null; };
+  /** Sum of the positions of a Hauptgruppe (base positions not removed + Kostenelemente added); null without positions. */
   const groupSum = (kind, g) => {
-    const grp = data.ebkp.ebkp.find(x => x.code === g), V = (P() || {})[KEYS[kind][1]] || {};
-    return grp ? grp.kids.reduce((a, k) => a + (num(V[k.code]) || 0), 0) : 0;
+    const grp = data.ebkp.ebkp.find(x => x.code === g), p = P(), f = p && p.forms[kind];
+    if (!f) return null;
+    const V = p[KEYS[kind][1]] || {}, removed = f.removed || {}, added = (f.added || []).filter(a => a.grp === g);
+    const base = grp ? grp.kids.filter(k => !removed[k.code]) : [];
+    if (!base.length && !added.length) return null;
+    return base.reduce((a, k) => a + (num(V[k.code]) || 0), 0) + added.reduce((a, x) => a + (num(x.v) || 0), 0);
   };
+  const egOf = code => { for (const list of Object.values(data.thg.eg)) { const x = list.find(y => y[0] === code); if (x) return x; } return null; };
+  const setSrc = (id, patch) => setP(p => ({ thgSrc: (p.thgSrc || []).map(x => (x.id === id ? { ...x, ...patch } : x)) }));
 
   // ---- Planlieferungen DWG: one floor plan = one delivery; files are checked locally with js/plancheck ----
   const planOf = key => (s().plans || {})[key];
@@ -109,32 +117,70 @@ export function makeActions(store, data, nav) {
     // ---- Inputs of the Datenformulare (values of the current project) ----
     setMap: (ds, el) => setP(p => ({ [ds.key]: { ...(p[ds.key] || {}), [ds.code]: el.value } })),
     setSia: (ds, el) => setP(p => ({ sia: { ...p.sia, [ds.code]: el.value } })),
-    setEndwert: (ds, el) => setP({ endwert: el.value }),
 
-    // ---- Datenformulare: Erfassung ----
+    // ---- Datenformulare: Erfassung (KV-32, KS-31) ----
     formGroupVal: (ds, el) => setForm(ds.form, f => ({ gvals: { ...f.gvals, [ds.group]: el.value } })),
-    /** «Aufschlüsseln» opens the positions of a Hauptgruppe; «Zusammenfassen» keeps their sum as the group amount. */
+    /** KV/KS: «Aufschlüsseln» opens the positions of a Hauptgruppe, «Zusammenfassen» keeps their sum as the group amount.
+     *  THG: opens or closes the Emissionsquellen of a Hauptgruppe. */
     formMode: ds => {
       const kind = ds.form, g = ds.group, f = formOf(kind);
-      if (!f || !data.ebkp.ebkp.some(x => x.code === g)) return;
+      if (!f || !(g in f.modes)) return;
       const direct = (f.modes[g] || 'direct') === 'direct';
-      setForm(kind, direct ? { modes: { ...f.modes, [g]: 'detail' } } : { modes: { ...f.modes, [g]: 'direct' }, gvals: { ...f.gvals, [g]: groupSum(kind, g) } });
+      if (direct || kind === 'thg') { setForm(kind, { modes: { ...f.modes, [g]: direct ? 'detail' : 'direct' } }); return; }
+      const sum = groupSum(kind, g), hasKids = data.ebkp.ebkp.some(x => x.code === g);
+      setForm(kind, { modes: { ...f.modes, [g]: 'direct' }, ...(hasKids ? { gvals: { ...f.gvals, [g]: sum == null ? '' : sum } } : {}) });
+      if (!hasKids && sum != null) setP(p => ({ [KEYS[kind][1]]: { ...p[KEYS[kind][1]], [g]: sum } }));
     },
+    /** Remove a position (Kostenelement) from the Erfassung; the Verlauf keeps the event. */
+    formRemovePos: ds => {
+      const kind = ds.form, f = formOf(kind), k = data.ebkp.ebkp.flatMap(g => g.kids).find(x => x.code === ds.code);
+      if (!f || !k || f.step >= 3) return;
+      setForm(kind, { removed: { ...(f.removed || {}), [ds.code]: true }, events: [...f.events, ev(me(), 'Kostenelement entfernt', `${k.code} ${k.name}`)] });
+    },
+    formAddPos: ds => setForm(ds.form, f => { const n = (f.nNew || 0) + 1; return { nNew: n, added: [...(f.added || []), { id: `kn${n}`, grp: ds.group, code: '', q: '', v: '' }] }; }),
+    formNewVal: (ds, el) => setForm(ds.form, f => ({ added: (f.added || []).map(a => (a.id === ds.id ? { ...a, [ds.field]: el.value } : a)) })),
+    formDropNew: ds => setForm(ds.form, f => ({ added: (f.added || []).filter(a => a.id !== ds.id) })),
     formToggleMissing: ds => setForm(ds.key, f => ({ missingOnly: !f.missingOnly })),
     toggleImportMenu: () => ui({ importMenu: !s().ui.importMenu, userMenu: false, notif: false }),
     importItem: ds => {
       ui({ importMenu: false });
       if (ds.arg === 'excel' && (ds.form === 'kv' || ds.form === 'ks')) { ui({ dialog: 'import' }); return; }
-      if (ds.arg === 'kvqty') {
-        const p = P(); if (!p) return;
-        const thgQ = { ...p.thgQ };
-        data.ebkp.ebkp.forEach(g => g.kids.forEach(k => { if (num(p.kvQ[k.code]) != null) thgQ[k.code] = p.kvQ[k.code]; }));
-        setP({ thgQ });
-        setForm('thg', f => ({ events: [...f.events, ev(me(), 'Mengen aus KV-32 übernommen')] }));
-        toast('Mengen aus KV-32 übernommen.');
+      if (ds.arg === 'tool' && ds.form === 'thg') {
+        // Tool-Export (XLSX/JSON of the Ökobilanz tool): the Emissionsquellen of the project come in, missing values are filled
+        const p = P(), f = formOf('thg'), project = projectOf(pid()); if (!p || !f || !project) return;
+        if (f.step >= 3) { toast('Die Erfassung ist gesperrt.'); return; }
+        const init = mockProject(project, data, { complete: true }).thgSrc, cur = p.thgSrc || [];
+        let added = 0, filled = 0;
+        const next = cur.map(x => { const b = init.find(y => y.id === x.id); if (!b || x.isNew) return x; const o = { ...x }; ['q', 'h', 'e'].forEach(k => { if (num(o[k]) == null) { o[k] = b[k]; filled++; } }); return o; });
+        init.forEach(b => { if (!cur.some(x => x.id === b.id)) { next.push({ ...b }); added++; } });
+        if (!added && !filled) { toast('Tool-Export enthält keine neuen Werte.'); return; }
+        const doc = (data.forms.kinds.thg.docs.find(d => d.type === 'Excel' || /xlsx/.test(d[0])) || [])[0] || 'Oekobilanz_Toolexport_SIA32.xlsx';
+        setP({ thgSrc: next });
+        setForm('thg', g => ({ events: [...g.events, ev(me(), 'Tool-Export importiert', `${doc} · Modell ecCo · ${added ? `${added} Emissionsquellen übernommen` : `${filled} Werte ergänzt`}`)] }));
+        toast(`Tool-Export importiert: ${added ? `${added} Emissionsquellen übernommen` : `${filled} Werte ergänzt`}.`);
         return;
       }
       toast('Im Prototyp ohne Funktion.');
+    },
+
+    // ---- Datenformulare: Erfassung (THG-32, Emissionsquellen je eBKP-H-Elementgruppe) ----
+    thgHead: (ds, el) => setP(p => ({ thgHead: { ...(p.thgHead || {}), [ds.key]: el.value } })),
+    thgVal: (ds, el) => {
+      const patch = { [ds.field]: el.value };
+      if (ds.field === 'code') { const eg = egOf(el.value); Object.assign(patch, { name: eg ? eg[1] : '', unit: eg ? eg[2] : '', a: eg ? eg[3] : null }); }
+      setSrc(ds.id, patch);
+    },
+    thgToggleHs: ds => { const x = ((P() || {}).thgSrc || []).find(y => y.id === ds.id); if (x) setSrc(ds.id, { hs: !x.hs }); },
+    thgAdd: ds => setP(p => {
+      const f = p.forms.thg; if (!f || f.step >= 3) return {};
+      const n = (f.nNew || 0) + 1;
+      return { thgSrc: [...(p.thgSrc || []), { id: `n${n}`, grp: ds.group, isNew: true, code: '', kbob: '', name: '', unit: '', a: null, q: '', h: '', e: '', hs: false }], forms: { ...p.forms, thg: { ...f, nNew: n } } };
+    }),
+    thgRemove: ds => {
+      const p = P(), f = formOf('thg'), x = p && (p.thgSrc || []).find(y => y.id === ds.id);
+      if (!x || !f || f.step >= 3) return;
+      setP({ thgSrc: p.thgSrc.filter(y => y.id !== ds.id) });
+      if (!x.isNew) setForm('thg', g => ({ events: [...g.events, ev(me(), 'Emissionsquelle entfernt', `${x.code} ${x.name} (${x.kbob})`)] }));
     },
     formSubmit: ds => {
       const kind = ds.key, F = vm(kind);
@@ -173,8 +219,9 @@ export function makeActions(store, data, nav) {
     /** «Zurücksetzen»: the form and its values go back to the initial mock state of the project. */
     formResetReview: ds => {
       const kind = ds.key, project = projectOf(pid()); if (!project) return;
-      const init = initProject(data, project), [q, v] = KEYS[kind];
-      setP(p => ({ forms: { ...p.forms, [kind]: init.forms[kind] }, [q]: init[q], [v]: init[v], ...(kind === 'thg' ? { endwert: init.endwert } : {}) }));
+      const init = initProject(data, project);
+      const values = kind === 'thg' ? { thgSrc: init.thgSrc, thgHead: init.thgHead } : { [KEYS[kind][0]]: init[KEYS[kind][0]], [KEYS[kind][1]]: init[KEYS[kind][1]] };
+      setP(p => ({ forms: { ...p.forms, [kind]: init.forms[kind] }, ...values }));
     },
 
     // ---- 02 Datenlieferung bestellen (drawer on the Informationslieferplan) ----

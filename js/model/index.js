@@ -52,7 +52,7 @@ export function compute(state, data, project, user) {
     const F = r.project && formsAll[r.project] && formsAll[r.project].thg;
     const status = F ? F.status : r.status;
     const done = F ? F.step >= 6 : r.status === 'Abgeschlossen';
-    const ew = F ? (done && F.erf.endwert ? F.erf.endwert : '–') : r.ew;
+    const ew = F ? (done ? F.endwertStr : '–') : r.ew;
     const sus = F ? (done ? 'übertragen' : '–') : r.sus;
     return {
       ...r, status, akStr: 'CHF ' + r.ak.toLocaleString('de-CH', { minimumFractionDigits: 1 }) + ' Mio',
@@ -68,7 +68,7 @@ export function compute(state, data, project, user) {
     ...importModel(s, data), ...templatesModel(s, data), ...plan,
 
     // Datenformulare
-    forms, formsAll, formByCode, formStatusOf, endwert: P.endwert,
+    forms, formsAll, formByCode, formStatusOf,
     kvTitle: 'Kostenvoranschlag eBKP-H (SIA 32)',
 
     // Lists of the detailed project

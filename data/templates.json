@@ -87,14 +87,14 @@
         "J"
       ],
       "fields": [
-        "Menge und Einheit",
-        "THG kg CO₂-eq",
-        "Endwert kg CO₂-eq/m² EBF·a",
-        "Bericht PDF (Pflicht)"
+        "Emissionsquelle je eBKP-H-Elementgruppe mit KBOB-Datensatz",
+        "Menge, THG Herstellung und Entsorgung (t CO₂-eq), Amortisation",
+        "Endwert kg CO₂-eq/m² EBF·a (berechnet)",
+        "Bericht PDF und Tool-Export (Pflicht)"
       ],
       "rules": [
-        "Alle Pflichtpositionen erfasst",
-        "Bericht und Endwert vorhanden",
+        "Alle Emissionsquellen mit Elementgruppe und KBOB-Datensatz",
+        "Bericht und Tool-Export vorhanden",
         "Abweichung zur Vorphase über 15 %: Hinweis",
         "Bestellung Muss ab Anlagekosten 1 Mio CHF"
       ]
@@ -109,7 +109,7 @@
     {
       "key": "thg",
       "title": "Ökobilanz Bauemissionen",
-      "desc": "eBKP-H · Menge und THG-Emissionen<br>nach Anleitung TP2 NettoNull · Zielsystem SUS"
+      "desc": "eBKP-H-Elementgruppen · Emissionsquellen mit KBOB-Datensatz<br>nach SIA 2032 · Zielsystem SUS"
     }
   ]
 }

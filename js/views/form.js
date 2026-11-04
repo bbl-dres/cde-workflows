@@ -2,17 +2,21 @@ import { html, icon, btn, checkbox, avatar, metaRows, progress, raw } from '../u
 import { emptyState } from '../shell.js';
 import { dropZone, resultPanel } from './plan.js';
 
-// Datenformular (design 04.11.2026): the tab bodies of KV-32, THG-32 and the floor plans DWG, rendered from the
+// Datenformular (design 04.11.2026): the tab bodies of KV-32, KS-31, THG-32 and the floor plans DWG, rendered from the
 // view model of model/form.js (F). Übersicht: KPIs, table/chart or plan figures, Lieferung, Verlauf, Beteiligte.
-// Erfassung: Hauptgruppen (direct amount or positions), sticky submit bar. Prüfung: comparison or plan result,
-// Prüfung BBL, Übergabe. Beteiligte, Dokumente, Verlauf: tables.
+// Erfassung: Hauptgruppen (direct amount or positions, Kostenelemente added/removed) or the Emissionsquellen of the
+// Ökobilanz with the Grundlagen card, sticky submit bar. Prüfung: comparison or plan result, Prüfung BBL, Übergabe.
+// Beteiligte, Dokumente, Verlauf: tables.
 
-const COLS = 'grid-template-columns:68px minmax(0,1fr) 72px 120px 140px 100px';
+const COLS = 'grid-template-columns:68px minmax(0,1fr) 72px 120px 140px 100px 36px';
+const COLS_THG = 'grid-template-columns:84px minmax(0,1fr) 72px 88px 60px 96px 96px 56px 92px 36px';
 const card = (head, body, style = '') => html`<div class="card" style="${raw(style)}">${head ? html`<div class="card-head">${head}</div>` : ''}${body}</div>`;
 const headLink = (label, href) => html`<a class="card-head-link" href="#${href}" data-nav="${href}">${label}</a>`;
 const hint = t => html`<span class="card-hint">${t}</span>`;
 const check = c => html`<div class="rv-check">${icon(c.icon, 16, c.color)}<span class="flex-1">${c.label}</span></div>`;
 const kvRow = (k, v) => html`<div class="rv-kv"><span class="rv-kv-k">${k}</span><span>${v}</span></div>`;
+const RO = F => (F.locked ? raw('readonly') : '');
+const DIS = F => (F.locked ? raw('disabled') : '');
 
 export const tabBadge = b => (b ? html`<span class="tab-badge" style="background:${b.bg};color:${b.fg}">${b.n}</span>` : '');
 
@@ -89,13 +93,14 @@ function planOverview(F, L) {
 
 // ---- Erfassung ----
 function erfassung(ctx, F) {
-  return html`<div class="fm-stack">${F.kind === 'plan' ? planEntry(ctx, F) : dataEntry(ctx, F)}${F.erf.hasEndwert ? endwertCard(F) : ''}${submitBar(F)}</div>`;
+  const body = F.kind === 'plan' ? planEntry(ctx, F) : F.erf.isTHG ? html`${thgHeadCard(F)}${dataEntry(ctx, F)}` : dataEntry(ctx, F);
+  return html`<div class="fm-stack">${body}${submitBar(F)}</div>`;
 }
 
-function dataEntry(ctx, F) {
-  const E = F.erf, open = !!ctx.state.ui.importMenu, ro = F.locked ? raw('readonly') : '';
-  return html`<div class="card">
-    <div class="card-head" style="flex-wrap:wrap">
+/** Card head with title, Importieren menu and Excel export, shared by the cost forms and the Ökobilanz. */
+function entryHead(ctx, F) {
+  const E = F.erf, open = !!ctx.state.ui.importMenu;
+  return html`<div class="card-head" style="flex-wrap:wrap">
       <span class="flex-1" style="flex-basis:220px">${E.tableTitle}</span>
       <div class="dd">
         <button type="button" class="btn btn-secondary" data-action="toggleImportMenu" aria-haspopup="menu" aria-expanded="${open ? 'true' : 'false'}">Importieren ${icon('chevron-down', 12, 'currentColor')}</button>
@@ -103,27 +108,45 @@ function dataEntry(ctx, F) {
       </div>
       <button type="button" class="btn btn-secondary">Excel herunterladen</button>
     </div>
-    ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}
-    <div class="fm-table"><div class="ent">
-      <div class="ent-th" style="${COLS}"><span>Code</span><span>Bezeichnung</span><span>Einheit</span><span class="right">${E.qtyLabel}</span><span class="right">${E.valLabel}</span><span class="right">${E.kwLabel}</span></div>
-      ${E.rows.map(r => (r.isGroupRow ? groupRow(F, r, ro) : posRow(F, r, ro)))}
-      ${E.rows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine fehlenden Werte.</div>` : ''}
-      <div class="ent-total" style="${COLS}"><span></span><span>${E.totalLabel}</span><span></span><span></span><span class="right pr18">${E.totalStr}</span><span class="right muted">${E.totalKw}</span></div>
-      ${F.subtotals.length ? html`<div class="fm-space"></div>${F.subtotals.map(u => html`<div class="ent-subtotal" style="${COLS}"><span>${u.code}</span><span>${u.name}</span><span></span><span></span><span class="right pr18">${u.cur}</span><span class="right">${u.kw}</span></div>`)}<div style="height:8px"></div>` : ''}
-    </div></div>
-    <div class="card-foot">${E.foot}</div>
+    ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}`;
+}
+
+function dataEntry(ctx, F) {
+  const E = F.erf;
+  return html`<div class="card">
+    ${entryHead(ctx, F)}
+    <div class="fm-table">${E.isTHG ? thgTable(F) : costTable(F)}</div>
+    ${E.foot ? html`<div class="card-foot">${E.foot}</div>` : ''}
   </div>`;
 }
 
-const groupRow = (F, r, ro) => html`<div class="ent-group" style="${COLS};background:${r.bg}">
-  <span class="ent-code">${r.canToggle ? html`<button type="button" class="ent-toggle" data-action="formMode" data-form="${F.id}" data-group="${r.code}" aria-label="${r.toggleLabel} ${r.code}" aria-expanded="${r.direct ? 'false' : 'true'}">${icon(r.chev, 16, '#374151')}</button>` : html`<span class="ent-toggle" aria-hidden="true"></span>`}${r.code}</span>
-  <span class="ent-name"><span class="fw-600">${r.name}</span>${r.sub ? html`<span class="ent-sub">${r.sub}</span>` : ''}${r.canToggle ? html`<a data-action="formMode" data-form="${F.id}" data-group="${r.code}">${r.toggleLabel}</a>` : ''}</span>
+const costTable = F => {
+  const E = F.erf, ro = RO(F);
+  return html`<div class="ent">
+    <div class="ent-th" style="${COLS}"><span>Code</span><span>Bezeichnung</span><span>Einheit</span><span class="right">${E.qtyLabel}</span><span class="right">${E.valLabel}</span><span class="right">${E.kwLabel}</span><span></span></div>
+    ${E.rows.map(r => (r.isGroupRow ? groupRow(F, r, ro) : r.isAdd ? addRow(F, r, 'formAddPos') : r.isNewPos ? newPosRow(F, r, ro) : posRow(F, r, ro)))}
+    ${E.rows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine fehlenden Werte.</div>` : ''}
+    <div class="ent-total" style="${COLS}"><span></span><span>${E.totalLabel}</span><span></span><span></span><span class="right pr18">${E.totalStr}</span><span class="right muted">${E.totalKw}</span><span></span></div>
+    ${F.subtotals.length ? html`<div class="fm-space"></div>${F.subtotals.map(u => html`<div class="ent-subtotal" style="${COLS}"><span>${u.code}</span><span>${u.name}</span><span></span><span></span><span class="right pr18">${u.cur}</span><span class="right">${u.kw}</span><span></span></div>`)}<div style="height:8px"></div>` : ''}
+  </div>`;
+};
+
+/** Hauptgruppe: the whole row toggles «Aufschlüsseln / Zusammenfassen», the chevron is the keyboard target. */
+const chevron = (F, r) => html`<button type="button" class="ent-toggle" data-action="formMode" data-form="${F.id}" data-group="${r.code}" aria-label="${r.toggleLabel} ${r.code}" aria-expanded="${r.direct ? 'false' : 'true'}">${icon(r.chev, 16, '#374151')}</button>`;
+const delBtn = (action, attrs, label) => html`<span class="ent-del-cell"><button type="button" class="ent-del" data-action="${action}" ${attrs} aria-label="${label}" title="${label}">${icon('trash-2', 15, '#6b7280')}</button></span>`;
+const addRow = (F, r, action) => html`<div class="ent-add"><a data-action="${action}" data-form="${F.id}" data-group="${r.grp}">${r.label}</a></div>`;
+const optionList = (r, empty) => html`<option value="" ${r.code ? '' : raw('selected')}>${empty}</option>${r.opts.map(o => html`<option value="${o.v}" ${o.sel ? raw('selected') : ''}>${o.label}</option>`)}`;
+
+const groupRow = (F, r, ro) => html`<div class="ent-group is-toggle" style="${COLS};background:${r.bg}" data-action="formMode" data-form="${F.id}" data-group="${r.code}">
+  <span class="ent-code">${chevron(F, r)}${r.code}</span>
+  <span class="ent-name"><span class="fw-600">${r.name}</span></span>
   <span class="muted fs-12">${r.unit}</span>
   <span class="right muted">${r.bez}</span>
   ${r.direct
     ? html`<span class="ent-cell-input"><input class="ent-input fw-600" aria-label="${F.erf.valLabel} ${r.code} ${r.name}" value="${r.gStr}" placeholder="fehlt" style="border-color:${r.gBd};background:${F.erf.inputBg}" ${r.gKey ? html`data-change="setMap" data-key="${r.gKey}" data-code="${r.code}" data-fid="${r.gKey}-${r.code}"` : html`data-change="formGroupVal" data-form="${F.id}" data-group="${r.code}" data-fid="${F.id}-g-${r.code}"`} ${ro}></span>`
     : html`<span class="right fw-600 pr18">${r.sum}</span>`}
   <span class="right muted fs-125">${r.kw}</span>
+  <span></span>
 </div>`;
 
 const posRow = (F, r, ro) => html`<div class="ent-pos" style="${COLS}">
@@ -133,14 +156,70 @@ const posRow = (F, r, ro) => html`<div class="ent-pos" style="${COLS}">
   ${r.hasQty ? html`<span class="ent-cell-input"><input class="ent-input" aria-label="Menge ${r.code}" value="${r.qStr}" placeholder="fehlt" style="border-color:${r.qBd};background:${F.erf.inputBg}" data-change="setMap" data-key="${r.qKey}" data-code="${r.code}" data-fid="${r.qKey}-${r.code}" ${ro}></span>` : html`<span class="right muted fs-12">–</span>`}
   <span class="ent-cell-input"><input class="ent-input" aria-label="${F.erf.valLabel} ${r.code}" value="${r.vStr}" placeholder="fehlt" style="border-color:${r.vBd};background:${F.erf.inputBg}" data-change="setMap" data-key="${r.vKey}" data-code="${r.code}" data-fid="${r.vKey}-${r.code}" ${ro}></span>
   <span class="right muted fs-125">${r.kw}</span>
+  ${r.canDel ? delBtn('formRemovePos', html`data-form="${F.id}" data-code="${r.code}"`, `Kostenelement ${r.code} entfernen`) : html`<span></span>`}
 </div>`;
 
-const endwertCard = F => card('Weitere Angaben', html`<div class="extra-row">
-  <label class="flex items-center gap-10" style="flex-wrap:wrap"><span>THG-Emissionen Erstellung, Endwert für SUS <span class="req">*</span></span>
-    <input class="ent-input" style="width:90px;background:${F.erf.inputBg}" aria-label="Endwert THG-Emissionen Erstellung" value="${F.erf.endwert}" data-change="setEndwert" data-fid="endwert" ${F.locked ? raw('readonly') : ''}>
-    <span class="muted">kg CO₂-eq/m² EBF·a</span></label>
-  <span class="muted">Kontrollwert aus Positionen, 60 Jahre: ${F.erf.control}</span>
-</div>`);
+/** A Kostenelement added in the Erfassung: eBKP-H element group from the list, Menge and Kosten. */
+const newPosRow = (F, r, ro) => html`<div class="ent-pos ent-new" style="${COLS}">
+  <span class="ent-cell-input pl30"><select class="ent-select" aria-label="Kostenelement" style="border-color:${r.codeBd}" data-change="formNewVal" data-form="${F.id}" data-id="${r.id}" data-field="code" data-fid="${F.id}-new-${r.id}-code" ${DIS(F)}>${optionList(r, 'wählen…')}</select></span>
+  <span class="ellipsis">${r.name}</span>
+  <span class="muted fs-12">${r.unit}</span>
+  ${r.hasQty ? html`<span class="ent-cell-input"><input class="ent-input" aria-label="Menge" value="${r.qStr}" placeholder="fehlt" style="border-color:${r.qBd};background:${F.erf.inputBg}" data-change="formNewVal" data-form="${F.id}" data-id="${r.id}" data-field="q" data-fid="${F.id}-new-${r.id}-q" ${ro}></span>` : html`<span class="right muted fs-12">–</span>`}
+  <span class="ent-cell-input"><input class="ent-input" aria-label="${F.erf.valLabel}" value="${r.vStr}" placeholder="fehlt" style="border-color:${r.vBd};background:${F.erf.inputBg}" data-change="formNewVal" data-form="${F.id}" data-id="${r.id}" data-field="v" data-fid="${F.id}-new-${r.id}-v" ${ro}></span>
+  <span class="right muted fs-125">${r.kw}</span>
+  ${!F.locked ? delBtn('formDropNew', html`data-form="${F.id}" data-id="${r.id}"`, 'Neue Zeile verwerfen') : html`<span></span>`}
+</div>`;
+
+// ---- Erfassung: Ökobilanz (Emissionsquellen je eBKP-H-Elementgruppe) ----
+const thgHeadCard = F => card('Grundlagen der Ökobilanz', html`<div class="thg-head">${F.erf.head.map(h => html`<label class="thg-field"><span>${h.label}</span>
+  ${h.isSelect
+    ? html`<select class="ent-select" aria-label="${h.label}" style="background:${h.bg}" data-change="thgHead" data-key="${h.key}" data-fid="thg-head-${h.key}" ${h.ro ? raw('disabled') : ''}>${h.opts.map(o => html`<option value="${o.v}" ${o.sel ? raw('selected') : ''}>${o.v}</option>`)}</select>`
+    : html`<input class="ent-text" aria-label="${h.label}" value="${h.val}" style="background:${h.bg}" readonly>`}
+</label>`)}</div>`);
+
+const thgTable = F => {
+  const E = F.erf, ro = RO(F);
+  return html`<div class="ent ent-thg">
+    <div class="ent-th" style="${COLS_THG}"><span>Code</span><span>Elementgruppe · Datenquelle</span><span class="center" title="Herstellerspezifischer Datensatz oder EPD statt KBOB-Durchschnitt">Hersteller</span><span class="right">Menge</span><span>Einheit</span><span class="right">Herstellung</span><span class="right">Entsorgung</span><span class="right">Amort.</span><span class="right">kg/m² EBF·a</span><span></span></div>
+    ${E.rows.map(r => (r.isGroupRow ? thgGroupRow(F, r) : r.isAdd ? addRow(F, r, 'thgAdd') : thgSrcRow(F, r, ro)))}
+    ${E.rows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine fehlenden Werte.</div>` : ''}
+    <div class="ent-total" style="${COLS_THG}"><span></span><span>${E.totalLabel}</span><span></span><span></span><span></span><span class="right pr18">${E.tot.h}</span><span class="right pr18">${E.tot.e}</span><span></span><span class="right muted">${E.tot.kw}</span><span></span></div>
+    <div class="fm-space"></div>
+    ${E.derived.map(u => html`<div class="ent-subtotal" style="${COLS_THG}"><span></span><span>${u.name}</span><span class="right pr18" style="grid-column:4 / span 4" title="${u.u}">${u.v}</span><span class="right" style="grid-column:8 / span 2" title="${u.ku}">${u.kw}</span><span></span></div>`)}
+    <div style="height:8px"></div>
+  </div>`;
+};
+
+const thgGroupRow = (F, r) => html`<div class="ent-group is-toggle" style="${COLS_THG};background:${r.bg}" data-action="formMode" data-form="${F.id}" data-group="${r.code}">
+  <span class="ent-code">${chevron(F, r)}${r.code}</span>
+  <span class="ent-name"><span class="fw-600">${r.name}</span><span class="ent-sub">${r.sub}</span></span>
+  <span></span><span></span><span></span>
+  <span class="right fw-600 pr18">${r.h}</span>
+  <span class="right fw-600 pr18">${r.e}</span>
+  <span></span>
+  <span class="right muted fs-125">${r.kw}</span>
+  <span></span>
+</div>`;
+
+const hsBox = (F, r) => html`<span class="center"><button type="button" class="hs-box${r.hs ? ' is-on' : ''}" role="checkbox" aria-checked="${r.hs ? 'true' : 'false'}" aria-label="Herstellerspezifisch ${r.code || ''}" title="Herstellerspezifischer Datensatz oder EPD statt KBOB-Durchschnitt" data-action="thgToggleHs" data-id="${r.id}" ${DIS(F)}>${r.hs ? '✓' : ''}</button></span>`;
+const numCell = (F, r, field, label, str, bdc, ro) => html`<span class="ent-cell-input"><input class="ent-input" aria-label="${label} ${r.code || ''}" value="${str}" placeholder="fehlt" style="border-color:${bdc};background:${F.erf.inputBg}" data-change="thgVal" data-id="${r.id}" data-field="${field}" data-fid="thg-${r.id}-${field}" ${ro}></span>`;
+
+/** An Emissionsquelle: existing (code, KBOB dataset) or new (element group from the list, KBOB dataset to search). */
+const thgSrcRow = (F, r, ro) => html`<div class="ent-pos ent-src${r.isNew ? ' ent-new' : ''}" style="${COLS_THG}">
+  ${r.isNew
+    ? html`<span class="ent-cell-input pl30"><select class="ent-select" aria-label="Elementgruppe" style="border-color:${r.codeBd}" data-change="thgVal" data-id="${r.id}" data-field="code" data-fid="thg-${r.id}-code" ${DIS(F)}>${optionList(r, 'wählen…')}</select></span>
+      <span class="ent-cell-input pl6"><input class="ent-text" aria-label="KBOB-Datensatz" value="${r.kbob}" placeholder="KBOB-Datensatz suchen (ID oder Name)…" style="border-color:${r.kbobBd};background:${F.erf.inputBg}" data-change="thgVal" data-id="${r.id}" data-field="kbob" data-fid="thg-${r.id}-kbob" ${ro}></span>`
+    : html`<span class="ent-pos-code">${r.code}</span>
+      <span class="ent-two"><span class="ellipsis">${r.name}</span><span class="fs-12 muted ellipsis" title="${r.kbob}">${r.kbob}</span></span>`}
+  ${hsBox(F, r)}
+  ${numCell(F, r, 'q', 'Menge', r.qStr, r.qBd, ro)}
+  <span class="muted fs-12">${r.unit}</span>
+  ${numCell(F, r, 'h', 'Herstellung', r.hStr, r.hBd, ro)}
+  ${numCell(F, r, 'e', 'Entsorgung', r.eStr, r.eBd, ro)}
+  <span class="right muted fs-125">${r.amort}</span>
+  <span class="right muted fs-125">${r.kw}</span>
+  ${!F.locked ? delBtn('thgRemove', html`data-id="${r.id}"`, r.isNew ? 'Neue Zeile verwerfen' : 'Emissionsquelle entfernen') : html`<span></span>`}
+</div>`;
 
 function planEntry(ctx, F) {
   const p = F.plan;
@@ -161,7 +240,7 @@ function planEntry(ctx, F) {
 
 function submitBar(F) {
   const B = F.bar, A = F.act;
-  if (B.locked) return html`<div class="submit-bar"><span class="fs-13 flex-1" style="min-width:240px">Eingereicht. Die Erfassung ist gesperrt, bis Paula Muster freigibt oder zurückweist.</span><a class="fs-125" data-action="${A.reopen}" data-key="${F.id}">Erfassung wieder öffnen (Prototyp)</a></div>`;
+  if (B.locked) return html`<div class="submit-bar"><span class="fs-13 flex-1" style="min-width:240px">${B.lockedText}</span><a class="fs-125" data-action="${A.reopen}" data-key="${F.id}">Erfassung wieder öffnen (Prototyp)</a></div>`;
   return html`<div class="submit-bar">
     <div class="submit-comp"><span class="fs-125" style="color:#374151">${B.compText}</span>${progress(B.compW, B.compBar)}</div>
     ${B.canFilter ? checkbox({ checked: F.erf.missingOnly, label: 'Nur fehlende Werte anzeigen', action: 'formToggleMissing', key: F.id }) : ''}
@@ -177,7 +256,7 @@ function pruefung(ctx, F) {
   return html`<div class="fm-cols">
     <div class="fm-main">${F.kind === 'plan' ? planResult(F, L) : compareCard(F)}</div>
     <div class="fm-side">
-      ${card(html`<span class="flex-1">Prüfung BBL</span>${hint('Paula Muster, BBL')}`, html`<div class="card-body flex-col" style="gap:10px">
+      ${card(html`<span class="flex-1">Prüfung BBL</span>${hint(`${F.reviewer}, BBL`)}`, html`<div class="card-body flex-col" style="gap:10px">
         ${F.rv.notSubmitted ? html`<div class="note note-grey">Wartet auf die Einreichung durch ${F.leadName}.</div>` : F.autoChecks.map(check)}
         <div class="rv-manual">${F.manual.map(m => checkbox({ checked: m.checked, label: m.label, action: A.toggle, key: m.key, arg: F.id, disabled: m.disabled }))}</div>
         <textarea class="rv-textarea" placeholder="Kommentar an Lieferant (bei Rückweisung Pflicht)" aria-label="Kommentar an Lieferant"></textarea>

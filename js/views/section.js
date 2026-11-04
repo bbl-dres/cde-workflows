@@ -6,7 +6,7 @@ import { SECTIONS } from '../links.js';
 // Workflows, Mitglieder, Stammdaten, Lieferobjekte. Mock content, no editing. (Aktivitäten, Dokumente, LOIN,
 // Informationslieferplan, Einstellungen have their own views.)
 const FILES = [
-  ['Oekobilanz_TP2_Musterhausen_SIA32.pdf', 'PDF', '2.4 MB', 'Olivia Beispiel', '03.05.2027'],
+  ['Oekobilanz_Bericht_SIA32.pdf', 'PDF', '2.4 MB', 'Olivia Beispiel', '03.05.2027'],
   ['KV_Bauprojekt_detail_v3.pdf', 'PDF', '1.1 MB', 'Kai Beispiel', '24.04.2027'],
   ['kv_bauprojekt_v3.xlsx', 'Excel', '48 KB', 'Kai Beispiel', '20.04.2027'],
   ['Fachmodell_Architektur_BP.ifc', 'IFC', '186 MB', 'Alex Beispiel', '01.04.2027'],
