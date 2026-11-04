@@ -64,7 +64,8 @@ export function canvasImage(canvas) {
  */
 export function buildReportModel(result, delivery = {}) {
   const k = result.kpi || {}, hasRooms = result.rooms.length > 0;
-  const kpi = buildKpiSections({ ...k, hasRooms, hasAreaPolys: result.areas.length > 0 });
+  const ebf = k.gf != null && result.areas.length > 0 ? (delivery.heated === false ? 0 : k.gf) : null;   // EBF (SIA 416/1): GF of a heated floor
+  const kpi = buildKpiSections({ ...k, ebf, hasRooms, hasAreaPolys: result.areas.length > 0 });
   return {
     fileName: result.file.name,
     baseName: String(result.file.name || 'Plan').replace(/\.[^.]+$/, ''),

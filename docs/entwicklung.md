@@ -37,12 +37,14 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
 - **Ökobilanz erfassen (THG-32)**: Karte «Grundlagen der Ökobilanz» (Gebäudekategorie, Projektart, EBF/GF aus den Grundrissen,
   Systemgrenze, Ökobilanzdaten, Tool, Datenqualität; Optionen nach `docs/research/2026-11-04-oekobilanzdaten-systemgrenzen.md`) und die Emissionsquellen je eBKP-H-Elementgruppe (SIA 2032) mit Ökobilanzdaten-Position (Bezeichnung · ID der gewählten Liste),
   Hersteller-Flag, Menge, THG Herstellung und Entsorgung (t CO₂-eq), Amortisation und Kennwert; Hauptgruppen B–G zum Auf- und
-  Zuklappen, «+ Emissionsquelle hinzufügen», Papierkorb, Total B–G, «Erstellung pro Jahr» und «Erstellung absolut». Der
+  Zuklappen, «+ Emissionsquelle hinzufügen», Papierkorb, Total B–G, «THGE Erstellung pro Jahr» und «THGE Erstellung, Betrachtungszeitraum 60 Jahre inkl. Ersatz» (Begriffe SIA 2032). Der
   Endwert für das SUS wird berechnet (Erstellung pro Jahr je m² EBF). «Tool-Export importieren» holt die Quellen des Projekts
   (bei einem offenen Formular alle 25, sonst die fehlenden Werte).
 - **Planlieferungen DWG**: ein Grundriss pro Lieferung. Die DWG-Datei wird per Drag & Drop hochgeladen und lokal im Browser gegen
   die 40 Prüfregeln der CAD-Richtlinie BBL V1.0 geprüft (LibreDWG WebAssembly, nichts wird hochgeladen), mit Plan-Viewer,
-  Fehlermeldungen, Räumen, Geschossflächen (Bruttogeschossfläche als Polygon), Layern und Kennzahlen SIA 416. Wie in
+  Fehlermeldungen, Räumen, Geschossflächen (Bruttogeschossfläche als Polygon), Layern und Kennzahlen SIA 416 samt
+  Energiebezugsfläche EBF nach SIA 416/1 (EBF = GF eines beheizten Geschosses; ein als unbeheizt markiertes Geschoss,
+  z. B. das UG, zählt 0). Wie in
   plan-check hat jede Liste eine Suche, die Viewer-Listen (Layer, Räume, Geschossflächen) ein «Alle ein-/ausblenden»,
   und rechts der Sub-Tabs filtert «Alle | Warnungen | Fehler» alle Listen (Prüfregeln und Fehlermeldungen nach
   Schweregrad, Räume und Flächen nach Status, Layer nur bei Warnungen). Referenz: `docs/reference/plan-check/`. Einreichen ist erst ohne Regel mit Schweregrad Fehler möglich;

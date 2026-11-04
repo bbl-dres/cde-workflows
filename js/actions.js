@@ -313,7 +313,7 @@ export function makeActions(store, data, nav) {
     planReport: async (ds, el, ev, opts = {}) => {
       const pv = planVm(ds.key), f = floorOf(ds.key), project = projectOf(pid());
       if (!pv || !pv.result || !f) { toast('Noch kein Prüfergebnis für den Prüfbericht.'); return null; }
-      const model = buildReportModel(pv.result, { project: project ? project.name : '', code: pv.code, name: pv.name, floor: `${pv.floor} (Ebene ${pv.ee})`, status: pv.statusLabel, reviewer: `${planReviewer}, BBL`, due: pv.due, guideline: data.plans.guideline, uploadedAt: pv.uploadedAt || '' });
+      const model = buildReportModel(pv.result, { project: project ? project.name : '', code: pv.code, name: pv.name, heated: f.beheizt !== false, floor: `${pv.floor} (Ebene ${pv.ee})`, status: pv.statusLabel, reviewer: `${planReviewer}, BBL`, due: pv.due, guideline: data.plans.guideline, uploadedAt: pv.uploadedAt || '' });
       ui({ busy: 'Prüfbericht wird erstellt…' });
       try {
         const blob = await downloadPlanReport(model, { capture: captureViewerImage, save: opts.save !== false });

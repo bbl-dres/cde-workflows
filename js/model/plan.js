@@ -17,7 +17,7 @@ export const PLAN_STATUS = {
 };
 export const LOCKED = new Set(['eingereicht', 'pruefung', 'freigegeben', 'uebertragen']);
 export const REVIEWABLE = new Set(['eingereicht', 'pruefung']);
-const SIA_ROWS = [['GF', 'Geschossfläche', 'gf'], ['KF', 'Konstruktionsfläche', 'kf'], ['NGF', 'Nettogeschossfläche', 'ngf'], ['NF', 'Nutzfläche', 'nf'], ['HNF', 'Hauptnutzfläche', 'hnf'], ['NNF', 'Nebennutzfläche', 'nnf'], ['VF', 'Verkehrsfläche', 'vf'], ['FF', 'Funktionsfläche', 'ff']];
+const SIA_ROWS = [['GF', 'Geschossfläche', 'gf'], ['EBF', 'Energiebezugsfläche (SIA 416/1)', 'ebf'], ['KF', 'Konstruktionsfläche', 'kf'], ['NGF', 'Nettogeschossfläche', 'ngf'], ['NF', 'Nutzfläche', 'nf'], ['HNF', 'Hauptnutzfläche', 'hnf'], ['NNF', 'Nebennutzfläche', 'nnf'], ['VF', 'Verkehrsfläche', 'vf'], ['FF', 'Funktionsfläche', 'ff']];
 const SIA_COLORS = { HNF: '#f4b6b6', NNF: '#ffd59b', VF: '#fff3a3', FF: '#b5d8f7', KF: '#d9d9d9' };
 
 const area = v => (v == null ? '–' : fmtNum(v, Math.abs(v) >= 100 ? 0 : 1) + ' m²');
@@ -84,7 +84,8 @@ export function planModel(s, data) {
     const gateOk = !!result && errors === 0;
     const locked = LOCKED.has(status);
     const rules = ruleRows(result);
-    const k = result ? result.kpi : null;
+    const k0 = result ? result.kpi : null;
+    const k = k0 ? { ...k0, ebf: k0.gf != null && result.areas.length > 0 ? (f.beheizt === false ? 0 : k0.gf) : null } : null;   // EBF (SIA 416/1): GF of a heated floor
     const rooms = result ? result.rooms : [], areas = result ? result.areas : [];
     const hasRooms = rooms.length > 0, hasAreas = areas.length > 0;
     const passed = sum ? `${sum.passedRules}/${sum.totalRules}` : `–/${P.ruleCount}`;
@@ -119,7 +120,7 @@ export function planModel(s, data) {
     // Kennzahlen SIA 416
     const siaRows = SIA_ROWS.map(([abbr, label, prop]) => {
       const v = k ? k[prop] : null;
-      const avail = v != null && (['GF', 'KF'].includes(abbr) ? hasAreas : hasRooms);
+      const avail = v != null && (['GF', 'EBF', 'KF'].includes(abbr) ? hasAreas : hasRooms);
       return { abbr, label, value: avail ? area(v) : '–', share: avail && k.gf ? share(v, k.gf) : '', sum: ['GF', 'NGF', 'NF'].includes(abbr) };
     });
     const segs = k ? [['HNF', k.hnf], ['NNF', k.nnf], ['VF', k.vf], ['FF', k.ff], ['KF', k.kf]].filter(([, v]) => v != null && v > 0) : [];

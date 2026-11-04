@@ -15,6 +15,7 @@ export const DIN277_GROUPS = [
 export const SIA_LABELS = {
     GF: 'Geschossfläche', KF: 'Konstruktionsfläche', NGF: 'Nettogeschossfläche', NF: 'Nutzfläche',
     HNF: 'Hauptnutzfläche', NNF: 'Nebennutzfläche', VF: 'Verkehrsfläche', FF: 'Funktionsfläche', GV: 'Gebäudevolumen',
+    EBF: 'Energiebezugsfläche (SIA 416/1)',   // GF inside the thermal envelope; the caller sets k.ebf (heated floor → GF, unheated → 0)
 };
 
 /** SIA 416 totals in m². gf/kf are null without floor polygons; hasRooms guards the room-based figures. */
@@ -42,7 +43,7 @@ export function buildKpiSections(k) {
     const areaRow = (abbr, value) => ({ abbr, label: SIA_LABELS[abbr], value, total: k.gf });
     return {
         areas: [
-            areaRow('GF', k.gf), areaRow('KF', k.kf), areaRow('NGF', ifRooms(k.ngf)), areaRow('NF', ifRooms(k.nf)),
+            areaRow('GF', k.gf), areaRow('EBF', k.ebf ?? null), areaRow('KF', k.kf), areaRow('NGF', ifRooms(k.ngf)), areaRow('NF', ifRooms(k.nf)),
             areaRow('HNF', ifRooms(k.hnf)), areaRow('NNF', ifRooms(k.nnf)), areaRow('VF', ifRooms(k.vf)), areaRow('FF', ifRooms(k.ff)),
         ],
         volume: [{ abbr: 'GV', label: SIA_LABELS.GV, value: null, total: null }],

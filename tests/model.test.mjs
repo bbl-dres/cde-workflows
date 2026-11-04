@@ -163,7 +163,7 @@ test('THG-32: Emissionsquellen, Endwert, Zielwerte and the review flow', () => {
   assert.equal(thg.nSrc, 25); assert.equal(thg.fields, 75); assert.equal(thg.missing, 0);
   assert.ok(Math.abs(thg.total - total60) < 1, 'Erstellung über 60 Jahre = Σ (h + e) × 1000 / a × 60');
   assert.equal(thg.endwertStr, (Math.round(total60 / 60 / EBF * 10) / 10).toFixed(1)); assert.equal(thg.endwertStr, '7.6', 'Endwert for SUS = Erstellung pro Jahr / EBF');
-  assert.equal(thg.kpis[0].v, '7.6'); assert.equal(thg.kpis[1].k, 'Erstellung über 60 Jahre'); assert.equal(thg.kpis[1].v, "2'553");
+  assert.equal(thg.kpis[0].v, '7.6'); assert.equal(thg.kpis[1].k, 'THGE Erstellung, 60 Jahre'); assert.equal(thg.kpis[1].v, "2'553");
   assert.equal(thg.chart.targets.length, 5); assert.equal(thg.chart.targets[0].label, 'SIA 390/1 Richtwert Basis'); assert.equal(thg.chart.hasBand, false);
   assert.equal(thg.autoChecks.find(c => /390\/1/.test(c.label)).ok, true, '7.6 is below the SIA 390/1 Basis 9.0');
   assert.ok(thg.autoChecks.every(c => c.ok) && thg.autoChecks[0].label === 'Alle 25 Emissionsquellen mit Elementgruppe und Ökobilanzdaten-Position');
@@ -422,7 +422,7 @@ test('plans: data, ILP rows, tasks and statuses per floor', () => {
 test('plans: Datenformular shape (Übersicht, Prüfung) of a floor plan', () => {
   const eg = vm.formByCode('dwg-eg'), ug = vm.formByCode('dwg-ug'), dg = vm.formByCode('dwg-dg');
   assert.equal(eg.kind, 'plan'); assert.equal(eg.status, 'In Bearbeitung'); assert.equal(eg.step, 1);
-  assert.equal(eg.steps.length, 6); assert.equal(eg.planOv.cats.length, 10); assert.equal(eg.planOv.sia.length, 8);
+  assert.equal(eg.steps.length, 6); assert.equal(eg.planOv.cats.length, 10); assert.equal(eg.planOv.sia.length, 9, 'SIA 416 areas plus EBF (SIA 416/1)');
   assert.equal(eg.comp.pct, '27 / 40'); assert.equal(eg.res.title, '3 Fehler'); assert.ok(eg.reviewIssues.length >= 10);
   assert.equal(eg.planOv.cats[0].ratio, '0/8', 'all Layer rules fail for the office layer structure');
   assert.equal(eg.badges.erfassung.n, 3); assert.equal(eg.rv.notSubmitted, true); assert.match(eg.bar.reason, /keine Fehler/);
@@ -502,7 +502,7 @@ test('plans: Prüfbericht model from a seed result', async () => {
   const m = buildReportModel(seed, { project: 'Verwaltungszentrum Musterhausen', code: 'DWG-EG', name: 'Grundriss EG (DWG)', floor: 'Erdgeschoss', status: 'In Bearbeitung', reviewer: 'Paula Muster, BBL', due: '30.04.2027', guideline: 'CAD-Richtlinie BBL V1.0', uploadedAt: 'heute' });
   assert.equal(m.fileName, seed.file.name); assert.ok(m.baseName && !m.baseName.includes('.dwg'));
   assert.equal(m.rules.passed.length + m.rules.failed.length, 40); assert.equal(m.summary.passedRules, 38);
-  assert.equal(m.rooms.length, 30); assert.ok(m.kpi.areas.length === 8 && m.kpi.economy.length === 4 && m.kpi.din277.length === 10 && m.kpi.volume.length === 1);
+  assert.equal(m.rooms.length, 30); assert.ok(m.kpi.areas.length === 9 && m.kpi.areas[1].abbr === 'EBF' && m.kpi.economy.length === 4 && m.kpi.din277.length === 10 && m.kpi.volume.length === 1);
   assert.ok(m.entities.length > 0 && typeof m.entities[0].layers === 'string');
   assert.ok(m.info.some(([k, v]) => k === 'Projekt' && v === 'Verwaltungszentrum Musterhausen') && m.info.some(([k]) => k === 'DWG-Version'));
   assert.ok(!JSON.stringify(m.info).includes('undefined'));

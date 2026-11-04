@@ -136,7 +136,7 @@ function listKpi(plan) {
       ${kpiTable('Wirtschaftlichkeitskennzahlen', d.economy, 'ratio')}
       ${donut(segs)}
       ${d.entities.length ? kpiTable('Objektübersicht', d.entities, 'entity') : ''}
-      <div class="muted fs-12" style="margin-top:12px;line-height:1.5">Raumpolygone zählen zur HNF, solange keine Nutzungsart aus dem Raumstempel vorliegt (R_RAUMSTEMPEL wird von der Prüfstelle ergänzt). GF aus R_GESCHOSSPOLYGON, KF = GF − NGF.</div>
+      <div class="muted fs-12" style="margin-top:12px;line-height:1.5">Raumpolygone zählen zur HNF, solange keine Nutzungsart aus dem Raumstempel vorliegt (R_RAUMSTEMPEL wird von der Prüfstelle ergänzt). GF aus R_GESCHOSSPOLYGON, KF = GF − NGF. EBF nach SIA 416/1 = GF innerhalb der thermischen Gebäudehülle: ein Geschoss gilt als beheizt, ausser es ist in der Lieferung als unbeheizt markiert (dann 0).</div>
     </div>
   </div>`;
 }

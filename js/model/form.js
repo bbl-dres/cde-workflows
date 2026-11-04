@@ -224,15 +224,15 @@ function thgPart(P, f, data, T, M, ref, locked, bd, nDocs) {
   });
   const sumH = groups.reduce((a, G) => a + G.h, 0), sumE = groups.reduce((a, G) => a + G.e, 0);
   const tot = { h: FMT1(sumH), e: FMT1(sumE), kw: total ? kwOf(total) : '' };
-  const derived = [{ name: 'Erstellung pro Jahr', v: total ? FMT1(total / 60 / 1000) : '–', u: 't CO₂-eq/a', kw: endwertStr, ku: 'kg/m² EBF·a' },
-    { name: 'Erstellung absolut, 60 Jahre inkl. Ersatz', v: total ? FMT(total / 1000) : '–', u: 't CO₂-eq', kw: total && EBF ? FMT(total / EBF) : '–', ku: 'kg/m² EBF' }];
+  const derived = [{ name: 'THGE Erstellung pro Jahr', v: total ? FMT1(total / 60 / 1000) : '–', u: 't CO₂-eq/a', kw: endwertStr, ku: 'kg/m² EBF·a' },
+    { name: 'THGE Erstellung, Betrachtungszeitraum 60 Jahre inkl. Ersatz', v: total ? FMT(total / 1000) : '–', u: 't CO₂-eq', kw: total && EBF ? FMT(total / EBF) : '–', ku: 'kg/m² EBF' }];
   const head = TH.head.map(([key, label, def, opts]) => {
     const ro = def == null || locked, val = def == null ? (ref[key] ? FMT(ref[key]) + ' m²' : '–') : (H[key] ?? '');
     return { key, label, isSelect: !!opts, opts: (opts || []).map(o => ({ v: o, sel: o === val })), val, ro, bg: ro ? '#f3f4f6' : '#fff' };
   });
 
   // Übersicht and Prüfung
-  const kpis = [{ k: 'Endwert für SUS', v: endwertStr, u: 'kg CO₂-eq/m² EBF·a' }, { k: 'Erstellung über 60 Jahre', v: total ? FMT(total / 1000) : '–', u: 't CO₂-eq' }];
+  const kpis = [{ k: 'Endwert für SUS', v: endwertStr, u: 'kg CO₂-eq/m² EBF·a' }, { k: 'THGE Erstellung, 60 Jahre', v: total ? FMT(total / 1000) : '–', u: 't CO₂-eq inkl. Ersatz' }];
   const C = compareRows(groups, prev, kwOf, 1000, limit);
   const tv = T.targets.map(([label, v, c]) => ({ label, c, v: v === 'prev' ? (EBF ? C.prevTotal / 60 / EBF : 0) : v }));
   const kg = v => FMT1(v) + ' kg';

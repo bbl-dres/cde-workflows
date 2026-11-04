@@ -138,7 +138,7 @@ try {
 
   // 4. Reviews as Paula: THG-32 (Prüfung → Freigeben → Übertragen), KV-32 (review starts, reject)
   await go('/'); await click('[data-action="toggleUserMenu"]'); await click('[data-action="setUser"][data-key="PM"]');
-  await go('/projects/musterhausen/deliveries/thg-32'); await sleep(100); check('THG lands on Übersicht as PM', (await hash()).endsWith('/thg-32/uebersicht') && (await count('.tgt-dot')) === 5 && (await bodyText()).includes('Erstellung über 60 Jahre'));
+  await go('/projects/musterhausen/deliveries/thg-32'); await sleep(100); check('THG lands on Übersicht as PM', (await hash()).endsWith('/thg-32/uebersicht') && (await count('.tgt-dot')) === 5 && (await bodyText()).includes('THGE Erstellung, 60 Jahre'));
   await go('/projects/musterhausen/deliveries/thg-32/erfassung');
   check('THG-32 In Bearbeitung: head selects enabled, add rows, complete → Einreichen enabled', (await count('.thg-head select:not([disabled])')) === 6 && (await count('.ent-add')) === 2 && (await count('.ent-input[readonly]')) < 10 && await enabled('[data-action="formSubmit"]'));
   check('every Emissionsquelle in edit mode: code control and dataset input per row', (await count('.ent-src .ent-code-wrap')) === 14 && (await count('.ent-src input[data-field="dataset"]')) === 14 && await evaluate(`document.querySelector('.ent-src input[data-field="dataset"]').value.includes('KBOB')`));
@@ -168,7 +168,7 @@ try {
   await go('/projects/musterhausen/settings/information-requirements'); await clickText('[data-action="tplSelect"]', 'Ökobilanz'); check('template selected', (await state()).tplSel === 'thg');
   await go('/projects/musterhausen/deliveries/thg-32/erfassung');
   check('THG Erfassung locked after transfer', (await count('.ent-input[readonly]')) >= 30 && (await count('.thg-head select[disabled]')) === 6 && (await bodyText()).includes('Grundlagen der Ökobilanz') && (await count('[data-action="formSubmit"]')) === 0 && (await count('.ent-add')) === 0 && (await count('[data-action="toggleImportMenu"]')) === 0 && (await count('.ent-toggle[data-action]')) === 0);
-  check('THG table: Emissionsquellen of C and E, totals and derived rows', (await count('.ent-src')) === 14 && (await count('.ent-group')) === 6 && (await bodyText()).includes('Total B–G') && (await bodyText()).includes('Erstellung absolut, 60 Jahre inkl. Ersatz') && (await count('.hs-box.is-on')) === 2);
+  check('THG table: Emissionsquellen of C and E, totals and derived rows', (await count('.ent-src')) === 14 && (await count('.ent-group')) === 6 && (await bodyText()).includes('Total B–G') && (await bodyText()).includes('Betrachtungszeitraum 60 Jahre inkl. Ersatz') && (await count('.hs-box.is-on')) === 2);
   await clickText('.tab', 'Verlauf'); check('Verlauf has no duplicated generated rows after the transfer', await evaluate(`(() => { const t = [...document.querySelectorAll('.hist-row .fw-500')].map(e => e.textContent.trim()); return t.filter(x => x === 'Freigegeben').length === 1 && t.filter(x => x.startsWith('An SUS')).length === 1 && t.filter(x => x === 'Zur Prüfung eingereicht').length === 1; })()`), await evaluate(`[...document.querySelectorAll('.hist-row .fw-500')].map(e => e.textContent.trim()).join(' | ')`));
   await go('/projects/musterhausen/deliveries/thg-32/beteiligte'); check('Beteiligte table', (await count('.fm-tr')) === 3 && (await bodyText()).includes('Lieferverantwortlich'));
   await go('/projects/musterhausen/deliveries/thg-32/dokumente'); check('Dokumente with Pflicht column', (await bodyText()).includes('Pflicht') && (await bodyText()).includes('Oekobilanz_Bericht') && (await bodyText()).includes('Oekobilanz_Toolexport'));
@@ -356,7 +356,7 @@ try {
   check('ILP tiles count the plans', (await tile('total')) === 11 && (await tile('check')) >= 1 && (await tile('done')) >= 4, `${await tile('total')} ${await tile('check')} ${await tile('done')}`);
   await go('/projects/musterhausen/deliveries/dwg-eg'); await sleep(100);
   check('DWG canonical URL (Übersicht)', (await hash()) === '#/projects/musterhausen/deliveries/dwg-eg/uebersicht', await hash());
-  check('DWG Übersicht: Flächen SIA 416, Prüfregeln nach Kategorie, 3 errors badge', (await count('.sia-tbl .grid-row')) === 8 && (await text('.sia-tbl .grid-head')).includes('Flächenart') && (await count('.cat-row')) === 10 && (await count('.kpi')) === 3 && (await text('.tab-badge')) === '3');
+  check('DWG Übersicht: Flächen SIA 416, Prüfregeln nach Kategorie, 3 errors badge', (await count('.sia-tbl .grid-row')) === 9 && (await bodyText()).includes('Energiebezugsfläche') && (await text('.sia-tbl .grid-head')).includes('Flächenart') && (await count('.cat-row')) === 10 && (await count('.kpi')) === 3 && (await text('.tab-badge')) === '3');
   await shot('e2e-dwg-uebersicht');
   await go('/projects/musterhausen/deliveries/dwg-eg/erfassung');
   check('EG: failed rules listed, submit locked', (await count('.plan-list .plan-row')) === 40 && (await bodyText()).includes('LAYER_001') && (await disabled('[data-action="planSubmit"]')) && (await bodyText()).includes('Einreichen erst, wenn der Plan keine Fehler hat'));
