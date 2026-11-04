@@ -49,7 +49,7 @@ export default {
           <div class="card">
             <div class="card-head"><span class="flex-1">Projektbild</span><a class="btn btn-secondary btn-sm" href="#${link.settings(project.id)}" data-nav="${link.settings(project.id)}">Projektbild bearbeiten</a></div>
             ${project.image
-              ? html`<img class="ov-img" src="${project.image}" alt="${project.name}">${project.imageCredit ? html`<div class="ov-img-credit">Foto: ${project.imageCredit}</div>` : ''}`
+              ? html`<img class="ov-img" src="${project.image}" alt="${project.name}">`
               : html`<div class="ov-img-empty" style="padding:36px 0 44px">${emptyState('Kein Projektbild')}</div>`}
           </div>
           <div class="card">

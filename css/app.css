@@ -241,7 +241,6 @@ a.filter-btn { color: var(--navy); }
 @media (min-width: 1024px) { .project-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (min-width: 1280px) { .project-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .ov-img { display: block; width: 100%; height: 220px; object-fit: cover; background: #e6e8ec; }
-.ov-img-credit { padding: 6px 12px 8px; font-size: 11px; color: var(--muted); }
 .ov-map { position: relative; height: 340px; background: #e6e8ec; border-radius: 0 0 6px 6px; overflow: hidden; }
 .ov-map-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 12.5px; color: var(--muted); text-align: center; padding: 16px; }
 .ov-map .maplibregl-ctrl-attrib { font-family: var(--font); font-size: 10px; }

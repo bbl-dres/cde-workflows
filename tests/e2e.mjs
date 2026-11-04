@@ -295,7 +295,7 @@ try {
   await go('/projects/eigerplatz/loin'); check('loin empty for other projects', (await count('.ant-empty')) === 1);
   await go('/projects/musterhausen/timeline/logs'); check('logs table', (await count('.ant-table-striped .ant-row')) === 10 && (await text('.pager-info')).startsWith('1-10 von'));
   await go('/projects/musterhausen/timeline'); check('activities tab', (await count('.act-row')) >= 5);
-  await go('/projects/musterhausen/overview'); check('overview has Projektbild (with credit) and Standort cards', (await count('#ov-map')) === 1 && (await count('.ov-img')) === 1 && (await bodyText()).includes('Foto:') && (await bodyText()).includes('Standort'));
+  await go('/projects/musterhausen/overview'); check('overview has Projektbild (with credit) and Standort cards', (await count('#ov-map')) === 1 && (await count('.ov-img')) === 1 && (await bodyText()).includes('Standort'));
   await go('/projects/all'); await go('/projects/musterhausen/overview'); await go('/projects/all'); check('project map removed when leaving', (await count('#ov-map')) === 0 && (await count('canvas')) === 0);
   await go('/projects/musterhausen/settings'); check('settings general form', (await bodyText()).includes('Projektdaten') && (await bodyText()).includes('Geo Koordinaten') && (await count('.form-control')) >= 8);
   await go('/projects/musterhausen/settings/danger-zone'); check('settings placeholder', (await bodyText()).includes('Gefahrenzone'));
