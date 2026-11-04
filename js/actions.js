@@ -182,8 +182,14 @@ export function makeActions(store, data, nav) {
     // ---- Datenformulare: Erfassung (THG-32, Emissionsquellen je eBKP-H-Elementgruppe) ----
     thgHead: (ds, el) => setP(p => ({ thgHead: { ...(p.thgHead || {}), [ds.key]: el.value } })),
     thgVal: (ds, el) => {
-      const patch = { [ds.field]: ds.field === 'q' ? normNum(el.value) : ds.field === 'h' || ds.field === 'e' ? normNum(el.value, 1) : el.value };
-      if (ds.field === 'code') { const eg = egOf(data, el.value); Object.assign(patch, { name: eg ? eg[1] : '', unit: eg ? eg[2] : '', a: eg ? eg[3] : null }); }
+      const src = ((P() || {}).thgSrc || []).find(x => x.id === ds.id) || {};
+      let patch;
+      if (ds.field === 'dataset') {                               // «Name · KBOB 01.002», only an id, or only a name
+        const text = String(el.value || '').trim(), m = text.match(/KBOB\s*[\d.]+[a-z]?/i);
+        const rest = text.replace(m ? m[0] : '', '').replace(/^[\s·,;–-]+|[\s·,;–-]+$/g, '').trim();
+        patch = { kbob: m ? m[0].replace(/\s+/g, ' ') : (src.isNew ? text : src.kbob || ''), name: rest || (m ? (src.name || '') : text) };
+      } else patch = { [ds.field]: ds.field === 'q' ? normNum(el.value) : ds.field === 'h' || ds.field === 'e' ? normNum(el.value, 1) : el.value };
+      if (ds.field === 'code') { const eg = egOf(data, el.value); Object.assign(patch, { unit: eg ? eg[2] : '', a: eg ? eg[3] : null }); if (src.isNew || !src.name) patch.name = eg ? eg[1] : ''; }   // an existing row keeps its material
       setSrc(ds.id, patch);
     },
     thgToggleHs: ds => { const x = ((P() || {}).thgSrc || []).find(y => y.id === ds.id); if (x && editable('thg')) setSrc(ds.id, { hs: !x.hs }); },

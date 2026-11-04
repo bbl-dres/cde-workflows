@@ -46,6 +46,19 @@ test('actions: topbar search (type, move, open, clear)', () => {
   actions.searchType({}, el('kv')); actions.closeMenus(); assert.equal(ui().searchOpen, false, 'closeMenus closes the suggestions');
 });
 
+test('actions: THG dataset input splits name and KBOB id; a code change keeps the material of an existing row', () => {
+  const { actions, P, el } = setup('eigerplatz');
+  const id = P().thgSrc[0].id;
+  actions.thgVal({ id, field: 'dataset' }, el('Magerbeton · KBOB 01.001'));
+  assert.equal(P().thgSrc[0].kbob, 'KBOB 01.001'); assert.equal(P().thgSrc[0].name, 'Magerbeton');
+  actions.thgVal({ id, field: 'dataset' }, el('Recyclingbeton'));
+  assert.equal(P().thgSrc[0].name, 'Recyclingbeton'); assert.equal(P().thgSrc[0].kbob, 'KBOB 01.001', 'without an id the id stays');
+  actions.thgVal({ id, field: 'dataset' }, el('KBOB 01.004'));
+  assert.equal(P().thgSrc[0].kbob, 'KBOB 01.004'); assert.equal(P().thgSrc[0].name, 'Recyclingbeton', 'only an id keeps the name');
+  actions.thgVal({ id, field: 'code' }, el('C02.02'));
+  assert.equal(P().thgSrc[0].code, 'C02.02'); assert.equal(P().thgSrc[0].name, 'Recyclingbeton', 'existing row keeps its material'); assert.equal(P().thgSrc[0].a, 60); assert.equal(P().thgSrc[0].unit, 'm²');
+});
+
 test('actions: Hauptgruppen toggle and sums (KV-32)', () => {
   const { actions, P, F, store } = setup();
   actions.formMode({ form: 'kv', group: 'C' });

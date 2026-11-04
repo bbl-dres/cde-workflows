@@ -8,9 +8,9 @@ import { dropZone, resultPanel } from './plan.js';
 // Ökobilanz with the Grundlagen card, sticky submit bar. Prüfung: comparison or plan result, Prüfung BBL, Übergabe.
 // Beteiligte, Dokumente, Verlauf: tables.
 
-const COLS = 'grid-template-columns:68px minmax(0,1fr) 72px 120px 140px 100px 36px';
+const COLS = 'grid-template-columns:96px minmax(0,1fr) 72px 120px 140px 100px 36px';   // code column holds the fixed-width code control
 const SIA_COLS = 'grid-template-columns:52px minmax(0,1fr) 90px 56px';   // Flächen SIA 416: the same grid table as Projektaufgaben
-const COLS_THG = 'grid-template-columns:84px minmax(0,1fr) 72px 88px 60px 96px 96px 56px 92px 36px';
+const COLS_THG = 'grid-template-columns:96px minmax(0,1fr) 72px 88px 60px 96px 96px 56px 92px 36px';
 const check = c => html`<div class="rv-check">${icon(c.icon, 16, c.color)}<span class="flex-1">${c.label}</span></div>`;
 const devCell = c => html`<span class="right${c.hi ? ' is-over' : ''}" ${c.hi ? raw('title="Abweichung über dem Schwellenwert, Begründung nötig"') : ''}>${c.delta}</span>`;
 const kvRow = (k, v) => html`<div class="rv-kv"><span class="rv-kv-k">${k}</span><span>${v}</span></div>`;
@@ -138,8 +138,10 @@ const groupAttrs = (F, r) => (r.canToggle ? html`data-action="formMode" data-for
 const delBtn = (action, attrs, label) => html`<span class="ent-del-cell"><button type="button" class="ent-del" data-action="${action}" ${attrs} aria-label="${label}" title="${label}">${icon('trash-2', 15, '#6b7280')}</button></span>`;
 const addRow = (F, r, action) => html`<div class="ent-add"><button type="button" class="btn-link" data-action="${action}" data-form="${F.id}" data-group="${r.grp}">${r.label}</button></div>`;
 const optionList = (r, empty) => html`${r.code ? '' : html`<option value="" selected>${empty}</option>`}${r.opts.map(o => html`<option value="${o.v}" ${o.sel ? raw('selected') : ''}>${o.label}</option>`)}`;
-/** Code + name of a position as one readable dropdown over the eBKP-H element groups of its Hauptgruppe (spans both columns). */
-const codeSelect = (F, r, attrs, fid) => html`<span class="ent-cell-input ent-code-cell"><select class="ent-select ent-code-select${r.code ? '' : ' is-missing'}" aria-label="Kostenelement${r.code ? ' ' + r.code : ''}" ${attrs} data-form="${F.id}" data-group="${r.grp}" data-fid="${fid}" ${DIS(F)}>${optionList(r, 'Kostenelement wählen…')}</select></span>`;
+/** Fixed-width code control: the code as label with a chevron, the native select (list «D01 Elektroanlage») invisibly on top. */
+const codeControl = (code, select) => html`<span class="ent-code-wrap${code ? '' : ' is-missing'}"><span class="ent-code-fake"><span class="ellipsis">${code || '–'}</span>${icon('chevron-down', 12, 'currentColor')}</span>${select}</span>`;
+/** Code of a position: dropdown over the eBKP-H element groups of its Hauptgruppe in the Code column, the name as text in Bezeichnung. */
+const codeSelect = (F, r, attrs, fid) => html`<span class="ent-cell-input ent-code-cell">${codeControl(r.code, html`<select class="ent-select ent-code-select" aria-label="Kostenelement${r.code ? ' ' + r.code : ''}" ${attrs} data-form="${F.id}" data-group="${r.grp}" data-fid="${fid}" ${DIS(F)}>${optionList(r, 'Kostenelement wählen…')}</select>`)}</span><span class="ellipsis${r.code ? '' : ' muted'}">${r.code ? r.name : 'Kostenelement wählen…'}</span>`;
 
 const groupRow = (F, r, ro) => html`<div class="ent-group${r.canToggle ? ' is-toggle' : ''}" style="${COLS};background:${r.bg}" ${groupAttrs(F, r)}>
   <span class="ent-code">${chevron(F, r)}${r.code}</span>
@@ -185,7 +187,7 @@ const thgHeadCard = F => card('Grundlagen der Ökobilanz', html`<div class="thg-
 const thgTable = F => {
   const E = F.erf, ro = RO(F);
   return html`<div class="ent ent-thg">
-    <div class="ent-th" style="${COLS_THG}"><span>Code</span><span>Elementgruppe · Datenquelle</span><span class="center" title="Herstellerspezifischer Datensatz oder EPD statt KBOB-Durchschnitt">Hersteller</span><span class="right">Menge</span><span>Einheit</span><span class="right">Herstellung</span><span class="right">Entsorgung</span><span class="right">Amort.</span><span class="right">kg/m² EBF·a</span><span></span></div>
+    <div class="ent-th" style="${COLS_THG}"><span>Code</span><span>KBOB-Datensatz</span><span class="center" title="Herstellerspezifischer Datensatz oder EPD statt KBOB-Durchschnitt">Hersteller</span><span class="right">Menge</span><span>Einheit</span><span class="right">Herstellung</span><span class="right">Entsorgung</span><span class="right">Amort.</span><span class="right">kg/m² EBF·a</span><span></span></div>
     ${E.rows.map(r => (r.isGroupRow ? thgGroupRow(F, r) : r.isAdd ? addRow(F, r, 'thgAdd') : thgSrcRow(F, r, ro)))}
     ${E.rows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine fehlenden Werte.</div>` : ''}
     <div class="ent-total" style="${COLS_THG}"><span></span><span>${E.totalLabel}</span><span></span><span></span><span></span><span class="right pr18">${E.tot.h}</span><span class="right pr18">${E.tot.e}</span><span></span><span class="right muted">${E.tot.kw}</span><span></span></div>
@@ -211,9 +213,9 @@ const numCell = (F, r, field, label, str, bdc, ro) => html`<span class="ent-cell
 
 /** An Emissionsquelle: existing (code, KBOB dataset) or new (element group from the list, KBOB dataset to search). */
 const thgSrcRow = (F, r, ro) => html`<div class="ent-pos ent-src${r.isNew ? ' ent-new' : ''}" style="${COLS_THG}">
-  ${r.isNew
-    ? html`<span class="ent-cell-input pl30"><select class="ent-select" aria-label="Elementgruppe" style="border-color:${r.codeBd}" data-change="thgVal" data-id="${r.id}" data-field="code" data-fid="thg-${r.id}-code" ${DIS(F)}>${optionList(r, 'wählen…')}</select></span>
-      <span class="ent-cell-input pl6"><input class="ent-text" aria-label="KBOB-Datensatz" value="${r.kbob}" placeholder="KBOB-Datensatz suchen (ID oder Name)…" style="border-color:${r.kbobBd};background:${F.erf.inputBg}" data-change="thgVal" data-id="${r.id}" data-field="kbob" data-fid="thg-${r.id}-kbob" ${ro}></span>`
+  ${!F.locked
+    ? html`<span class="ent-cell-input ent-code-cell">${codeControl(r.code, html`<select class="ent-select" aria-label="Elementgruppe${r.code ? ' ' + r.code : ''}" data-change="thgVal" data-id="${r.id}" data-field="code" data-fid="thg-${r.id}-code" ${DIS(F)}>${optionList(r, 'wählen…')}</select>`)}</span>
+      <span class="ent-cell-input pl6"><input class="ent-text" aria-label="KBOB-Datensatz" value="${r.dataset}" placeholder="KBOB-Datensatz (ID oder Name)…" style="border-color:${r.kbobBd};background:${F.erf.inputBg}" data-change="thgVal" data-id="${r.id}" data-field="dataset" data-fid="thg-${r.id}-kbob" ${ro}></span>`
     : html`<span class="ent-pos-code">${r.code}</span>
       <span class="ent-two"><span class="ellipsis">${r.name}</span><span class="fs-12 muted ellipsis" title="${r.kbob}">${r.kbob}</span></span>`}
   ${hsBox(F, r)}

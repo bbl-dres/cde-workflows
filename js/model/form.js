@@ -207,7 +207,8 @@ function thgPart(P, f, data, T, M, ref, locked, bd, nDocs) {
     G.sum += v60; total += v60;
     G.src.push({ isSrc: !isNew, isNew, id: s.id, code: s.code, name: s.name || '', kbob: s.kbob || '', unit: s.unit || '', amort: A ? `${A} a` : '–', hs: !!s.hs,
       qStr: disp(s.q), hStr: disp1(s.h), eStr: disp1(s.e), qBd: bd(qMiss), hBd: bd(hMiss), eBd: bd(eMiss), codeBd: bd(codeMiss), kbobBd: bd(kbobMiss), kw: v60 ? kwOf(v60) : '', miss: m > 0,
-      opts: isNew ? optsOf(EGS[s.grp] || [], s.code, new Set()) : [] });
+      dataset: isNew ? (s.kbob || '') : [s.name, s.kbob].filter(Boolean).join(' · '),   // one input «Name · KBOB 01.002» in edit mode
+      opts: optsOf(EGS[s.grp] || [], s.code, new Set()) });
   });
   const endwert = total && EBF ? total / 60 / EBF : null, endwertStr = endwert == null ? '–' : FMT1(endwert);
 
