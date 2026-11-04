@@ -9,8 +9,8 @@
 // Legacy study ids (#s01 … #s11, #home, #review, #qs, #varb) are resolved by app.js via links.js.
 //
 // Query parameters that are not route parameters patch the state once when the hash is entered
-// (deep links, screenshots): #/projects/musterhausen/deliveries/thg-32/pruefung?review=freigegeben&m1=true
-// Dotted keys patch nested objects; values are parsed as JSON when possible.
+// (deep links, screenshots): #/projects/musterhausen/deliveries/thg-32/pruefung?projects.musterhausen.forms.thg.step=5&user=FM
+// Dotted keys patch nested objects; values are parsed as JSON when possible and may only replace values of the same kind.
 
 const PATTERNS = [
   ['/', 'home'],

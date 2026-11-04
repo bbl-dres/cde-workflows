@@ -35,7 +35,7 @@ export default {
           <div class="tile ${TILE_CLASS[key]}"><div class="tile-head">${label}${icon(ic, 24, color)}</div><span class="tile-value">${vm.pf[key]}</span></div>`)}
       </div>
 
-      <div class="table rel">
+      <div class="table rel" style="overflow-x:auto"><div style="min-width:1040px">
         <div class="pf-head" style="${COLS}">
           <span>Projekt</span><span>Teilportfolio</span><span class="right">Anlagekosten</span>
           <span class="rel">Pflicht${ctx.marker(2, 'top:-4px;left:50px')}</span>
@@ -57,7 +57,7 @@ export default {
             <span class="muted">${r.sus}</span>
           </div>`)}
         <div class="pf-pager"><span class="pf-page-active">1</span><span>2</span><span>3</span></div>
-      </div>
+      </div></div>
       <div class="pf-foot">Endwert in kg CO₂-eq/m² EBF·a. Projekte, Firmen und Werte sind fiktiv.</div>
     </div>`;
   },

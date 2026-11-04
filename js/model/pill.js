@@ -11,7 +11,7 @@ export const PILL = {
   'Überfällig':     ['#fff1f0', '#ffa39e', '#cf1322', 'circle-alert'],
   'Zurückgewiesen': ['#fff1f0', '#ffa39e', '#cf1322', 'undo-2'],
   'Nicht bestellt': ['#fafafa', '#d9d9d9', '#595959', 'minus'],
-  'Entwurf': { label: 'Entwurf', bg: '#6b7280', bd: '#6b7280', c: '#fff', icon: 'pencil' },
+  'Entwurf':        ['#f3f4f6', '#d1d5db', '#374151', 'pencil'],
   'Ausstehend':     ['#f9f0ff', '#d3adf7', '#531dab', 'file-text'],
   'Geliefert':      ['#f6ffed', '#b7eb8f', '#389e0d', 'circle-check'],
 };

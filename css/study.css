@@ -1,7 +1,6 @@
 /* ---- Study panel (docked right) ---- */
 .study-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 360px; background: #fff; border-left: 1px solid var(--line); box-shadow: -4px 0 18px rgba(0,0,0,.08); overflow-y: auto; z-index: 100; font-size: 13px; display: flex; flex-direction: column; }
 body.study-open #app { padding-right: 360px; }
-.study-fab { position: fixed; left: 18px; bottom: 18px; z-index: 100; display: inline-flex; align-items: center; gap: 8px; background: var(--navy); color: #fff; border: 0; border-radius: 999px; padding: 10px 16px; font-size: 13px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
 
 .study-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 14px 16px 12px; border-bottom: 1px solid var(--line-4); background: var(--bg-canvas); }
 .study-title { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }

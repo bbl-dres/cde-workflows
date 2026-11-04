@@ -52,7 +52,7 @@
     "columns": [
       { "title": "Harmonisiert in dieser Studie", "items": [
         ["Begriffe", "«Datenformular» als Typ in Informationslieferplan und Aufgaben. Eine Status-Reihe für alle Lieferungen, mit optionalem Schritt «Intern geprüft (GP)»."],
-        ["Navigation", "Alle Lieferungen haben dieselben Tabs: Erfassung, Zusammenfassung (nur KV), Beteiligte, Dokumente, Verlauf."],
+        ["Navigation", "Alle Lieferungen haben dieselben Tabs: Übersicht, Erfassung, Prüfung, Beteiligte, Dokumente, Verlauf (Design 04.11.2026)."],
         ["Zahlen", "Format de-CH durchgehend (1’234.5, Prozent mit Leerschlag). THG-Einheit überall kg CO₂-eq/m² EBF·a."],
         ["Kontrast", "Hilfs- und Fusstexte auf mindestens 4.5:1 angehoben, Mindestschrift 12 px. Markierungen der Studie in dunklerem Orange."],
         ["Tastatur", "Checkboxen, Auswahlkarten, Optionsfelder und Vorlagen-Schalter mit Tab, Enter und Leertaste bedienbar, mit Rollen und Zustand für Screenreader. Eingabefelder sind beschriftet."],
@@ -69,7 +69,7 @@
   "variantB": {
     "eyebrow": "Vorschlag zur Diskussion",
     "title": "Variante B: Grundmengen aus DWG-Plänen",
-    "lead": "Statt Flächen von Hand zu erfassen (Variante A, <a href=\"#s03a\" data-screen-link>03a</a>), lädt der Architekt pro Geschoss einen CAFM-Plan nach CAD-Richtlinie BBL hoch. Die Prüfung entspricht dem Prototyp «Prüfplattform Flächenmanagement» (plan-check). Die Summen aller Geschosse füllen FV-32. Voraussetzung: Die Geschosse des Gebäudes sind definiert.",
+    "lead": "Statt Flächen von Hand zu erfassen (Variante A, <a href=\"#s03a\" data-screen-link>03a</a>), lädt der Architekt pro Geschoss einen CAFM-Plan nach CAD-Richtlinie BBL hoch. Die Prüfung entspricht dem Prototyp «Prüfplattform Flächenmanagement» (plan-check). Die Flächen der Geschosse kommen aus den Grundrissen (DWG); ein Formular FV-32 gibt es nicht mehr. Voraussetzung: Die Geschosse des Gebäudes sind definiert.",
     "cards": [
       { "title": "A · Manuelle Eingabe", "strengths": "Für alle Projekte, ohne Pläne oder Modell. Schnell, wenig Aufwand.", "limits": "Werte nicht nachvollziehbar, keine Raumdaten für das Flächenmanagement." },
       { "title": "B · DWG pro Geschoss", "strengths": "Flächen aus Raumpolygonen, geprüft und nachvollziehbar. Räume mit AOID gehen später ins Flächenmanagement.", "limits": "Pläne nach CAD-Richtlinie nötig, Geschosse müssen definiert sein. GSF, GGF, BUF, EBF, FAW und FB kommen nicht aus dem Plan." }

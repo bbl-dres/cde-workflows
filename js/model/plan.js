@@ -5,21 +5,21 @@ import { pillSpec } from './pill.js';
 import { mkSteps } from './steps.js';
 import { ruleRows, fmtNum } from '../plancheck/index.js';
 
+// idx: step of the plan stepper (data/plans.json steps); formStep: step of the Datenformular (0 Erstellt … 6 Übertragen)
 export const PLAN_STATUS = {
-  offen:       { label: 'Offen', idx: 0 },
-  bearbeitung: { label: 'In Bearbeitung', idx: 1 },
-  eingereicht: { label: 'Eingereicht', idx: 2 },
-  pruefung:    { label: 'In Prüfung', idx: 3 },
-  freigegeben: { label: 'Freigegeben', idx: 4 },
-  uebertragen: { label: 'Abgeschlossen', idx: 6 },
-  zurueck:     { label: 'Zurückgewiesen', idx: 1, warn: true },
+  offen:       { label: 'Offen', idx: 0, formStep: 0 },
+  bearbeitung: { label: 'In Bearbeitung', idx: 1, formStep: 1 },
+  eingereicht: { label: 'Eingereicht', idx: 2, formStep: 3 },
+  pruefung:    { label: 'In Prüfung', idx: 3, formStep: 4 },
+  freigegeben: { label: 'Freigegeben', idx: 4, formStep: 5 },
+  uebertragen: { label: 'Abgeschlossen', idx: 6, formStep: 6 },
+  zurueck:     { label: 'Zurückgewiesen', idx: 1, formStep: 1, warn: true },
 };
-const LOCKED = new Set(['eingereicht', 'pruefung', 'freigegeben', 'uebertragen']);
-const REVIEWABLE = new Set(['eingereicht', 'pruefung']);
+export const LOCKED = new Set(['eingereicht', 'pruefung', 'freigegeben', 'uebertragen']);
+export const REVIEWABLE = new Set(['eingereicht', 'pruefung']);
 const SIA_ROWS = [['GF', 'Geschossfläche', 'gf'], ['KF', 'Konstruktionsfläche', 'kf'], ['NGF', 'Nettogeschossfläche', 'ngf'], ['NF', 'Nutzfläche', 'nf'], ['HNF', 'Hauptnutzfläche', 'hnf'], ['NNF', 'Nebennutzfläche', 'nnf'], ['VF', 'Verkehrsfläche', 'vf'], ['FF', 'Funktionsfläche', 'ff']];
 const SIA_COLORS = { HNF: '#f4b6b6', NNF: '#ffd59b', VF: '#fff3a3', FF: '#b5d8f7', KF: '#d9d9d9' };
 
-export const planStatusLabel = status => (PLAN_STATUS[status] || PLAN_STATUS.offen).label;
 const area = v => (v == null ? '–' : fmtNum(v, Math.abs(v) >= 100 ? 0 : 1) + ' m²');
 const share = (v, t) => (v == null || !t ? '' : Math.round(v / t * 100) + ' %');
 const ok = (o, label, warn = false) => ({ label, ok: o, icon: o ? 'circle-check' : warn ? 'triangle-alert' : 'circle-x', color: o ? '#2f7d63' : warn ? '#c49a1c' : '#9b2c44' });
@@ -110,22 +110,20 @@ export function planModel(s, data) {
     return {
       key: f.key, code: f.code, codeLc: f.code.toLowerCase(), ee: f.ee, name: f.name, floor: f.floor, due: f.due,
       status, statusLabel, pill: pillSpec(statusLabel), locked, own, result, src, drawingKey, fileName,
-      fileSize: result && result.file.size ? result.file.size : null, version: result ? result.version : null,
+      version: result ? result.version : null,
       uploadedAt, busy: p.busy || null, error: p.error || null,
       sampleSrc: P.samples.cadv01.src, sampleLabel: P.samples.cadv01.label,
       errors, warnings, passed, score: sum ? sum.score + ' %' : '–', scoreC, scoreLabel: `Score (${passed})`,
       roomCount: rooms.length, areaCount: areas.length, ngf: k && hasRooms ? area(k.ngf) : '–', gf: k && hasAreas ? area(k.gf) : '–',
       rules, issueCount: result ? result.issues.length : 0, layerCount: result ? result.layers.length : 0,
-      gateOk, gateChecks, autoChecks, manualChecks,
+      gateOk, autoChecks, manualChecks,
       canSubmit: gateOk && !locked && !p.busy,
-      btnLabel: locked ? 'Eingereicht' : 'Einreichen zur Prüfung',
-      isSubmitted: idx >= 2 || status === 'zurueck', isReviewable: REVIEWABLE.has(status), isFrei: status === 'freigegeben', isUeber: status === 'uebertragen', isZurueck: status === 'zurueck', notSubmitted: idx < 2 && status !== 'zurueck',
+      isReviewable: REVIEWABLE.has(status), isFrei: status === 'freigegeben', isUeber: status === 'uebertragen', isZurueck: status === 'zurueck', notSubmitted: idx < 2 && status !== 'zurueck',
       approveDisabled: !manualChecks.every(m => m.checked),
       transferStatus: status === 'uebertragen' ? 'Übertragen, ' + (f.transferredAt || 'heute') : status === 'freigegeben' ? 'Bereit zur Übertragung' : 'Wartet auf Freigabe',
-      steps, dates, siaRows, siaSegs, ratios, history,
+      steps, dates, siaRows, siaSegs, ratios, history, comment: p.comment || '',
       meta: [['Kürzel', f.code], ['Geschoss', `${f.floor} (Ebene ${f.ee})`], ['Bestellt von', P.orderedBy], ['Lieferant', `${sup.name}, ${sup.firm}`], ['Fällig', f.due], ['Grundlage', P.guideline], ['Prüfung', `${P.ruleCount} Prüfregeln, lokal im Browser`], ['Zielsystem', P.target]]
         .map(([k2, v], i) => ({ k: k2, v, bg: i % 2 ? 'transparent' : '#f6f7f9' })),
-      meta2: [{ k: 'Lieferant', v: `${sup.name}, ${sup.firm}` }, { k: 'Eingereicht', v: f.submittedAt || (idx >= 2 ? 'heute' : '–') }, { k: 'Datei', v: fileName || '–' }, { k: 'DWG-Version', v: result ? result.version : '–' }, { k: 'Grundlage', v: P.guideline }, { k: 'Zielsystem', v: P.target }],
     };
   });
 

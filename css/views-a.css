@@ -14,20 +14,7 @@
 .tasks-iconbar > *:hover { background: rgba(0,0,0,.04); }
 .tasks-filters { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
 .filter-range { color: var(--placeholder); }
-.tasks-table { background: #fff; border-radius: 2px; position: relative; overflow: hidden; }
-.tasks-inner { width: 1492px; }
-.tasks-head { display: grid; gap: 0 10px; padding: 0 10px; height: 34px; align-items: center; background: #f4f5f7; font-size: 12.5px; font-weight: 500; }
-.tasks-th { display: flex; align-items: center; gap: 4px; min-width: 0; }
-.tasks-row { display: grid; gap: 0 10px; padding: 0 10px; height: 34px; align-items: center; font-size: 12.5px; }
-.tasks-check { width: 14px; height: 14px; border: 1px solid var(--disabled); border-radius: 2px; background: #fff; display: inline-block; }
 .tasks-person { text-decoration: underline dotted; text-underline-offset: 3px; }
-.tasks-actions { position: absolute; top: 0; right: 0; width: 100px; background: #fff; box-shadow: -1px 0 0 #dfe3e8; }
-.tasks-actions-head { height: 34px; background: #f4f5f7; }
-.tasks-actions-row { height: 34px; display: flex; gap: 4px; align-items: center; justify-content: center; }
-.tasks-footer { position: absolute; left: 12px; right: 12px; bottom: 14px; display: flex; flex-direction: column; gap: 14px; }
-.tasks-scroll { display: flex; align-items: center; gap: 8px; }
-.tasks-scroll-track { flex: 1; height: 8px; border-radius: 4px; background: var(--line-6); position: relative; }
-.tasks-scroll-thumb { position: absolute; left: 1%; width: 84%; top: 0; bottom: 0; border-radius: 4px; background: var(--disabled); }
 
 
 /* ---- 06 Kontrolle über alle Projekte ---- */

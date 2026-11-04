@@ -41,7 +41,7 @@ body.study-open .toast { left: calc(50% - 180px); }
 .user-menu-item:hover { background: var(--line-5); }
 .user-menu-item.is-active { background: var(--sel-bg); }
 .user-menu-sep { border-top: 1px solid var(--line-5); margin: 6px 0; }
-.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--green-2); border-radius: 4px; box-shadow: var(--shadow-pop); padding: 10px 12px 10px 14px; display: flex; gap: 10px; align-items: center; font-size: 13px; z-index: 80; max-width: min(560px, calc(100vw - 32px)); }
+.toast { position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%); background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--green-2); border-radius: 4px; box-shadow: var(--shadow-pop); padding: 10px 12px 10px 14px; display: flex; gap: 10px; align-items: center; font-size: 13px; z-index: 80; max-width: min(560px, calc(100vw - 32px)); }
 .toast-close { background: none; border: 0; padding: 2px; display: inline-flex; cursor: pointer; margin-left: 6px; }
 
 /* ---- Dashboard (reference: dashboard-1528.png) ---- */
@@ -139,7 +139,7 @@ a.filter-btn { color: var(--navy); }
 /* ---- Overview, sections ---- */
 .overview { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 .ov-fav { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text); padding: 4px 0; }
-.empty { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--faint); font-size: 12.5px; }
+.empty { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--muted); font-size: 12.5px; }
 .act-row { display: flex; gap: 14px; align-items: center; padding: 9px 12px; border-bottom: 1px solid var(--line-5); font-size: 13px; }
 .act-row:last-child { border-bottom: 0; }
 .act-date { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 92px; }

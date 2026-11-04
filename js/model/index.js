@@ -1,6 +1,5 @@
 // View model: everything the screens show, computed from state + data on every render. Views only read from here.
 // Datenformulare (KV-32, KS-31, THG-32 of every project, Planlieferungen DWG) in model/form.js, application lists in model/app.js.
-import { num } from '../format.js';
 import { pillSpec } from './pill.js';
 import { templatesModel } from './templates.js';
 import { importModel } from './import.js';
@@ -12,8 +11,6 @@ export function compute(state, data, project, user) {
   const s = state, tw = s.tweaks || {};
   const mk = tw.showMarkers !== false;
   const ak = Number.isFinite(tw.anlagekostenMio) ? tw.anlagekostenMio : data.project.anlagekostenMio;
-  const P = (s.projects || {})[project.id] || { sia: {} };
-  const gf = num(P.sia.GF) || 1, ebf = num(P.sia.EBF) || 1;
   const plan = planModel(s, data);                       // Planlieferungen DWG (status per floor, Musterhausen)
   const formsAll = Object.fromEntries(data.projects.projects.map(p => [p.id, formModel(s, data, p)]));
   const forms = formsAll[project.id] || {};
@@ -21,7 +18,7 @@ export function compute(state, data, project, user) {
   const formStatusOf = (pid, code) => { const kind = kindOfCode(code), F = kind && formsAll[pid] && formsAll[pid][kind]; return F ? F.status : null; };
   const formByCode = code => {
     const c = String(code).toLowerCase();
-    if (c.startsWith('dwg-')) { const p = project.detailed ? plan.planByCode(c) : null; return p ? planForm(p, s, data) : null; }
+    if (c.startsWith('dwg-')) { const p = project.detailed ? plan.planByCode(c) : null; return p ? planForm(p, data) : null; }
     const kind = kindOfCode(c);
     return kind && forms[kind] ? forms[kind] : null;
   };
@@ -30,12 +27,14 @@ export function compute(state, data, project, user) {
   const ot = s.orderType, isTHG = ot === 'thg', big = ak >= 1;
   const akStr = ak.toLocaleString('de-CH', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
-  // ---- Statuses shared by ILP, Aufgaben, Portfolio (Musterhausen rows from data/ilp.json and data/tasks.json) ----
+  // ---- Statuses shared by ILP, Aufgaben, Portfolio: the rows of data/ilp.json and data/tasks.json belong to the detailed
+  // project, so they follow its forms on every route (the topbar counts must not change with the project opened) ----
+  const detailed = data.projects.projects.find(p => p.detailed) || project;
+  const dForms = formsAll[detailed.id] || {};
   const resolve = r => {
-    const status = r.plan && plan.plans[r.plan] ? plan.plans[r.plan].statusLabel : r.statusKey && forms[r.statusKey] ? forms[r.statusKey].status : r.status;
+    const status = r.plan && plan.plans[r.plan] ? plan.plans[r.plan].statusLabel : r.statusKey && dForms[r.statusKey] ? dForms[r.statusKey].status : r.status;
     return { ...r, status, pill: pillSpec(status) };
   };
-  const detailed = data.projects.projects.find(p => p.detailed) || project;
   const auRows = data.tasks.rows.map((r, i) => ({ ...resolve(r), typW: r.typ === 'Datenformular' ? 600 : 400, mark: mk && !!r.mark, bg: i % 2 ? '#f6f7f9' : '#fff' }));
   const ilpRows = data.ilp.rows.map(resolve);
   const ilpCount = {
@@ -64,15 +63,14 @@ export function compute(state, data, project, user) {
   const cnt = f => pfRows.filter(r => f(r.status)).length;
 
   const base = {
-    mk, gl: 'eBKP-H', glLabel: 'eBKP-H', ak, akStr, gf, ebf,
+    mk, gl: 'eBKP-H', glLabel: 'eBKP-H', ak, akStr,
     ...importModel(s, data), ...templatesModel(s, data), ...plan,
 
     // Datenformulare
-    forms, formsAll, formByCode, formStatusOf,
-    kvTitle: 'Kostenvoranschlag eBKP-H (SIA 32)',
+    forms, formByCode, formStatusOf,
 
     // Lists of the detailed project
-    auRows, ilpRows, ilpTiles, detailedId: detailed.id,
+    auRows, ilpRows, ilpTiles,
 
     // 02 Bestellen
     orderType: ot,

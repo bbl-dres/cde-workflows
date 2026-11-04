@@ -1,20 +1,10 @@
 import { html, icon, esc } from '../ui.js';
+import { mountMap, unmountMap } from './parts/map.js';
 
 // Startseite nach dem Login: Begrüssung, offene Aufgaben, Meine Projekte, Einblicke mit Karte (MapLibre GL,
 // swisstopo-Basiskarte als Vektorkacheln; Fallback OpenFreeMap; ohne Netz eine Ortsliste).
 //
-// The map is expensive (WebGL context, style download), so the map element survives re-renders of the
-// dashboard: it is moved into the fresh DOM instead of being rebuilt. It is removed when leaving the page.
-let live = null;   // { map, el, key }
-
-// Removing a map whose style is still loading makes MapLibre reject its fetch with an AbortError (intentional here).
-window.addEventListener('unhandledrejection', e => { if (e.reason && e.reason.name === 'AbortError' && live === null) e.preventDefault(); });
-
-function destroyMap() {
-  if (!live) return;
-  try { live.map.remove(); } catch { /* already gone */ }
-  live = null;
-}
+// The map lives in the shared map slot (views/parts/map.js) and survives re-renders of the dashboard.
 
 export default {
   title: () => 'Startseite',
@@ -64,65 +54,30 @@ export default {
 
   mount(root, ctx) {
     const host = root.querySelector('#dash-map');
-    if (!host || !window.maplibregl) return;
-    const key = ctx.user.key + ':' + ctx.vm.myProjects.map(p => p.id).join(',');
-
-    // Same user and projects: reuse the live map (keeps the WebGL context and the loaded style).
-    if (live && live.key === key && live.el) {
-      host.appendChild(live.el);
-      host.querySelector('.dash-map-fallback')?.remove();
-      live.map.resize();
-      host.__map = live.map;
-      return;
-    }
-    destroyMap();
-
     const cfg = ctx.data.projects.map || {};
-    const el = document.createElement('div');
-    el.className = 'dash-map-canvas';
-    host.appendChild(el);
-    const map = new maplibregl.Map({
-      container: el,
-      style: cfg.style,
-      center: cfg.center || [8.2, 46.8],
-      zoom: cfg.zoom || 6.4,
-      attributionControl: { compact: true },
+    const projects = ctx.vm.myProjects;
+    mountMap(host, {
+      key: 'dash:' + ctx.user.key + ':' + projects.map(p => p.id).join(','), cfg, center: cfg.center || [8.2, 46.8], zoom: cfg.zoom || 6.4, fallback: '.dash-map-fallback',
+      build: (map, maplibregl) => {
+        projects.forEach(p => {
+          const pin = document.createElement('button');
+          pin.type = 'button';
+          pin.className = 'map-pin';
+          pin.title = p.name;
+          pin.setAttribute('aria-label', p.name);
+          const popup = new maplibregl.Popup({ offset: 14, closeButton: false })
+            .setHTML(`<strong>${esc(p.name)}</strong><br>${esc(p.location.place)} · ${esc(p.phase)}<br><a href="#${esc(p.href)}">Projekt öffnen</a>`);
+          new maplibregl.Marker({ element: pin }).setLngLat([p.location.lng, p.location.lat]).setPopup(popup).addTo(map);
+        });
+        // Frame the projects inside Switzerland (projects abroad keep their pin but do not zoom the map out).
+        const [sw, ne] = cfg.fitBounds || [[5.9, 45.8], [10.5, 47.8]];
+        const bounds = new maplibregl.LngLatBounds();
+        projects.forEach(p => { const { lng, lat } = p.location; if (lng >= sw[0] && lng <= ne[0] && lat >= sw[1] && lat <= ne[1]) bounds.extend([lng, lat]); });
+        if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 56, maxZoom: 8.5, duration: 0 });
+      },
     });
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
-    live = { map, el, key };
-    host.__map = map;   // diagnostics / tests
-
-    // Fall back to a global style only if the style itself cannot be loaded (offline, blocked).
-    let fellBack = false;
-    map.on('error', e => {
-      const err = e && e.error;
-      const url = err && err.url ? String(err.url) : '';
-      const styleFailed = !map.isStyleLoaded() && (url.startsWith(cfg.style || '\u0000') || /style/i.test(String(err && err.message || '')));
-      if (!fellBack && cfg.fallbackStyle && styleFailed) { fellBack = true; map.setStyle(cfg.fallbackStyle); }
-    });
-    map.once('load', () => { host.querySelector('.dash-map-fallback')?.remove(); map.resize(); });
-
-    ctx.vm.myProjects.forEach(p => {
-      const pin = document.createElement('button');
-      pin.type = 'button';
-      pin.className = 'map-pin';
-      pin.title = p.name;
-      pin.setAttribute('aria-label', p.name);
-      const popup = new maplibregl.Popup({ offset: 14, closeButton: false })
-        .setHTML(`<strong>${esc(p.name)}</strong><br>${esc(p.location.place)} · ${esc(p.phase)}<br><a href="#${esc(p.href)}">Projekt öffnen</a>`);
-      new maplibregl.Marker({ element: pin }).setLngLat([p.location.lng, p.location.lat]).setPopup(popup).addTo(map);
-    });
-
-    // Frame the projects inside Switzerland (projects abroad keep their pin but do not zoom the map out).
-    const [sw, ne] = cfg.fitBounds || [[5.9, 45.8], [10.5, 47.8]];
-    const bounds = new maplibregl.LngLatBounds();
-    ctx.vm.myProjects.forEach(p => {
-      const { lng, lat } = p.location;
-      if (lng >= sw[0] && lng <= ne[0] && lat >= sw[1] && lat <= ne[1]) bounds.extend([lng, lat]);
-    });
-    if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 56, maxZoom: 8.5, duration: 0 });
   },
 
   /** Called by app.js when another page replaces the dashboard. */
-  unmount() { destroyMap(); },
+  unmount() { unmountMap(); },
 };

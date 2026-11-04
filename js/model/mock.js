@@ -4,12 +4,13 @@
 // Musterhausen keeps its base values unchanged. Which forms a project has (kv, ks, thg) and their workflow state come
 // from data/forms.json (byProject); a form at step 0 («Offen») has no values yet, `missing` blanks single fields of
 // forms in progress («kvQ:D08» for the cost maps, «thg:C01-1:h» for a field of an Emissionsquelle).
+import { num } from '../format.js';
+
 export const BASE_AK = 24.6;
 export const BASE_EBF = 5600;
 export const KIND_OF = { 'KV-32': 'kv', 'KS-31': 'ks', 'THG-32': 'thg' };
 /** Value maps of the cost forms (quantities, values per position); the THG keeps its Emissionsquellen in thgSrc + thgHead. */
 export const KEYS = { kv: ['kvQ', 'kvV'], ks: ['ksQ', 'ksV'] };
-export const THG_KEYS = ['thgSrc', 'thgHead'];
 
 function rng(seed) {
   let h = 2166136261;
@@ -22,6 +23,8 @@ const roundQ = v => (v >= 20000 ? roundTo(v, 100) : v >= 500 ? roundTo(v, 10) : 
 const sum = o => Object.values(o).reduce((a, b) => a + (b || 0), 0);
 /** THG over 60 years incl. replacement of a list of Emissionsquellen (kg CO₂-eq): Σ (h + e) × 1000 / Amortisation × 60. */
 export const thgTotal60 = srcs => srcs.reduce((a, s) => a + ((Number(s.h) || 0) + (Number(s.e) || 0)) * 1000 / (Number(s.a) || 60) * 60, 0);
+/** Element group of the SIA 2032 list by code: [code, name, unit, amortisation] or null. */
+export const egOf = (data, code) => { for (const list of Object.values(data.thg.eg)) { const x = list.find(y => y[0] === code); if (x) return x; } return null; };
 
 /** Values, previous-phase figures and cost targets of one project (pure function of the data).
  *  opts.complete: keep every value (no blanks for `missing`, Emissionsquellen also for an open THG-32), e.g. for the Tool-Export import. */
@@ -30,19 +33,21 @@ export function mockProject(project, data, opts = {}) {
   const scale = base ? 1 : (project.anlagekostenMio || BASE_AK) / BASE_AK;
   const r = rng(project.id);
   const jit = (lo, hi) => (base ? 1 : lo + (hi - lo) * r());
+  const chf = (v, lo = 0.9, hi = 1.1) => Math.max(1000, roundTo(v * scale * jit(lo, hi), 1000));
+  const qty = v => Math.max(10, roundTo(v * scale * jit(0.95, 1.05), 10));
   const inst = (data.forms.byProject || {})[project.id] || {};
-  const sia = Object.fromEntries(Object.entries(data.sia416.initial).map(([k, v]) => [k, base ? v : Math.max(10, roundTo(v * scale * jit(0.95, 1.05), 10))]));
+  const sia = Object.fromEntries(Object.entries(data.sia416.initial).map(([k, v]) => [k, base ? v : qty(v)]));
   const kvQ = {}, kvV = {}, ksQ = {}, ksV = {};
   const ksFactor = {};
   E.ebkp.forEach(g => { const s = g.kids.reduce((a, k) => a + k.cost, 0); ksFactor[g.code] = (E.ks31[g.code] || s * 0.93) / s; });
   E.ebkp.forEach(g => g.kids.forEach(k => {
-    const q = Math.max(10, roundTo(k.qty * scale * jit(0.95, 1.05), 10));
+    const q = qty(k.qty);
     kvQ[k.code] = q; ksQ[k.code] = q;
-    kvV[k.code] = Math.max(1000, roundTo(k.cost * scale * jit(0.9, 1.1), 1000));
-    ksV[k.code] = Math.max(1000, roundTo(k.cost * ksFactor[g.code] * scale * jit(0.9, 1.1), 1000));
+    kvV[k.code] = chf(k.cost);
+    ksV[k.code] = chf(k.cost * ksFactor[g.code]);
   }));
   E.extra.forEach(k => {
-    kvV[k.code] = Math.max(1000, roundTo(k.cost * scale * jit(0.9, 1.1), 1000));
+    kvV[k.code] = chf(k.cost);
     ksV[k.code] = Math.max(1000, roundTo(kvV[k.code] * (E.ks31[k.code] ? E.ks31[k.code] / k.cost : 0.93), 1000));
   });
   // THG: the Emissionsquellen of the design, scaled with the quantities of the project (per m² EBF for the Gebäudetechnik),
@@ -57,8 +62,8 @@ export function mockProject(project, data, opts = {}) {
   const thgHead = { ...Object.fromEntries(TH.head.filter(h => h[2] != null).map(h => [h[0], h[2]])), ...(thgInst.head || {}) };
   // Previous phases: KS-31 for the KV, Kostengrobschätzung SIA 21 for the KS, SIA 31 for the THG
   const prev = { kv: {}, ks: {}, thg: {} };
-  Object.entries(E.ks31).forEach(([c, v]) => { prev.kv[c] = base ? v : Math.max(1000, roundTo(v * scale * jit(0.9, 1.05), 1000)); prev.ks[c] = Math.max(1000, roundTo(prev.kv[c] * (base ? 0.9 : jit(0.85, 0.95)), 1000)); });
-  Object.entries(TH.prev31).forEach(([c, v]) => { prev.thg[c] = base ? v : Math.max(1000, roundTo(v * scale * jit(0.9, 1.1), 1000)); });
+  Object.entries(E.ks31).forEach(([c, v]) => { prev.kv[c] = base ? v : chf(v, 0.9, 1.05); prev.ks[c] = Math.max(1000, roundTo(prev.kv[c] * (base ? 0.9 : jit(0.85, 0.95)), 1000)); });
+  Object.entries(TH.prev31).forEach(([c, v]) => { prev.thg[c] = base ? v : chf(v); });
   // Missing values (forms in progress) and empty forms (step 0)
   const values = { kvQ, kvV, ksQ, ksV };
   const missing = opts.complete ? [] : [...(base ? (E.missingInitially || []).map(c => 'kvQ:' + c) : []), ...Object.values(inst).flatMap(i => i.missing || [])];
@@ -73,13 +78,27 @@ export function mockProject(project, data, opts = {}) {
   }
   const kostenziel = project.kostenzielBW || roundTo(sum(prev.kv) * 1.03, 1e5);
   const kostendach = (inst.kv && inst.kv.kostendach) || roundTo(kostenziel * 1.1, 1e5);
-  return { scale, sia, ...values, thgSrc, thgHead, prev, kostenziel, kostendach };
+  return { sia, ...values, thgSrc, thgHead, prev, kostenziel, kostendach };
 }
 
-/** Group amounts for the direct entry mode: the sum of the positions of each Hauptgruppe ('' when nothing is entered). */
-export function groupAmounts(values, data) {
-  return Object.fromEntries(data.ebkp.ebkp.map(g => {
-    const vals = g.kids.map(k => values[k.code]).filter(v => v != null && v !== '');
-    return [g.code, vals.length ? vals.reduce((a, b) => a + Number(b), 0) : ''];
-  }));
+/** Amount of a Hauptgruppe from its positions (base positions not removed + Kostenelemente added); null when nothing is entered. */
+export function groupAmount(g, V, removed = {}, added = []) {
+  const vals = [...(g.kids || []).filter(k => !removed[k.code]).map(k => V[k.code]), ...added.map(a => a.v)].map(num).filter(v => v != null);
+  return vals.length ? vals.reduce((a, b) => a + b, 0) : null;
+}
+/** Group amounts for the direct entry mode of every Hauptgruppe ('' when nothing is entered). */
+export const groupAmounts = (values, data) => Object.fromEntries(data.ebkp.ebkp.map(g => [g.code, groupAmount(g, values) ?? '']));
+
+/** Tool-Export import: the complete Emissionsquellen of the project come in; existing rows keep their values, blanks are filled. */
+export function mergeToolExport(current, complete) {
+  let added = 0, filled = 0;
+  const next = current.map(x => {
+    const b = complete.find(y => y.id === x.id);
+    if (!b || x.isNew) return x;
+    const o = { ...x };
+    ['q', 'h', 'e'].forEach(k => { if (num(o[k]) == null && b[k] != null) { o[k] = b[k]; filled++; } });
+    return o;
+  });
+  complete.forEach(b => { if (!current.some(x => x.id === b.id)) { next.push({ ...b }); added++; } });
+  return { next, added, filled };
 }

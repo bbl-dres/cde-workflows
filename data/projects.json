@@ -126,7 +126,7 @@
       "tasks": [
         {
           "name": "Ökobilanz Bauemissionen",
-          "desc": "THG-32 · Menge + THG",
+          "desc": "THG-32 · Emissionsquellen je Elementgruppe",
           "status": "Überfällig",
           "typ": "Datenformular",
           "zug": "Planerteam Nord AG",
@@ -217,7 +217,7 @@
       "tasks": [
         {
           "name": "Ökobilanz Bauemissionen",
-          "desc": "THG-32 · Menge + THG",
+          "desc": "THG-32 · Emissionsquellen je Elementgruppe",
           "status": "In Bearbeitung",
           "typ": "Datenformular",
           "zug": "Olivia Beispiel",
@@ -511,7 +511,7 @@
           "name": "Kostenvoranschlag eBKP-H",
           "firm": "Holzbau Beispiel AG",
           "gewerk": "Kostenplanung",
-          "desc": "Datenformular · Betrag je Hauptgruppe eBKP-H, Ziel ePPM",
+          "desc": "Datenformular · Hauptgruppen und Kostenelemente eBKP-H (Menge + Kosten) eBKP-H, Ziel ePPM",
           "status": "In Bearbeitung",
           "isForm": true
         }
@@ -519,7 +519,7 @@
       "tasks": [
         {
           "name": "Kostenvoranschlag eBKP-H",
-          "desc": "KV-32 · Betrag je Hauptgruppe",
+          "desc": "KV-32 · Hauptgruppen und Kostenelemente eBKP-H (Menge + Kosten)",
           "status": "In Bearbeitung",
           "typ": "Datenformular",
           "zug": "Holzbau Beispiel AG",

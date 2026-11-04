@@ -26,7 +26,7 @@ export function topbar(ctx, hasSidebar) {
     <div class="topbar-search"><div class="topbar-search-input">Suchen nach Projekten und Bestandsdaten...</div><div class="topbar-search-btn">${icon('search', 16, '#1f2937')}</div></div>
     <div class="topbar-icons">
       <button type="button" class="topbar-iconbtn rel" data-action="toggleNotif" aria-label="Benachrichtigungen" aria-expanded="${state.ui.notif ? 'true' : 'false'}">${icon('bell', 20, '#fff')}${vm.unreadCount ? html`<span class="topbar-dot"></span>` : ''}</button>
-      <span class="topbar-iconbtn" title="Hilfe">${icon('book', 20, '#fff')}</span>
+      <span class="topbar-iconbtn" title="Hilfe" aria-hidden="true">${icon('book', 20, '#fff')}</span>
       <span class="topbar-iconbtn" title="Einstellungen">${icon('settings', 20, '#fff')}</span>
     </div>
     <button type="button" class="topbar-user" data-action="toggleUserMenu" aria-haspopup="menu" aria-expanded="${state.ui.userMenu ? 'true' : 'false'}">${avatar(user.initials, 28, '#ccc')}<span class="topbar-username">${user.name}</span></button>
@@ -92,7 +92,7 @@ export function frame(ctx, content, extra) {
   const sb = sidebarFor(ctx);
   const white = ctx.route.name === 'tasks';
   const mainCls = `app-main${sb ? '' : ' app-main-full'}${white ? ' app-main-white' : ''}`;
-  return html`<div class="app-frame">${banner()}${topbar(ctx, !!sb)}<div class="app-body">${sb}${sb ? html`<div class="side-backdrop" data-action="toggleSide"></div>` : ''}<main class="${mainCls}" id="main">${white ? html`<div class="page-card">${content}</div>` : content}</main></div>${footer()}${extra || ''}</div>`;
+  return html`<div class="app-frame"><a class="skip-link" href="#main">Zum Inhalt</a>${banner()}${topbar(ctx, !!sb)}<div class="app-body">${sb}${sb ? html`<div class="side-backdrop" data-action="toggleSide"></div>` : ''}<main class="${mainCls}" id="main">${white ? html`<div class="page-card">${content}</div>` : content}</main></div>${footer()}${extra || ''}</div>`;
 }
 
 // ---- Breadcrumb, page head, tabs ----
@@ -107,28 +107,32 @@ export const breadcrumb = parts => html`<nav class="breadcrumb" aria-label="Brea
 export const pageHead = (title, crumbs, opts = {}) =>
   html`<div class="page-head" style="${raw(opts.style || '')}"><h1 class="page-title">${title}${opts.extra || ''}</h1>${crumbs ? breadcrumb(crumbs) : ''}</div>`;
 
-/** Tabs: items [{ key, label, href?, screen?, extra? }]. Items with href/screen navigate; others are static. */
-export const tabs = (items, active) => html`<div class="tabs" role="tablist">${items.map(t => {
+/** Tabs: items [{ key, label, href?, screen?, extra? }]. Items with href/screen navigate (sub-pages, so a <nav> with
+ *  aria-current rather than a tab widget); others are static. */
+export const tabs = (items, active, label = 'Unterseiten') => html`<nav class="tabs" aria-label="${label}">${items.map(t => {
   const target = t.href || t.screen;
   const cls = `tab${t.key === active ? ' is-active' : ''}${t.extra ? ' rel' : ''}`;
   return target
-    ? html`<a class="${cls}" role="tab" aria-selected="${t.key === active ? 'true' : 'false'}" href="#${target}" data-nav="${target}">${t.label}${t.extra || ''}</a>`
-    : html`<span class="${cls}" role="tab" aria-selected="${t.key === active ? 'true' : 'false'}">${t.label}${t.extra || ''}</span>`;
-})}</div>`;
+    ? html`<a class="${cls}" ${t.key === active ? raw('aria-current="page"') : ''} href="#${target}" data-nav="${target}">${t.label}${t.extra || ''}</a>`
+    : html`<span class="${cls}" ${t.key === active ? raw('aria-current="page"') : ''}>${t.label}${t.extra || ''}</span>`;
+})}</nav>`;
 
 export const emptyState = (text = 'Keine Einträge', size = 44) => html`<div class="empty">${icon('inbox', size, '#d9d9d9')}<span>${text}</span></div>`;
 
-/** Ant pagination: «1-n von n ‹ 1 › 20 / Seite». pages > 1 renders page buttons. */
-export const pagination = (total, { page = 1, size = 10 } = {}) => {
+/** Ant pagination: «1-n von n ‹ 1 › 20 / Seite». With `href(page)` the page buttons are links. */
+export const pagination = (total, { page = 1, size = 10, href = null } = {}) => {
   const pages = Math.max(1, Math.ceil(total / size));
   const from = total ? (page - 1) * size + 1 : 0, to = Math.min(total, page * size);
-  return html`<div class="pager">
+  const pbtn = (p, cls, content, label) => (href && p >= 1 && p <= pages && p !== page
+    ? html`<a class="pager-btn${cls}" href="#${href(p)}" data-nav="${href(p)}" aria-label="${label}">${content}</a>`
+    : html`<span class="pager-btn${cls}" aria-label="${label}" ${p === page ? raw('aria-current="page"') : ''}>${content}</span>`);
+  return html`<nav class="pager" aria-label="Seiten">
     <span class="pager-info">${total ? `${from}-${to} von ${total}` : '0 von 0'}</span>
-    <span class="pager-btn${page <= 1 ? ' is-disabled' : ''}" aria-label="Zurück">${icon('chevron-left', 12, page <= 1 ? '#d9d9d9' : '#1f2937')}</span>
-    ${Array.from({ length: Math.min(pages, 9) }, (_, i) => html`<span class="pager-btn${i + 1 === page ? ' is-active' : ''}">${i + 1}</span>`)}
-    <span class="pager-btn${page >= pages ? ' is-disabled' : ''}" aria-label="Weiter">${icon('chevron-right', 12, page >= pages ? '#d9d9d9' : '#1f2937')}</span>
+    ${pbtn(page - 1, page <= 1 ? ' is-disabled' : '', icon('chevron-left', 12, page <= 1 ? '#d9d9d9' : '#1f2937'), 'Zurück')}
+    ${Array.from({ length: Math.min(pages, 9) }, (_, i) => pbtn(i + 1, i + 1 === page ? ' is-active' : '', String(i + 1), `Seite ${i + 1}`))}
+    ${pbtn(page + 1, page >= pages ? ' is-disabled' : '', icon('chevron-right', 12, page >= pages ? '#d9d9d9' : '#1f2937'), 'Weiter')}
     <span class="pager-btn pager-size">${size} / Seite ${icon('chevron-down', 12, '#9aa3ad')}</span>
-  </div>`;
+  </nav>`;
 };
 
 // ---- Overlays ----
@@ -141,7 +145,7 @@ export function notificationDrawer(ctx) {
     <div class="drawer-tools">
       <button type="button" class="btn btn-secondary btn-sm${state.ui.notifUnreadOnly ? ' is-on' : ''}" data-action="notifUnreadOnly" aria-pressed="${state.ui.notifUnreadOnly ? 'true' : 'false'}">Nur ungelesene</button>
       <span class="flex-1"></span>
-      <span class="iconbar"><span title="Archiv">${icon('archive', 15, '#1f2937')}</span><button type="button" data-action="markAllRead" title="Alle als gelesen markieren">${icon('circle-check', 15, '#1f2937')}</button></span>
+      <span class="iconbar"><span title="Archiv" aria-hidden="true">${icon('archive', 15, '#1f2937')}</span><button type="button" data-action="markAllRead" title="Alle als gelesen markieren">${icon('circle-check', 15, '#1f2937')}</button></span>
     </div>
     <div class="drawer-list">
       ${list.length ? list.map(n => html`<div class="notif-row${n.unread ? ' is-unread' : ''}">
@@ -153,7 +157,7 @@ export function notificationDrawer(ctx) {
         <button type="button" class="notif-check" data-action="markRead" data-id="${n.id}" title="${n.unread ? 'Als gelesen markieren' : 'Gelesen'}">${icon('circle-check', 16, n.unread ? '#4c8c75' : '#c9cfd6')}</button>
       </div>`) : html`<div class="muted" style="padding:24px 16px">Keine Benachrichtigungen.</div>`}
     </div>
-    <div class="drawer-foot"><button type="button" class="btn btn-primary" data-action="toggleNotif">Schließen</button></div>
+    <div class="drawer-foot"><button type="button" class="btn btn-primary" data-action="toggleNotif">Schliessen</button></div>
   </aside>`;
 }
 
@@ -166,10 +170,10 @@ export function userMenu(ctx) {
     ${data.users.users.map(u => html`<button type="button" role="menuitem" class="user-menu-item${u.key === user.key ? ' is-active' : ''}" data-action="setUser" data-key="${u.key}">${avatar(u.initials, 24, u.internal ? 'var(--navy)' : '#aab2bc')}<span class="flex-1"><span>${u.name}</span><span class="muted fs-12"> · ${u.role}</span></span>${u.key === user.key ? icon('check', 14, '#2f7d63') : ''}</button>`)}
     <div class="user-menu-sep"></div>
     ${[['user', 'Mein Account'], ['settings', 'Meine Einstellungen'], ['bell', 'Benachrichtigungseinstellungen'], ['book', 'Benutzerhandbuch'], ['circle-help', 'Support'], ['file-text', 'Release Notes'], ['info', 'Impressum']]
-      .map(([ic, label]) => html`<span class="user-menu-item is-static" title="Im Prototyp ohne Funktion">${icon(ic, 16, '#6b7280')}<span class="flex-1">${label}</span></span>`)}
+      .map(([ic, label]) => html`<span class="user-menu-item is-static" role="menuitem" aria-disabled="true" title="Im Prototyp ohne Funktion">${icon(ic, 16, '#6b7280')}<span class="flex-1">${label}</span></span>`)}
     <div class="user-menu-sep"></div>
     <button type="button" role="menuitem" class="user-menu-item" data-action="toggleStudy">${icon('book', 16, '#10384f')}<span class="flex-1 fw-600">Design-Studie ${ctx.state.ui.studyOpen ? 'schliessen' : 'öffnen'}</span></button>
-    <span class="user-menu-item is-static">${icon('log-out', 16, '#6b7280')}<span class="flex-1">Logout</span></span>
+    <span class="user-menu-item is-static" role="menuitem" aria-disabled="true" title="Im Prototyp ohne Funktion">${icon('log-out', 16, '#6b7280')}<span class="flex-1">Logout</span></span>
   </div>`;
 }
 

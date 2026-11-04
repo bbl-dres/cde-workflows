@@ -21,7 +21,7 @@ Sign in as one of seven sample personas (name at the top right) to follow a deli
 
 ## Features
 
-- Order a data delivery in the Informationslieferplan with a template (Kosten eBKP-H, Ökobilanz TP2) and the rule «mandatory from CHF 1 Mio».
+- Order a data delivery in the Informationslieferplan with a template (Kosten eBKP-H, Ökobilanz Bauemissionen nach SIA 2032) and the rule «mandatory from CHF 1 Mio».
 - Enter costs per eBKP-H Hauptgruppe or per Kostenelement (open the group, add or remove positions), import an Excel file, see completeness and missing values live.
 - Enter the Ökobilanz as emission sources per eBKP-H element group (KBOB dataset, quantity, production and disposal, amortisation after SIA 2032) with the Grundlagen of the calculation; the Endwert for SUS is derived, a Tool-Export import brings the sources in. All eight projects carry complete, plausible mock data (KV-32, KS-31, THG-32) in different workflow states.
 - Upload DWG floor plans (one delivery per floor) and check them locally in the browser against the 40 rules of the CAD-Richtlinie BBL, with plan viewer, rooms, layers and SIA 416 figures.
@@ -42,8 +42,13 @@ Open <http://localhost:8080/>. The mock data is loaded with `fetch()`, so the ap
 - [Bedienung, Routen, Struktur und Tests (DE)](docs/entwicklung.md)
 - [Datenformular-Design vom 04.11.2026: Umsetzung (DE)](docs/reviews/2026-11-04-datenformular-design.md)
 - [Planlieferungen DWG für das CAFM (DE)](docs/reviews/2026-11-03-planlieferungen-dwg.md)
-- [Design-Review, Gap-Analyse und Code-Review (DE)](docs/reviews/)
+- [Code-Review Datenformulare, Zustand, Oberfläche (DE)](docs/reviews/2026-11-04-code-review-datenformulare.md)
+- [Design-Review, Gap-Analyse und frühere Reviews (DE)](docs/reviews/)
 - [Research: THG-Reporting und Ökobilanz Bauemissionen (DE)](docs/research/)
+
+## Data and map sources
+
+Project names follow the public [Bautendokumentationen des BBL](https://www.bbl.admin.ch/de/bautendokumentationen); phases, values, firms and people are fictional. The cost structure uses the eBKP-H element groups (CRB, SN 506 511:2020), the Ökobilanz the KBOB/ecobau-Liste 2022, Version 9.0 ([kbob.admin.ch](https://www.kbob.admin.ch/de/oekobilanzdaten-im-baubereich)) with the amortisation periods of SIA 2032; sources and derivations are in [docs/research/](docs/research/). Maps: swisstopo vector tiles (fallback OpenFreeMap) through MapLibre GL; photos with their licences in [assets/projects/ATTRIBUTION.md](assets/projects/ATTRIBUTION.md).
 
 ## License
 

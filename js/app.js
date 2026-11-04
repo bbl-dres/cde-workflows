@@ -1,6 +1,6 @@
 // Bootstrap: load data → store → resolve route → render; re-render on state or route change.
 import { loadData } from './data.js';
-import { createStore } from './store.js';
+import { createStore, patchDotted, clearPersisted } from './store.js';
 import { initialState } from './model/state.js';
 import { compute } from './model/index.js';
 import { makeActions } from './actions.js';
@@ -17,22 +17,26 @@ const studyRoot = document.getElementById('study');
 let data, store, actions, screens;
 let mountedView = null;      // view whose mount() ran last (for unmount)
 let overlayKey = '';         // which overlay is open, to move focus only when it opens
-
-const DETAILED_PID = 'musterhausen';
+let overlayInvoker = null;   // focus signature of the control that opened the overlay (focus returns there on close)
+let DETAILED_PID = 'musterhausen';   // the project with the full workflow (projects.json «detailed»)
 const PROJECT_ROUTES = new Set(PROJECT_PAGES);
 // Paths of earlier prototype versions → paths of the CDE Bund
 const OLD_PATHS = { 'info-management/delivery-plan': 'delivery-plan', 'info-management/documents': 'documents', 'info-management/loin': 'loin', activities: 'timeline' };
+
+/** Error page: shown when the data cannot be loaded or the persisted state breaks the render (with a way out). */
+const errorPage = (title, detail, hint = '') => `<div class="boot-error"><h1>${esc(title)}</h1><pre>${esc(detail)}</pre>${hint}
+  <p><button type="button" class="btn btn-primary" data-action="hardReset">Zustand zurücksetzen und neu laden</button></p></div>`;
 
 async function main() {
   try {
     data = await loadData();
   } catch (e) {
-    appRoot.innerHTML = `<div class="boot-error"><h1>Daten konnten nicht geladen werden</h1><p>${esc(e.message)}</p>
-      <p>Der Prototyp lädt seine Mock-Daten per <code>fetch()</code> aus <code>data/*.json</code>. Das funktioniert nicht über <code>file://</code>.
-      Bitte einen statischen Server im Projektordner starten, z.&nbsp;B. <code>python -m http.server 8080</code> oder <code>npx serve</code>, und dann <code>http://localhost:8080</code> öffnen.</p></div>`;
+    appRoot.innerHTML = errorPage('Daten konnten nicht geladen werden', e.message, `<p>Der Prototyp lädt seine Mock-Daten per <code>fetch()</code> aus <code>data/*.json</code>. Das funktioniert nicht über <code>file://</code>.
+      Bitte einen statischen Server im Projektordner starten, z.&nbsp;B. <code>python -m http.server 8080</code> oder <code>npx serve</code>, und dann <code>http://localhost:8080</code> öffnen.</p>`);
     return;
   }
   screens = data.screens;
+  DETAILED_PID = (data.projects.projects.find(p => p.detailed) || data.projects.projects[0]).id;
   store = createStore(initialState(data));
   actions = makeActions(store, data, { navigate: navTo, studyPid: () => DETAILED_PID, currentPid: () => currentRoute().params.pid || DETAILED_PID });
   store.subscribe(schedule);
@@ -96,22 +100,25 @@ function canonicalize(r) {
   return true;
 }
 
-/** Patch the state with dotted keys: { 'ui.dialog': 'order', review: 'freigegeben' } */
+/** Patch the state with dotted keys from a deep link or a study screen: { 'ui.dialog': 'order', 'projects.musterhausen.forms.thg.step': 5 }.
+ *  Values may only replace values of the same kind, so a bad link cannot break the persisted state. */
 function applyOverrides(o) {
-  const st = structuredClone(store.get());
-  for (const [k, v] of Object.entries(o)) {
-    const path = k.split('.');
-    let t = st;
-    for (let i = 0; i < path.length - 1; i++) { if (typeof t[path[i]] !== 'object' || t[path[i]] === null) t[path[i]] = {}; t = t[path[i]]; }
-    t[path[path.length - 1]] = v;
-  }
-  store.set(st);
+  const safe = Object.fromEntries(Object.entries(o).filter(([k]) => !k.startsWith('__')));
+  store.set(patchDotted(store.get(), safe, { typed: true }));
 }
 
-let pending = false;
-function schedule() { if (pending) return; pending = true; setTimeout(() => { pending = false; render(); }, 0); }
+let pending = null;
+function schedule() { if (pending) return; pending = setTimeout(() => { pending = null; render(); }, 0); }
 
 function render() {
+  if (pending) { clearTimeout(pending); pending = null; }                // a navigation renders at once, no second render afterwards
+  try { renderPage(); } catch (e) {
+    console.error(e);
+    appRoot.innerHTML = errorPage('Fehler beim Rendern', String(e.stack || e));
+  }
+}
+
+function renderPage() {
   const route = currentRoute();
   if (route.name === 'legacy') return;
   const state = store.get();
@@ -149,14 +156,8 @@ function render() {
   const view = (PROJECT_ROUTES.has(route.name) && !project) ? views.notfound : (views[route.name] || views.notfound);
   if (mountedView && mountedView !== view && mountedView.unmount) { try { mountedView.unmount(); } catch (e) { console.error(e); } }
   const focus = captureFocus();
-  let page;
-  try {
-    const body = view.render(ctx);
-    page = view.full ? body : frame(ctx, body, overlays(ctx));
-  } catch (e) {
-    console.error(e);
-    page = `<div class="boot-error"><h1>Fehler beim Rendern</h1><pre>${esc(String(e.stack || e))}</pre></div>`;
-  }
+  const body = view.render(ctx);
+  const page = view.full ? body : frame(ctx, body, overlays(ctx));
   appRoot.innerHTML = String(page);
   studyRoot.innerHTML = String(renderStudy(ctx));
   document.body.classList.toggle('study-open', !!state.ui.studyOpen);
@@ -164,7 +165,7 @@ function render() {
   if (view.mount) { try { view.mount(appRoot, ctx); } catch (e) { console.error(e); } }
   mountedView = view;
   restoreFocus(focus);
-  focusOverlay(state);
+  focusOverlay(state, focus);
   document.title = `${view.title ? view.title(ctx) : 'CDE Bund'} · CDE Bund`;
 }
 
@@ -179,34 +180,49 @@ function overlays(ctx) {
   return raw(parts.map(String).join(''));
 }
 
-/** Move focus into a dialog, drawer or menu when it opens; back to the page when it closes. */
-function focusOverlay(state) {
+/** Move focus into a dialog, drawer or menu when it opens; back to the control that opened it (or the page) when it closes.
+ *  While a modal overlay is open, the page behind it is inert. */
+function focusOverlay(state, focusBefore) {
   const key = state.ui.dialog ? 'dialog:' + state.ui.dialog : state.ui.notif ? 'notif' : state.ui.userMenu ? 'menu' : '';
+  const modal = !!key && key !== 'menu';
+  appRoot.querySelectorAll('.proto-banner, .topbar, .app-body, .app-footer').forEach(el => { el.inert = modal; });
   if (key === overlayKey) return;
   const wasOpen = !!overlayKey;
   overlayKey = key;
   if (key) {
-    const box = appRoot.querySelector('[role="dialog"], .user-menu');
+    overlayInvoker = focusBefore;
+    const box = appRoot.querySelector('.overlay [role="dialog"], .drawer[role="dialog"], .user-menu');
     const target = box && (box.querySelector('[autofocus], .dialog-close, button, [tabindex="0"], a[href], input, select') || box);
     if (target) target.focus({ preventScroll: true });
   } else if (wasOpen) {
+    const back = overlayInvoker && findFocus(overlayInvoker);
+    overlayInvoker = null;
+    if (back) { back.focus({ preventScroll: true }); return; }
     const main = appRoot.querySelector('.app-main');
     if (main) { main.tabIndex = -1; main.focus({ preventScroll: true }); }
   }
 }
 
+// Focus survives the full re-render: inputs by data-fid, every other control by the signature of its data-* wiring.
+const FOCUS_KEYS = ['action', 'change', 'nav', 'study', 'key', 'arg', 'id', 'group', 'code', 'form', 'field'];
+function focusSelector(el) {
+  if (!el || el === document.body || !el.dataset) return null;
+  if (el.dataset.fid) return `[data-fid="${CSS.escape(el.dataset.fid)}"]`;
+  const sig = FOCUS_KEYS.filter(k => el.dataset[k] != null).map(k => `[data-${k}="${CSS.escape(el.dataset[k])}"]`).join('');
+  return sig || null;
+}
+function findFocus(f) { try { return document.querySelector(f.sel); } catch { return null; } }
 function captureFocus() {
-  const el = document.activeElement;
-  if (!el || !el.dataset || !el.dataset.fid) return null;
-  const sel = ('selectionStart' in el && el.type !== 'number') ? [el.selectionStart, el.selectionEnd] : null;
-  return { fid: el.dataset.fid, sel };
+  const el = document.activeElement, sel = focusSelector(el);
+  if (!sel) return null;
+  const range = ('selectionStart' in el && el.type !== 'number') ? [el.selectionStart, el.selectionEnd] : null;
+  return { sel, range };
 }
 function restoreFocus(f) {
-  if (!f) return;
-  const el = document.querySelector(`[data-fid="${CSS.escape(f.fid)}"]`);
-  if (!el) return;
+  const el = f && findFocus(f);
+  if (!el || el.disabled) return;
   el.focus({ preventScroll: true });
-  if (f.sel) { try { el.setSelectionRange(f.sel[0], f.sel[1]); } catch { /* not a text input */ } }
+  if (f.range) { try { el.setSelectionRange(f.range[0], f.range[1]); } catch { /* not a text input */ } }
 }
 
 function run(name, ds, el, ev) {
@@ -226,6 +242,7 @@ function bindEvents() {
     if (a.dataset.action) {
       if (a.disabled) return;
       e.preventDefault();
+      if (a.dataset.action === 'hardReset') { clearPersisted(); location.reload(); return; }   // error page: works without a store
       run(a.dataset.action, a.dataset, a, e);
     }
   });
@@ -250,4 +267,4 @@ function bindEvents() {
   });
 }
 
-main();
+main().catch(e => { console.error(e); appRoot.innerHTML = errorPage('Fehler beim Start', String(e.stack || e)); });

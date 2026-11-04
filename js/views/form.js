@@ -1,4 +1,4 @@
-import { html, icon, btn, checkbox, avatar, metaRows, progress, raw } from '../ui.js';
+import { html, icon, btn, linkBtn, checkbox, avatar, metaRows, progress, raw, card, headLink, hint } from '../ui.js';
 import { emptyState } from '../shell.js';
 import { dropZone, resultPanel } from './plan.js';
 
@@ -10,10 +10,8 @@ import { dropZone, resultPanel } from './plan.js';
 
 const COLS = 'grid-template-columns:68px minmax(0,1fr) 72px 120px 140px 100px 36px';
 const COLS_THG = 'grid-template-columns:84px minmax(0,1fr) 72px 88px 60px 96px 96px 56px 92px 36px';
-const card = (head, body, style = '') => html`<div class="card" style="${raw(style)}">${head ? html`<div class="card-head">${head}</div>` : ''}${body}</div>`;
-const headLink = (label, href) => html`<a class="card-head-link" href="#${href}" data-nav="${href}">${label}</a>`;
-const hint = t => html`<span class="card-hint">${t}</span>`;
 const check = c => html`<div class="rv-check">${icon(c.icon, 16, c.color)}<span class="flex-1">${c.label}</span></div>`;
+const devCell = c => html`<span class="right${c.hi ? ' is-over' : ''}" ${c.hi ? raw('title="Abweichung über dem Schwellenwert, Begründung nötig"') : ''}>${c.delta}</span>`;
 const kvRow = (k, v) => html`<div class="rv-kv"><span class="rv-kv-k">${k}</span><span>${v}</span></div>`;
 const RO = F => (F.locked ? raw('readonly') : '');
 const DIS = F => (F.locked ? raw('disabled') : '');
@@ -102,10 +100,10 @@ function entryHead(ctx, F) {
   const E = F.erf, open = !!ctx.state.ui.importMenu;
   return html`<div class="card-head" style="flex-wrap:wrap">
       <span class="flex-1" style="flex-basis:220px">${E.tableTitle}</span>
-      <div class="dd">
+      ${F.locked ? '' : html`<div class="dd">
         <button type="button" class="btn btn-secondary" data-action="toggleImportMenu" aria-haspopup="menu" aria-expanded="${open ? 'true' : 'false'}">Importieren ${icon('chevron-down', 12, 'currentColor')}</button>
         ${open ? html`<div class="dd-menu" role="menu">${E.importItems.map(([key, label]) => html`<button type="button" role="menuitem" class="dd-item" data-action="importItem" data-arg="${key}" data-form="${F.id}">${label}</button>`)}</div>` : ''}
-      </div>
+      </div>`}
       <button type="button" class="btn btn-secondary">Excel herunterladen</button>
     </div>
     ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}`;
@@ -131,13 +129,16 @@ const costTable = F => {
   </div>`;
 };
 
-/** Hauptgruppe: the whole row toggles «Aufschlüsseln / Zusammenfassen», the chevron is the keyboard target. */
-const chevron = (F, r) => html`<button type="button" class="ent-toggle" data-action="formMode" data-form="${F.id}" data-group="${r.code}" aria-label="${r.toggleLabel} ${r.code}" aria-expanded="${r.direct ? 'false' : 'true'}">${icon(r.chev, 16, '#374151')}</button>`;
+/** Hauptgruppe: the whole row toggles «Aufschlüsseln / Zusammenfassen» (not on locked forms), the chevron is the keyboard target. */
+const chevron = (F, r) => (r.canToggle
+  ? html`<button type="button" class="ent-toggle" data-action="formMode" data-form="${F.id}" data-group="${r.code}" aria-label="${r.toggleLabel} ${r.code}" aria-expanded="${r.direct ? 'false' : 'true'}">${icon(r.chev, 16, '#374151')}</button>`
+  : html`<span class="ent-toggle" aria-hidden="true">${icon(r.chev, 16, '#9ca3af')}</span>`);
+const groupAttrs = (F, r) => (r.canToggle ? html`data-action="formMode" data-form="${F.id}" data-group="${r.code}"` : '');
 const delBtn = (action, attrs, label) => html`<span class="ent-del-cell"><button type="button" class="ent-del" data-action="${action}" ${attrs} aria-label="${label}" title="${label}">${icon('trash-2', 15, '#6b7280')}</button></span>`;
-const addRow = (F, r, action) => html`<div class="ent-add"><a data-action="${action}" data-form="${F.id}" data-group="${r.grp}">${r.label}</a></div>`;
+const addRow = (F, r, action) => html`<div class="ent-add"><button type="button" class="btn-link" data-action="${action}" data-form="${F.id}" data-group="${r.grp}">${r.label}</button></div>`;
 const optionList = (r, empty) => html`<option value="" ${r.code ? '' : raw('selected')}>${empty}</option>${r.opts.map(o => html`<option value="${o.v}" ${o.sel ? raw('selected') : ''}>${o.label}</option>`)}`;
 
-const groupRow = (F, r, ro) => html`<div class="ent-group is-toggle" style="${COLS};background:${r.bg}" data-action="formMode" data-form="${F.id}" data-group="${r.code}">
+const groupRow = (F, r, ro) => html`<div class="ent-group${r.canToggle ? ' is-toggle' : ''}" style="${COLS};background:${r.bg}" ${groupAttrs(F, r)}>
   <span class="ent-code">${chevron(F, r)}${r.code}</span>
   <span class="ent-name"><span class="fw-600">${r.name}</span></span>
   <span class="muted fs-12">${r.unit}</span>
@@ -149,12 +150,13 @@ const groupRow = (F, r, ro) => html`<div class="ent-group is-toggle" style="${CO
   <span></span>
 </div>`;
 
-const posRow = (F, r, ro) => html`<div class="ent-pos" style="${COLS}">
-  <span class="ent-pos-code">${r.code}</span>
-  <span class="ellipsis">${r.name}</span>
+/** A position: base position of the eBKP-H, or the Pauschalbetrag of a Hauptgruppe without positions (not removable). */
+const posRow = (F, r, ro) => html`<div class="ent-pos${r.pauschal ? ' ent-pauschal' : ''}" style="${COLS}">
+  <span class="ent-pos-code">${r.pauschal ? '' : r.code}</span>
+  <span class="ellipsis${r.pauschal ? ' muted' : ''}">${r.name}</span>
   <span class="muted fs-12">${r.unit}</span>
   ${r.hasQty ? html`<span class="ent-cell-input"><input class="ent-input" aria-label="Menge ${r.code}" value="${r.qStr}" placeholder="fehlt" style="border-color:${r.qBd};background:${F.erf.inputBg}" data-change="setMap" data-key="${r.qKey}" data-code="${r.code}" data-fid="${r.qKey}-${r.code}" ${ro}></span>` : html`<span class="right muted fs-12">–</span>`}
-  <span class="ent-cell-input"><input class="ent-input" aria-label="${F.erf.valLabel} ${r.code}" value="${r.vStr}" placeholder="fehlt" style="border-color:${r.vBd};background:${F.erf.inputBg}" data-change="setMap" data-key="${r.vKey}" data-code="${r.code}" data-fid="${r.vKey}-${r.code}" ${ro}></span>
+  <span class="ent-cell-input"><input class="ent-input" aria-label="${F.erf.valLabel} ${r.pauschal ? r.name + ' ' : ''}${r.code}" value="${r.vStr}" placeholder="fehlt" style="border-color:${r.vBd};background:${F.erf.inputBg}" data-change="setMap" data-key="${r.vKey}" data-code="${r.code}" data-fid="${r.vKey}-${r.code}" ${ro}></span>
   <span class="right muted fs-125">${r.kw}</span>
   ${r.canDel ? delBtn('formRemovePos', html`data-form="${F.id}" data-code="${r.code}"`, `Kostenelement ${r.code} entfernen`) : html`<span></span>`}
 </div>`;
@@ -190,7 +192,7 @@ const thgTable = F => {
   </div>`;
 };
 
-const thgGroupRow = (F, r) => html`<div class="ent-group is-toggle" style="${COLS_THG};background:${r.bg}" data-action="formMode" data-form="${F.id}" data-group="${r.code}">
+const thgGroupRow = (F, r) => html`<div class="ent-group${r.canToggle ? ' is-toggle' : ''}" style="${COLS_THG};background:${r.bg}" ${groupAttrs(F, r)}>
   <span class="ent-code">${chevron(F, r)}${r.code}</span>
   <span class="ent-name"><span class="fw-600">${r.name}</span><span class="ent-sub">${r.sub}</span></span>
   <span></span><span></span><span></span>
@@ -226,9 +228,9 @@ function planEntry(ctx, F) {
   return html`<div class="card">
     <div class="card-head" style="flex-wrap:wrap">
       <span class="flex-1 min-w-0" style="flex-basis:220px">${F.erf.tableTitle}${p.fileName ? html` <span class="card-hint">· ${p.fileName}${F.erf.fileMeta ? ' · ' + F.erf.fileMeta : ''}</span>` : ''}</span>
-      ${p.result && !F.locked ? html`<label class="btn btn-secondary" style="cursor:pointer">${icon('upload', 13, 'currentColor')}Neu hochladen<input type="file" accept=".dwg" hidden data-change="planFile" data-key="${p.key}" aria-label="DWG-Datei neu hochladen"></label>
+      ${p.result && !F.locked ? html`<label class="btn btn-secondary btn-file">${icon('upload', 13, 'currentColor')}Neu hochladen<input type="file" accept=".dwg" class="vh" data-change="planFile" data-key="${p.key}" aria-label="DWG-Datei neu hochladen"></label>
         <button type="button" class="btn btn-secondary" data-action="planLoadSample" data-key="${p.key}">Musterplan laden</button>
-        <a class="fs-12" data-action="planRemove" data-key="${p.key}">Entfernen</a>` : ''}
+        ${linkBtn({ label: 'Entfernen', cls: 'fs-12', action: 'planRemove', key: p.key })}` : ''}
       ${F.locked ? html`<span class="muted fs-12">Erfassung gesperrt</span>` : ''}
     </div>
     ${p.busy ? html`<div class="note note-grey" style="margin:10px 12px 6px"><span class="plan-spin">${icon('loader-circle', 14, '#5b6573')}</span>${p.busy}</div>` : ''}
@@ -240,7 +242,7 @@ function planEntry(ctx, F) {
 
 function submitBar(F) {
   const B = F.bar, A = F.act;
-  if (B.locked) return html`<div class="submit-bar"><span class="fs-13 flex-1" style="min-width:240px">${B.lockedText}</span><a class="fs-125" data-action="${A.reopen}" data-key="${F.id}">Erfassung wieder öffnen (Prototyp)</a></div>`;
+  if (B.locked) return html`<div class="submit-bar"><span class="fs-13 flex-1" style="min-width:240px">${B.lockedText}</span>${linkBtn({ label: 'Erfassung wieder öffnen (Prototyp)', cls: 'fs-125', action: A.reopen, key: F.id })}</div>`;
   return html`<div class="submit-bar">
     <div class="submit-comp"><span class="fs-125" style="color:#374151">${B.compText}</span>${progress(B.compW, B.compBar)}</div>
     ${B.canFilter ? checkbox({ checked: F.erf.missingOnly, label: 'Nur fehlende Werte anzeigen', action: 'formToggleMissing', key: F.id }) : ''}
@@ -259,13 +261,13 @@ function pruefung(ctx, F) {
       ${card(html`<span class="flex-1">Prüfung BBL</span>${hint(`${F.reviewer}, BBL`)}`, html`<div class="card-body flex-col" style="gap:10px">
         ${F.rv.notSubmitted ? html`<div class="note note-grey">Wartet auf die Einreichung durch ${F.leadName}.</div>` : F.autoChecks.map(check)}
         <div class="rv-manual">${F.manual.map(m => checkbox({ checked: m.checked, label: m.label, action: A.toggle, key: m.key, arg: F.id, disabled: m.disabled }))}</div>
-        <textarea class="rv-textarea" placeholder="Kommentar an Lieferant (bei Rückweisung Pflicht)" aria-label="Kommentar an Lieferant"></textarea>
+        <textarea class="rv-textarea" placeholder="Kommentar an Lieferant (bei Rückweisung Pflicht)" aria-label="Kommentar an Lieferant" data-change="${A.comment}" data-key="${F.id}" data-fid="${F.id}-comment" ${F.rv.decide ? '' : raw('readonly')}>${F.rv.comment}</textarea>
         ${F.rv.decide ? html`<div class="rv-actions">
           <span class="fs-12 muted flex-1" style="min-width:120px">${F.rv.reason}</span>
-          ${F.rv.canReview ? btn({ label: 'Zurückweisen', action: A.reject, key: F.id }) : html`<button type="button" class="btn btn-secondary" disabled>Zurückweisen</button>`}
-          ${F.rv.canReview ? btn({ label: 'Freigeben', kind: 'primary', action: A.approve, key: F.id, disabled: !F.rv.canApprove }) : html`<button type="button" class="btn btn-primary" disabled>Freigeben</button>`}
+          ${btn({ label: 'Zurückweisen', action: A.reject, key: F.id, disabled: !F.rv.canReview })}
+          ${btn({ label: 'Freigeben', kind: 'primary', action: A.approve, key: F.id, disabled: !F.rv.canApprove })}
         </div>` : ''}
-        ${F.rv.done ? html`<div class="rv-note rv-note-green">${F.rv.doneText} <a data-action="${A.reset}" data-key="${F.id}">Zurücksetzen</a></div>` : ''}
+        ${F.rv.done ? html`<div class="rv-note rv-note-green">${F.rv.doneText} ${linkBtn({ label: 'Zurücksetzen', action: A.reset, key: F.id })}</div>` : ''}
       </div>`)}
       ${card('Übergabe', html`<div style="padding:8px 12px 12px">${kvRow('Zielsystem', F.handover.ziel)}${kvRow('Wert', F.handover.value)}${kvRow('Status', F.handover.status)}</div>${F.canTransfer ? html`<div style="padding:0 14px 14px">${btn({ label: `An ${F.target} übertragen`, kind: 'primary', action: A.transfer, key: F.id })}</div>` : ''}`)}
     </div>
@@ -276,10 +278,10 @@ function compareCard(F) {
   const C = 'grid-template-columns:64px minmax(0,1fr) 130px 130px 100px';
   return card(`Vergleich mit Vorphase ${F.cmpPrevLabel}`, html`<div class="fm-table"><div style="min-width:540px">
     <div class="fm-th" style="${C}"><span>Code</span><span>Bezeichnung</span><span class="right">${F.code} ${F.cmpUnit}</span><span class="right">${F.cmpPrevLabel} ${F.cmpUnit}</span><span class="right">Abweichung</span></div>
-    ${F.cmp.map(c => html`<div class="fm-tr" style="${C}"><span class="fw-600">${c.code}</span><span class="ellipsis">${c.name}</span><span class="right">${c.cur}</span><span class="right muted">${c.prev}</span><span class="right" style="color:${c.dc};font-weight:${c.dw}">${c.delta}</span></div>`)}
-    <div class="fm-total" style="${C}"><span></span><span>Total</span><span class="right">${F.cmpT.cur}</span><span class="right muted">${F.cmpT.prev}</span><span class="right" style="color:${F.cmpT.dc};font-weight:${F.cmpT.dw}">${F.cmpT.delta}</span></div>
-    ${F.subtotals.length ? html`<div class="fm-space"></div>${F.subtotals.map(u => html`<div class="fm-sub" style="${C}"><span>${u.code}</span><span>${u.name}</span><span class="right">${u.cur}</span><span class="right muted fw-400">${u.prev}</span><span class="right" style="color:${u.dc}">${u.delta}</span></div>`)}<div style="height:8px"></div>` : ''}
-  </div></div><div class="card-foot">Abweichungen ab 10 % sind rot markiert und brauchen eine Begründung.</div>`);
+    ${F.cmp.map(c => html`<div class="fm-tr" style="${C}"><span class="fw-600">${c.code}</span><span class="ellipsis">${c.name}</span><span class="right">${c.cur}</span><span class="right muted">${c.prev}</span>${devCell(c)}</div>`)}
+    <div class="fm-total" style="${C}"><span></span><span>Total</span><span class="right">${F.cmpT.cur}</span><span class="right muted">${F.cmpT.prev}</span>${devCell(F.cmpT)}</div>
+    ${F.subtotals.length ? html`<div class="fm-space"></div>${F.subtotals.map(u => html`<div class="fm-sub" style="${C}"><span>${u.code}</span><span>${u.name}</span><span class="right">${u.cur}</span><span class="right muted fw-400">${u.prev}</span>${devCell(u)}</div>`)}<div style="height:8px"></div>` : ''}
+  </div></div><div class="card-foot">Abweichungen ab ${F.devPct} % sind rot markiert und brauchen eine Begründung.</div>`);
 }
 
 function planResult(F, L) {
@@ -321,5 +323,5 @@ function verlauf(F) {
       <span class="flex items-center gap-8 min-w-0">${avatar(h.ini, 26, '#e5e7eb', '#374151')}<span class="flex-col min-w-0"><span class="ellipsis">${h.name}</span><span class="fs-12 muted ellipsis">${h.firm}</span></span></span>
       <span class="flex-col" style="gap:2px"><span class="fw-500">${h.t}</span>${h.detail ? html`<span class="fs-125 muted">${h.detail}</span>` : ''}</span>
     </div>`)}
-  </div></div>`, 'max-width:1040px');
+  </div></div>`, { style: 'max-width:1040px' });
 }

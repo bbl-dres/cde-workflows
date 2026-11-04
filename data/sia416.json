@@ -23,10 +23,5 @@
       { "code": "EBF", "name": "Energiebezugsfläche (SIA 380/1)", "unit": "m²" },
       { "code": "FAW", "name": "Fläche Aussenwand (eBKP-H)", "unit": "m²" },
       { "code": "FB", "name": "Fläche Bedachung (eBKP-H)", "unit": "m²" } ] }
-  ],
-  "quotients": [
-    { "k": "FAW/GF", "name": "Fläche Aussenwand / Geschossfläche", "num": "FAW" },
-    { "k": "FB/GF", "name": "Fläche Bedachung / Geschossfläche", "num": "FB" },
-    { "k": "GV/GF", "name": "Gebäudevolumen / Geschossfläche", "num": "GV" }
   ]
 }

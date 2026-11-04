@@ -148,15 +148,21 @@ try {
   await click('[data-action="formTransfer"]'); check('THG transferred → Abgeschlossen', (await state()).projects.musterhausen.forms.thg.step === 6 && (await text('.page-title')).includes('Abgeschlossen'));
   await go('/tasks/all?type=thg'); check('portfolio reflects transfer', (await bodyText()).includes('übertragen') && (await bodyText()).includes('7.6'));
   await go('/projects/musterhausen/deliveries/kv-32/pruefung');
-  await click('[data-action="formToggleCheck"][data-key="k1"]'); check('first check starts the review → In Prüfung', (await state()).projects.musterhausen.forms.kv.step === 4 && (await text('.page-title')).includes('In Prüfung'));
+  await setInput('[data-fid="kv-comment"]', 'Bitte D begründen.');
+  await click('[data-action="formToggleCheck"][data-key="k1"]'); check('first check starts the review → In Prüfung', (await state()).projects.musterhausen.forms.kv.step === 4 && (await text('.page-title')).includes('In Prüfung') && (await state()).projects.musterhausen.forms.kv.dates[4] === 'heute');
+  check('review comment survives the re-render', (await evaluate(`document.querySelector('[data-fid="kv-comment"]').value`)) === 'Bitte D begründen.' && (await state()).projects.musterhausen.forms.kv.comment === 'Bitte D begründen.');
+  await evaluate(`document.querySelector('[data-action="formToggleCheck"][data-key="k2"]').focus()`); await click('[data-action="formToggleCheck"][data-key="k2"]');
+  check('focus stays on the activated check after the re-render', await evaluate(`document.activeElement?.dataset?.key === 'k2'`) && (await state()).projects.musterhausen.forms.kv.checks.k2 === true);
+  await click('[data-action="formToggleCheck"][data-key="k2"]');
   await click('[data-action="formReject"]'); check('KV rejected → open again', (await state()).projects.musterhausen.forms.kv.step === 1 && (await state()).projects.musterhausen.forms.kv.rejected === true && (await bodyText()).includes('Zurückgewiesen durch Paula Muster'));
   await go('/projects/musterhausen/delivery-plan'); check('ILP shows KV-32 Zurückgewiesen', (await rowPill('KV-32')) === 'Zurückgewiesen');
 
   // 5. Templates; locked THG Erfassung; Beteiligte and Dokumente tabs
   await go('/projects/musterhausen/settings/information-requirements'); await clickText('[data-action="tplSelect"]', 'Ökobilanz'); check('template selected', (await state()).tplSel === 'thg');
   await go('/projects/musterhausen/deliveries/thg-32/erfassung');
-  check('THG Erfassung locked after transfer', (await count('.ent-input[readonly]')) >= 30 && (await count('.thg-head select[disabled]')) === 6 && (await bodyText()).includes('Grundlagen der Ökobilanz') && (await count('[data-action="formSubmit"]')) === 0 && (await count('.ent-add')) === 0);
+  check('THG Erfassung locked after transfer', (await count('.ent-input[readonly]')) >= 30 && (await count('.thg-head select[disabled]')) === 6 && (await bodyText()).includes('Grundlagen der Ökobilanz') && (await count('[data-action="formSubmit"]')) === 0 && (await count('.ent-add')) === 0 && (await count('[data-action="toggleImportMenu"]')) === 0 && (await count('.ent-toggle[data-action]')) === 0);
   check('THG table: Emissionsquellen of C and E, totals and derived rows', (await count('.ent-src')) === 14 && (await count('.ent-group')) === 6 && (await bodyText()).includes('Total B–G') && (await bodyText()).includes('Erstellung absolut, 60 Jahre inkl. Ersatz') && (await count('.hs-box.is-on')) === 2);
+  await clickText('.tab', 'Verlauf'); check('Verlauf has no duplicated generated rows after the transfer', await evaluate(`(() => { const t = [...document.querySelectorAll('.hist-row .fw-500')].map(e => e.textContent.trim()); return t.filter(x => x === 'Freigegeben').length === 1 && t.filter(x => x.startsWith('An SUS')).length === 1 && t.filter(x => x === 'Zur Prüfung eingereicht').length === 1; })()`), await evaluate(`[...document.querySelectorAll('.hist-row .fw-500')].map(e => e.textContent.trim()).join(' | ')`));
   await go('/projects/musterhausen/deliveries/thg-32/beteiligte'); check('Beteiligte table', (await count('.fm-tr')) === 3 && (await bodyText()).includes('Lieferverantwortlich'));
   await go('/projects/musterhausen/deliveries/thg-32/dokumente'); check('Dokumente with Pflicht column', (await bodyText()).includes('Pflicht') && (await bodyText()).includes('Oekobilanz_Bericht') && (await bodyText()).includes('Oekobilanz_Toolexport'));
   // THG-32 of another project: missing values, Tool-Export import, new Emissionsquelle, Hersteller flag, removal, submission
@@ -207,6 +213,12 @@ try {
   check('new Kostenelement counts in the group', (await state()).projects.tenero.forms.kv.added[0].v === '240000' && (await text('.ent-group[data-group="G"]')).includes("'"));
   await click('[data-action="formRemovePos"][data-code="G03"]'); check('position removed with Verlauf entry', (await state()).projects.tenero.forms.kv.removed.G03 === true && (await count('.ent-pos')) === nPos && (await state()).projects.tenero.forms.kv.events.some(e => e[3] === 'Kostenelement entfernt'));
   await click('[data-action="formDropNew"][data-id="kn1"]'); check('new row dropped', (await count('.ent-new')) === 0 && (await state()).projects.tenero.forms.kv.added.length === 0);
+  const totalBefore = await text('.ent-total');
+  await click('.ent-group[data-group="V"]'); check('group without positions opens with its Pauschalbetrag, total unchanged', (await count('.ent-pauschal')) === 1 && (await text('.ent-total')) === totalBefore && (await count('[data-action="formRemovePos"][data-code="V"]')) === 0);
+  await click('.ent-group[data-group="V"]'); check('closes again', (await count('.ent-pauschal')) === 0 && (await text('.ent-total')) === totalBefore);
+  await go('/projects/musterhausen/timeline/logs'); await click('.pager .pager-btn[data-nav]'); check('log pages are links', (await hash()).includes('page=2') && (await count('.ant-table-striped .ant-row')) >= 1);
+  await go('/projects/musterhausen/overview?favorites=1'); await sleep(120); check('a deep link cannot replace an array by a number', Array.isArray((await state()).favorites) && await noError());
+  await go('/projects/musterhausen/overview?__proto__.detailed=true'); await sleep(120); check('prototype keys in deep links are ignored', await evaluate('({}).detailed === undefined') && await noError());
   await go('/projects/prangins/deliveries/kv-32'); check('project without KV-32 → not found page', (await bodyText()).includes('keine Lieferung') && await noError());
   await go('/projects/agroscope-posieux/deliveries/ifc-arc'); check('classic delivery keeps the generic page', (await bodyText()).includes('Klassische Lieferung') && !(await bodyText()).includes('nur für das Projekt'));
 
@@ -371,7 +383,7 @@ try {
   await go('/projects/musterhausen/deliveries/dwg-og2/pruefung'); await click('[data-action="planReject"]');
   check('OG2 zurückgewiesen', (await state()).plans.OG2.status === 'zurueck' && (await bodyText()).includes('Zurückgewiesen'));
   await go('/projects/musterhausen/delivery-plan'); check('ILP reflects review', (await rowPill('DWG-EG')) === 'Abgeschlossen' && (await rowPill('DWG-OG2')) === 'Zurückgewiesen' && (await rowPill('DWG-DG')) === 'In Bearbeitung');
-  await go('/projects/musterhausen/deliveries/dwg-dg/pruefung'); check('not submitted plan shows no result to BBL', (await bodyText()).includes('noch nicht eingereicht') && (await count('[data-action="planApprove"]')) === 0);
+  await go('/projects/musterhausen/deliveries/dwg-dg/pruefung'); check('not submitted plan shows no result to BBL', (await bodyText()).includes('noch nicht eingereicht') && (await count('[data-action="planApprove"]:not([disabled])')) === 0);
   await click('[data-action="toggleUserMenu"]'); await click('[data-action="setUser"][data-key="AB"]');
   await go('/projects/musterhausen/deliveries/dwg-og2/erfassung'); check('rejected plan is open again for the supplier', (await bodyText()).includes('Zurückgewiesen durch Paula Muster') && (await enabled('[data-action="planSubmit"]')) && (await count('[data-change="planFile"]')) >= 1);
   await go('/projects/musterhausen/tasks'); check('plan tasks in the project task list', (await bodyText()).includes('Grundriss EG (DWG)') && (await bodyText()).includes('Grundriss DG (DWG)'));

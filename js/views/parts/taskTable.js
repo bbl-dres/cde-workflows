@@ -1,9 +1,8 @@
-import { html, icon, pill } from '../../ui.js';
+import { html, icon, pill, thSort } from '../../ui.js';
 import { TASK_COLUMNS } from '../../model/columns.js';
 
 // Shared task table (Aufgaben, Projektaufgaben): configurable columns, sort icons, row actions as an always
 // visible sticky column at the right edge that overlays the scrolling columns, as in the CDE Bund.
-const sortIcon = () => icon('chevrons-up-down', 10, '#9aa3ad');
 
 export function visibleColumns(ctx, { global }) {
   const on = new Set(ctx.state.taskCols || []);
@@ -33,7 +32,7 @@ export function taskTable(ctx, rows, opts = {}) {
     <div class="table task-table" style="overflow-x:auto">
       <div class="grid-head" style="${grid};min-width:${minW}px;background:#fafafa;height:34px;font-size:12px">
         <span class="chk" aria-hidden="true"></span>
-        ${cols.map(c => html`<span class="th-sort">${c.label}${c.sort ? sortIcon() : ''}</span>`)}
+        ${cols.map(c => (c.sort ? thSort(c.label, '#9aa3ad') : html`<span class="th-sort">${c.label}</span>`))}
         <span class="row-actions-head" aria-hidden="true"></span>
       </div>
       ${rows.map((t, i) => html`<div class="grid-row task-row" style="${grid};min-width:${minW}px;height:34px;background:${i % 2 ? '#f3f4f6' : '#fff'};border:0">

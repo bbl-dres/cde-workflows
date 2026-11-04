@@ -1,5 +1,5 @@
 {
-  "note": "Ökobilanz Bauemissionen THG-32 nach dem Design vom 04.11.2026 (Emissionsquellen je eBKP-H-Elementgruppe): «sources» sind die Emissionsquellen des Projekts Verwaltungszentrum Musterhausen (5 600 m² EBF) mit Menge in der Bezugseinheit des KBOB-Datensatzes, THG Herstellung (h) und Entsorgung (e) in t CO₂-eq und Amortisationszeit (a) nach SIA 2032 Anhang C; «hs» = herstellerspezifischer Datensatz. Kennwert = (h + e) × 1000 / a / EBF kg CO₂-eq/m² EBF·a, Betrachtungszeitraum 60 Jahre inkl. Ersatz. «eg» sind die Elementgruppen der SIA-2032-Liste je Hauptgruppe [Code, Name, Einheit, Amortisation], «head» die Grundlagen der Ökobilanz [Schlüssel, Label, Vorgabe, Optionen], «prev31» die Werte der Vorphase SIA 31 je Hauptgruppe (kg CO₂-eq über 60 Jahre). KBOB-IDs nach der KBOB/ecobau-Liste 2022, Version 9.0 (docs/research); Mengen und Ergebnisse sind fiktiv.",
+  "note": "Ökobilanz Bauemissionen THG-32 nach dem Design vom 04.11.2026 (Emissionsquellen je eBKP-H-Elementgruppe): «sources» sind die Emissionsquellen des Projekts Verwaltungszentrum Musterhausen (5 600 m² EBF) mit Menge in der Bezugseinheit des KBOB-Datensatzes, THG Herstellung (h) und Entsorgung (e) in t CO₂-eq und Amortisationszeit (a) nach SIA 2032 Anhang C; «hs» = herstellerspezifischer Datensatz. Kennwert = (h + e) × 1000 / a / EBF kg CO₂-eq/m² EBF·a, Betrachtungszeitraum 60 Jahre inkl. Ersatz. «eg» sind die Elementgruppen der SIA-2032-Liste je Hauptgruppe [Code, Name, Einheit, Amortisation], «head» die Grundlagen der Ökobilanz [Schlüssel, Label, Vorgabe, Optionen], «prev31» die Werte der Vorphase SIA 31 je Hauptgruppe (kg CO₂-eq über 60 Jahre). KBOB-IDs und Namen nach der KBOB/ecobau-Liste 2022, Version 9.0 (kbob.admin.ch/de/oekobilanzdaten-im-baubereich, siehe docs/research); «KBOB Gebäudetechnik 33» steht für einen Datensatz der Gruppe 33 Sanitäranlagen ohne verifizierte ID. Mengen und Ergebnisse sind fiktiv.",
   "head": [
     ["kat", "Gebäudekategorie", "Verwaltung", ["Verwaltung", "Schule", "Wohnen MFH", "Verkauf", "Restaurant", "Spital", "Sonstige"]],
     ["art", "Projektart", "Neubau", ["Neubau", "Neubau auf bestehendem UG", "Erneuerung", "Auskernung"]],
@@ -28,6 +28,7 @@
     ],
     "D": [
       ["D01", "Elektroanlage", "m² EBF", 30],
+      ["D05.01", "Wärmequelle, -senke (Erdsonden)", "m", 40],
       ["D05.02", "Wärmeerzeugung", "Stk.", 20],
       ["D05.04", "Wärmeverteilung", "m² EBF", 30],
       ["D07", "Lufttechnische Anlage", "m² EBF", 30],
@@ -63,7 +64,7 @@
     {"id": "C04.01-1", "grp": "C", "code": "C04.01", "name": "Hochbaubeton zirkulit® NPK A, 280 kg CEM II/C-M", "kbob": "KBOB 01.002.05", "unit": "kg", "a": 60, "q": 2984900, "h": 189.6, "e": 38.8, "hs": true},
     {"id": "C04.01-2", "grp": "C", "code": "C04.01", "name": "Armierungsstahl", "kbob": "KBOB 06.003", "unit": "kg", "a": 60, "q": 148700, "h": 114.9, "e": 1.8},
     {"id": "D01-1", "grp": "D", "code": "D01", "name": "Elektroanlagen Büro", "kbob": "KBOB 34.002", "unit": "m² EBF", "a": 30, "q": 5600, "h": 126.5, "e": 8.3},
-    {"id": "D05.02-1", "grp": "D", "code": "D05.02", "name": "Erdsonden für Sole-Wasser-Wärmepumpe", "kbob": "KBOB 31.016", "unit": "m", "a": 40, "q": 1650, "h": 34.1, "e": 4.2},
+    {"id": "D05.01-1", "grp": "D", "code": "D05.01", "name": "Erdsonden für Sole-Wasser-Wärmepumpe", "kbob": "KBOB 31.016", "unit": "m", "a": 40, "q": 1650, "h": 34.1, "e": 4.2},
     {"id": "D07-1", "grp": "D", "code": "D07", "name": "Lüftungsanlage, spez. Luftmenge 4 m³/h·m² EBF", "kbob": "KBOB 32.006", "unit": "m² EBF", "a": 30, "q": 5600, "h": 166.9, "e": 4.2},
     {"id": "D08-1", "grp": "D", "code": "D08", "name": "Sanitäranlagen Büro", "kbob": "KBOB Gebäudetechnik 33", "unit": "m² EBF", "a": 30, "q": 5600, "h": 60.8, "e": 4.2},
     {"id": "E02.03-1", "grp": "E", "code": "E02.03", "name": "Steinwolle", "kbob": "KBOB 10.008", "unit": "kg", "a": 40, "q": 25200, "h": 19.1, "e": 1.5},
@@ -78,5 +79,5 @@
     {"id": "G02-2", "grp": "G", "code": "G02", "name": "Linoleum, 2.5 mm", "kbob": "KBOB 11.014", "unit": "m²", "a": 30, "q": 5520, "h": 32.2, "e": 2.8},
     {"id": "G04-1", "grp": "G", "code": "G04", "name": "Gipskartonplatte", "kbob": "KBOB 03.008", "unit": "kg", "a": 30, "q": 58700, "h": 16.6, "e": 1.1}
   ],
-  "prev31": {"B": 3000, "C": 944000, "D": 719000, "E": 417000, "F": 96000, "G": 348000}
+  "prev31": {"B": 2700, "C": 944000, "D": 719000, "E": 417000, "F": 96000, "G": 348000}
 }

@@ -1,6 +1,6 @@
 // 09 Vorlagen für Datenformulare (Einstellungen · Informationsanforderungen)
 export function templatesModel(s, data) {
-  const T = data.templates.templates, sel = s.tplSel, t = T[sel];
+  const T = data.templates.templates, sel = T[s.tplSel] ? s.tplSel : data.templates.initialSelected, t = T[sel];
   return {
     tplRows: Object.entries(T).map(([k, v]) => ({ key: k, ...v, on: !!s.tplOn[k], selected: k === sel, bg: k === sel ? '#eef1f5' : '#fff', bl: k === sel ? 'var(--navy)' : 'transparent' })),
     tplSel: sel, tplName: t.name,

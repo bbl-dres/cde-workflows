@@ -43,7 +43,7 @@ export default {
     return html`
       ${pageHead(F.title, ctx.crumbs(ctx.user.internal ? 'Informationslieferplan' : 'Aufgaben', F.code), { extra: pill(F.pill), style: 'margin-bottom:6px' })}
       ${tabs(items, tab)}
-      ${F.rejected ? html`<div class="note note-rose fm-rejected">Zurückgewiesen durch Paula Muster. Die Erfassung ist wieder offen.</div>` : ''}
+      ${F.rejected ? html`<div class="note note-rose fm-rejected">Zurückgewiesen durch ${F.reviewer}. Die Erfassung ist wieder offen.</div>` : ''}
       ${renderForm(ctx, F, tab)}`;
   },
   /** DWG deliveries own a canvas viewer and drag & drop on the Erfassung tab; everything else is declarative. */

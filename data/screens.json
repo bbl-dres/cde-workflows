@@ -74,7 +74,7 @@
       "infoOpen": true
     },
     "annotations": [
-      "Drei Vorlagen: Grundmengen SIA 416, Kosten (Menge + Kosten) und Ökobilanz (Menge + THG). Vorlage anklicken zum Umschalten.",
+      "Zwei Vorlagen: Kosten (Menge + Kosten) und Ökobilanz (Menge + THG). Vorlage anklicken zum Umschalten.",
       "Pflicht und Kontrolle werden aus den Anlagekosten in den Stammdaten abgeleitet: ab 1 Mio CHF Muss und Kontrolle, darunter Kann nach Ermessen PPE/PM. Anlagekosten als Tweak änderbar.",
       "Der Lieferverantwortliche erhält eine Aufgabe und meldet sich über AGOV an. Rechte wie bei bestehenden Projektmitgliedern."
     ],
@@ -258,7 +258,7 @@
     },
     "annotations": [
       "Der Workflow-Status zeigt, wo die Lieferung steht. Im Informationslieferplan erscheint er über die bestehenden Status-Pills.",
-      "Automatische Prüfungen plus manuelle Bestätigung durch die PM. Beide Häkchen setzen, dann Freigeben und Übertragen durchklicken.",
+      "Automatische Prüfungen plus manuelle Bestätigung durch die PM. Alle vier Prüfpunkte setzen, dann Freigeben und Übertragen durchklicken.",
       "Übergabe per Schnittstelle: KV an ePPM, THG-Endwert an SUS. Offen ist, wer die Übertragung auslöst."
     ],
     "group": "screens",
@@ -325,7 +325,7 @@
     "annotations": [
       "Vergleich je Hauptgruppe mit der Kostenschätzung der Vorphase (KS-31). Abweichungen über 10 % sind markiert. Rechnet live mit den Werten aus <a href=\"#s03\" data-screen-link>03</a> und dem Import <a href=\"#s03d\" data-screen-link>03d</a>.",
       "Kostenziel aus der Projektdefinition. Der Wert kommt idealerweise aus ePPM, damit beide Systeme dasselbe Ziel zeigen.",
-      "Gleiches Prüfmuster wie bei der Ökobilanz (<a href=\"#s05\" data-screen-link>05</a>). Die Abhängigkeit zu FV-32 wird als Hinweis angezeigt; Freigabe ist trotzdem möglich."
+      "Gleiches Prüfmuster wie bei der Ökobilanz (<a href=\"#s05\" data-screen-link>05</a>). Die Bezugsmengen kommen aus den Grundrissen (DWG); die Prüfung zeigt das als Hinweis; Freigabe ist trotzdem möglich."
     ],
     "group": "screens",
     "fullPage": false
@@ -383,7 +383,7 @@
     "annotations": [
       "Jedes Geschoss ist eine eigene Lieferung (DWG-UG … DWG-DG) mit denselben Tabs wie die anderen Datenformulare.",
       "Eine Zeile pro Geschoss mit Ebene, Geschosshöhe, Datei und Prüfstatus. Probieren: 02 neu hochladen und 03 hochladen.",
-      "Summen je Geschoss und total. GV ist eine Näherung aus GF und Geschosshöhe. Übernehmen erst ohne Fehler; danach rechnen 03a, 03b und 04 neu.",
+      "Eine Lieferung pro Geschoss: die Übersicht zeigt die Flächen SIA 416 des geprüften Grundrisses und die Prüfregeln nach Kategorie. Einreichen erst ohne Fehler; die Flächen fliessen als Bezugsmengen in 03b und 04.",
       "Offene Frage: Wo werden Geschosse definiert? Vorschlag: in den Stammdaten des Gebäudes, mit Übernahme in die Lieferung."
     ],
     "group": "varianteb",

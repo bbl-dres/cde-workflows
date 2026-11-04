@@ -1,6 +1,5 @@
 /* Screen-specific styles (views-d: 09 Vorlagen für Datenformulare). Shared components live in components.css. */
 
-.s09-tabs .tabs { margin-bottom: 0; }
 .s09-panel { background: #fff; min-height: 1000px; padding: 28px 44px; display: flex; gap: 40px; }
 .s09-intro { width: 340px; flex: none; }
 .s09-intro-title { font-size: 21px; font-weight: 500; margin-bottom: 28px; }
@@ -22,3 +21,10 @@
 .s09-chip { font-family: var(--mono); font-size: 12px; border: 1px solid; border-radius: 3px; padding: 3px 8px; }
 .s09-item { font-size: 13px; display: flex; gap: 8px; }
 .s09-detail-foot { padding: 12px 18px; border-top: 1px solid var(--line-5); display: flex; gap: 10px; align-items: center; }
+
+@media (max-width: 1279.98px) {
+  .s09-panel { flex-direction: column; min-height: 0; padding: 20px; gap: 20px; }
+  .s09-intro { width: auto; }
+  .s09-main { padding-top: 0; }
+  .s09-detail-body { grid-template-columns: 1fr; }
+}

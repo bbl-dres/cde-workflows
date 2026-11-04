@@ -6,7 +6,7 @@ export async function loadData() {
   const pairs = await Promise.all(FILES.map(async f => {
     const r = await fetch(`data/${f}.json`);
     if (!r.ok) throw new Error(`data/${f}.json konnte nicht geladen werden (${r.status})`);
-    return [f, await r.json()];
+    try { return [f, await r.json()]; } catch (e) { throw new Error(`data/${f}.json ist kein gültiges JSON: ${e.message}`); }
   }));
   return Object.fromEntries(pairs);
 }

@@ -1,0 +1,13 @@
+{
+  "name": "cde-workflows",
+  "private": true,
+  "description": "Prototyp der Datenlieferungen in der CDE Bund (statisch, ohne Build)",
+  "license": "MIT",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "python -m http.server 8080",
+    "test": "node --test",
+    "e2e": "node tests/e2e.mjs",
+    "refshots": "node tests/refshots.mjs"
+  }
+}

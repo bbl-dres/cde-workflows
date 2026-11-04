@@ -1,7 +1,7 @@
 # Vendored: @mlightcad/libredwg-web 0.7.11
 
 Browser build of [LibreDWG](https://www.gnu.org/software/libredwg/) (DWG/DXF parser) compiled to WebAssembly.
-Loaded lazily by `js/dwg-processing.js` the first time a drawing is parsed.
+Loaded lazily by `js/plancheck/dwg.js` the first time a drawing is parsed.
 
 | Item | Value |
 |---|---|

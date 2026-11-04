@@ -1,8 +1,8 @@
-import { html, icon } from '../ui.js';
+import { html, icon, thSort } from '../ui.js';
+import { emptyState } from '../shell.js';
 
 // Projekte: Liste und Kartenansicht (#/projects/all?view=list|card), Favoriten (#/projects/favorites).
 const COLS = 'grid-template-columns:minmax(0,1.6fr) 120px 130px minmax(0,1.3fr) 130px 140px 80px 100px 110px 36px';
-const sortIcon = () => icon('chevrons-up-down', 10, '#9aa3ad');
 
 export default {
   title: ctx => ctx.route.path === '/projects/favorites' ? 'Favoriten' : 'Projekte',
@@ -38,9 +38,9 @@ export default {
           </a>
           <div class="project-card-foot"><span title="${p.access}">${icon('lock-open', 15, '#3f8f8b')}</span>${star(p)}</div>
         </div>`)}
-      </div>` : html`<div class="table">
+      </div>` : html`<div class="table" style="overflow-x:auto"><div style="min-width:1100px">
         <div class="table-head" style="${COLS};height:40px;padding:0 10px">
-          <span class="th-sort">Name${sortIcon()}</span><span>Projektnummer</span><span>Technischer Platz</span><span>Projektbezeichnung</span><span class="th-sort">Teilportfolio${sortIcon()}</span><span>Verantwortlicher</span><span class="th-sort">Zugriff${sortIcon()}</span><span class="th-sort">Erstellt am${sortIcon()}</span><span class="th-sort">Aktualisiert am${sortIcon()}</span><span></span>
+          ${thSort('Name')}<span>Projektnummer</span><span>Technischer Platz</span><span>Projektbezeichnung</span>${thSort('Teilportfolio')}<span>Verantwortlicher</span>${thSort('Zugriff')}${thSort('Erstellt am')}${thSort('Aktualisiert am')}<span></span>
         </div>
         ${rows.map(p => html`<div class="table-row" style="${COLS};height:34px;font-size:12.5px">
           <a class="ellipsis" href="#${p.href}" data-nav="${p.href}">${p.name}</a>
@@ -48,7 +48,7 @@ export default {
           <span class="ellipsis">${p.teilportfolioLabel}</span><span class="ellipsis">${p.responsible}</span><span>${p.access}</span>
           <span>${p.createdAt}</span><span>${p.updatedAt.slice(0, 10)}</span>${star(p)}
         </div>`)}
-        ${rows.length === 0 ? html`<div class="muted" style="padding:28px;text-align:center">Keine Projekte</div>` : ''}
-      </div>`}`;
+        ${rows.length === 0 ? html`<div style="padding:28px 0">${emptyState('Keine Projekte')}</div>` : ''}
+      </div></div>`}`;
   },
 };

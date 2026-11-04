@@ -44,11 +44,30 @@ test('data files are consistent', () => {
   const ids = data.thg.sources.map(s => s.id);
   assert.equal(new Set(ids).size, ids.length, 'source ids are unique');
   for (const s of data.thg.sources) assert.ok(data.thg.eg[s.grp] && s.q > 0 && s.h >= 0 && s.e >= 0 && s.a > 0 && /^KBOB /.test(s.kbob), `source ${s.id} is complete`);
-  for (const [pid, inst] of Object.entries(data.forms.byProject)) for (const I of Object.values(inst)) for (const spec of (I.missing || [])) {
-    const [k, c, field] = spec.split(':');
-    if (k === 'thg') assert.ok(ids.includes(c) && ['q', 'h', 'e'].includes(field), `${pid}: missing spec ${spec}`);
-    else assert.ok(['kvQ', 'kvV', 'ksQ', 'ksV'].includes(k) && [...data.ebkp.ebkp.flatMap(g => g.kids), ...data.ebkp.extra].some(x => x.code === c), `${pid}: missing spec ${spec}`);
+  for (const [pid, inst] of Object.entries(data.forms.byProject)) for (const [kind, I] of Object.entries(inst)) {
+    for (const spec of (I.missing || [])) {
+      const [k, c, field] = spec.split(':');
+      if (k === 'thg') assert.ok(ids.includes(c) && ['q', 'h', 'e'].includes(field), `${pid}: missing spec ${spec}`);
+      else assert.ok(['kvQ', 'kvV', 'ksQ', 'ksV'].includes(k) && [...data.ebkp.ebkp.flatMap(g => g.kids), ...data.ebkp.extra].some(x => x.code === c), `${pid}: missing spec ${spec}`);
+    }
+    assert.equal(I.dates.length, I.step + 1, `${pid}/${kind}: one date per step reached`);
   }
+  for (const s of data.thg.sources) {
+    const eg = data.thg.eg[s.grp].find(x => x[0] === s.code);
+    assert.ok(eg && eg[3] === s.a, `${s.id}: element group ${s.code} of ${s.grp} with the same amortisation`);
+  }
+  for (const [kind, T] of Object.entries(data.forms.kinds)) {
+    const tpl = data.templates.templates[kind === 'ks' ? 'kv' : kind];
+    assert.ok(tpl && T.vorlage.endsWith('Version ' + tpl.ver), `${kind}: Vorlage «${T.vorlage}» carries the template version ${tpl.ver}`);
+  }
+  for (const n of data.notifications) {
+    if (n.tab) assert.ok(FORM_TABS.includes(n.tab), `notification ${n.id}: tab ${n.tab}`);
+    if (n.delivery) assert.ok(data.ilp.rows.some(r => r.code === n.delivery) || (data.projects.projects.find(p => p.id === n.project).deliveries || []).some(d => d.code === n.delivery), `notification ${n.id}: delivery ${n.delivery}`);
+  }
+  for (const t of data.tasks.rows) if (t.delivery) assert.ok(data.ilp.rows.some(r => r.code === t.delivery), `task «${t.name}»: delivery ${t.delivery} is an ILP row`);
+  // Wording of the first prototype versions must not come back (the design study texts in screens/study are historical).
+  const STALE = /FV-32|Anleitung TP2|nach TP2|Betrag je Hauptgruppe|Weitere Angaben|Summe Positionen/;
+  for (const f of FILES) if (!['screens', 'study'].includes(f)) assert.ok(!STALE.test(JSON.stringify(data[f], (k, v) => (k === 'note' ? undefined : v))), `${f}.json has no stale wording`);
   const KIND = { 'KV-32': 'kv', 'KS-31': 'ks', 'THG-32': 'thg' };
   for (const [pid, inst] of Object.entries(data.forms.byProject)) {
     assert.ok(data.projects.projects.some(p => p.id === pid), `forms for project ${pid}`);
@@ -79,7 +98,7 @@ test('KV-32: Hauptgruppen, totals and completeness', () => {
   assert.equal(rows.find(r => r.code === 'B').bez, "4'200", 'Bezugsmenge GSF from sia416');
   assert.equal(kv.subtotals.find(u => u.code === 'B–W').cur, "18'000'000");
   assert.equal(kv.subtotals.find(u => u.code === 'A–Z').prev, '–', 'no KS-31 for Anlagekosten');
-  assert.equal(kv.erf.foot, '', 'no footer text (design)');
+  assert.ok(!kv.erf.foot, 'no footer text (design)');
   // Filling the missing quantity enables the submit button; the filter shows only missing rows.
   const filled = structuredClone(base);
   for (const c of data.ebkp.missingInitially || []) filled.projects.musterhausen.kvQ[c] = 1;
@@ -113,7 +132,8 @@ test('KV-32: Hauptgruppen, totals and completeness', () => {
   // Opening a group without positions (V Planungskosten) shows only the add row; its amount stays in the value map.
   ed.projects.musterhausen.forms.kv.modes.V = 'detail';
   v = vmFor(ed);
-  assert.equal(v.forms.kv.erf.rows.filter(r => r.isAdd).length, 3); assert.equal(v.forms.kv.groups.find(g => g.code === 'V').sum, 0);
+  assert.equal(v.forms.kv.erf.rows.filter(r => r.isAdd).length, 3); assert.equal(v.forms.kv.groups.find(g => g.code === 'V').sum, 2950000, 'the Pauschalbetrag stays in the total');
+  assert.ok(v.forms.kv.erf.rows.some(r => r.pauschal && r.code === 'V' && !r.canDel), 'Pauschalbetrag row, not removable');
 });
 
 test('KV-32: Übersicht and Prüfung figures', () => {
@@ -145,7 +165,9 @@ test('THG-32: Emissionsquellen, Endwert, Zielwerte and the review flow', () => {
   assert.equal(thg.chart.targets.length, 5); assert.equal(thg.chart.targets[0].label, 'SIA 390/1 Richtwert Basis'); assert.equal(thg.chart.hasBand, false);
   assert.equal(thg.autoChecks.find(c => /390\/1/.test(c.label)).ok, true, '7.6 is below the SIA 390/1 Basis 9.0');
   assert.ok(thg.autoChecks.every(c => c.ok) && thg.autoChecks[0].label === 'Alle 25 Emissionsquellen mit Elementgruppe und KBOB-Datensatz');
-  assert.equal(thg.cmp.find(c => c.code === 'D').hi, true, 'Technik deviates more than 10 % from SIA 31');
+  assert.equal(thg.autoChecks.length, 5); assert.equal(thg.devPct, 15);
+  assert.equal(thg.cmp.find(c => c.code === 'D').hi, false, 'Technik deviates 11 % from SIA 31, below the 15 % threshold of the Ökobilanz');
+  assert.equal(thg.rv.notSubmitted, false);
   assert.equal(thg.manual.length, 4); assert.equal(thg.docs.length, 2);
   assert.equal(thg.rv.canReview, true); assert.equal(thg.rv.canApprove, false);
   // Erfassung rows: C and E opened, derived rows, head fields with EBF/GF read-only
@@ -187,7 +209,7 @@ test('THG-32: Emissionsquellen, Endwert, Zielwerte and the review flow', () => {
   st.projects.musterhausen.thgSrc = [{ id: 'n1', grp: 'D', isNew: true, code: '', kbob: '', q: '', h: '', e: '', hs: false }];
   v = vmFor(st);
   assert.equal(v.forms.thg.fields, 5); assert.equal(v.forms.thg.missing, 5);
-  st.projects.musterhausen.thgSrc = [{ id: 'n1', grp: 'D', isNew: true, code: 'D01', kbob: 'KBOB 34.002', q: '5600', h: '126.6', e: '8.2', hs: false }];
+  st.projects.musterhausen.thgSrc = [{ id: 'n1', grp: 'D', isNew: true, code: 'D01', name: 'Elektroanlage', unit: 'm² EBF', a: 30, kbob: 'KBOB 34.002', q: '5600', h: '126.6', e: '8.2', hs: false }];   // as thgVal stores it
   st.projects.musterhausen.forms.thg.modes.D = 'detail';
   v = vmFor(st);
   assert.equal(v.forms.thg.missing, 0); assert.equal(v.forms.thg.erf.rows.find(r => r.isNew).amort, '30 a');

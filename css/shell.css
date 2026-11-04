@@ -51,9 +51,10 @@ a.nav-item:hover, .nav-group:hover { background: #e5e7eb; text-decoration: none;
 /* Page head (title line 28 px, breadcrumb right), tabs */
 .page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 4px; min-height: 28px; }
 .page-title { font-size: 20px; font-weight: 500; line-height: 28px; display: flex; align-items: center; gap: 12px; min-width: 0; margin: 0; }
-.breadcrumb { font-size: 12px; line-height: 20px; margin-top: 4px; color: var(--muted-2); display: flex; gap: 4px; align-items: center; white-space: nowrap; flex: none; }
-.breadcrumb-sep { color: var(--muted-2); }
-.breadcrumb-link { color: var(--muted-2); transition: color .3s; }
+.breadcrumb { font-size: 12px; line-height: 20px; margin-top: 4px; color: var(--muted); display: flex; gap: 4px; align-items: center; white-space: nowrap; flex: none; min-width: 0; }
+.breadcrumb-sep { color: var(--muted); }
+.breadcrumb-link, .breadcrumb-current { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+.breadcrumb-link { color: var(--muted); transition: color .3s; }
 .breadcrumb-link:hover { color: rgba(0,0,0,.85); text-decoration: none; }
 .breadcrumb-current { color: var(--text); }
 .tabs { display: flex; gap: 32px; font-size: 16px; line-height: 24px; border-bottom: 1px solid var(--line-3); margin: 4px 0 12px; }

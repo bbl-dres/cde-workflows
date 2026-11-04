@@ -1,4 +1,4 @@
-import { html, icon, raw } from '../ui.js';
+import { html, icon, raw, srOnly } from '../ui.js';
 import { PlanViewer } from '../plancheck/viewer.js';
 import { planSession } from '../plansession.js';
 
@@ -20,7 +20,7 @@ export const dropZone = (plan, compact = false) => html`
     <div class="plan-drop-hint">.dwg, max. 50 MB · geprüft wird lokal im Browser nach CAD-Richtlinie BBL V1.0, nichts wird hochgeladen</div>
     <span class="btn btn-primary">Datei auswählen</span>
     <input type="file" accept=".dwg" data-change="planFile" data-key="${plan.key}" aria-label="DWG-Datei für ${plan.name} auswählen">
-    <div class="plan-drop-hint">Keine Datei? <a data-action="planLoadSample" data-key="${plan.key}">${plan.sampleLabel} laden</a></div>
+    <div class="plan-drop-hint">Keine Datei? <button type="button" class="btn-link" data-action="planLoadSample" data-key="${plan.key}">${plan.sampleLabel} laden</button></div>
   </label>`;
 
 const resultStrip = plan => html`<div class="plan-result">
@@ -44,11 +44,13 @@ const viewerBox = plan => html`<div class="plan-viewer" data-plan-viewer="${plan
     <button type="button" data-plan-zoom="fit" title="Gesamtansicht">${icon('maximize', 14, '#1f2937')}</button>
   </div>
   <div class="plan-coords" aria-hidden="true"></div>
-  <div class="plan-popup" role="dialog" aria-live="polite"></div>
+  <div class="plan-popup" role="tooltip" aria-live="polite"></div>
 </div>`;
 
+const SEV_TEXT = { fail: 'Fehler', warn: 'Warnung', pass: 'Bestanden', error: 'Fehler', warning: 'Warnung', ok: 'In Ordnung' };
+const sevIcon = (table, key) => html`${icon(table[key][0], 15, table[key][1])}${srOnly(SEV_TEXT[key] || key)}`;
 const ruleRow = r => html`<button type="button" class="plan-row${r.count ? ' is-locatable' : ''}" data-plan-rule="${r.code}" title="${r.text}">
-  ${icon(SEV_ICON[r.status][0], 15, SEV_ICON[r.status][1])}<span class="plan-code">${r.code}</span><span class="plan-row-text">${r.text}</span>${r.count ? html`<span class="plan-row-count">${r.count}×</span>` : ''}</button>`;
+  ${sevIcon(SEV_ICON, r.status)}<span class="plan-code">${r.code}</span><span class="plan-row-text">${r.text}</span>${r.count ? html`<span class="plan-row-count">${r.count}×</span>` : ''}</button>`;
 
 function listRules(plan) {
   const { failed, passed, total } = plan.rules;
@@ -68,7 +70,7 @@ function listIssues(plan) {
       const locatable = !!(it.roomId || it.handle || (it.handles && it.handles.length));
       const sev = it.severity === 'error' ? 'fail' : 'warn';
       return html`<button type="button" class="plan-row${locatable ? ' is-locatable' : ''}" data-plan-locate="${i}" title="${it.message}">
-        ${icon(SEV_ICON[sev][0], 15, SEV_ICON[sev][1])}<span class="plan-code">${it.code}</span>${ref ? html`<span class="plan-row-sub nowrap">${ref}</span>` : ''}<span class="plan-row-text">${it.message}</span></button>`;
+        ${sevIcon(SEV_ICON, sev)}<span class="plan-code">${it.code}</span>${ref ? html`<span class="plan-row-sub nowrap">${ref}</span>` : ''}<span class="plan-row-text">${it.message}</span></button>`;
     })}`;
 }
 
@@ -78,14 +80,14 @@ function listRooms(plan) {
   const rank = { error: 0, warning: 1, ok: 2 };
   return html`<div class="plan-group"><span>Räume · AOID</span><span>${rooms.length}</span></div>
     ${rooms.slice().sort((a, b) => rank[a.status] - rank[b.status] || a.aoid.localeCompare(b.aoid)).map(r => html`<button type="button" class="plan-row is-locatable" data-plan-room="${r.id}">
-      ${icon(STATUS_ICON[r.status][0], 15, STATUS_ICON[r.status][1])}<span class="plan-row-text">${r.aoid}${r.duplicate ? html` <span class="plan-row-sub">(Duplikat)</span>` : ''}</span><span class="plan-row-count">${r.area.toLocaleString('de-CH', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} m²</span></button>`)}`;
+      ${sevIcon(STATUS_ICON, r.status)}<span class="plan-row-text">${r.aoid}${r.duplicate ? html` <span class="plan-row-sub">(Duplikat)</span>` : ''}</span><span class="plan-row-count">${r.area.toLocaleString('de-CH', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} m²</span></button>`)}`;
 }
 
 function listLayers(plan) {
   const layers = plan.result.layers;
   return html`<div class="plan-group"><span>Layer</span><span>${layers.length}</span></div>
     ${layers.map(l => html`<label class="plan-row" style="cursor:pointer">
-      <input type="checkbox" checked data-plan-layer="${l.name}" aria-label="Layer ${l.name} ein-/ausblenden" style="margin:0">
+      <input type="checkbox" ${viewer.hiddenLayers.has(l.name) ? '' : raw('checked')} data-plan-layer="${l.name}" aria-label="Layer ${l.name} ein-/ausblenden" style="margin:0">
       ${icon(l.ok ? 'circle-check' : 'triangle-alert', 14, l.ok ? '#2f7d63' : '#8a6100')}<span class="plan-swatch" style="background:${l.color}"></span>
       <span class="plan-row-text" title="${l.ok ? 'Zulässiger CAFM-Layer' : 'Unbekannter Layer — nicht in der CAFM-Layerliste'}">${l.name}</span><span class="plan-row-count">${l.count}</span></label>`)}`;
 }
@@ -103,15 +105,15 @@ function listKpi(plan) {
 }
 
 /** Result strip, sub tabs and the split view (list | viewer) of a checked plan. */
-export function resultPanel(ctx, plan, { readonly = false, height = '' } = {}) {
+export function resultPanel(ctx, plan, { height = '' } = {}) {
   const tab = TABS.some(t => t[0] === ctx.state.ui.planTab) ? ctx.state.ui.planTab : 'rules';
   const counts = { rules: `${plan.rules.failed.length ? plan.rules.failed.length + ' offen' : 'alle'}`, issues: String(plan.issueCount), rooms: String(plan.roomCount), layers: String(plan.layerCount), kpi: '' };
   const body = { rules: listRules, issues: listIssues, rooms: listRooms, layers: listLayers, kpi: listKpi }[tab](plan);
   return html`
     ${resultStrip(plan)}
-    <div class="plan-tabs" role="tablist">${TABS.map(([key, label]) => html`<button type="button" class="plan-tab${key === tab ? ' is-active' : ''}" role="tab" aria-selected="${key === tab ? 'true' : 'false'}" data-action="planTab" data-arg="${key}">${label}${counts[key] ? html`<span class="plan-tab-count">${counts[key]}</span>` : ''}</button>`)}</div>
+    <div class="plan-tabs" role="tablist">${TABS.map(([key, label]) => html`<button type="button" class="plan-tab${key === tab ? ' is-active' : ''}" role="tab" aria-selected="${key === tab ? 'true' : 'false'}" aria-controls="plan-list" data-action="planTab" data-arg="${key}">${label}${counts[key] ? html`<span class="plan-tab-count">${counts[key]}</span>` : ''}</button>`)}</div>
     <div class="plan-split" style="${raw(height ? `height:${height}` : '')}">
-      <div class="plan-list${readonly ? ' plan-review-list' : ''}" data-plan-tab="${tab}">${body}</div>
+      <div class="plan-list" id="plan-list" role="tabpanel" data-plan-tab="${tab}">${body}</div>
       ${viewerBox(plan)}
     </div>
     <div class="plan-log" aria-live="polite"></div>`;
@@ -205,6 +207,8 @@ function wireTools(box, root) {
 /** Called by the delivery page after every render of the Erfassung tab of a DWG delivery. */
 export function mountPlan(root, ctx, plan) {
   wireDrop(root, ctx);
+  document.addEventListener('dragover', blockDrop);
+  document.addEventListener('drop', blockDrop);
   const box = root.querySelector('.plan-viewer');
   if (!box) { viewer.detach(); attachedKey = null; return; }
   const key = box.dataset.planViewer, src = box.dataset.planSrc;
@@ -235,4 +239,6 @@ export function mountPlan(root, ctx, plan) {
   }
 }
 
-export function unmountPlan() { viewer.detach(); attachedKey = null; lastTab = null; }
+export function unmountPlan() { viewer.detach(); viewer.setData(null); attachedKey = null; lastTab = null; document.removeEventListener('dragover', blockDrop); document.removeEventListener('drop', blockDrop); }
+/** A DWG dropped outside the drop zone must not navigate the browser away from the prototype. */
+function blockDrop(e) { if (!e.target.closest || !e.target.closest('[data-plan-drop]')) e.preventDefault(); }

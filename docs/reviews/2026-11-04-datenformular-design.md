@@ -41,7 +41,6 @@ Zusammenfassung und Prüfungs-Stepper gehen in der Übersicht auf, «Einreichen�
   Übertragen → «Abgeschlossen»; Zurückweisen öffnet die Erfassung wieder (Status «Zurückgewiesen»). Alle Übergänge liegen in
   `js/actions.js` (`form*`, `plan*`), die Statuslabel folgen dem Informationslieferplan der CDE Bund.
 - Excel-Import: aus dem Importieren-Menü; übernommene Positionen öffnen ihre Hauptgruppe in der Detailansicht und stehen im Verlauf.
-  «Mengen aus KV-32 übernehmen» kopiert die Mengen in THG-32.
 
 ## Ergänzungen nach dem Design (gleicher Tag)
 
@@ -121,4 +120,5 @@ nicht in der Tabelle stehen.
 
 ## Prüfung
 
-`node --test`: 16 Tests, `node tests/e2e.mjs`: 197 Checks bestanden (Stand 04.11.2026, zweite Fassung; siehe docs/entwicklung.md).
+`node --test`: 25 Tests, `node tests/e2e.mjs`: ≈205 Checks bestanden (Stand 04.11.2026, zweite Fassung und Code-Review; siehe docs/entwicklung.md
+und docs/reviews/2026-11-04-code-review-datenformulare.md).

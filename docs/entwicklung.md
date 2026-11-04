@@ -7,9 +7,7 @@ kein Build). Die Datenformulare folgen dem Design vom 04.11.2026
 ## Starten
 
 ```bash
-python -m http.server 8080
-# oder
-npx serve .
+python -m http.server 8080      # oder: npm start · npx serve .
 ```
 
 Dann `http://localhost:8080` öffnen (Chromium-Browser: Edge, Brave, Chrome). Die Mock-Daten werden per `fetch()` aus `data/*.json`
@@ -24,13 +22,14 @@ swisstopo-Basiskarte; fällt der Stil aus, wird OpenFreeMap «Positron» geladen
   Aufgaben und Benachrichtigungen; wer darf, sieht in der Prüfung die Schaltflächen Freigeben und Zurückweisen.
 - **Benachrichtigungen**: Glocke oben rechts, als Drawer wie in der CDE Bund. «Anzeigen» öffnet den passenden Tab der Lieferung.
 - **Datenlieferung bestellen**: im Informationslieferplan «Aufgabenplan hinzufügen» öffnet den «Erstellen»-Drawer. Eine
-  Anforderung hat den Typ «Dokument» oder «Datenformular» mit Vorlage (Kosten eBKP-H, Ökobilanz TP2), Zielsystem und der
-  Pflicht-Regel ab CHF 1 Mio Anlagekosten.
+  Anforderung hat den Typ «Dokument» oder «Datenformular» mit Vorlage (Kosten eBKP-H, Ökobilanz Bauemissionen nach SIA 2032),
+  Zielsystem und der Pflicht-Regel ab CHF 1 Mio Anlagekosten.
 - **Datenformulare** (Kostenvoranschlag KV-32, Kostenschätzung KS-31, Ökobilanz THG-32, Grundrisse DWG-UG … DWG-DG) haben dieselben Tabs: Übersicht (Kennzahlen, Hauptgruppen im
   Vergleich mit der Vorphase, Kostenziel oder Zielwert, Lieferung, Verlauf mit dem nächsten Schritt, Beteiligte), Erfassung
   (siehe unten), Prüfung (Vergleich mit der Vorphase oder Prüfergebnis des Plans, Prüfung BBL mit automatischen Prüfungen
   und Checkliste, Übergabe), Beteiligte, Dokumente (mit Pflicht), Verlauf (alle Ereignisse). Die Erfassung ist nach dem
-  Einreichen gesperrt; «Erfassung wieder öffnen (Prototyp)» und «Zurücksetzen» stellen den Ausgangszustand her.
+  Einreichen gesperrt; «Erfassung wieder öffnen (Prototyp)» öffnet sie wieder (Werte bleiben), «Zurücksetzen» in der
+  Prüfung stellt den Ausgangszustand des Formulars her. Der Kommentar der Prüfung bleibt beim Rendern erhalten.
 - **Kosten erfassen (KV-32, KS-31)**: Betrag pro Hauptgruppe oder, nach Klick auf die Zeile, die Positionen (Menge + Kosten)
   nach eBKP-H 2020 (B02, C01 …); Positionen lassen sich entfernen (Papierkorb) und mit «+ Kostenelement hinzufügen» aus den
   Elementgruppen der Hauptgruppe ergänzen. Importieren (Excel-Dialog), «Nur fehlende Werte anzeigen», Leiste mit
@@ -78,9 +77,12 @@ vorgeben (Deep-Links, Screenshots): `#/projects/musterhausen/deliveries/thg-32/p
 
 ## Prüfen
 
-- `node --test` prüft ohne Browser das Rechenmodell der Datenformulare (Hauptgruppen, Kostenelemente, Emissionsquellen,
-  Vollständigkeit, Vergleich, Zielwerte, Workflow, alle Projekte), die Datenkonsistenz, den Router, die Zuordnung der
-  Studien-Screens und die DWG-Prüf-Engine gegen die vorberechneten Ergebnisse (16 Tests, Node 22+).
+- `node --test` (oder `npm test`) prüft ohne Browser das Rechenmodell der Datenformulare (Hauptgruppen, Kostenelemente,
+  Emissionsquellen, Vollständigkeit, Vergleich, Zielwerte, Workflow, alle Projekte), die Datenkonsistenz (Codes, Quellen,
+  Vorlagen, Benachrichtigungen, veraltete Begriffe), den Router, die Zuordnung der Studien-Screens und die DWG-Prüf-Engine
+  gegen die vorberechneten Ergebnisse (`tests/model.test.mjs`) sowie die Benutzeraktionen gegen den echten Store
+  (Aufschlüsseln, Kostenelemente, Emissionsquellen, Importe, Workflow, Planprüfung), den Mock, den Store und die
+  Formatierung (`tests/actions.test.mjs`); 25 Tests, Node 22+.
 - `node tests/e2e.mjs` fährt bei laufendem Server einen Headless-Browser (Edge/Chrome/Brave) durch die Anwendung: Startseite mit
   Karte, Bestellen-Drawer, Rollenwechsel, Benachrichtigungen, KV-32 (Übersicht, Erfassung mit Aufschlüsseln, Kostenelemente,
   Filter, Excel-Import, Einreichen), THG-32 (Emissionsquellen, Tool-Export, neue Quelle, Hersteller-Flag, Einreichen),
@@ -100,19 +102,19 @@ css/                  tokens, base, shell (Topbar, Sidebars, Tabs), components, 
 js/app.js             Bootstrap: Daten laden → Store → Route auflösen → Rendern; Event-Delegation (data-action, data-change, data-nav)
 js/router.js          Hash-Router mit den URLs der CDE Bund und Zustands-Overrides (?key=value)
 js/links.js           Link-Builder, Sidebar-Sektionen, Tabs der Datenformulare, Zuordnung Studien-Screen → Route
-js/store.js           Zustand + sessionStorage · js/data.js lädt data/*.json · js/ui.js html``-Templating und UI-Atome
+js/store.js           Zustand + sessionStorage (ohne busy/toast), patchDotted für Deep-Links · js/data.js lädt data/*.json · js/ui.js html``-Templating und UI-Atome
 js/shell.js           Topbar, Sidebars, Seitenkopf, Breadcrumb, Tabs, Benachrichtigungs-Drawer, Benutzermenü, Toast
 js/actions.js         alle Benutzeraktionen (Datenformulare, Bestellen, Import, Planlieferungen, Studie)
 js/model/             form.js (Datenformulare: costPart KV-32/KS-31, thgPart THG-32, planForm DWG in einer Form), mock.js (Werte je Projekt),
                       plan.js (DWG-Prüfung), app.js (Projekte, Aufgaben, Benachrichtigungen, Dokumente, LOIN, Logs), import.js, templates.js, state.js
-js/views/             delivery (Seite einer Lieferung) + form (die sechs Tabs) + plan (Upload, Prüfergebnis, Viewer); parts/projectMap (Standort);
+js/views/             delivery (Seite einer Lieferung) + form (die sechs Tabs) + plan (Upload, Prüfergebnis, Viewer); parts/map (MapLibre-Slot), parts/projectMap (Standort);
                       dashboard, projects, overview, tasks, timeline, documents, loin, section, settings, s01 (ILP), order, columns,
                       s03c/s03d (Excel-Import), s06 (Kontrolle), s09 (Vorlagen), Studienseiten home, review, qs, varb
 js/plancheck/         Prüf-Engine aus plan-check (MIT) · js/vendor/libredwg-web/ LibreDWG WebAssembly (GPL-3.0)
 data/                 forms (Datenformulare), ebkp (Positionen eBKP-H 2020, Elementgruppen, KS-31), thg (Emissionsquellen, Elementgruppen SIA 2032,
                       Grundlagen, SIA 31), sia416 (Bezugsmengen), plans (DWG, Prüfergebnisse),
                       projects, users, notifications, ilp, tasks, documents, loin, templates, portfolio, screens, study
-tests/                model.test.mjs (node:test), e2e.mjs (Headless-Browser), refshots.mjs (Vergleichsbilder)
+tests/                model.test.mjs, actions.test.mjs (node:test), e2e.mjs (Headless-Browser), refshots.mjs (Vergleichsbilder)
 docs/                 wireframes (Design), reviews, research, reference (Referenz-Screenshots, lokal)
 ```
 

@@ -2,10 +2,8 @@ import { html, icon, raw, fieldLabel, selectField, textField } from '../ui.js';
 
 // «Erstellen» drawer of the Informationslieferplan (as in the CDE Bund), extended by the requirement type
 // «Datenformular» with a template dropdown (screen 02 of the study). Opens over the delivery plan.
-const TEMPLATES = { kv: 'Kosten (KS / KV)', thg: 'Ökobilanz Bauemissionen' };
-const CODES = { kv: 'KV-32', thg: 'THG-32' };
-const NAMES = { kv: 'Kostenvoranschlag', thg: 'Ökobilanz Bauemissionen' };
-const DESC = { kv: 'Betrag je Hauptgruppe eBKP-H, Bezugsmengen aus den Grundrissen (DWG), Ziel ePPM', thg: 'Menge + THG je Position nach Anleitung TP2 NettoNull, Ziel SUS' };
+// Template texts come from data/templates.json (orderOptions) and data/forms.json (kinds); kv = KV-32, thg = THG-32.
+const optionOf = (data, key) => data.templates.orderOptions.find(o => o.key === key) || { title: key, desc: '' };
 
 const radio = (label, on) => html`<span class="o-radio"><span class="radio-dot"><span style="background:${on ? 'var(--navy)' : 'transparent'}"></span></span>${label}</span>`;
 const input = (value, opts = {}) => html`<div class="field${opts.readonly ? ' field-readonly' : ''}" style="${raw(opts.style || '')}">${value || html`<span class="muted-2" style="color:#a3abb4">${opts.placeholder || ''}</span>`}</div>`;
@@ -24,12 +22,12 @@ export default {
       </div>
       <div class="drawer-body">
         <div class="o-grid">
-          <div>${fieldLabel('Kürzel')}${input(CODES[t])}</div>
-          <div>${fieldLabel('Name', true)}${input(t === 'kv' ? `${NAMES.kv} ${vm.gl}` : NAMES[t])}</div>
+          <div>${fieldLabel('Kürzel')}${input(ctx.data.forms.kinds[t === 'kv' ? 'kv' : 'thg'].code)}</div>
+          <div>${fieldLabel('Name', true)}${input(t === 'kv' ? `Kostenvoranschlag ${vm.gl}` : optionOf(ctx.data, t).title)}</div>
           <div>${fieldLabel('Fachmodellliste')}${selectField('', { style: 'color:#a3abb4' })}</div>
           <div class="rel">${fieldLabel('Lieferverantwortlicher', true)}${selectField(vm.supplier, { avatar: vm.supplierInitials })}${ctx.marker(3, 'top:-4px;left:166px')}</div>
         </div>
-        <div>${fieldLabel('Beschreibung')}<div class="textarea" style="height:58px;color:#1f2937">${DESC[t]}</div></div>
+        <div>${fieldLabel('Beschreibung')}<div class="textarea" style="height:58px;color:#1f2937">${optionOf(ctx.data, t).desc.replace(/<br\s*\/?>/g, ' · ')}</div></div>
         <hr class="o-hr">
         <div class="o-grid">
           <div>${fieldLabel('Liefer- resp. Startdatum', true)}<div class="field">${t === 'thg' ? '31.05.2027' : '30.04.2027'}<span class="flex-1"></span>${icon('calendar', 13, '#a3abb4')}</div></div>
@@ -53,7 +51,7 @@ export default {
             </div>
             ${reqForm ? html`<div class="rel">${fieldLabel('Vorlage', true)}
               <select class="o-select" data-change="setOrderType" data-fid="order-template" aria-label="Vorlage">
-                ${Object.entries(TEMPLATES).map(([k, l]) => html`<option value="${k}" ${k === t ? raw('selected') : ''}>${l}</option>`)}
+                ${ctx.data.templates.orderOptions.map(o => html`<option value="${o.key}" ${o.key === t ? raw('selected') : ''}>${o.title}</option>`)}
               </select>${ctx.marker(1, 'top:-4px;left:62px')}</div>`
             : html`<div>${fieldLabel('Dateiname', true)}<div class="field"><span class="flex-1" style="color:#a3abb4">Dateiname…</span><span class="fs-12 muted">DE</span>${icon('chevron-down', 12, '#8a939e')}</div></div>`}
           </div>

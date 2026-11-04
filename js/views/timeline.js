@@ -1,11 +1,9 @@
-import { html, icon, searchBox } from '../ui.js';
+import { html, icon, searchBox, filterBtn, filterField } from '../ui.js';
 import { pageHead, tabs, pagination, emptyState } from '../shell.js';
 import { tableIconbar } from './parts/taskTable.js';
 
 // Projekt › Aktivitäten (#/projects/:pid/timeline[/logs]): Aktivitäten-Feed und Audit-Log (Tab «Logs»).
 const COLS = 'grid-template-columns:180px 120px 130px 170px 170px 180px 190px 110px 150px';
-const filterBtn = label => html`<span class="filter-btn">${label}${icon('chevron-down', 12, '#3a4350')}</span>`;
-const filterField = (label, width, ic) => html`<span class="filter-field" style="width:${width}px">${label}${icon(ic, 13, '#a3abb4')}</span>`;
 
 export default {
   title: ctx => `Aktivitäten · ${ctx.project.name}`,
@@ -21,7 +19,7 @@ export default {
       ${tabs([{ key: 'activities', label: 'Aktivitäten', href: base }, { key: 'logs', label: 'Logs', href: base + '/logs' }], tab)}
       ${tab === 'logs' ? html`<div class="card card-page">
         <div class="tasks-filters" style="padding:8px 8px 12px;margin:0">
-          ${filterBtn('Aktion')}${filterBtn('Entitätstyp')}
+          ${filterBtn('Aktion', { caret: true })}${filterBtn('Entitätstyp', { caret: true })}
           <span class="filter-field filter-range" style="width:262px"><span>Zeitpunkt ab</span>${icon('arrow-right', 12, '#a3abb4')}<span class="flex-1">Zeitpunkt bis</span>${icon('calendar', 13, '#a3abb4')}</span>
           ${filterField('Benutzer…', 246, 'chevron-down')}
           ${searchBox(290)}
@@ -34,7 +32,7 @@ export default {
             <span class="ellipsis" title="${r.entity}">${r.entity}</span><span>${r.action}</span><span>${r.type}</span><span class="ellipsis mono-ish" title="${r.id}">${r.id}</span><span class="ellipsis">${r.projectName}</span><span class="ellipsis mono-ish" title="${r.projectId}">${r.projectId}</span><span class="ellipsis">${r.user}</span><span>${r.message}</span><span>${r.at}</span>
           </div>`)}
         </div>
-        <div class="pane-pager" style="padding:16px 8px 8px">${pagination(logs.length, { page, size: 10 })}</div>
+        <div class="pane-pager" style="padding:16px 8px 8px">${pagination(logs.length, { page, size: 10, href: p => `${base}/logs?page=${p}` })}</div>
       </div>` : html`<div class="card card-page" style="max-width:900px">
         <div class="card-head">Letzte Aktivitäten</div>
         ${vm.activities.map(a => html`<div class="act-row"><span class="act-date">${a.date}</span><a href="#${a.href}" data-nav="${a.href}">${a.text}</a></div>`)}

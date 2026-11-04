@@ -9,7 +9,7 @@
     "kv": {
       "name": "Kosten eBKP-H",
       "gl": "eBKP-H",
-      "ver": "2.0",
+      "ver": "3.0",
       "ziel": "ePPM",
       "pflicht": "ab SIA 31",
       "pos": [
@@ -69,7 +69,7 @@
     },
     "thg": {
       "name": "Ökobilanz Bauemissionen",
-      "gl": "eBKP-H B–J",
+      "gl": "eBKP-H B–G (SIA 2032)",
       "ver": "1.0",
       "ziel": "SUS",
       "pflicht": "ab SIA 32, AK ≥ 1 Mio CHF",
@@ -79,13 +79,9 @@
         "D",
         "E",
         "F",
-        "G",
-        "I"
+        "G"
       ],
-      "opt": [
-        "H",
-        "J"
-      ],
+      "opt": [],
       "fields": [
         "Emissionsquelle je eBKP-H-Elementgruppe mit KBOB-Datensatz",
         "Menge, THG Herstellung und Entsorgung (t CO₂-eq), Amortisation",
@@ -95,7 +91,7 @@
       "rules": [
         "Alle Emissionsquellen mit Elementgruppe und KBOB-Datensatz",
         "Bericht und Tool-Export vorhanden",
-        "Abweichung zur Vorphase über 15 %: Hinweis",
+        "Abweichung zur Vorphase SIA 31 über 15 %: Hinweis",
         "Bestellung Muss ab Anlagekosten 1 Mio CHF"
       ]
     }

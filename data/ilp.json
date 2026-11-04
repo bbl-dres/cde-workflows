@@ -86,7 +86,7 @@
       "name": "Kostenschätzung eBKP-H",
       "firm": "Muster Architekten AG",
       "gewerk": "Kostenplanung",
-      "desc": "Datenformular · Betrag je Hauptgruppe eBKP-H, an ePPM übertragen",
+      "desc": "Datenformular · Hauptgruppen und Kostenelemente eBKP-H (Menge + Kosten) eBKP-H, an ePPM übertragen",
       "isForm": true,
       "statusKey": "ks"
     },
@@ -95,7 +95,7 @@
       "name": "Kostenvoranschlag eBKP-H",
       "firm": "Generalplaner Beispiel AG",
       "gewerk": "Kostenplanung",
-      "desc": "Datenformular · Betrag je Hauptgruppe eBKP-H, Ziel ePPM",
+      "desc": "Datenformular · Hauptgruppen und Kostenelemente eBKP-H (Menge + Kosten) eBKP-H, Ziel ePPM",
       "statusKey": "kv",
       "isForm": true,
       "mark": true,

@@ -1,11 +1,10 @@
-import { html, icon, searchBox } from '../ui.js';
+import { html, icon, searchBox, thSort, srOnly } from '../ui.js';
 import { pageHead, tabs, emptyState } from '../shell.js';
 
 // Projekt › Info-Management › LOIN (#/projects/:pid/loin[/:tab]): Level of Information Need.
 // Tabs, split button «Neuer Informationsschlüssel», filter chips, two panes (Gruppierungen · Tabelle), as in the CDE Bund.
 const TABS = [['all', 'Alle Informationsschlüssel'], ['elements', 'Elemente'], ['parameter-sets', 'Parameter Sets'], ['parameters', 'Parameter']];
 const COLS = { all: ['Name', 'Parameter Set', 'Element', 'Valide'], elements: ['Name', 'IFC-Klasse', 'Informationsschlüssel'], 'parameter-sets': ['Name', 'Parameter', 'Elemente'], parameters: ['Name', 'Datentyp', 'Einheit', 'Parameter Set'] };
-const sortIcon = () => icon('chevrons-up-down', 10, '#bfbfbf');
 const check = ok => ok ? icon('circle-check', 14, '#389e0d') : icon('circle-x', 14, '#cf1322');
 
 export default {
@@ -41,7 +40,7 @@ export default {
         <div class="pane pane-table">
           <div class="pane-body">
             <div class="ant-table">
-              <div class="ant-head" style="${grid}">${cols.map(c => html`<span class="th-sort">${c}${sortIcon()}</span>`)}</div>
+              <div class="ant-head" style="${grid}">${cols.map(c => thSort(c, '#bfbfbf'))}</div>
               ${rows.map(r => html`<div class="ant-row" style="${grid}">${r.cells.map((c, i) => i === 0 ? html`<a class="ellipsis">${c}</a> ` : typeof c === 'boolean' ? html`<span>${check(c)}</span>` : html`<span class="ellipsis">${c}</span>`)}</div>`)}
               ${rows.length === 0 ? html`<div class="ant-empty">${emptyState()}</div>` : ''}
             </div>

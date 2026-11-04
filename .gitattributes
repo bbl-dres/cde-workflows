@@ -1,0 +1,9 @@
+# Line endings: LF in the repository and on checkout (the SHA-256 sums of the vendored LibreDWG files depend on it)
+* text=auto eol=lf
+*.dwg binary
+*.wasm binary
+*.zip binary
+*.jpg binary
+*.png binary
+*.pdf binary
+*.xlsx binary

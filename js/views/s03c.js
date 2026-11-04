@@ -9,7 +9,7 @@ export default {
     return html`<div class="overlay" style="padding-top:110px">
       <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="imp-title" style="width:860px">
         <div class="dialog-head">
-          <div><div class="dialog-title" id="imp-title">Excel importieren</div><div class="dialog-sub">KV-32 · ${vm.kvTitle}</div></div>
+          <div><div class="dialog-title" id="imp-title">Excel importieren</div><div class="dialog-sub">${ctx.data.forms.kinds[ctx.state.imp.form || 'kv'].code} · ${ctx.data.forms.kinds[ctx.state.imp.form || 'kv'].title}</div></div>
           <button type="button" class="dialog-close" data-action="impClose" aria-label="Dialog schliessen">${icon('x', 18, '#5b6573')}</button>
         </div>
         <div class="imp-steps">

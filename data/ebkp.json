@@ -524,7 +524,6 @@
   },
   "import": {
     "file": "kv_bauprojekt_v3.xlsx",
-    "importedOn": "20.04.2027",
     "changes": {
       "C02": 1285000,
       "G02": 742000

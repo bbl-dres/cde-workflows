@@ -56,7 +56,7 @@ export const dialogs = {
   order,
   columns,
   import: {
-    when: ctx => ctx.route.name === 'delivery' && ctx.route.params.code === 'kv-32' && (ctx.route.params.tab || 'erfassung') === 'erfassung',
+    when: ctx => ctx.route.name === 'delivery' && ['kv-32', 'ks-31'].includes(ctx.route.params.code) && (ctx.route.params.tab || 'erfassung') === 'erfassung',
     render: ctx => (ctx.state.imp.step === 2 ? s03d : s03c).overlay(ctx),
   },
 };
