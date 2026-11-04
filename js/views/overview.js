@@ -25,13 +25,13 @@ export default {
         <div class="flex-col gap-14">
           <div class="card">
             <div class="card-head">Favoriten</div>
-            ${fav && favDeliveries.length ? html`<div class="grid-head" style="${FAV_COLS};background:#f4f5f7;height:34px;font-size:12.5px"><span>Lieferung</span><span>Status</span></div>${favDeliveries.map((r, i) => html`<div class="grid-row" style="${FAV_COLS};height:30px;background:${i % 2 ? '#fff' : '#f6f7f9'};border:0"><a class="ov-fav ellipsis" href="#${r.href}" data-nav="${r.href}">${icon('file-text', 15, '#3f8f8b')}<span class="ellipsis">${r.code} · ${r.name}</span></a><span>${pill(r.pill, { size: 'sm' })}</span></div>`)}` : html`<div style="padding:28px 0 36px">${emptyState()}</div>`}
+            ${fav && favDeliveries.length ? html`<div class="grid-head" style="${FAV_COLS};background:#f4f5f7;height:34px;font-size:12.5px"><span>Lieferung</span><span>Status</span></div>${favDeliveries.map((r, i) => html`<div class="grid-row" style="${FAV_COLS};height:30px;background:${i % 2 ? '#f6f7f9' : '#fff'};border:0"><a class="ov-fav ellipsis" href="#${r.href}" data-nav="${r.href}">${icon('file-text', 15, '#3f8f8b')}<span class="ellipsis">${r.code} · ${r.name}</span></a><span>${pill(r.pill, { size: 'sm' })}</span></div>`)}` : html`<div style="padding:28px 0 36px">${emptyState()}</div>`}
           </div>
           <div class="card">
             <div class="card-head"><span class="flex-1">Projektaufgaben</span><a class="btn btn-secondary btn-sm" href="#${link.projectTasks()}" data-nav="${link.projectTasks()}">Alle anzeigen</a></div>
             <div class="scroll-x"><div style="min-width:520px">
             <div class="grid-head" style="${COLS};background:#f4f5f7;height:34px;font-size:12.5px"><span>Aufgabe</span><span>Aufgabe von</span><span>Aufgabe an</span><span>Typ</span><span>Status</span></div>
-            ${tasks.map((t, i) => html`<div class="grid-row" style="${COLS};height:30px;background:${i % 2 ? '#fff' : '#f6f7f9'};border:0">
+            ${tasks.map((t, i) => html`<div class="grid-row" style="${COLS};height:30px;background:${i % 2 ? '#f6f7f9' : '#fff'};border:0">
               <a class="ellipsis" href="#${t.href}" data-nav="${t.href}">${t.name}</a><span class="ellipsis" style="text-decoration:underline dotted;text-underline-offset:3px">${t.fuer}</span><span class="ellipsis">${t.zug}</span><span>${t.typ}</span><span>${pill(t.pill, { size: 'sm' })}</span>
             </div>`)}
             </div></div>
