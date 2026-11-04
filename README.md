@@ -52,4 +52,4 @@ Project names follow the public [Bautendokumentationen des BBL](https://www.bbl.
 
 ## License
 
-[MIT License](LICENSE). The plan checker in [js/plancheck/](js/plancheck/) comes from [plan-check](https://github.com/bbl-dres/plan-check) (MIT); the bundled LibreDWG runtime in [js/vendor/libredwg-web/](js/vendor/libredwg-web/) is licensed under GPL-3.0, see [THIRD_PARTY.md](js/plancheck/THIRD_PARTY.md). The Prüfbericht uses jsPDF and jspdf-autotable (MIT, loaded from jsDelivr). Icons by Lucide (ISC).
+[MIT License](LICENSE). The plan checker in [js/plancheck/](js/plancheck/) comes from [plan-check](https://github.com/bbl-dres/plan-check) (MIT); the bundled LibreDWG runtime in [js/vendor/libredwg-web/](js/vendor/libredwg-web/) is licensed under GPL-3.0, see [THIRD_PARTY.md](js/plancheck/THIRD_PARTY.md). The Prüfbericht uses jsPDF and jspdf-autotable (MIT, loaded from jsDelivr). Icons by Lucide (ISC). All third-party components, services and reference material: [THIRD-PARTY.md](THIRD-PARTY.md).
