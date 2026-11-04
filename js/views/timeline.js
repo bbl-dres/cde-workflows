@@ -33,7 +33,7 @@ export default {
           </div>`)}
         </div>
         <div class="pane-pager" style="padding:16px 8px 8px">${pagination(logs.length, { page, size: 10, href: p => `${base}/logs?page=${p}` })}</div>
-      </div>` : html`<div class="card card-page" style="max-width:900px">
+      </div>` : html`<div class="card card-page card-narrow">
         <div class="card-head">Letzte Aktivitäten</div>
         ${vm.activities.map(a => html`<div class="act-row"><span class="act-date">${a.date}</span><a href="#${a.href}" data-nav="${a.href}">${a.text}</a></div>`)}
         ${vm.activities.length === 0 ? html`<div style="padding:28px 0">${emptyState()}</div>` : ''}

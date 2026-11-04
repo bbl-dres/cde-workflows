@@ -215,7 +215,8 @@ test('mock: deterministic, scaled, calibrated; group amounts; Tool-Export merge'
   assert.ok(Math.abs(thgTotal60(agro.thgSrc) / 60 / agro.sia.EBF - 11.4) < 0.05, 'calibrated to the Endwert of the instance');
   for (const p of projects) {
     const M = mockProject(p, data, { complete: true });
-    assert.ok(Object.values(M.kvV).every(v => v >= 1000) && Object.values(M.kvQ).every(q => q >= 10), `${p.id}: scaled values`);
+    const zero = new Set(data.ebkp.extra.filter(g => !g.cost).map(g => g.code));   // A Grundstück, H Nutzungsspezifische Anlage
+    assert.ok(Object.entries(M.kvV).every(([c, v]) => (zero.has(c) ? v === 0 : v >= 1000)) && Object.values(M.kvQ).every(q => q >= 10), `${p.id}: scaled values`);
     assert.ok(M.thgSrc.length === data.thg.sources.length && M.thgSrc.every(s => s.q != null && s.h != null && s.e != null), `${p.id}: complete sources`);
   }
   const g = data.ebkp.ebkp.find(x => x.code === 'C');

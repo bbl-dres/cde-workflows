@@ -9,8 +9,8 @@ import { mountPlan, unmountPlan } from './plan.js';
 // KV-32, THG-32 and the floor plans DWG-UG … DWG-DG are Datenformulare; other deliveries show a generic page.
 const TAB_LABEL = { uebersicht: 'Übersicht', erfassung: 'Erfassung', pruefung: 'Prüfung', beteiligte: 'Beteiligte', dokumente: 'Dokumente', verlauf: 'Verlauf' };
 
-const verlauf = ev => html`<div class="card" style="max-width:820px"><div class="card-head">Verlauf</div>${ev.map(([d, t]) => html`<div class="act-row"><span class="act-date">${d}</span><span>${t}</span></div>`)}</div>`;
-const dokumente = () => html`<div class="card" style="max-width:900px"><div class="card-head"><span class="flex-1">Dokumente</span><span class="btn btn-secondary btn-sm">Hochladen</span></div><div style="padding:28px 0">${emptyState('Keine Dokumente')}</div></div>`;
+const verlauf = ev => html`<div class="card card-narrow"><div class="card-head">Verlauf</div>${ev.map(([d, t]) => html`<div class="act-row"><span class="act-date">${d}</span><span>${t}</span></div>`)}</div>`;
+const dokumente = () => html`<div class="card card-narrow"><div class="card-head"><span class="flex-1">Dokumente</span><span class="btn btn-secondary btn-sm">Hochladen</span></div><div style="padding:28px 0">${emptyState('Keine Dokumente')}</div></div>`;
 
 function generic(ctx, code) {
   const { vm } = ctx;
@@ -24,7 +24,7 @@ function generic(ctx, code) {
     ${tab === 'verlauf' ? verlauf([['–', `Bestellt durch ${ctx.project.responsible}`], ['–', `Status: ${d.status}`]])
       : tab === 'dokumente' ? dokumente()
       : html`<div class="flex items-start gap-14">
-        <div class="card flex-1" style="max-width:720px"><div class="card-head">Lieferung</div><div style="padding:8px 12px 12px">${[['Kürzel', d.code], ['Name', d.name], ['Lieferverantwortlicher', d.firm], ['Gewerk', d.gewerk], ['Beschreibung', d.desc], ['Status', d.status]].map(([k, v], i) => html`<div class="meta-row" style="grid-template-columns:170px 1fr;background:${i % 2 ? 'transparent' : '#f6f7f9'}"><span class="meta-k">${k}</span><span>${v}</span></div>`)}</div></div>
+        <div class="card flex-1 card-narrow"><div class="card-head">Lieferung</div><div style="padding:8px 12px 12px">${[['Kürzel', d.code], ['Name', d.name], ['Lieferverantwortlicher', d.firm], ['Gewerk', d.gewerk], ['Beschreibung', d.desc], ['Status', d.status]].map(([k, v], i) => html`<div class="meta-row" style="grid-template-columns:170px 1fr;background:${i % 2 ? 'transparent' : '#f6f7f9'}"><span class="meta-k">${k}</span><span>${v}</span></div>`)}</div></div>
         <div class="note note-grey" style="width:330px;display:block">Klassische Lieferung (Dokumente, Modelle): Ablage und Status im Informationslieferplan, ohne Datenformular.</div>
       </div>`}`;
 }

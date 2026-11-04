@@ -100,7 +100,18 @@ Skip-Link, `aria-expanded` und `aria-current` in der Navigation.
   Sidebar off-canvas, öffnen mit Scroll-Sperre, Escape, Projektaufgaben scrollen, Karte füllt die Box, Karte folgt der Box
   ohne Fenster-Resize); `tests/responsive-audit.mjs` für Screenshots und Messwerte auf drei Breiten.
 
-## 5. Grenzen des Reviews
+## 5. Nachtrag (Rückmeldung nach dem Review)
+
+- **Kleine Notebooks (1024–1279 px)**: das Projektbild in voller Breite wirkte fremd. Unter 1280 px stehen Projektbild und
+  Projektdaten jetzt nebeneinander (Verknüpfungen darunter in voller Breite); eine Spalte gibt es nur noch unter 640 px.
+- **Standortkarte**: 340 px statt 260 px hoch (280 px auf Phones).
+- **Sehr breite Bildschirme**: der Seiteninhalt hatte keine einheitliche Grenze (einzelne Karten 720–1100 px, Tabellen und die
+  Suche in der Topbar ohne Limit). Neu gilt eine Inhaltsbreite von 1480 px (`--content-max`, `.app-main`, neben der Sidebar
+  zentriert), 900 px für Lese- und Formularkarten (`--narrow-max`, `.card-narrow`: Lieferung, Verlauf, Dokumente der
+  Lieferung, Stammdaten, Zeitplan, Einstellungen) und 760 px für die Suche in der Topbar; die Inline-Breiten der Karten sind
+  entfernt. Browser-Tests bei 1100 und 2000 px.
+
+## 6. Grenzen des Reviews
 
 Gemessen wurde mit emulierten Breiten und Touch in Headless Edge; echte Geräte (iOS Safari, Android Chrome) wurden
 nicht getestet, insbesondere nicht das Verhalten der Adressleiste, die Eingabe-Zoomstufe und die Gesten im Viewer.

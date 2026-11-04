@@ -298,7 +298,7 @@ function planResult(F, L) {
 // ---- Beteiligte · Dokumente · Verlauf ----
 function beteiligte(F) {
   const C = 'grid-template-columns:minmax(0,1.3fr) minmax(0,1.3fr) 150px minmax(0,1.2fr) 130px 80px';
-  return html`<div class="fm-stack" style="max-width:1100px">${card(html`<span class="flex-1">Beteiligte an dieser Lieferung</span><button type="button" class="btn btn-secondary">Bearbeitende hinzufügen</button>`, html`<div class="fm-table"><div style="min-width:760px">
+  return html`<div class="fm-stack">${card(html`<span class="flex-1">Beteiligte an dieser Lieferung</span><button type="button" class="btn btn-secondary">Bearbeitende hinzufügen</button>`, html`<div class="fm-table"><div style="min-width:760px">
     <div class="fm-th" style="${C};padding:0 12px;gap:0 12px"><span>Person</span><span>Firma</span><span>Rolle</span><span>Bereich</span><span>Status</span><span></span></div>
     ${F.peopleRows.map(p => html`<div class="fm-tr" style="${C};min-height:46px;padding:0 12px;gap:0 12px;background:${p.bg}">
       <span class="flex items-center gap-8 min-w-0">${avatar(p.ini, 24, '#aab2bc')}<span class="ellipsis">${p.name}</span></span><span class="ellipsis">${p.firm}</span><span class="fw-500">${p.role}</span><span class="ellipsis" style="color:#3d4650">${p.scope}</span><span style="color:${p.stC}">${p.st}</span>
@@ -321,5 +321,5 @@ function verlauf(F) {
   return card(html`<span class="flex-1">Verlauf</span>${hint(`${F.hist.length} Ereignisse, neueste zuerst`)}`, html`<div class="fm-table"><div style="min-width:720px">
     <div class="fm-th" style="${C}"><span>Datum</span><span>Person</span><span>Ereignis</span><span>Details</span></div>
     ${F.hist.map(h => html`<div class="fm-tr hist-row" style="${C}"><span>${h.d}${h.time ? ' ' + h.time : ''}</span><span class="ellipsis" title="${h.firm}">${h.name}</span><span class="fw-500 ellipsis" title="${h.t}">${h.t}</span><span class="muted ellipsis" title="${h.detail}">${h.detail}</span></div>`)}
-  </div></div>`, { style: 'max-width:1100px' });
+  </div></div>`);
 }

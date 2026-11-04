@@ -47,8 +47,8 @@ export function mockProject(project, data, opts = {}) {
     ksV[k.code] = chf(k.cost * ksFactor[g.code]);
   }));
   E.extra.forEach(k => {
-    kvV[k.code] = chf(k.cost);
-    ksV[k.code] = Math.max(1000, roundTo(kvV[k.code] * (E.ks31[k.code] ? E.ks31[k.code] / k.cost : 0.93), 1000));
+    kvV[k.code] = k.cost ? chf(k.cost) : 0;                  // A Grundstück and H Nutzungsspezifische Anlage are 0 in the sample projects
+    ksV[k.code] = k.cost ? Math.max(1000, roundTo(kvV[k.code] * (E.ks31[k.code] ? E.ks31[k.code] / k.cost : 0.93), 1000)) : 0;
   });
   // THG: the Emissionsquellen of the design, scaled with the quantities of the project (per m² EBF for the Gebäudetechnik),
   // then calibrated to the Endwert of the instance (kg CO₂-eq/m² EBF·a over 60 years) when one is given
@@ -62,7 +62,7 @@ export function mockProject(project, data, opts = {}) {
   const thgHead = { ...Object.fromEntries(TH.head.filter(h => h[2] != null).map(h => [h[0], h[2]])), ...(thgInst.head || {}) };
   // Previous phases: KS-31 for the KV, Kostengrobschätzung SIA 21 for the KS, SIA 31 for the THG
   const prev = { kv: {}, ks: {}, thg: {} };
-  Object.entries(E.ks31).forEach(([c, v]) => { prev.kv[c] = base ? v : chf(v, 0.9, 1.05); prev.ks[c] = Math.max(1000, roundTo(prev.kv[c] * (base ? 0.9 : jit(0.85, 0.95)), 1000)); });
+  Object.entries(E.ks31).forEach(([c, v]) => { prev.kv[c] = base || !v ? v : chf(v, 0.9, 1.05); prev.ks[c] = v ? Math.max(1000, roundTo(prev.kv[c] * (base ? 0.9 : jit(0.85, 0.95)), 1000)) : 0; });
   Object.entries(TH.prev31).forEach(([c, v]) => { prev.thg[c] = base ? v : chf(v); });
   // Missing values (forms in progress) and empty forms (step 0)
   const values = { kvQ, kvV, ksQ, ksV };

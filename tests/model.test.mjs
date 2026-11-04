@@ -89,11 +89,11 @@ test('KV-32: Hauptgruppen, totals and completeness', () => {
   const kv = vm.forms.kv;
   assert.equal(kv.kind, 'data'); assert.equal(kv.status, 'In Bearbeitung'); assert.equal(kv.step, 1);
   assert.equal(kv.total, 19100000); assert.equal(kv.bw, 18000000, 'Erstellungskosten B–W incl. J');
-  assert.equal(kv.fields, 25, '9 direct groups + 2 detailed groups × 4 positions × (Menge + Kosten)');
+  assert.equal(kv.fields, 27, '11 direct groups (A … Y without D, G) + 2 detailed groups × 4 positions × (Menge + Kosten)');
   assert.equal(kv.missing, 1, 'D08 Menge fehlt'); assert.equal(kv.bar.canSubmit, false);
   assert.deepEqual(kv.badges.erfassung, { n: 1, bg: '#fff1f0', fg: '#9b2c44' });
   const rows = kv.erf.rows;
-  assert.equal(rows.filter(r => r.isGroupRow).length, 11); assert.equal(rows.filter(r => r.isPos).length, 8);
+  assert.equal(rows.filter(r => r.isGroupRow).length, 13); assert.equal(rows.filter(r => r.isPos).length, 8);
   assert.equal(rows.filter(r => r.isAdd).length, 2, '«Kostenelement hinzufügen» under each opened group');
   assert.ok(rows.find(r => r.code === 'D').canToggle && !rows.find(r => r.code === 'D').direct && rows.find(r => r.code === 'V').direct && rows.find(r => r.code === 'V').canToggle);
   assert.equal(rows.find(r => r.code === 'B').bez, "4'200", 'Bezugsmenge GSF from sia416');
@@ -111,7 +111,7 @@ test('KV-32: Hauptgruppen, totals and completeness', () => {
   // «Aufschlüsseln» of C adds its four positions (Menge + Kosten) and drops the direct field.
   const det = structuredClone(base); det.projects.musterhausen.forms.kv.modes.C = 'detail';
   v = vmFor(det);
-  assert.equal(v.forms.kv.fields, 32); assert.equal(v.forms.kv.erf.rows.filter(r => r.isPos).length, 12);
+  assert.equal(v.forms.kv.fields, 34); assert.equal(v.forms.kv.erf.rows.filter(r => r.isPos).length, 12);
   assert.equal(v.forms.kv.total, 19100000, 'sum of positions equals the direct amount');
   // A missing direct amount counts as missing.
   const empty = structuredClone(base); empty.projects.musterhausen.forms.kv.gvals.B = '';
@@ -122,13 +122,13 @@ test('KV-32: Hauptgruppen, totals and completeness', () => {
   ed.projects.musterhausen.forms.kv.removed = { D08: true };
   ed.projects.musterhausen.forms.kv.added = [{ id: 'kn1', grp: 'G', code: '', q: '', v: '' }];
   v = vmFor(ed);
-  assert.equal(v.forms.kv.erf.rows.filter(r => r.isPos).length, 7); assert.equal(v.forms.kv.fields, 25 - 2 + 2, 'D08 gone, new row counts code + Kosten (Menge once the element group has a unit)');
+  assert.equal(v.forms.kv.erf.rows.filter(r => r.isPos).length, 7); assert.equal(v.forms.kv.fields, 27 - 2 + 2, 'D08 gone, new row counts code + Kosten (Menge once the element group has a unit)');
   assert.equal(v.forms.kv.missing, 2);
   const nr = v.forms.kv.erf.rows.find(r => r.isNewPos);
   assert.ok(nr && nr.opts.length === 2 && nr.opts.map(o => o.v).join() === 'G05,G06', 'only element groups not yet in G');
   ed.projects.musterhausen.forms.kv.added[0] = { id: 'kn1', grp: 'G', code: 'G05', q: '120', v: '240000' };
   v = vmFor(ed);
-  assert.equal(v.forms.kv.missing, 0); assert.equal(v.forms.kv.fields, 26); assert.equal(v.forms.kv.total, 19100000 - 540000 + 240000);
+  assert.equal(v.forms.kv.missing, 0); assert.equal(v.forms.kv.fields, 28); assert.equal(v.forms.kv.total, 19100000 - 540000 + 240000);
   assert.equal(v.forms.kv.erf.rows.find(r => r.isNewPos).name, 'Einbauten, Schutzeinrichtung zu Ausbau');
   // Opening a group without positions (V Planungskosten) shows only the add row; its amount stays in the value map.
   ed.projects.musterhausen.forms.kv.modes.V = 'detail';
@@ -142,7 +142,7 @@ test('KV-32: Übersicht and Prüfung figures', () => {
   assert.equal(kv.kpis[0].v, '18.0'); assert.equal(kv.kpis[1].v, "2'778");
   assert.equal(kv.chart.targets.length, 3); assert.equal(kv.chart.targets[0].val, 'CHF 17.00 Mio'); assert.equal(kv.chart.targets[0].delta, '+5.9 %');
   assert.equal(kv.chart.band, '15.30–18.70 Mio'); assert.ok(kv.chart.hasBand);
-  assert.equal(kv.costRows.length, 11); assert.equal(kv.totalRow.prev, "18'090'000");
+  assert.equal(kv.costRows.length, 13); assert.equal(kv.totalRow.prev, "18'090'000");
   const d = kv.cmp.find(c => c.code === 'D');
   assert.equal(d.delta, '+19.0 %'); assert.equal(d.hi, true, 'deviation ≥ 10 % is highlighted');
   assert.equal(kv.cmpT.delta, '+5.6 %');
@@ -339,6 +339,41 @@ test('task table columns', () => {
 });
 
 // ---- Planlieferungen DWG für das CAFM (one floor plan = one delivery, checked by js/plancheck) ----
+// ---- eBKP-H directory (SN 506 511:2020) — docs/reference/sources/eBKP-H_2020_Verzeichnis.md ----
+test('ebkp: every Hauptgruppe A–Z with all its Elementgruppen; A and H are groups of the cost form', () => {
+  const EXPECT = { A: 2, B: 9, C: 5, D: 12, E: 3, F: 2, G: 6, H: 9, I: 6, J: 4, V: 3, W: 7, Y: 2, Z: 1 };
+  const el = data.ebkp.elements;
+  assert.deepEqual(Object.keys(el), Object.keys(EXPECT), 'Hauptgruppen in the order of the norm');
+  for (const [g, n] of Object.entries(EXPECT)) {
+    assert.equal(el[g].length, n, `${g}: ${n} Elementgruppen`);
+    for (const [c, name, unit] of el[g]) assert.ok(c.startsWith(g) && /^[A-Z]\d{2}$/.test(c) && name.length > 2 && typeof unit === 'string', `${c} ${name}`);
+    assert.deepEqual(el[g].map(x => x[0]), [...el[g].map(x => x[0])].sort(), `${g} sorted by code`);
+  }
+  assert.equal(Object.values(el).flat().length, 71);
+  const formGroups = [...data.ebkp.ebkp, ...data.ebkp.extra].map(g => g.code);
+  for (const g of formGroups) assert.ok(el[g] && el[g].length, `dropdown of ${g} has options`);
+  assert.ok(formGroups.includes('A') && formGroups.includes('H'), 'A Grundstück and H Nutzungsspezifische Anlage are Hauptgruppen of the form');
+  assert.equal(data.ebkp.extra.find(g => g.code === 'W').name, 'Nebenkosten zu Erstellung');
+  assert.equal(data.ebkp.elements.W.find(x => x[0] === 'W04')[1], 'Bewirtung, Öffentlichkeitsarbeit, Entschädigung');
+  const kv = vm.forms.kv;
+  assert.deepEqual(kv.groups.map(g => g.code), ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'V', 'W', 'Y'], 'cost form groups A … Y in the order of the norm');
+  assert.equal(kv.groups.find(g => g.code === 'A').sum, 0); assert.equal(kv.groups.find(g => g.code === 'H').sum, 0); assert.equal(kv.missing, 1, 'a zero amount is a value, not a gap: only D08 is missing');
+});
+
+test('thg: Elementgruppen and Elemente B–G complete, each with unit and amortisation', () => {
+  const EXPECT = { B: [9, 45], C: [5, 19], D: [12, 74], E: [3, 14], F: [2, 7], G: [6, 23] };
+  for (const [g, [l2, l3]] of Object.entries(EXPECT)) {
+    const list = data.thg.eg[g], codes = list.map(x => x[0]);
+    assert.equal(list.filter(x => !x[0].includes('.')).length, l2, `${g}: ${l2} Elementgruppen`);
+    assert.equal(list.filter(x => x[0].includes('.')).length, l3, `${g}: ${l3} Elemente`);
+    for (const [c, name, unit, a] of list) assert.ok(c.startsWith(g) && name.length > 2 && typeof unit === 'string' && [20, 30, 40, 60].includes(a), `${c} ${name} ${unit} ${a}`);
+    assert.deepEqual(codes, [...codes].sort(), `${g} sorted by code`);
+    for (const c of codes.filter(c => c.includes('.'))) assert.ok(codes.includes(c.slice(0, 3)), `${c} has its Elementgruppe`);
+  }
+  assert.equal(data.thg.eg.D.find(x => x[0] === 'D05.01')[1], 'Wärmequelle, -senke, Brennstofflager');
+  assert.equal(data.thg.eg.D.find(x => x[0] === 'D12.01')[2], 'Stk.'); assert.equal(data.thg.eg.C.find(x => x[0] === 'C04.08')[3], 40);
+});
+
 test('plans: data, ILP rows, tasks and statuses per floor', () => {
   const P = data.plans;
   assert.equal(P.floors.length, 5);

@@ -126,7 +126,7 @@ function costPart(kind, P, f, data, T, M, ref, locked, bd) {
   const GF = ref.GF, prev = M.prev[kind] || {}, limit = T.devPct || DEV_PCT;
   const kwOf = v => (GF ? FMT(v / GF) : '–');
   let fields = 0, missing = 0, total = 0;
-  const groups = [...E.ebkp, ...E.extra].map(g => {
+  const groups = [...E.ebkp, ...E.extra].sort((a, b) => a.code.localeCompare(b.code)).map(g => {   // A … Z as in the norm
     const hasKids = !!g.kids, base = (g.kids || []).filter(k => !removed[k.code]), extra = added.filter(a => a.grp === g.code);
     const direct = (modes[g.code] || 'direct') === 'direct';
     const gval = hasKids ? gvals[g.code] : V[g.code];                 // groups with positions keep their amount in gvals, the others in the value map

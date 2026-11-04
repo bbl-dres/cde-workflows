@@ -110,12 +110,12 @@ try {
   check('tab badges: 1 missing value, 2 documents', (await text('.tab-badge')) === '1' && (await count('.tab-badge')) === 2);
   await shot('e2e-kv-uebersicht');
   await clickText('.tab', 'Erfassung');
-  check('Erfassung: 11 Hauptgruppen, D and G detailed', (await hash()).endsWith('/erfassung') && (await count('.ent-group')) === 11 && (await count('.ent-pos')) === 8);
+  check('Erfassung: 13 Hauptgruppen A–Y, D and G detailed', (await hash()).endsWith('/erfassung') && (await count('.ent-group')) === 13 && (await count('.ent-pos')) === 8);
   check('submit disabled while D08 missing', (await disabled('[data-action="formSubmit"]')) && (await bodyText()).includes('Einreichen erst, wenn alle Werte erfasst sind'));
   await click('[data-action="formToggleMissing"]'); check('filter shows only missing rows', (await count('.ent-pos')) === 1 && (await count('.ent-group')) === 1 && (await count('.ent-add')) === 0 && (await state()).projects.musterhausen.forms.kv.missingOnly === true);
   await click('[data-action="formToggleMissing"]');
   await setInput('[data-fid="kvQ-D08"]', '6480');
-  check('D08 filled → complete', /Alle 25 Werte erfasst/.test(await bodyText()) && (await count('.tab-badge')) === 1 && (await enabled('[data-action="formSubmit"]')));
+  check('D08 filled → complete', /Alle 27 Werte erfasst/.test(await bodyText()) && (await count('.tab-badge')) === 1 && (await enabled('[data-action="formSubmit"]')));
   check('focus restored', await evaluate(`document.activeElement?.dataset?.fid === 'kvQ-D08'`));
   await click('.ent-toggle[data-group="C"]'); check('Aufschlüsseln opens the positions of C', (await state()).projects.musterhausen.forms.kv.modes.C === 'detail' && (await count('.ent-pos')) === 12 && (await count('.ent-add')) === 3);
   await click('.ent-toggle[data-group="C"]'); check('Zusammenfassen keeps the sum as the group amount', (await state()).projects.musterhausen.forms.kv.modes.C === 'direct' && Number((await state()).projects.musterhausen.forms.kv.gvals.C) === 3970000 && (await count('.ent-pos')) === 8);
@@ -202,7 +202,7 @@ try {
 
   await go('/projects/eigerplatz/deliveries/thg-32'); await sleep(100);
   check('other project: THG-32 form with mock data (Eingereicht after the flow above)', (await hash()).endsWith('/eigerplatz/deliveries/thg-32/uebersicht') && (await text('.page-title')).includes('Eingereicht') && (await count('.st-row')) === 6 && (await count('.pp-row')) === 2);
-  await go('/projects/agroscope-posieux/deliveries/kv-32/erfassung'); check('other project: KV-32 Abgeschlossen, locked, no Musterhausen note', (await text('.page-title')).includes('Abgeschlossen') && (await count('.ent-group')) === 11 && (await count('.ent-input:not([readonly])')) === 0 && (await count('.ent-del')) === 0 && !(await bodyText()).includes('nur für das Projekt'));
+  await go('/projects/agroscope-posieux/deliveries/kv-32/erfassung'); check('other project: KV-32 Abgeschlossen, locked, no Musterhausen note', (await text('.page-title')).includes('Abgeschlossen') && (await count('.ent-group')) === 13 && (await count('.ent-input:not([readonly])')) === 0 && (await count('.ent-del')) === 0 && !(await bodyText()).includes('nur für das Projekt'));
   await go('/projects/zollanlage-brig/deliveries/ks-31/pruefung'); check('other project: KS-31 Prüfung compares with SIA 21', (await count('.fm-tr')) >= 7 && (await bodyText()).includes('SIA 21') && (await bodyText()).includes('Freigegeben und an ePPM übertragen'));
   await go('/projects/tenero/deliveries/kv-32/erfassung'); await setInput('[data-fid="kvV-Y"]', '25000'); check('other project: values are stored per project', String((await state()).projects.tenero.kvV.Y) === '25000' && (await state()).projects.musterhausen.kvV.Y !== '25000');
   // Kostenelemente: add a row to G, pick an element group, remove a position
@@ -430,6 +430,10 @@ try {
   await evaluate(`document.querySelector('#ov-map').style.width = '300px'`); await sleep(300);
   ms = await ovMapSize(); check('project map follows its box without a window resize (ResizeObserver)', Math.abs(ms.canvas - 300) <= 2, JSON.stringify(ms));
   await evaluate(`document.querySelector('#ov-map').style.width = ''`);
+  await send('Emulation.setDeviceMetricsOverride', { width: 1100, height: 900, deviceScaleFactor: 1, mobile: false }); await go('/projects/musterhausen/overview'); await sleep(200);
+  check('1100 px: Projektbild and Projektdaten side by side, Verknüpfungen full width, map 340 px', await evaluate(`(() => { const s = document.querySelector('.overview-side'); const c = s.querySelectorAll(':scope > .card'); const r = i => c[i].getBoundingClientRect(); return getComputedStyle(s).display === 'grid' && Math.abs(r(0).top - r(1).top) < 2 && r(2).width > r(0).width * 1.8 && document.querySelector('#ov-map').clientHeight === 340; })()`));
+  await send('Emulation.setDeviceMetricsOverride', { width: 2000, height: 900, deviceScaleFactor: 1, mobile: false }); await sleep(200);
+  check('2000 px: content limited to 1480 px and centred beside the sidebar', await evaluate(`(() => { const r = document.querySelector('.app-main').getBoundingClientRect(); return r.width <= 1481 && r.left > 300 && document.querySelector('.topbar-search').getBoundingClientRect().width <= 760; })()`));
   await send('Emulation.setDeviceMetricsOverride', { width: 1536, height: 1000, deviceScaleFactor: 1, mobile: false });
   await go('/projects/eigerplatz/deliveries/dwg-eg'); check('DWG code on another project → generic page without error', await noError());
 

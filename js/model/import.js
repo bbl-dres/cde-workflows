@@ -12,6 +12,7 @@ export function importModel(s, data) {
   const leaves = [];
   E.ebkp.forEach(g => g.kids.forEach(k => leaves.push(k)));
   E.extra.forEach(k => leaves.push(k));
+  leaves.sort((a, b) => a.code.localeCompare(b.code));
   const all = leaves.map(k => {
     let st = 'Unverändert', fq = k.qty ?? null, fv = k.cost, note = '';
     if (CH[k.code] != null) { st = 'Geändert'; fv = CH[k.code]; note = 'bisher ' + FMT(k.cost); }

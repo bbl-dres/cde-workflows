@@ -48,7 +48,7 @@ Open <http://localhost:8080/>. The mock data is loaded with `fetch()`, so the ap
 
 ## Data and map sources
 
-Project names follow the public [Bautendokumentationen des BBL](https://www.bbl.admin.ch/de/bautendokumentationen); phases, values, firms and people are fictional. The cost structure uses the eBKP-H element groups (CRB, SN 506 511:2020), the Ökobilanz the KBOB/ecobau-Liste 2022, Version 9.0 ([kbob.admin.ch](https://www.kbob.admin.ch/de/oekobilanzdaten-im-baubereich)) with the amortisation periods of SIA 2032; sources and derivations are in [docs/research/](docs/research/). Maps: CARTO «Positron» vector tiles (worldwide, fallback Esri World Light Gray raster tiles) through MapLibre GL; photos with their licences in [assets/projects/ATTRIBUTION.md](assets/projects/ATTRIBUTION.md).
+Project names follow the public [Bautendokumentationen des BBL](https://www.bbl.admin.ch/de/bautendokumentationen); phases, values, firms and people are fictional. The cost structure uses the eBKP-H element groups (CRB, SN 506 511:2020; the complete directory of Hauptgruppen, Elementgruppen and Elemente, converted from the norm excerpt with docling, is in [docs/reference/sources/eBKP-H_2020_Verzeichnis.md](docs/reference/sources/eBKP-H_2020_Verzeichnis.md)), the Ökobilanz the KBOB/ecobau-Liste 2022, Version 9.0 ([kbob.admin.ch](https://www.kbob.admin.ch/de/oekobilanzdaten-im-baubereich)) with the amortisation periods of SIA 2032; sources and derivations are in [docs/research/](docs/research/). Maps: CARTO «Positron» vector tiles (worldwide, fallback Esri World Light Gray raster tiles) through MapLibre GL; photos with their licences in [assets/projects/ATTRIBUTION.md](assets/projects/ATTRIBUTION.md).
 
 ## License
 

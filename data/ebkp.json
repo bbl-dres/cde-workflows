@@ -1,5 +1,5 @@
 {
-  "note": "Kosten der Datenformulare KV-32 / KS-31 des Projekts Verwaltungszentrum Musterhausen nach eBKP-H (SN 506 511:2020): «ebkp» die Hauptgruppen B–I mit ihren erfassten Elementgruppen (Menge, Kosten CHF), «extra» die Hauptgruppen ohne Positionen (J, V, W, Y; Z = MWST 8.1 % auf B–Y), «elements» alle Elementgruppen je Hauptgruppe für «Kostenelement hinzufügen», «ks31» die Vorphase, «import» die Vorschau des Excel-Imports. Werte fiktiv.",
+  "note": "Kosten der Datenformulare KV-32 / KS-31 des Projekts Verwaltungszentrum Musterhausen nach eBKP-H (SN 506 511:2020): «ebkp» die Hauptgruppen B–I mit ihren erfassten Elementgruppen (Menge, Kosten CHF), «extra» die Hauptgruppen ohne Positionen (A, H, J, V, W, Y mit Pauschalbetrag; A Grundstück und H Nutzungsspezifische Anlage sind im Musterprojekt 0; Z = MWST 8.1 % auf B–Y), «elements» alle 71 Elementgruppen der Norm je Hauptgruppe A–Z für «Kostenelement hinzufügen» (Verzeichnis: docs/reference/sources/eBKP-H_2020_Verzeichnis.md; Einheit = Bezugsgrösse, leer = pauschal), «ks31» die Vorphase, «import» die Vorschau des Excel-Imports. Werte fiktiv.",
   "ebkp": [
     {
       "code": "B",
@@ -172,9 +172,19 @@
   ],
   "extra": [
     {
+      "code": "A",
+      "name": "Grundstück",
+      "cost": 0
+    },
+    {
       "code": "J",
       "name": "Ausstattung Gebäude",
       "cost": 610000
+    },
+    {
+      "code": "H",
+      "name": "Nutzungsspezifische Anlage Gebäude",
+      "cost": 0
     },
     {
       "code": "V",
@@ -183,339 +193,106 @@
     },
     {
       "code": "W",
-      "name": "Nebenkosten",
+      "name": "Nebenkosten zu Erstellung",
       "cost": 420000
     },
     {
       "code": "Y",
-      "name": "Reserve",
+      "name": "Reserve, Teuerung",
       "cost": 1100000
     }
   ],
   "elements": {
+    "A": [["A01", "Grundstück, Baurecht", ""], ["A02", "Nebenkosten zu Grundstück, Baurecht", ""]],
     "B": [
-      [
-        "B01",
-        "Untersuchung, Aufnahme, Messung",
-        ""
-      ],
-      [
-        "B02",
-        "Baustelleneinrichtung",
-        "m²"
-      ],
-      [
-        "B03",
-        "Provisorium",
-        ""
-      ],
-      [
-        "B04",
-        "Erschliessung durch Werkleitungen",
-        "m"
-      ],
-      [
-        "B05",
-        "Rodung, Rückbau",
-        "m²"
-      ],
-      [
-        "B06",
-        "Baugrube",
-        "m³"
-      ],
-      [
-        "B07",
-        "Baugrundverbesserung, Bauwerkssicherung",
-        "m²"
-      ],
-      [
-        "B08",
-        "Gerüst",
-        "m²"
-      ],
-      [
-        "B09",
-        "Anpassung angrenzendes Bauwerk",
-        ""
-      ]
+      ["B01", "Untersuchung, Aufnahme, Messung", ""],
+      ["B02", "Baustelleneinrichtung", "m²"],
+      ["B03", "Provisorium", ""],
+      ["B04", "Erschliessung durch Werkleitungen", "m"],
+      ["B05", "Rodung, Rückbau", "m²"],
+      ["B06", "Baugrube", "m³"],
+      ["B07", "Baugrundverbesserung, Bauwerkssicherung", "m²"],
+      ["B08", "Gerüst", "m²"],
+      ["B09", "Anpassung angrenzendes Bauwerk", ""]
     ],
     "C": [
-      [
-        "C01",
-        "Fundament, Bodenplatte",
-        "m²"
-      ],
-      [
-        "C02",
-        "Wandkonstruktion",
-        "m²"
-      ],
-      [
-        "C03",
-        "Stützenkonstruktion",
-        "m"
-      ],
-      [
-        "C04",
-        "Deckenkonstruktion, Dachkonstruktion",
-        "m²"
-      ],
-      [
-        "C05",
-        "Ergänzende Leistung zu Konstruktion",
-        ""
-      ]
+      ["C01", "Fundament, Bodenplatte", "m²"],
+      ["C02", "Wandkonstruktion", "m²"],
+      ["C03", "Stützenkonstruktion", "m"],
+      ["C04", "Deckenkonstruktion, Dachkonstruktion", "m²"],
+      ["C05", "Ergänzende Leistung zu Konstruktion", ""]
     ],
     "D": [
-      [
-        "D01",
-        "Elektroanlage",
-        "m² GF"
-      ],
-      [
-        "D02",
-        "Gebäudeautomation",
-        "m² GF"
-      ],
-      [
-        "D03",
-        "Sicherheitsanlage",
-        "m² GF"
-      ],
-      [
-        "D04",
-        "Technische Brandschutzanlage",
-        "m² GF"
-      ],
-      [
-        "D05",
-        "Wärmetechnische Anlage",
-        "m² GF"
-      ],
-      [
-        "D06",
-        "Kältetechnische Anlage",
-        "m² GF"
-      ],
-      [
-        "D07",
-        "Lufttechnische Anlage",
-        "m² GF"
-      ],
-      [
-        "D08",
-        "Wassertechnische Anlage",
-        "m² GF"
-      ],
-      [
-        "D09",
-        "Abwassertechnische Anlage",
-        "m² GF"
-      ],
-      [
-        "D10",
-        "Gastechnische Anlage",
-        "m² GF"
-      ],
-      [
-        "D11",
-        "Anlage für Spezialmedien",
-        "m² GF"
-      ],
-      [
-        "D12",
-        "Beförderungsanlage",
-        "Stk."
-      ]
+      ["D01", "Elektroanlage", "m² GF"],
+      ["D02", "Gebäudeautomation", "m² GF"],
+      ["D03", "Sicherheitsanlage", "m² GF"],
+      ["D04", "Technische Brandschutzanlage", "m² GF"],
+      ["D05", "Wärmetechnische Anlage", "m² GF"],
+      ["D06", "Kältetechnische Anlage", "m² GF"],
+      ["D07", "Lufttechnische Anlage", "m² GF"],
+      ["D08", "Wassertechnische Anlage", "m² GF"],
+      ["D09", "Abwassertechnische Anlage", "m² GF"],
+      ["D10", "Gastechnische Anlage", "m² GF"],
+      ["D11", "Anlage für Spezialmedien", "m² GF"],
+      ["D12", "Beförderungsanlage", "Stk."]
     ],
     "E": [
-      [
-        "E01",
-        "Äussere Wandbekleidung unter Terrain",
-        "m²"
-      ],
-      [
-        "E02",
-        "Äussere Wandbekleidung über Terrain",
-        "m²"
-      ],
-      [
-        "E03",
-        "Element in Aussenwand",
-        "m²"
-      ]
+      ["E01", "Äussere Wandbekleidung unter Terrain", "m²"],
+      ["E02", "Äussere Wandbekleidung über Terrain", "m²"],
+      ["E03", "Element in Aussenwand", "m²"]
     ],
-    "F": [
-      [
-        "F01",
-        "Dachhaut",
-        "m²"
-      ],
-      [
-        "F02",
-        "Element zu Dach",
-        "m²"
-      ]
-    ],
+    "F": [["F01", "Dachhaut", "m²"], ["F02", "Element zu Dach", "m²"]],
     "G": [
-      [
-        "G01",
-        "Trennwand, Innentür, Innentor",
-        "m²"
-      ],
-      [
-        "G02",
-        "Bodenbelag",
-        "m²"
-      ],
-      [
-        "G03",
-        "Wandbekleidung",
-        "m²"
-      ],
-      [
-        "G04",
-        "Deckenbekleidung",
-        "m²"
-      ],
-      [
-        "G05",
-        "Einbauten, Schutzeinrichtung zu Ausbau",
-        "m²"
-      ],
-      [
-        "G06",
-        "Ergänzende Leistung zu Ausbau",
-        ""
-      ]
+      ["G01", "Trennwand, Innentür, Innentor", "m²"],
+      ["G02", "Bodenbelag", "m²"],
+      ["G03", "Wandbekleidung", "m²"],
+      ["G04", "Deckenbekleidung", "m²"],
+      ["G05", "Einbauten, Schutzeinrichtung zu Ausbau", "m²"],
+      ["G06", "Ergänzende Leistung zu Ausbau", ""]
+    ],
+    "H": [
+      ["H01", "Produktionsanlage", ""],
+      ["H02", "Laboranlage", ""],
+      ["H03", "Grossküche", ""],
+      ["H04", "Wäscherei-, Reinigungsanlage", ""],
+      ["H05", "Anlage für Gesundheit", ""],
+      ["H06", "Anlage für Bildung, Kultur", ""],
+      ["H07", "Sportanlage, Freizeitanlage", ""],
+      ["H08", "Anlage für Erholung", ""],
+      ["H09", "Weitere nutzungsspezifische Anlage", ""]
     ],
     "I": [
-      [
-        "I01",
-        "Umgebungsgestaltung",
-        "m²"
-      ],
-      [
-        "I02",
-        "Bauwerk in der Umgebung",
-        "m²"
-      ],
-      [
-        "I03",
-        "Grünfläche",
-        "m²"
-      ],
-      [
-        "I04",
-        "Hartfläche",
-        "m²"
-      ],
-      [
-        "I05",
-        "Technik Umgebung",
-        "m²"
-      ],
-      [
-        "I06",
-        "Ausstattung Umgebung",
-        "Stk."
-      ]
+      ["I01", "Umgebungsgestaltung", "m²"],
+      ["I02", "Bauwerk in der Umgebung", "m²"],
+      ["I03", "Grünfläche", "m²"],
+      ["I04", "Hartfläche", "m²"],
+      ["I05", "Technik Umgebung", "m²"],
+      ["I06", "Ausstattung Umgebung", "Stk."]
     ],
-    "J": [
-      [
-        "J01",
-        "Mobiliar",
-        "Stk."
-      ],
-      [
-        "J02",
-        "Kleininventar",
-        ""
-      ],
-      [
-        "J03",
-        "Textilien",
-        ""
-      ],
-      [
-        "J04",
-        "Kunst am Bau",
-        ""
-      ]
-    ],
-    "V": [
-      [
-        "V01",
-        "Planer",
-        ""
-      ],
-      [
-        "V02",
-        "Unternehmer",
-        ""
-      ],
-      [
-        "V03",
-        "Auftraggeber",
-        ""
-      ]
-    ],
+    "J": [["J01", "Mobiliar", "Stk."], ["J02", "Kleininventar", ""], ["J03", "Textilien", ""], ["J04", "Kunst am Bau", ""]],
+    "V": [["V01", "Planer", ""], ["V02", "Unternehmer", ""], ["V03", "Auftraggeber", ""]],
     "W": [
-      [
-        "W01",
-        "Bewilligung, Gebühr",
-        ""
-      ],
-      [
-        "W02",
-        "Versicherung, Garantie",
-        ""
-      ],
-      [
-        "W03",
-        "Kapitalkosten",
-        ""
-      ],
-      [
-        "W04",
-        "Bewirtung, Öffentlichkeitsarbeit, Entschädigung",
-        ""
-      ],
-      [
-        "W05",
-        "Inbetriebnahme",
-        ""
-      ],
-      [
-        "W06",
-        "Vermietung, Verkauf",
-        ""
-      ]
+      ["W01", "Bewilligung, Gebühr", ""],
+      ["W02", "Versicherung, Garantie", ""],
+      ["W03", "Kapitalkosten", ""],
+      ["W04", "Bewirtung, Öffentlichkeitsarbeit, Entschädigung", ""],
+      ["W05", "Inbetriebnahme", ""],
+      ["W06", "Vermietung, Verkauf", ""],
+      ["W07", "Betriebserfolg", ""]
     ],
-    "Y": [
-      [
-        "Y01",
-        "Reserve",
-        ""
-      ],
-      [
-        "Y02",
-        "Teuerung",
-        ""
-      ]
-    ]
+    "Y": [["Y01", "Reserve", ""], ["Y02", "Teuerung", ""]],
+    "Z": [["Z01", "Mehrwertsteuer", ""]]
   },
-  "missingInitially": [
-    "D08"
-  ],
+  "missingInitially": ["D08"],
   "ks31": {
+    "A": 0,
     "B": 500000,
     "C": 3850000,
     "D": 2900000,
     "E": 2650000,
     "F": 540000,
     "G": 2500000,
+    "H": 0,
     "I": 400000,
     "J": 550000,
     "V": 2800000,
@@ -528,9 +305,7 @@
       "C02": 1285000,
       "G02": 742000
     },
-    "missingQty": [
-      "D08"
-    ],
+    "missingQty": ["D08"],
     "ignored": [
       {
         "code": "X9",
