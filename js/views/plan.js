@@ -1,6 +1,7 @@
 import { html, icon, raw, srOnly } from '../ui.js';
 import { PlanViewer } from '../plancheck/viewer.js';
 import { planSession } from '../plansession.js';
+import { canvasImage } from '../plancheck/report.js';
 
 // Planlieferungen DWG für das CAFM: the pieces of the Erfassung tab of a floor plan delivery (DWG-UG … DWG-DG):
 // upload zone, result strip, sub tabs (40 Prüfregeln, Fehlermeldungen, Räume, Layer, Kennzahlen SIA 416) with the
@@ -115,8 +116,7 @@ export function resultPanel(ctx, plan, { height = '' } = {}) {
     <div class="plan-split" style="${raw(height ? `height:${height}` : '')}">
       <div class="plan-list" id="plan-list" role="tabpanel" data-plan-tab="${tab}">${body}</div>
       ${viewerBox(plan)}
-    </div>
-    <div class="plan-log" aria-live="polite"></div>`;
+    </div>`;
 }
 
 // ---- Mount: viewer, drag & drop, list interactions (viewer-local, no store round trip) ----
@@ -136,11 +136,20 @@ function setViewerState(box, status, text, sub = '') {
   if (spin) spin.style.display = status === 'loading' ? '' : 'none';
 }
 
-function updateLog(root) {
-  const el = root.querySelector('.plan-log');
-  if (!el) return;
-  const last = planSession.log().slice(-2);
-  el.textContent = last.map(l => `${l.t.toLocaleTimeString('de-CH')} ${l.msg}`).join(' · ') || 'Bereit.';
+/** Image of the attached drawing at full extent with an overlay ('base', 'rooms', 'areas') for the Prüfbericht; the view is restored. */
+export function captureViewerImage(overlay) {
+  if (!viewer.canvas || !viewer.drawing) return null;
+  const prev = { overlay: viewer.overlay, cam: { ...viewer.cam } };
+  try {
+    viewer.setOverlay(overlay);
+    viewer.zoomExtents();
+    viewer.render();
+    return canvasImage(viewer.canvas);
+  } finally {
+    viewer.overlay = prev.overlay;
+    viewer.cam = prev.cam;
+    viewer.render();
+  }
 }
 
 function wireDrop(root, ctx) {
@@ -219,12 +228,10 @@ export function mountPlan(root, ctx, plan) {
   if (attachedKey !== key) { viewer.setData(null); attachedKey = key; lastTab = null; }
   if (tab !== lastTab) { viewer.setOverlay({ rooms: 'rooms', kpi: 'areas' }[tab] || 'base'); lastTab = tab; }
   syncTools(root);
-  updateLog(root);
 
   const show = entry => {
     if (viewer.drawing !== entry.drawing) viewer.setData(entry);
     setViewerState(box, 'ready', '');
-    updateLog(root);
   };
   const entry = planSession.get(key);
   if (entry && entry.status === 'ready') show(entry);

@@ -411,6 +411,17 @@ test('plans: submit gate (no errors), locking and review flow', () => {
   assert.equal(vmFor(st).ilpRows.find(r => r.code === 'DWG-EG').status, 'Abgeschlossen');
 });
 
+test('plans: Prüfbericht model from a seed result', async () => {
+  const { buildReportModel } = await mod('js/plancheck/report.js');
+  const seed = data.plans.seeds.cadv01;
+  const m = buildReportModel(seed, { project: 'Verwaltungszentrum Musterhausen', code: 'DWG-EG', name: 'Grundriss EG (DWG)', floor: 'Erdgeschoss', status: 'In Bearbeitung', reviewer: 'Paula Muster, BBL', due: '30.04.2027', guideline: 'CAD-Richtlinie BBL V1.0', uploadedAt: 'heute' });
+  assert.equal(m.fileName, seed.file.name); assert.ok(m.baseName && !m.baseName.includes('.dwg'));
+  assert.equal(m.rules.passed.length + m.rules.failed.length, 40); assert.equal(m.summary.passedRules, 38);
+  assert.equal(m.rooms.length, 30); assert.ok(m.kpi.areas.length === 8 && m.kpi.economy.length === 4);
+  assert.ok(m.info.some(([k, v]) => k === 'Projekt' && v === 'Verwaltungszentrum Musterhausen') && m.info.some(([k]) => k === 'DWG-Version'));
+  assert.ok(!JSON.stringify(m.info).includes('undefined'));
+});
+
 test('plans: seeds match the plan-check engine (LibreDWG WebAssembly under Node)', async () => {
   const { checkDwg, RULES } = await mod('js/plancheck/index.js');
   assert.equal(RULES.length, 40);

@@ -24,7 +24,7 @@ Sign in as one of seven sample personas (name at the top right) to follow a deli
 - Order a data delivery in the Informationslieferplan with a template (Kosten eBKP-H, Ökobilanz Bauemissionen nach SIA 2032) and the rule «mandatory from CHF 1 Mio».
 - Enter costs per eBKP-H Hauptgruppe or per Kostenelement (open the group, add or remove positions), import an Excel file, see completeness and missing values live.
 - Enter the Ökobilanz as emission sources per eBKP-H element group (KBOB dataset, quantity, production and disposal, amortisation after SIA 2032) with the Grundlagen of the calculation; the Endwert for SUS is derived, a Tool-Export import brings the sources in. All eight projects carry complete, plausible mock data (KV-32, KS-31, THG-32) in different workflow states.
-- Upload DWG floor plans (one delivery per floor) and check them locally in the browser against the 40 rules of the CAD-Richtlinie BBL, with plan viewer, rooms, layers and SIA 416 figures.
+- Upload DWG floor plans (one delivery per floor) and check them locally in the browser against the 40 rules of the CAD-Richtlinie BBL, with plan viewer, rooms, layers, SIA 416 figures and a downloadable Prüfbericht (PDF).
 - Submit, review (automatic checks, checklist, approve or reject) and hand over to ePPM, SUS or the CAFM; statuses flow into the Informationslieferplan, tasks and notifications.
 - Übersicht per delivery with KPIs, comparison with the previous phase, Kostenziel or Zielwert chart, workflow steps and participants; project overview with photo and location map.
 - Application shell of the CDE Bund: start page with map, projects, tasks with configurable columns, project pages (Aktivitäten, Dokumente, LOIN, Mitglieder, Einstellungen), responsive below 1024 px.
@@ -52,4 +52,4 @@ Project names follow the public [Bautendokumentationen des BBL](https://www.bbl.
 
 ## License
 
-[MIT License](LICENSE). The plan checker in [js/plancheck/](js/plancheck/) comes from [plan-check](https://github.com/bbl-dres/plan-check) (MIT); the bundled LibreDWG runtime in [js/vendor/libredwg-web/](js/vendor/libredwg-web/) is licensed under GPL-3.0, see [THIRD_PARTY.md](js/plancheck/THIRD_PARTY.md). Icons by Lucide (ISC).
+[MIT License](LICENSE). The plan checker in [js/plancheck/](js/plancheck/) comes from [plan-check](https://github.com/bbl-dres/plan-check) (MIT); the bundled LibreDWG runtime in [js/vendor/libredwg-web/](js/vendor/libredwg-web/) is licensed under GPL-3.0, see [THIRD_PARTY.md](js/plancheck/THIRD_PARTY.md). The Prüfbericht uses jsPDF and jspdf-autotable (MIT, loaded from jsDelivr). Icons by Lucide (ISC).

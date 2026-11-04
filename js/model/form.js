@@ -350,7 +350,7 @@ export function planForm(plan, data) {
     steps: stepRows(D.steps, step, dates, rejected), next: nextStep(step, 'das CAFM', reviewer, open),
     kpis, comp, meta, people: peopleShort(people, peopleList), peopleRows: peopleRows(people, peopleList, sc => sc.replace('{floor}', plan.name)), docs, hist,
     planOv: { sia, cats },
-    erf: { tableTitle: `${plan.name} · ${plan.floor}`, fileMeta, foot: PF.foot, isTHG: false },
+    erf: { tableTitle: `${plan.name} · ${plan.floor}`, fileMeta, isTHG: false },
     bar, res, reviewIssues, autoChecks: plan.autoChecks, manual: plan.manualChecks, rv,
     handover: { ziel: P.target, value: r ? `${plan.roomCount} Raumpolygone mit AOID, NGF ${plan.ngf}, GF ${plan.gf}` : '–', status: plan.transferStatus },
     canTransfer: plan.isFrei,

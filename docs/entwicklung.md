@@ -43,8 +43,10 @@ swisstopo-Basiskarte; fällt der Stil aus, wird OpenFreeMap «Positron» geladen
 - **Planlieferungen DWG**: ein Grundriss pro Lieferung. Die DWG-Datei wird per Drag & Drop hochgeladen und lokal im Browser gegen
   die 40 Prüfregeln der CAD-Richtlinie BBL V1.0 geprüft (LibreDWG WebAssembly, nichts wird hochgeladen), mit Plan-Viewer,
   Fehlermeldungen, Räumen, Layern und Kennzahlen SIA 416. Einreichen ist erst ohne Regel mit Schweregrad Fehler möglich;
-  «Musterplan laden» prüft den offiziellen BBL-Musterplan CAD.V01 (38/40, 0 Fehler). Flächen und Volumen SIA 416 kommen aus
-  den Grundrissen; ein eigenes Formular FV-32 gibt es nicht mehr.
+  «Musterplan laden» prüft den offiziellen BBL-Musterplan CAD.V01 (38/40, 0 Fehler). «Prüfbericht» lädt das Prüfergebnis als
+  PDF herunter (Deckblatt mit Lieferung und Zusammenfassung, Prüfregeln, Fehlermeldungen, Layer, Räume und Flächen mit
+  Bildern aus dem Viewer, Kennzahlen SIA 416; jsPDF von jsDelivr, erst beim ersten Klick geladen). Flächen und Volumen
+  SIA 416 kommen aus den Grundrissen; ein eigenes Formular FV-32 gibt es nicht mehr.
 - **Projektseiten** wie in der CDE Bund: Überblick, Aktivitäten (Feed und Logs), Dateien, Modell, Aufgaben, Info-Management
   (LOIN, Dokumente, Informationslieferplan), Automatisierung, Workflows, Mitglieder, Stammdaten, Einstellungen. Oberhalb der
   Topbar steht der rote Hinweis «Prototyp …», unten rechts der Quellcode-Link.
@@ -110,7 +112,7 @@ js/model/             form.js (Datenformulare: costPart KV-32/KS-31, thgPart THG
 js/views/             delivery (Seite einer Lieferung) + form (die sechs Tabs) + plan (Upload, Prüfergebnis, Viewer); parts/map (MapLibre-Slot), parts/projectMap (Standort);
                       dashboard, projects, overview, tasks, timeline, documents, loin, section, settings, s01 (ILP), order, columns,
                       s03c/s03d (Excel-Import), s06 (Kontrolle), s09 (Vorlagen), Studienseiten home, review, qs, varb
-js/plancheck/         Prüf-Engine aus plan-check (MIT) · js/vendor/libredwg-web/ LibreDWG WebAssembly (GPL-3.0)
+js/plancheck/         Prüf-Engine aus plan-check (MIT), report.js Prüfbericht PDF · js/vendor/libredwg-web/ LibreDWG WebAssembly (GPL-3.0)
 data/                 forms (Datenformulare), ebkp (Positionen eBKP-H 2020, Elementgruppen, KS-31), thg (Emissionsquellen, Elementgruppen SIA 2032,
                       Grundlagen, SIA 31), sia416 (Bezugsmengen), plans (DWG, Prüfergebnisse),
                       projects, users, notifications, ilp, tasks, documents, loin, templates, portfolio, screens, study

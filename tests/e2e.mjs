@@ -351,6 +351,9 @@ try {
   check('submit enabled once no errors remain', await enabled('[data-action="planSubmit"]'));
   check('viewer switched to the new drawing', await waitFor(`document.querySelector('.plan-viewer')?.dataset.planStatus === 'ready' && document.querySelector('.plan-viewer')?.dataset.planViewer.startsWith('upload:EG:')`));
   await click('[data-action="planTab"][data-arg="kpi"]'); check('Kennzahlen SIA 416', (await bodyText()).includes('Nettogeschossfläche') && /517/.test(await text('.plan-kpi-table')));
+  check('Prüfbericht button, no log line, no footer text', (await count('[data-action="planReport"][data-key="EG"]')) === 1 && (await count('.plan-log')) === 0 && !(await bodyText()).includes('Ein Grundriss pro Lieferung'));
+  const pdfSize = await evaluate(`window.cde.actions.planReport({ key: 'EG' }, null, null, { save: false }).then(b => b ? b.size : 0).catch(e => 'ERR ' + e.message)`);
+  check('Prüfbericht PDF is built (jsPDF from the CDN, drawing images from the viewer)', typeof pdfSize === 'number' && pdfSize > 20000, String(pdfSize));
   await click('[data-action="planTab"][data-arg="rooms"]'); check('Räume tab lists 30 rooms', (await count('.plan-list [data-plan-room]')) === 30);
   await click('.plan-list [data-plan-room]'); check('room row selects in viewer', (await count('.plan-list .plan-row.is-selected')) === 1);
   await shot('e2e-plan-erfassung-ok');

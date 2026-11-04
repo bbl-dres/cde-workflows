@@ -17,6 +17,8 @@ import { planModel } from './model/plan.js';
 import { patchDotted } from './store.js';
 import { num } from './format.js';
 import { planSession } from './plansession.js';
+import { buildReportModel, downloadPlanReport } from './plancheck/report.js';
+import { captureViewerImage } from './views/plan.js';
 
 export function makeActions(store, data, nav) {
   const s = () => store.get();
@@ -286,6 +288,17 @@ export function makeActions(store, data, nav) {
     planReject: ds => { const pv = planVm(ds.key); if (!pv || !pv.isReviewable) return; setPlan(ds.key, { status: 'zurueck', checks: { c1: false, c2: false } }); toast(`${pv.code} zurückgewiesen. ${supplier.name} wurde benachrichtigt.`); },
     planTransfer: ds => { const pv = planVm(ds.key); if (!pv || !pv.isFrei) return; setPlan(ds.key, { status: 'uebertragen' }); toast(`${pv.code}: Raumpolygone, AOID und Flächen an das CAFM übertragen.`); },
     planResetReview: ds => { const f = floorOf(ds.key); if (f) setPlan(ds.key, { status: f.status, checks: { ...f.checks }, comment: '' }); },
+    /** Prüfbericht (PDF) of the checked plan with the drawing images of the viewer; opts.save = false returns the Blob only (tests). */
+    planReport: async (ds, el, ev, opts = {}) => {
+      const pv = planVm(ds.key), f = floorOf(ds.key), project = projectOf(pid());
+      if (!pv || !pv.result || !f) { toast('Noch kein Prüfergebnis für den Prüfbericht.'); return null; }
+      const model = buildReportModel(pv.result, { project: project ? project.name : '', code: pv.code, name: pv.name, floor: `${pv.floor} (Ebene ${pv.ee})`, status: pv.statusLabel, reviewer: `${planReviewer}, BBL`, due: pv.due, guideline: data.plans.guideline, uploadedAt: pv.uploadedAt || '' });
+      try {
+        const blob = await downloadPlanReport(model, { capture: captureViewerImage, save: opts.save !== false });
+        if (opts.save !== false) toast(`Prüfbericht ${model.baseName}_Pruefbericht.pdf erstellt.`);
+        return blob;
+      } catch (err) { console.error(err); toast(`Prüfbericht konnte nicht erstellt werden: ${err.message}`); return null; }
+    },
 
     // ---- Study panel ----
     tweak: (ds, el) => {

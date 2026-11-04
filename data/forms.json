@@ -82,8 +82,7 @@
     "docs": [
       ["CAD-Richtlinie_BBL_V1.0.pdf", "PDF", "Vorgabe", "Paula Muster", "12.03.2027"],
       ["CAD.V01-CAFM-Plan-DE.dwg", "DWG", "Vorlage", "Paula Muster", "12.03.2027"]
-    ],
-    "foot": "Ein Grundriss pro Lieferung. Geprüft wird beim Hochladen nach CAD-Richtlinie BBL V1.0 (40 Regeln: Layer, Raum- und Geschosspolygone, AOID, Geometrie, Text, Stil, Layout, Bemassung, Schraffur). Fehler müssen vor dem Einreichen behoben werden, Warnungen sind zulässig."
+    ]
   },
   "byProject": {
     "musterhausen": {
