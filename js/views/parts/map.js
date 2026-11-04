@@ -11,6 +11,7 @@ window.addEventListener('unhandledrejection', e => { if (e.reason && e.reason.na
 export function unmountMap() {
   if (!live) return;
   suppressUntil = Date.now() + 3000;
+  if (live.ro) live.ro.disconnect();
   try { live.map.remove(); } catch { /* already gone */ }
   live = null;
 }
@@ -36,7 +37,10 @@ export function mountMap(host, { key, cfg = {}, center, zoom, fallback, build })
   host.appendChild(el);
   const map = new maplibregl.Map({ container: el, style: cfg.style, center, zoom, attributionControl: { compact: true } });
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
-  live = { map, el, key, host, loaded: false };
+  // MapLibre only listens to the window: a reflow of the box (breakpoint, sidebar, grid) needs an explicit resize.
+  const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => map.resize()) : null;
+  if (ro) ro.observe(el);
+  live = { map, el, key, host, loaded: false, ro };
   host.__map = map;   // diagnostics / tests
   // Fall back to the second style only if the first cannot be loaded (offline, blocked); an object style is applied as is.
   let fellBack = false;

@@ -258,7 +258,7 @@ function bindEvents() {
     if (e.key === 'Escape') {
       const ui = store.get().ui;
       if (ui.dialog) actions.closeDialog();
-      else if (ui.notif || ui.userMenu) actions.closeMenus();
+      else if (ui.notif || ui.userMenu || ui.sideOpen) actions.closeMenus();
       return;
     }
     if (e.key !== 'Enter' && e.key !== ' ') return;

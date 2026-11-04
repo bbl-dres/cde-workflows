@@ -202,6 +202,9 @@ a.filter-btn { color: var(--navy); }
 /* ---- Responsive ---- */
 @media (max-width: 1279.98px) {
   .dash-projects { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .overview { grid-template-columns: minmax(0, 1fr); }     /* beside the sidebar two columns squeeze the Projektdaten; minmax(0) so wide tables scroll inside */
+  .two-pane { grid-template-columns: minmax(0, 1fr); min-height: 0; }  /* tree above the document table */
+  .pane-foot { margin-top: 0; }
   .settings-grid { grid-template-columns: 1fr; gap: 16px; }
   .settings-h { margin-bottom: 8px; }
 }
@@ -210,8 +213,8 @@ a.filter-btn { color: var(--navy); }
   .dash-stats { width: 100%; }
   .dash-insights { flex-direction: column; margin-top: 40px; }
   .dash-map { width: 100%; min-height: 320px; height: 320px; }
-  .overview { grid-template-columns: 1fr; }
-  .two-pane { grid-template-columns: 1fr; min-height: 0; }
+  .overview { grid-template-columns: minmax(0, 1fr); }
+  .two-pane { grid-template-columns: minmax(0, 1fr); min-height: 0; }
   .pane-foot { margin-top: 0; }
   .settings-card { padding: 16px 20px 32px; }
   .form-inline { grid-template-columns: 1fr; gap: 6px; }

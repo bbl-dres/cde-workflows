@@ -14,7 +14,7 @@
 
 /* Card head extras */
 .card-head-link { font-size: 12.5px; font-weight: 400; white-space: nowrap; }
-.card-hint { font-size: 12px; font-weight: 400; color: var(--muted); white-space: nowrap; }
+.card-hint { font-size: 12px; font-weight: 400; color: var(--muted); overflow-wrap: anywhere; }   /* file names wrap instead of running under the buttons */
 
 /* KPI cards */
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }

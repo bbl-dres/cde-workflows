@@ -411,6 +411,26 @@ try {
   await go('/projects/musterhausen/deliveries/dwg-og2/erfassung'); check('rejected plan is open again for the supplier', (await bodyText()).includes('Zurückgewiesen durch Paula Muster') && (await enabled('[data-action="planSubmit"]')) && (await count('[data-change="planFile"]')) >= 1);
   await go('/projects/musterhausen/tasks'); check('plan tasks in the project task list', (await bodyText()).includes('Grundriss EG (DWG)') && (await bodyText()).includes('Grundriss DG (DWG)'));
   await go('/projects/musterhausen/deliveries/dwg-eg/beteiligte'); check('Beteiligte tab', (await bodyText()).includes('Lieferverantwortlich') && (await count('canvas')) === 0);
+  // Responsive: phone width — no horizontal page overflow, off-canvas sidebar, short banner, footer and plan toolbar usable
+  await send('Emulation.setDeviceMetricsOverride', { width: 375, height: 812, deviceScaleFactor: 1, mobile: true });
+  for (const [name, path] of [['Startseite', '/'], ['Projekte', '/projects/all?view=card'], ['Überblick', '/projects/musterhausen/overview'], ['Dokumente', '/projects/musterhausen/documents'], ['Lieferplan', '/projects/musterhausen/delivery-plan'], ['Aufgaben', '/tasks/all'], ['KV Erfassung', '/projects/musterhausen/deliveries/kv-32/erfassung'], ['Lieferung Übersicht', '/projects/musterhausen/deliveries/kv-32'], ['DWG Erfassung', '/projects/musterhausen/deliveries/dwg-eg/erfassung']]) {
+    await go(path); await sleep(250);
+    const w = await evaluate('[document.documentElement.scrollWidth, innerWidth]');
+    check(`375 px: ${name} without horizontal page overflow`, w[0] <= w[1] + 1, JSON.stringify(w));
+  }
+  check('375 px: plan status filter and search inside the viewport', await evaluate(`(() => { const f = document.querySelector('.plan-filter'), s = document.querySelector('.plan-search'); if (!f || !s) return false; const r = f.getBoundingClientRect(), q = s.getBoundingClientRect(); return r.right <= innerWidth && r.left >= 0 && r.width > 100 && q.width > 150; })()`));
+  check('375 px: short banner, footer not clipped, search as icon', await evaluate(`(() => { const f = document.querySelector('.app-footer'); return f.scrollHeight <= f.clientHeight + 1 && getComputedStyle(document.querySelector('.proto-banner-short')).display !== 'none' && getComputedStyle(document.querySelector('.topbar-search-input')).display === 'none'; })()`));
+  check('375 px: hamburger shown, sidebar off-canvas', await evaluate(`getComputedStyle(document.querySelector('.side-toggle')).display !== 'none' && document.querySelector('.sidebar').getBoundingClientRect().right <= 0`));
+  await click('.side-toggle'); check('375 px: sidebar opens with backdrop and locked page scroll', await evaluate(`document.body.classList.contains('side-open') && document.querySelector('.sidebar').getBoundingClientRect().left === 0 && getComputedStyle(document.body).overflow === 'hidden'`));
+  await evaluate(`document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`); await settle(); check('375 px: Escape closes the sidebar', !(await state()).ui.sideOpen);
+  await go('/projects/musterhausen/overview'); check('375 px: Projektaufgaben table scrolls instead of collapsing its columns', await evaluate(`(() => { const s = document.querySelector('.overview .scroll-x'); return !!s && s.scrollWidth > s.clientWidth + 50; })()`));
+  const ovMapOk = await waitFor(`(() => { const m = document.querySelector('#ov-map')?.__map; return !!(m && m.loaded()); })()`);
+  const ovMapSize = () => evaluate(`(() => { const h = document.querySelector('#ov-map'); const c = h && h.querySelector('canvas'); return { box: h ? h.clientWidth : 0, canvas: c ? c.clientWidth : 0 }; })()`);
+  let ms = await ovMapSize(); check('375 px: project map canvas fills its box', ovMapOk && Math.abs(ms.canvas - ms.box) <= 2 && ms.box > 300, JSON.stringify(ms));
+  await evaluate(`document.querySelector('#ov-map').style.width = '300px'`); await sleep(300);
+  ms = await ovMapSize(); check('project map follows its box without a window resize (ResizeObserver)', Math.abs(ms.canvas - 300) <= 2, JSON.stringify(ms));
+  await evaluate(`document.querySelector('#ov-map').style.width = ''`);
+  await send('Emulation.setDeviceMetricsOverride', { width: 1536, height: 1000, deviceScaleFactor: 1, mobile: false });
   await go('/projects/eigerplatz/deliveries/dwg-eg'); check('DWG code on another project → generic page without error', await noError());
 
   await go('/'); await shot('e2e-final');

@@ -30,18 +30,18 @@ export default {
       case 'da':
         return html`${head}
           <div class="toolbar toolbar-page"><span class="btn-split"><button type="button" class="btn btn-primary">Hochladen</button><button type="button" class="btn btn-primary btn-split-more" aria-label="Weitere Aktionen">${icon('ellipsis', 14, '#fff')}</button></span><button type="button" class="btn btn-secondary">Ordner erstellen</button><span class="flex-1"></span>${searchBox(290)}</div>
-          <div class="card card-page"><div class="ant-table">
-            <div class="ant-head" style="grid-template-columns:minmax(0,2fr) 90px 90px minmax(0,1fr) 110px 70px">${thSort('Name', '#bfbfbf')}<span>Typ</span><span>Grösse</span><span>Hochgeladen von</span>${thSort('Datum', '#bfbfbf')}<span></span></div>
-            ${(project.detailed ? FILES : FILES.slice(3)).map(f => html`<div class="ant-row" style="grid-template-columns:minmax(0,2fr) 90px 90px minmax(0,1fr) 110px 70px">
+          <div class="card card-page"><div class="ant-table scroll-x has-sticky">
+            <div class="ant-head" style="grid-template-columns:minmax(0,2fr) 90px 90px minmax(0,1fr) 110px 70px;min-width:560px">${thSort('Name', '#bfbfbf')}<span>Typ</span><span>Grösse</span><span>Hochgeladen von</span>${thSort('Datum', '#bfbfbf')}<span></span></div>
+            ${(project.detailed ? FILES : FILES.slice(3)).map(f => html`<div class="ant-row" style="grid-template-columns:minmax(0,2fr) 90px 90px minmax(0,1fr) 110px 70px;min-width:560px">
               <span class="flex items-center gap-8 min-w-0">${icon(f[1] === 'Excel' ? 'file-spreadsheet' : 'file-text', 16, '#3a4350')}<a class="ellipsis table-link">${f[0]}</a></span><span>${f[1]}</span><span>${f[2]}</span><span class="ellipsis">${f[3]}</span><span>${f[4]}</span><span class="row-actions-inline"><span class="btn-icon">${icon('download', 13, '#1f2937')}</span><span class="btn-icon">${icon('eye', 13, '#1f2937')}</span></span>
             </div>`)}
           </div></div>`;
       case 'mi':
         return html`${head}
           <div class="toolbar toolbar-page"><span class="btn-split"><button type="button" class="btn btn-primary">Mitglied hinzufügen</button><button type="button" class="btn btn-primary btn-split-more" aria-label="Weitere Aktionen">${icon('ellipsis', 14, '#fff')}</button></span><span class="flex-1"></span>${searchBox(290)}</div>
-          <div class="card card-page"><div class="ant-table ant-table-striped">
-            <div class="ant-head" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,3fr) 40px">${thSort('Name', '#bfbfbf')}${thSort('Rolle', '#bfbfbf')}<span></span><span></span></div>
-            ${vm.members.map(u => html`<div class="ant-row" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,3fr) 40px">
+          <div class="card card-page"><div class="ant-table ant-table-striped scroll-x has-sticky">
+            <div class="ant-head" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,3fr) 40px;min-width:480px">${thSort('Name', '#bfbfbf')}${thSort('Rolle', '#bfbfbf')}<span></span><span></span></div>
+            ${vm.members.map(u => html`<div class="ant-row" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,3fr) 40px;min-width:480px">
               <a class="ellipsis tasks-person" style="color:var(--text)" title="${u.org} · ${u.role}">${u.name}</a><span class="flex items-center gap-10">${ROLE(u)}${icon('ellipsis', 12, '#8c8c8c')}</span><span></span><span class="row-actions-inline"><span class="btn-icon btn-icon-danger" title="Entfernen">${icon('trash-2', 13, '#ff3162')}</span></span>
             </div>`)}
           </div></div>`;

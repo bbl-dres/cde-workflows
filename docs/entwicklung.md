@@ -53,8 +53,12 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
 - **Projektseiten** wie in der CDE Bund: Überblick, Aktivitäten (Feed und Logs), Dateien, Modell, Aufgaben, Info-Management
   (LOIN, Dokumente, Informationslieferplan), Automatisierung, Workflows, Mitglieder, Stammdaten, Einstellungen. Oberhalb der
   Topbar steht der rote Hinweis «Prototyp …», unten rechts der Quellcode-Link.
-- **Responsiv**: unter 1024 px klappt das Projektmenü ein (Menü-Knopf in der Topbar), die Spalten der Datenformulare brechen um,
-  Tabellen scrollen horizontal; Breakpoints wie in der CDE Bund (Tailwind: 640 / 768 / 1024 / 1280 / 1536).
+- **Responsiv**: unter 1024 px klappt das Projektmenü ein (Menü-Knopf in der Topbar, Escape schliesst), unter 1280 px werden
+  Überblick und Dokumente einspaltig und der Statusfilter der Planprüfung rutscht unter die Tabs, die Spalten der Datenformulare
+  brechen um, breite Tabellen scrollen horizontal mit Ausblendkante (`.scroll-x`); unter 640 px Suche als Icon, Kurz-Banner,
+  umbrechender Footer. Auf Touch-Geräten (`pointer: coarse`) sind Bedienelemente 32–44 px und Textfelder 16 px
+  (`css/responsive.css`). Breakpoints wie in der CDE Bund (Tailwind: 640 / 768 / 1024 / 1280 / 1536);
+  Review: `docs/reviews/2026-11-04-design-review-responsive.md`.
 - **Design-Studie**: im Benutzermenü «Design-Studie öffnen» (oder ein Studien-Link wie `#s03`). Das Panel zeigt die Screens der
   Studie vom November 2026, die Erläuterungen zum aktuellen Screen und die Tweaks (Markierungen, Anlagekosten); die Screens
   verweisen auf die heutigen Seiten.
@@ -87,13 +91,15 @@ vorgeben (Deep-Links, Screenshots): `#/projects/musterhausen/deliveries/thg-32/p
   Vorlagen, Benachrichtigungen, veraltete Begriffe), den Router, die Zuordnung der Studien-Screens und die DWG-Prüf-Engine
   gegen die vorberechneten Ergebnisse (`tests/model.test.mjs`) sowie die Benutzeraktionen gegen den echten Store
   (Aufschlüsseln, Kostenelemente, Emissionsquellen, Importe, Workflow, Planprüfung), den Mock, den Store und die
-  Formatierung (`tests/actions.test.mjs`); 25 Tests, Node 22+.
+  Formatierung (`tests/actions.test.mjs`), Statusfilter und Suche der Planprüfung; 27 Tests, Node 22+.
 - `node tests/e2e.mjs` fährt bei laufendem Server einen Headless-Browser (Edge/Chrome/Brave) durch die Anwendung: Startseite mit
   Karte, Bestellen-Drawer, Rollenwechsel, Benachrichtigungen, KV-32 (Übersicht, Erfassung mit Aufschlüsseln, Kostenelemente,
   Filter, Excel-Import, Einreichen), THG-32 (Emissionsquellen, Tool-Export, neue Quelle, Hersteller-Flag, Einreichen),
   Prüfungen (THG-32 freigeben und übertragen, KV-32 zurückweisen), Planlieferungen DWG (Parsen, Hochladen, Einreichen,
-  Prüfung), die Datenformulare der weiteren Projekte, Aufgabenliste, Projektseiten, Hover-Zustände, responsives Layout,
-  Studien-Panel (≈200 Checks).
+  Prüfung mit Suche, Alle ein-/ausblenden und Statusfilter), die Datenformulare der weiteren Projekte, Aufgabenliste,
+  Projektseiten, Hover-Zustände, Studien-Panel und bei 375 px Überlauf, Sidebar, Filter, Footer und Karte (≈240 Checks).
+- `node tests/responsive-audit.mjs [ordner] [m375,t768,l1024]` macht bei laufendem Server Screenshots der Hauptseiten auf
+  375 / 768 / 1024 px und misst Überlauf, zu kleine Bedienelemente und Felder unter 16 px (`report.json`).
 - `node tests/refshots.mjs` erzeugt Screenshots in den Fenstergrössen der Referenz-Screenshots der CDE Bund und legt
   Vergleichsbilder in `docs/reference/compare/` ab (Python mit Pillow nötig); Basis der pixelgenauen Gap-Analyse.
 - In der Browser-Konsole steht `cde` zur Verfügung: `cde.state`, `cde.store.setIn('ui', { notif: true })`, `cde.navigate('/tasks/all')`.
@@ -103,7 +109,8 @@ vorgeben (Deep-Links, Screenshots): `#/projects/musterhausen/deliveries/thg-32/p
 ```
 index.html            Einstieg
 css/                  tokens, base, shell (Topbar, Sidebars, Tabs), components, app (Startseite, Projekte, Aufgaben, Drawer, Menü),
-                      form (Datenformulare), plan (DWG-Viewer), study, views-a..d (Bestellen, Import-Dialog, Prüfung, Vorlagen)
+                      form (Datenformulare), plan (DWG-Viewer), study, views-a..d (Bestellen, Import-Dialog, Prüfung, Vorlagen),
+                      responsive (Touch-Ziele und Phone-Felder, zuletzt geladen)
 js/app.js             Bootstrap: Daten laden → Store → Route auflösen → Rendern; Event-Delegation (data-action, data-change, data-nav)
 js/router.js          Hash-Router mit den URLs der CDE Bund und Zustands-Overrides (?key=value)
 js/links.js           Link-Builder, Sidebar-Sektionen, Tabs der Datenformulare, Zuordnung Studien-Screen → Route
@@ -119,7 +126,8 @@ js/plancheck/         Prüf-Engine aus plan-check (MIT), report.js Prüfbericht 
 data/                 forms (Datenformulare), ebkp (Positionen eBKP-H 2020, Elementgruppen, KS-31), thg (Emissionsquellen, Elementgruppen SIA 2032,
                       Grundlagen, SIA 31), sia416 (Bezugsmengen), plans (DWG, Prüfergebnisse),
                       projects, users, notifications, ilp, tasks, documents, loin, templates, portfolio, screens, study
-tests/                model.test.mjs, actions.test.mjs (node:test), e2e.mjs (Headless-Browser), refshots.mjs (Vergleichsbilder)
+tests/                model.test.mjs, actions.test.mjs (node:test), e2e.mjs (Headless-Browser), responsive-audit.mjs (Screenshots und
+                      Messwerte auf drei Breiten), refshots.mjs (Vergleichsbilder)
 docs/                 wireframes (Design), reviews, research, reference (Referenz-Screenshots, lokal)
 ```
 

@@ -25,7 +25,7 @@ export default {
         </div>
       </div>
 
-      <div class="table" style="overflow-x:auto">
+      <div class="table scroll-x">
         <div class="table-head" style="${COLS};min-width:900px">
           <span></span><span class="th">Kürzel</span><span class="th">Name</span><span class="th">Lieferverantwortlicher</span><span class="th">Gewerk</span><span class="th">Beschreibung</span><span class="th">Status</span><span class="th">&nbsp;</span>
         </div>

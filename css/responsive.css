@@ -1,0 +1,26 @@
+/* ---- Responsive overrides for touch devices and phones. Loaded last so they win over the component files.
+   Breakpoints as in the CDE Bund (Tailwind): sm 640, md 768, lg 1024, xl 1280. Review: docs/reviews/2026-11-04-design-review-responsive.md ---- */
+
+/* ---- Touch: targets of at least 32–44 px on coarse pointers (WCAG 2.5.8, Apple HIG); the desktop keeps its density ---- */
+@media (pointer: coarse) {
+  .btn { min-height: 36px; }
+  .btn-sm { height: 30px; }
+  .btn-icon { width: 32px; height: 32px; }
+  .pager-btn { min-width: 36px; height: 36px; }
+  .checkbox-box { width: 18px; height: 18px; }
+  .search, .search-btn, .field, .filter-btn, .filter-field, .ent-input, .ent-select, .ent-text, .thg-field .ent-select, .thg-field .ent-text, .plan-search { height: 36px; }
+  .topbar-iconbtn, .dialog-close, .toast-close, .notif-check { padding: 8px; margin: -6px; }
+  .side-toggle { padding: 8px; margin: 0 4px 0 -8px; }
+  .nav-item { height: 44px; }
+  .tab { padding: 11px 0; }
+  .map-pin { width: 22px; height: 22px; }
+  .plan-tools button { width: 34px; height: 34px; }
+  .plan-tab { padding: 11px 10px; }
+  .plan-filter button { height: 34px; }
+  .plan-row { min-height: 44px; }
+  .plan-toggle-all, .plan-row input[type="checkbox"] { width: 18px; height: 18px; }
+}
+/* Phones: 16 px in text fields, otherwise iOS zooms into the page on focus */
+@media (max-width: 767.98px) and (pointer: coarse) {
+  .ent-input, .ent-select, .ent-text, .thg-field .ent-select, .thg-field .ent-text, .plan-search, .field input, textarea, select, input[type="text"], input[type="search"], input[type="number"] { font-size: 16px; }
+}

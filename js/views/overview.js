@@ -28,10 +28,12 @@ export default {
           </div>
           <div class="card">
             <div class="card-head"><span class="flex-1">Projektaufgaben</span><a class="btn btn-secondary btn-sm" href="#${link.projectTasks()}" data-nav="${link.projectTasks()}">Alle anzeigen</a></div>
+            <div class="scroll-x"><div style="min-width:520px">
             <div class="grid-head" style="${COLS};background:#f4f5f7;height:34px;font-size:12.5px"><span>Aufgabe</span><span>Aufgabe von</span><span>Aufgabe an</span><span>Typ</span><span>Status</span></div>
             ${tasks.map((t, i) => html`<div class="grid-row" style="${COLS};height:30px;background:${i % 2 ? '#fff' : '#f6f7f9'};border:0">
               <a class="ellipsis" href="#${t.href}" data-nav="${t.href}">${t.name}</a><span class="ellipsis" style="text-decoration:underline dotted;text-underline-offset:3px">${t.fuer}</span><span class="ellipsis">${t.zug}</span><span>${t.typ}</span><span>${pill(t.pill, { size: 'sm' })}</span>
             </div>`)}
+            </div></div>
             ${tasks.length === 0 ? html`<div style="padding:20px 0 28px">${emptyState('Keine Aufgaben')}</div>` : ''}
             <div class="pager" style="padding:12px 14px">${icon('chevron-left', 12, '#c9cfd6')}<span class="pager-btn is-active">1</span><span>2</span><span>3</span>${icon('chevron-right', 12, '#1f2937')}</div>
           </div>
@@ -51,7 +53,7 @@ export default {
           </div>
           <div class="card">
             <div class="card-head">Projektdaten</div>
-            <div style="padding:8px 12px 12px">${data.map(([k, v], i) => html`<div class="meta-row" style="grid-template-columns:190px 1fr;background:${i % 2 ? 'transparent' : '#f6f7f9'}"><span class="meta-k">${k}</span><span>${v}</span></div>`)}</div>
+            <div style="padding:8px 12px 12px">${data.map(([k, v], i) => html`<div class="meta-row meta-row-wide" style="background:${i % 2 ? 'transparent' : '#f6f7f9'}"><span class="meta-k">${k}</span><span>${v}</span></div>`)}</div>
           </div>
           <div class="card">
             <div class="card-head"><span class="flex-1">Verknüpfungen</span><span class="btn btn-secondary btn-sm">Hinzufügen</span></div>

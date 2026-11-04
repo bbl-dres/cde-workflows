@@ -37,7 +37,7 @@ export default {
           </a>
           <div class="project-card-foot"><span title="${p.access}">${icon('lock-open', 15, '#3f8f8b')}</span>${star(p)}</div>
         </div>`)}
-      </div>` : html`<div class="table" style="overflow-x:auto"><div style="min-width:1100px">
+      </div>` : html`<div class="table scroll-x"><div style="min-width:1100px">
         <div class="table-head" style="${COLS};height:40px;padding:0 10px">
           ${thSort('Name')}<span>Projektnummer</span><span>Technischer Platz</span><span>Projektbezeichnung</span>${thSort('Teilportfolio')}<span>Verantwortlicher</span>${thSort('Zugriff')}${thSort('Erstellt am')}${thSort('Aktualisiert am')}<span></span>
         </div>

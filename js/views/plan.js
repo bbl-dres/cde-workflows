@@ -149,7 +149,8 @@ export function resultPanel(ctx, plan, { height = '' } = {}) {
   const body = tab === 'kpi' ? listKpi(plan) : { rules: listRules, issues: listIssues, rooms: listRooms, areas: listAreas, layers: listLayers }[tab](plan, L);
   return html`
     ${resultStrip(plan)}
-    <div class="plan-tabs" role="tablist">${TABS.map(([key, label]) => html`<button type="button" class="plan-tab${key === tab ? ' is-active' : ''}" role="tab" aria-selected="${key === tab ? 'true' : 'false'}" aria-controls="plan-list" data-action="planTab" data-arg="${key}">${label}${L.counts[key] ? html`<span class="plan-tab-count">${L.counts[key]}</span>` : ''}</button>`)}
+    <div class="plan-tabbar">
+      <div class="plan-tabs" role="tablist">${TABS.map(([key, label]) => html`<button type="button" class="plan-tab${key === tab ? ' is-active' : ''}" role="tab" aria-selected="${key === tab ? 'true' : 'false'}" aria-controls="plan-list" data-action="planTab" data-arg="${key}">${label}${L.counts[key] ? html`<span class="plan-tab-count">${L.counts[key]}</span>` : ''}</button>`)}</div>
       <div class="plan-filter" role="group" aria-label="Statusfilter">${FILTERS.map(([key, label, ic]) => { const on = key === L.filter; return html`<button type="button" data-action="planFilter" data-arg="${key}" aria-pressed="${on ? 'true' : 'false'}">${ic ? icon(ic[0], 13, on ? '#fff' : ic[1]) : ''}${label}</button>`; })}</div>
     </div>
     ${tab === 'kpi'

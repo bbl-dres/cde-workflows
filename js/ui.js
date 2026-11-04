@@ -97,7 +97,7 @@ export const hint = t => html`<span class="card-hint">${t}</span>`;
 export const metaRows = rows => rows.map(m => html`<div class="meta-row" style="background:${m.bg || 'transparent'}"><span class="meta-k">${m.k}</span><span>${m.v}</span></div>`);
 
 // ---- Filters, search and sortable headers (look-alikes of the CDE Bund toolbars) ----
-export const searchBox = (width = 398, placeholder = 'Suchen…') => html`<div class="search" style="width:${width}px">${placeholder}</div><div class="search-btn">${icon('search', 14, '#fff')}</div>`;
+export const searchBox = (width = 398, placeholder = 'Suchen…') => html`<div class="search-wrap"><div class="search" style="width:${width}px">${placeholder}</div><div class="search-btn">${icon('search', 14, '#fff')}</div></div>`;
 /** filterBtn(label, { caret, menu }) – a toolbar button; `menu` marks it as the trigger of a hover/focus menu. */
 export const filterBtn = (label, o = {}) => html`<button type="button" class="filter-btn" ${o.menu ? raw('aria-haspopup="menu"') : ''}>${label}${o.caret ? icon('chevron-down', 12, '#3a4350') : ''}</button>`;
 export const filterField = (label, w, ic) => html`<span class="filter-field" style="width:${w}px">${label}${icon(ic, 13, '#a3abb4')}</span>`;

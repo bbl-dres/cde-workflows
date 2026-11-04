@@ -3,7 +3,7 @@ import { pageHead, pagination, emptyState } from '../shell.js';
 
 // Projekt › Info-Management › Dokumente (#/projects/:pid/documents): Informationsmanagement-Dokumente wie
 // Auftraggeber-Informationsanforderung (AIA), BAP, Verträge. Two panes as in the CDE Bund: tree card + table card.
-const COLS = 'grid-template-columns:minmax(0,1.6fr) 90px 120px minmax(0,1fr) minmax(0,1fr) 120px 70px';
+const COLS = 'grid-template-columns:minmax(0,1.6fr) 90px 120px minmax(0,1fr) minmax(0,1fr) 120px 70px;min-width:680px';
 
 export default {
   title: ctx => `Dokumente · ${ctx.project.name}`,
@@ -30,7 +30,7 @@ export default {
         </div>
         <div class="pane pane-table">
           <div class="pane-body">
-            <div class="ant-table">
+            <div class="ant-table scroll-x has-sticky">
               <div class="ant-head" style="${COLS}"><span>Name</span><span>Version</span><span>Status</span><span>Verantwortlich</span><span>Aktualisiert v…</span><span>Aktualisiert am</span><span></span></div>
               ${rows.map(r => html`<div class="ant-row" style="${COLS}">
                 <a class="ellipsis" href="#${r.href}" data-nav="${r.href}" title="${r.name}">${r.name}</a>

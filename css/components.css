@@ -33,7 +33,7 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 .tile:hover { box-shadow: 0 4px 6px -1px rgba(156,163,175,.6), 0 2px 4px -2px rgba(156,163,175,.6); transform: translateY(-2px); }
 .tile-head { display: flex; justify-content: space-between; align-items: center; font-size: 16px; line-height: 24px; color: #4b5563; }
 .tile-value { font-size: 30px; line-height: 36px; font-weight: 700; margin-top: 18px; color: #1f2937; }
-@media (max-width: 1279.98px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 1279.98px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } .meta-row-wide { grid-template-columns: 150px minmax(0, 1fr); } }
 @media (max-width: 767.98px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 /* colours sampled from the reference (project-delivery-plan-1534.png): background / border / icon */
 .tile-total { background: #e9e3f6; border: 2px solid #551d92; }
@@ -44,6 +44,7 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 
 /* ---- Toolbar + search ---- */
 .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.search-wrap { display: flex; min-width: 0; max-width: 100%; }   /* field + button stay one unit when a toolbar wraps */
 .search { height: 28px; background: #fff; border: 1px solid var(--line-2); border-radius: 4px 0 0 4px; font-size: 12px; color: var(--placeholder); display: flex; align-items: center; padding: 0 8px; max-width: 100%; transition: border-color .3s; }
 .search:hover { border-color: #21485c; }
 .search-btn { width: 28px; height: 28px; background: var(--navy-2); margin-left: -10px; border-radius: 0 4px 4px 0; display: flex; align-items: center; justify-content: center; flex: none; }
@@ -60,6 +61,17 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 .table-row { display: grid; gap: 0 10px; padding: 0 10px; align-items: center; font-size: 12.5px; border-bottom: 1px solid var(--line-4); transition: background-color .3s; }
 .table-row:hover { background: var(--row-hover) !important; }
 .table-row:last-child { border-bottom: 0; }
+
+/* ---- Horizontal scrolling for wide tables and tab rows: thin scrollbar, and where the browser supports
+   scroll-driven animations a fade on the edge that still hides content (no JavaScript, no effect without overflow). ---- */
+.scroll-x { overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
+@property --sx-l { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --sx-r { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@supports (animation-timeline: scroll()) {
+  .scroll-x, .fm-table, .tabs, .plan-tabs { animation: scroll-x-fade linear both; animation-timeline: scroll(self inline); mask-image: linear-gradient(90deg, transparent, #000 var(--sx-l), #000 calc(100% - var(--sx-r)), transparent); }
+  .scroll-x.has-sticky { --sx-r: 0px !important; }   /* a sticky action column marks the right edge itself */
+  @keyframes scroll-x-fade { 0% { --sx-l: 0px; --sx-r: 28px; } 10% { --sx-l: 28px; --sx-r: 28px; } 90% { --sx-l: 28px; --sx-r: 28px; } 100% { --sx-l: 28px; --sx-r: 0px; } }
+}
 
 /* compact tables (Aufgaben, Erfassung) */
 .grid-head { display: grid; gap: 0 10px; padding: 0 12px; height: 30px; align-items: center; background: #fafafa; font-size: 12px; font-weight: 500; }
@@ -87,7 +99,10 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 .card-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; min-height: 36px; font-size: 13px; font-weight: 500; border-bottom: 1px solid var(--line-4); }
 .card-body { padding: 12px; }
 .card-foot { padding: 8px 12px 10px; font-size: 12px; color: var(--muted); }
-.meta-row { display: grid; grid-template-columns: 130px 1fr; gap: 8px; padding: 3px 4px; font-size: 12.5px; }
+.meta-row { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 8px; padding: 3px 4px; font-size: 12.5px; }
+.meta-row > * { min-width: 0; }
+.meta-row > :last-child { overflow-wrap: anywhere; }   /* long values (codes, e-mail) wrap; labels keep their words */
+.meta-row-wide { grid-template-columns: 190px minmax(0, 1fr); }
 .meta-k { font-weight: 500; }
 
 /* ---- Notes / callouts ---- */
@@ -164,3 +179,4 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 .pager-size:hover { border-color: #21485c; color: inherit; }
 
 /* ---- Bars (cost comparison) ---- */
+@media (max-width: 479.98px) { .meta-row, .meta-row-wide { grid-template-columns: 130px minmax(0, 1fr); } }

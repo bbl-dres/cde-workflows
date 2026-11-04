@@ -87,7 +87,7 @@ export function makeActions(store, data, nav) {
     // ---- Shell ----
     setUser: ds => { store.set({ user: ds.key }); ui({ userMenu: false, notif: false, importMenu: false }); },
     toggleUserMenu: () => ui({ userMenu: !s().ui.userMenu, notif: false, importMenu: false }),
-    closeMenus: () => ui({ userMenu: false, notif: false, importMenu: false }),
+    closeMenus: () => ui({ userMenu: false, notif: false, importMenu: false, sideOpen: false }),
     toggleNotif: () => ui({ notif: !s().ui.notif, userMenu: false, importMenu: false }),
     notifUnreadOnly: () => ui({ notifUnreadOnly: !s().ui.notifUnreadOnly }),
     markRead: ds => store.set({ notifRead: [...new Set([...(s().notifRead || []), ds.id])] }),

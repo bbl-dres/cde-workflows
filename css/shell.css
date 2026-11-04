@@ -1,10 +1,11 @@
 /* ---- App frame (CDE Bund). Measurements: docs/reviews/2026-11-03-gap-analysis-pixel.md ---- */
 :root { --banner-h: 28px; --topbar-h: 50px; --head-h: calc(var(--banner-h) + var(--topbar-h)); --footer-h: 28px; }
 #app { min-height: 100vh; }
-.app-frame { position: relative; min-height: 100vh; background: var(--bg-app); }
+.app-frame { position: relative; min-height: 100vh; background: var(--bg-app); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
 
 /* Prototype banner: white on red, above the topbar */
 .proto-banner { height: var(--banner-h); background: #cc1044; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 12px; font-size: 12px; font-weight: 600; line-height: 1.2; text-align: center; white-space: nowrap; overflow: hidden; }
+.proto-banner-short { display: none; }
 
 /* Topbar: 48 px (h-12); logo 26×29 at 20 px; nav 14 px; search 28 px; icons 20 px with 44 px gaps; avatar 28 px */
 /* 50 px (references: tasks 1537, delivery plan 1534); search field 28 px centred (y 11–38); the dashboard reference is clipped by 3 px at the top */
@@ -23,6 +24,7 @@
 
 /* Body: sidebar + main */
 .app-body { display: flex; min-height: calc(100vh - var(--head-h) - var(--footer-h)); }
+@supports (height: 100dvh) { .app-body { min-height: calc(100dvh - var(--head-h) - var(--footer-h)); } }   /* mobile browsers: the address bar changes 100vh */
 .app-footer { height: var(--footer-h); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px; font-size: 11px; color: var(--muted); background: #e4e8ee; border-top: 1px solid #d9dee5; }
 .app-footer-note { white-space: nowrap; }
 .app-footer a { color: var(--muted); }
@@ -48,6 +50,7 @@ a.nav-item:hover, .nav-group:hover { background: #e5e7eb; text-decoration: none;
 .app-main-full { padding: 16px 12px 16px 16px; }
 .app-main-white { padding: 8px; }
 .page-card { background: #fff; min-height: calc(100vh - var(--head-h) - var(--footer-h) - 16px); padding: 6px 12px 12px; }
+@supports (height: 100dvh) { .page-card { min-height: calc(100dvh - var(--head-h) - var(--footer-h) - 16px); } }
 
 /* Page head (title line 28 px, breadcrumb right), tabs */
 .page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 4px; min-height: 28px; }
@@ -64,15 +67,20 @@ a.tab:hover { color: #21485c; text-decoration: none; }
 .tab.is-active { border-bottom-color: var(--navy); color: var(--navy); }
 
 /* ---- Responsive (Tailwind breakpoints of the CDE Bund: sm 640, md 768, lg 1024, xl 1280, 2xl 1536) ---- */
+@media (max-width: 1279.98px) {
+  .tabs { overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }   /* six tabs no longer fit beside the sidebar; the fade comes from .scroll-x */
+  .breadcrumb-link, .breadcrumb-current { max-width: 180px; }
+}
 @media (max-width: 1023.98px) {
   /* Sidebar off-canvas (nz-sider with breakpoint lg, collapsed width 0, trigger in the topbar) */
   .side-toggle { display: inline-flex; }
+  body.side-open { overflow: hidden; }                     /* the page behind the open sidebar does not scroll */
   .sidebar { position: fixed; top: var(--head-h); bottom: 0; left: 0; z-index: 45; overflow-y: auto; transform: translateX(-100%); transition: transform .2s ease; box-shadow: 2px 0 8px rgba(0,0,0,.15); }
   body.side-open .sidebar { transform: none; }
   body.side-open .side-backdrop { display: block; position: fixed; inset: var(--head-h) 0 0 0; background: rgba(0,0,0,.35); z-index: 44; }
   .page-head { flex-wrap: wrap; }
   .breadcrumb { flex: 1 1 100%; margin-top: 0; }
-  .tabs { gap: 24px; overflow-x: auto; }
+  .tabs { gap: 24px; }
 }
 @media (max-width: 767.98px) {
   .topbar { padding-left: 12px; }
@@ -85,7 +93,19 @@ a.tab:hover { color: #21485c; text-decoration: none; }
 }
 @media (max-width: 639.98px) {
   .topbar-username { display: none; }
-  .topbar-icons { gap: 12px; margin-right: 10px; }
-  .proto-banner { font-size: 11px; white-space: normal; line-height: 1.15; }
+  .topbar-icons { gap: 16px; margin-right: 10px; }
+  /* Search as an icon only: the field has no room beside the navigation; the banner keeps the short text */
+  .topbar-search { flex: none; margin: 0 8px 0 auto; }
+  .topbar-search-input { display: none; }
+  .topbar-search-btn { background: none; border: 0; width: 32px; height: 32px; border-radius: 4px; }
+  .topbar-search-btn .ic { background: #fff !important; }
+  .topbar-link { margin-right: 14px; }
+  .proto-banner-long { display: none; }
+  .proto-banner-short { display: inline; }
+  .app-footer { height: auto; min-height: var(--footer-h); flex-wrap: wrap; gap: 2px 12px; padding: 5px 12px; line-height: 1.4; }
+  .breadcrumb-link, .breadcrumb-current { max-width: 130px; }
   .app-main-full { padding: 12px; }
+}
+@media (max-width: 479.98px) {
+  .topbar-iconbtn[title="Hilfe"], .topbar-iconbtn[title="Einstellungen"] { display: none; }   /* static in the prototype; the bell and the search keep their room */
 }

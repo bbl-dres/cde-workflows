@@ -7,7 +7,7 @@ export const PROJECT_PAGES = ['overview', 'projectTasks', 'ilp', 'delivery', 'se
 export const BANNER_TEXT = 'Prototyp, fiktive oder öffentlich verfügbare Inhalte — nur zur Demonstration';
 
 /** Red prototype banner above the topbar (white on red). */
-export const banner = () => html`<div class="proto-banner" role="note">${BANNER_TEXT}</div>`;
+export const banner = () => html`<div class="proto-banner" role="note"><span class="proto-banner-long">${BANNER_TEXT}</span><span class="proto-banner-short" aria-hidden="true">Prototyp – nur zur Demonstration</span></div>`;
 
 /** Footer: source link at the right. */
 export const REPO_URL = 'https://github.com/bbl-dres/cde-workflows';
