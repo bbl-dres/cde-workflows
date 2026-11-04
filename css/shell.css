@@ -46,7 +46,9 @@ a.nav-item:hover, .nav-group:hover { background: #e5e7eb; text-decoration: none;
 .nav-badge { font-size: 12px; line-height: 18px; border: 1px solid var(--line); border-radius: 10px; padding: 0 8px; font-weight: 400; color: var(--text); }
 .side-backdrop { display: none; }
 
-.app-main { flex: 1; min-width: 0; max-width: var(--content-max); margin: 0 auto; padding: 5px 8px 8px; position: relative; }   /* one width limit for every page */
+.app-main { flex: 1; min-width: 0; padding: 5px 8px 8px; position: relative; }
+/* Page head and tabs span the full width; the content below keeps the maximum width and stays left, next to the sidebar */
+.app-main > :not(.page-head):not(.tabs):not(.page-card), .page-card > :not(.page-head):not(.tabs) { max-width: var(--content-max); }
 .app-main-full { padding: 16px 12px 16px 16px; }
 .app-main-white { padding: 8px; }
 .page-card { background: #fff; min-height: calc(100vh - var(--head-h) - var(--footer-h) - 16px); padding: 6px 12px 12px; }

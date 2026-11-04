@@ -106,8 +106,8 @@ Skip-Link, `aria-expanded` und `aria-current` in der Navigation.
   Projektdaten jetzt nebeneinander (Verknüpfungen darunter in voller Breite); eine Spalte gibt es nur noch unter 640 px.
 - **Standortkarte**: 340 px statt 260 px hoch (280 px auf Phones).
 - **Sehr breite Bildschirme**: der Seiteninhalt hatte keine einheitliche Grenze (einzelne Karten 720–1100 px, Tabellen und die
-  Suche in der Topbar ohne Limit). Neu gilt eine Inhaltsbreite von 1480 px (`--content-max`, `.app-main`, neben der Sidebar
-  zentriert), 900 px für Lese- und Formularkarten (`--narrow-max`, `.card-narrow`: Lieferung, Verlauf, Dokumente der
+  Suche in der Topbar ohne Limit). Neu gilt eine Inhaltsbreite von 1480 px (`--content-max`) für alles unterhalb von Seitenkopf und
+  Tabs, linksbündig neben der Sidebar (Seitenkopf und Tabs bleiben in voller Breite), 900 px für Lese- und Formularkarten (`--narrow-max`, `.card-narrow`: Lieferung, Verlauf, Dokumente der
   Lieferung, Stammdaten, Zeitplan, Einstellungen) und 760 px für die Suche in der Topbar; die Inline-Breiten der Karten sind
   entfernt. Browser-Tests bei 1100 und 2000 px.
 
