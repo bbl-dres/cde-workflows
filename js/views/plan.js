@@ -109,7 +109,7 @@ function listLayers(plan, L) {
 }
 
 /** Kennzahlen: two columns like the Prüfplattform — Gebäudevolumen, Gebäudeflächen SIA 416, Flächen DIN 277 | Wirtschaftlichkeit, Donut, Objektübersicht. */
-const kpiTable = (title, rows, kind) => html`<div class="plan-kpi-title">${title}</div><div class="plan-kpi-card"><table class="plan-kpi-table"><tbody>${rows.map(r => (kind === 'ratio'
+const kpiTable = (title, rows, kind, unit = 'Fläche') => html`<div class="plan-kpi-title">${title}</div><div class="plan-kpi-card"><table class="plan-kpi-table">${!kind ? html`<thead><tr><th></th><th></th><th class="right">${unit}</th><th class="right" title="Anteil an der Geschossfläche GF">% GF</th></tr></thead>` : ''}<tbody>${rows.map(r => (kind === 'ratio'
   ? html`<tr><td class="abbr">${r.abbr}</td><td>${r.label}</td><td class="right">${r.value}</td></tr>`
   : kind === 'entity'
     ? html`<tr><td class="abbr">${r.type}</td><td class="right" style="width:60px">${r.count}</td><td class="muted ellipsis" title="${r.layers}">${r.layers}</td></tr>`
@@ -128,7 +128,7 @@ function listKpi(plan) {
   const segs = plan.siaSegs.map(s => ({ ...s, share: parseFloat(s.pct) / 100 }));
   return html`<div class="plan-kpi-dash">
     <div>
-      ${kpiTable('Gebäudevolumen', d.volume)}
+      ${kpiTable('Gebäudevolumen', d.volume, undefined, 'Volumen')}
       ${kpiTable('Gebäudeflächen', d.areas)}
       ${kpiTable('Flächen DIN 277', d.din277)}
     </div>

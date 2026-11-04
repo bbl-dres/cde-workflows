@@ -189,7 +189,7 @@ export async function buildPlanReport(model, { capture = () => null } = {}) {
   const polygonRows = entries => entries.map((e, i) => [String(i + 1), statusLabel(e.status), String(e.id), e.aoid || DASH, fmtNum(e.area, 2)]);
   const polygonHead = [['#', 'Status', 'ID', 'Bezeichnung', 'Fläche (m²)']];
   const polygonColumns = { 0: { cellWidth: 10 }, 1: { cellWidth: 20 }, 2: { cellWidth: 14 }, 4: { cellWidth: 26, halign: 'right' } };
-  const kpiHead = [['Kürzel', 'Bezeichnung', 'Fläche (m²)', 'Anteil']];
+  const kpiHead = [['Kürzel', 'Bezeichnung', 'Fläche (m²)', '% GF']];
   const kpiColumns = { 0: { fontStyle: 'bold', cellWidth: 18 }, 2: { halign: 'right', cellWidth: 30 }, 3: { halign: 'right', cellWidth: 16 } };
   const areaRow = r => [r.abbr, r.label, formatArea(r.value), formatShare(r.value, r.total)];
 
@@ -311,7 +311,7 @@ export async function buildPlanReport(model, { capture = () => null } = {}) {
     tableCaption('Gebäudeflächen nach SIA 416');
     ky = ensureSpace(doc.lastAutoTable.finalY + 10, 25, continuation);
     ky = sectionSubtitle('Gebäudevolumen', ky);
-    table({ title: continuation, startY: ky, head: [['Kürzel', 'Bezeichnung', 'Volumen', 'Anteil']], body: model.kpi.volume.map(r => [r.abbr, r.label, DASH, DASH]), columnStyles: kpiColumns });
+    table({ title: continuation, startY: ky, head: [['Kürzel', 'Bezeichnung', 'Volumen (m³)', '% GV']], body: model.kpi.volume.map(r => [r.abbr, r.label, DASH, DASH]), columnStyles: kpiColumns });
     tableCaption('Gebäudevolumen nach SIA 416');
     ky = ensureSpace(doc.lastAutoTable.finalY + 10, 80, continuation);
     ky = sectionSubtitle('Flächen DIN 277', ky);

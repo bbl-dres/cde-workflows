@@ -354,7 +354,7 @@ try {
   check('ILP tiles count the plans', (await tile('total')) === 11 && (await tile('check')) >= 1 && (await tile('done')) >= 4, `${await tile('total')} ${await tile('check')} ${await tile('done')}`);
   await go('/projects/musterhausen/deliveries/dwg-eg'); await sleep(100);
   check('DWG canonical URL (Übersicht)', (await hash()) === '#/projects/musterhausen/deliveries/dwg-eg/uebersicht', await hash());
-  check('DWG Übersicht: Flächen SIA 416, Prüfregeln nach Kategorie, 3 errors badge', (await count('.sia-row')) === 8 && (await count('.cat-row')) === 10 && (await count('.kpi')) === 3 && (await text('.tab-badge')) === '3');
+  check('DWG Übersicht: Flächen SIA 416, Prüfregeln nach Kategorie, 3 errors badge', (await count('.sia-row:not(.sia-head)')) === 8 && (await count('.cat-row')) === 10 && (await count('.kpi')) === 3 && (await text('.tab-badge')) === '3');
   await shot('e2e-dwg-uebersicht');
   await go('/projects/musterhausen/deliveries/dwg-eg/erfassung');
   check('EG: failed rules listed, submit locked', (await count('.plan-list .plan-row')) === 40 && (await bodyText()).includes('LAYER_001') && (await disabled('[data-action="planSubmit"]')) && (await bodyText()).includes('Einreichen erst, wenn der Plan keine Fehler hat'));
@@ -374,7 +374,7 @@ try {
   check('Musterplan checked by the engine (38/40, 0 errors, 30 rooms)', egChecked && egPlan.result.summary.errorCount === 0 && egPlan.result.summary.passedRules === 38 && egPlan.result.rooms.length === 30, JSON.stringify(egPlan.result && egPlan.result.summary));
   check('submit enabled once no errors remain', await enabled('[data-action="planSubmit"]'));
   check('viewer switched to the new drawing', await waitFor(`document.querySelector('.plan-viewer')?.dataset.planStatus === 'ready' && document.querySelector('.plan-viewer')?.dataset.planViewer.startsWith('upload:EG:')`));
-  await click('[data-action="planTab"][data-arg="kpi"]'); check('Kennzahlen SIA 416 without the viewer', (await bodyText()).includes('Nettogeschossfläche') && /517/.test(await text('.plan-kpi-dash')) && (await count('.plan-viewer')) === 0 && (await count('.plan-kpi-donut svg')) === 1 && /flächen din 277/i.test(await bodyText()) && /objektübersicht/i.test(await bodyText()));
+  await click('[data-action="planTab"][data-arg="kpi"]'); check('Kennzahlen SIA 416 without the viewer', (await bodyText()).includes('Nettogeschossfläche') && /517/.test(await text('.plan-kpi-dash')) && (await count('.plan-viewer')) === 0 && (await count('.plan-kpi-donut svg')) === 1 && /flächen din 277/i.test(await bodyText()) && /objektübersicht/i.test(await bodyText()) && (await count('.plan-kpi-table th')) >= 8 && (await text('.plan-kpi-table th.right:last-child')) === '% GF');
   check('Prüfbericht button, no log line, no footer text', (await count('[data-action="planReport"][data-key="EG"]')) === 1 && (await count('.plan-log')) === 0 && !(await bodyText()).includes('Ein Grundriss pro Lieferung'));
   const pdfSize = await evaluate(`window.cde.actions.planReport({ key: 'EG' }, null, null, { save: false }).then(b => b ? b.size : 0).catch(e => 'ERR ' + e.message)`);
   check('Prüfbericht PDF is built (jsPDF from the CDN, drawing images from the viewer)', typeof pdfSize === 'number' && pdfSize > 20000, String(pdfSize));
