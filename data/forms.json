@@ -107,6 +107,7 @@
           "15.03.2027"
         ],
         "frist": "31.05.2027",
+        "head": { "art": "Erweiterung, Aufstockung (als Neubau bilanziert)" },
         "lead": "OB",
         "people": [
           [
@@ -178,25 +179,25 @@
     },
     "eigerplatz": {
       "kv": { "step": 0, "dates": ["01.04.2027"], "frist": "30.06.2027", "lead": "NB" },
-      "thg": { "step": 1, "dates": ["01.02.2027", "20.02.2027"], "frist": "15.04.2027", "lead": "NB", "overdue": true, "missing": ["thg:C04.01-1:h", "thg:G02-2:q", "thg:E03.01-1:e"] }
+      "thg": { "head": { "art": "Erneuerung (Modernisierung, Bestandsbau)" }, "step": 1, "dates": ["01.02.2027", "20.02.2027"], "frist": "15.04.2027", "lead": "NB", "overdue": true, "missing": ["thg:C04.01-1:h", "thg:G02-2:q", "thg:E03.01-1:e"] }
     },
     "zollanlage-brig": {
-      "thg": { "step": 1, "dates": ["01.03.2027", "15.03.2027"], "frist": "30.06.2027", "lead": "OB", "missing": ["thg:D07-1:h"], "head": { "kat": "Sonstige" } },
+      "thg": { "step": 1, "dates": ["01.03.2027", "15.03.2027"], "frist": "30.06.2027", "lead": "OB", "missing": ["thg:D07-1:h"], "head": { "art": "Erweiterung, Aufstockung (als Neubau bilanziert)", "kat": "Sonstige" } },
       "ks": { "step": 6, "dates": ["22.05.2026", "01.06.2026", null, "30.09.2026", "05.10.2026", "20.10.2026", "20.10.2026"], "frist": "30.09.2026", "lead": "SB" }
     },
     "agroscope-posieux": {
-      "thg": { "step": 6, "dates": ["08.09.2025", "01.10.2025", null, "20.02.2027", "23.02.2027", "28.02.2027", "28.02.2027"], "frist": "28.02.2027", "lead": "LB", "endwert": 11.4, "head": { "kat": "Sonstige", "tool": "Lesosai" } },
+      "thg": { "step": 6, "dates": ["08.09.2025", "01.10.2025", null, "20.02.2027", "23.02.2027", "28.02.2027", "28.02.2027"], "frist": "28.02.2027", "lead": "LB", "endwert": 11.4, "head": { "art": "Neubau (inkl. Ersatzneubau)", "kat": "Sonstige", "tool": "Lesosai" } },
       "kv": { "step": 6, "dates": ["08.09.2025", "01.10.2025", null, "15.12.2026", "18.12.2026", "22.12.2026", "22.12.2026"], "frist": "15.12.2026", "lead": "LB" }
     },
     "botschaft-wien": {
-      "thg": { "step": 0, "dates": ["17.11.2026"], "frist": "30.09.2027", "lead": "SB" },
+      "thg": { "head": { "art": "Erneuerung (Modernisierung, Bestandsbau)" }, "step": 0, "dates": ["17.11.2026"], "frist": "30.09.2027", "lead": "SB" },
       "ks": { "step": 1, "dates": ["01.04.2027", "10.04.2027"], "frist": "31.05.2027", "lead": "SB", "missing": ["ksV:V", "ksQ:C04"] }
     },
     "prangins": {
-      "thg": { "step": 6, "dates": ["02.02.2025", "01.03.2025", null, "15.01.2027", "18.01.2027", "31.01.2027", "31.01.2027"], "frist": "31.01.2027", "lead": "AB", "endwert": 7.8, "head": { "kat": "Sonstige", "art": "Erneuerung", "tool": "GREG" } }
+      "thg": { "step": 6, "dates": ["02.02.2025", "01.03.2025", null, "15.01.2027", "18.01.2027", "31.01.2027", "31.01.2027"], "frist": "31.01.2027", "lead": "AB", "endwert": 7.8, "head": { "kat": "Sonstige", "art": "Erneuerung (Modernisierung, Bestandsbau)", "tool": "GREG" } }
     },
     "tenero": {
-      "thg": { "step": 0, "dates": ["05.01.2027"], "frist": "31.10.2027", "lead": "HB", "kann": true },
+      "thg": { "head": { "art": "Erneuerung (Modernisierung, Bestandsbau)" }, "step": 0, "dates": ["05.01.2027"], "frist": "31.10.2027", "lead": "HB", "kann": true },
       "kv": { "step": 1, "dates": ["15.03.2027", "25.03.2027"], "frist": "31.05.2027", "lead": "HB", "missing": ["kvQ:D07", "kvV:Y"] }
     }
   }
