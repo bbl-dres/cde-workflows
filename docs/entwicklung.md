@@ -56,9 +56,9 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
 - **Responsiv**: unter 1024 px klappt das Projektmenü ein (Menü-Knopf in der Topbar, Escape schliesst), unter 1280 px werden
   Überblick und Dokumente einspaltig und der Statusfilter der Planprüfung rutscht unter die Tabs, die Spalten der Datenformulare
   brechen um, breite Tabellen scrollen horizontal mit Ausblendkante (`.scroll-x`); unter 640 px Suche als Icon, Kurz-Banner,
-  umbrechender Footer; Überblick zwischen 640 und 1279 px mit Projektbild und Projektdaten nebeneinander. Seitenkopf und Tabs
-  spannen die volle Breite, der Inhalt darunter ist auf 1480 px begrenzt und bleibt links neben der Sidebar, Lese- und
-  Formularkarten auf 900 px (`--content-max`, `--narrow-max`).
+  umbrechender Footer; Überblick zwischen 640 und 1279 px mit Projektbild und Projektdaten nebeneinander. Der Seiteninhalt nutzt wie
+  in der CDE Bund die volle Breite, auch auf sehr breiten Bildschirmen; nur Lese- und Formularkarten sind auf 900 px
+  begrenzt (`--narrow-max`, `.card-narrow`).
   Auf Touch-Geräten (`pointer: coarse`) sind Bedienelemente 32–44 px und Textfelder 16 px
   (`css/responsive.css`). Breakpoints wie in der CDE Bund (Tailwind: 640 / 768 / 1024 / 1280 / 1536);
   Review: `docs/reviews/2026-11-04-design-review-responsive.md`.

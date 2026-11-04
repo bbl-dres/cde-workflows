@@ -105,11 +105,10 @@ Skip-Link, `aria-expanded` und `aria-current` in der Navigation.
 - **Kleine Notebooks (1024–1279 px)**: das Projektbild in voller Breite wirkte fremd. Unter 1280 px stehen Projektbild und
   Projektdaten jetzt nebeneinander (Verknüpfungen darunter in voller Breite); eine Spalte gibt es nur noch unter 640 px.
 - **Standortkarte**: 340 px statt 260 px hoch (280 px auf Phones).
-- **Sehr breite Bildschirme**: der Seiteninhalt hatte keine einheitliche Grenze (einzelne Karten 720–1100 px, Tabellen und die
-  Suche in der Topbar ohne Limit). Neu gilt eine Inhaltsbreite von 1480 px (`--content-max`) für alles unterhalb von Seitenkopf und
-  Tabs, linksbündig neben der Sidebar (Seitenkopf und Tabs bleiben in voller Breite), 900 px für Lese- und Formularkarten (`--narrow-max`, `.card-narrow`: Lieferung, Verlauf, Dokumente der
-  Lieferung, Stammdaten, Zeitplan, Einstellungen) und 760 px für die Suche in der Topbar; die Inline-Breiten der Karten sind
-  entfernt. Browser-Tests bei 1100 und 2000 px.
+- **Sehr breite Bildschirme**: die Karten hatten uneinheitliche Breiten (720–1100 px). Ein allgemeines Breitenlimit wurde
+  ausprobiert und wieder verworfen: der Seiteninhalt nutzt wie in der CDE Bund die volle Breite, nur Lese- und Formularkarten
+  sind einheitlich 900 px breit (`--narrow-max`, `.card-narrow`: Lieferung, Verlauf, Dokumente der Lieferung, Stammdaten,
+  Zeitplan, Einstellungen); die Inline-Breiten sind entfernt. Browser-Tests bei 1100 und 2000 px.
 
 ## 6. Grenzen des Reviews
 
