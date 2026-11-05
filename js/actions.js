@@ -10,7 +10,7 @@ import { searchModel } from './model/search.js';
 // The Datenformulare act on the project of the current route (nav.currentPid()); the THG-32 keeps its Emissionsquellen
 // in state.projects[pid].thgSrc (thgVal, thgAdd, thgRemove …) and its Betrieb in thgBetr (thgBetr, thgBetrStd), the cost forms
 // their positions in kvQ/kvV and ksQ/ksV.
-import { LEGACY } from './links.js';
+import { LEGACY, link } from './links.js';
 import { TASK_COLUMNS } from './model/columns.js';
 import { formModel, LOCKED_FROM } from './model/form.js';
 import { initProject } from './model/state.js';
@@ -166,6 +166,16 @@ export function makeActions(store, data, nav) {
     formNewVal: (ds, el) => { if (editable(ds.form)) setForm(ds.form, f => ({ added: (f.added || []).map(a => (a.id === ds.id ? { ...a, [ds.field]: ds.field === 'code' ? el.value : normNum(el.value) } : a)) })); },
     formDropNew: ds => { if (editable(ds.form)) setForm(ds.form, f => ({ added: (f.added || []).filter(a => a.id !== ds.id) })); },
     formToggleMissing: ds => setForm(ds.key, f => ({ missingOnly: !f.missingOnly })),
+    /** Übersicht «Wo entstehen die Emissionen?»: Erstellung or Betrieb. */
+    ovArea: ds => ui({ ovArea: ds.arg === 'b' ? 'b' : 'e' }),
+    /** A row of the Übersicht lists opens its Hauptgruppe in the Erfassung (or the Erfassung Betrieb). */
+    formOpenGroup: ds => {
+      const kind = ds.form, f = formOf(kind), T = data.forms.kinds[kind]; if (!f || !T) return;
+      if (ds.tab !== 'betrieb' && ds.group && (ds.group in f.modes)) setForm(kind, { modes: { ...f.modes, [ds.group]: 'detail' } });
+      nav.navigate(link.delivery(pid(), T.code, ds.tab || 'erfassung'));
+    },
+    /** Begründung des Planers for a Hauptgruppe whose deviation from the previous phase is flagged (THG-32 Prüfung). */
+    formBegr: (ds, el) => { if (editable(ds.form)) setForm(ds.form, f => ({ begr: { ...(f.begr || {}), [ds.group]: el.value } })); },
     toggleImportMenu: () => ui({ importMenu: !s().ui.importMenu, userMenu: false, notif: false }),
     importItem: ds => {
       ui({ importMenu: false });

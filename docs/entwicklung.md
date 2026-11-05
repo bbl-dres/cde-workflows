@@ -24,8 +24,9 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
 - **Datenlieferung bestellen**: im Informationslieferplan «Aufgabenplan hinzufügen» öffnet den «Erstellen»-Drawer. Eine
   Anforderung hat den Typ «Dokument» oder «Datenformular» mit Vorlage (Kosten eBKP-H, Ökobilanz Erstellung und Betrieb nach SIA 390/1),
   Zielsystem und der Pflicht-Regel ab CHF 1 Mio Anlagekosten.
-- **Datenformulare** (Kostenvoranschlag KV-32, Kostenschätzung KS-31, Ökobilanz THG-32, Grundrisse DWG-UG … DWG-DG) haben dieselben Tabs: Übersicht (Kennzahlen, Hauptgruppen im
-  Vergleich mit der Vorphase, Kostenziel oder Zielwerte SIA 390/1, Lieferung, Verlauf mit dem nächsten Schritt, Beteiligte), Erfassung
+- **Datenformulare** (Kostenvoranschlag KV-32, Kostenschätzung KS-31, Ökobilanz THG-32, Grundrisse DWG-UG … DWG-DG) haben dieselben Tabs: Übersicht (Kennzahlen, Kostenziele oder Zielwerte SIA 390/1,
+  Hauptgruppen als Balkenliste in eBKP-Reihenfolge mit der Vorphase als Strich, Anteil und Δ, markiert ab Schwellenwert und 0.1 Mio bzw.
+  0.1 kg, Zeilen öffnen die Erfassung; Lieferung, Verlauf mit dem nächsten Schritt, Beteiligte), Erfassung
   (siehe unten; die Ökobilanz in den zwei Tabs Erfassung Erstellung und Erfassung Betrieb), Prüfung (Vergleich mit der Vorphase oder Prüfergebnis des Plans, Prüfung BBL mit automatischen Prüfungen
   und Checkliste, Übergabe), Beteiligte, Dokumente (mit Pflicht), Verlauf (alle Ereignisse). Die Erfassung ist nach dem
   Einreichen gesperrt; «Erfassung wieder öffnen (Prototyp)» öffnet sie wieder (Werte bleiben). Prüfen (Checkliste, Freigeben,
@@ -37,7 +38,8 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   Vollständigkeit und «Zur Prüfung einreichen».
 - **Ökobilanz erfassen (THG-32, Design 05.11.2026)**: Die Übersicht zeigt die Kennzahlen Erstellung und Betrieb, die Karte
   «Grundlagen» (gilt für Erstellung und Betrieb: Gebäudekategorie, Bauvorhaben, EBF/GF aus den Grundrissen, Datenstand), die
-  Hauptgruppen im Vergleich mit der Vorphase samt den Zeilen Betrieb und Erstellung + Betrieb und «Zielwerte SIA 390/1»:
+  «Zielwerte SIA 390/1» und die Karte «Wo entstehen die Emissionen?» mit Umschalter Erstellung (Hauptgruppen mit SIA-31-Strich
+  und Δ) und Betrieb (je Energiedienstleistung, PV-Gutschrift in Grün, keine Vorphase):
   Erstellung und Betrieb gegen die Richtwerte Basis (B) und ambitioniert (A) der Gebäudekategorie, die Summe gegen die
   Zusatzanforderung, dazu die Marken Minergie-ECO GW1 (M) und Vorphase (V) (`data/thg.json` «richtwerte»; Betrieb und
   Zusatzanforderung sind nur für Wohnen und Restaurant belegt, für Verwaltung, Schule und Verkauf als Annahme markiert, für
@@ -56,7 +58,9 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   «Rechenhilfe importieren», Total Betrieb und «THGE Erstellung + Betrieb pro Jahr». Die Prüfung zeigt neun automatische
   Prüfpunkte (Vollständigkeit, Pflichtdokumente, Grundlagen, Abweichung zur Vorphase, Zusatzanforderung B, Richtwerte
   informativ, Anteile der Energieträger, Photovoltaik in beiden Bereichen, Anteil Gebäudetechnik) und fünf Prüfpunkte der
-  Checkliste; an das SUS gehen Erstellung und Betrieb in kg CO₂-eq/m² EBF·a. Grundlage sind die realen BBL-Berichte (lokal
+  Checkliste; der Vergleich mit der Vorphase ist eine Hantel je Hauptgruppe (SIA 31 ○, THG-32 ●), und jede markierte
+  Abweichung (ab 15 % und 0.1 kg) verlangt eine Begründung des Planers (Eingabe in der Prüfung, solange die Erfassung offen
+  ist; fehlt sie, zeigt der Prüfpunkt «ohne Begründung»); an das SUS gehen Erstellung und Betrieb in kg CO₂-eq/m² EBF·a. Grundlage sind die realen BBL-Berichte (lokal
   unter `docs/reference/beispiele/`) und die Empfehlungen in
   `docs/research/2026-11-05-oekobilanz-eingabemaske-erstellung-betrieb.md`. Die Darstellungsvarianten der Design-Studie für
   die Tabelle «THG-Emissionen nach Hauptgruppen» (Matrix, Rangliste, Einfluss, Hantel, Brücke, Zusammensetzung) sind noch

@@ -106,7 +106,7 @@ try {
   // 3. KV-32 as Alex: Übersicht, Erfassung with Hauptgruppen, missing values, Aufschlüsseln, Excel import, submit
   await go('/projects/musterhausen/deliveries/kv-32'); await sleep(100);
   check('delivery lands on Übersicht', (await hash()) === '#/projects/musterhausen/deliveries/kv-32/uebersicht' && (await text('.tab.is-active')).startsWith('Übersicht'));
-  check('Übersicht: KPIs, Hauptgruppen table, Kostenziel, Verlauf steps, Beteiligte', (await count('.kpi')) === 3 && (await bodyText()).includes('Kosten nach Hauptgruppen') && (await count('.tgt-dot')) === 3 && (await count('.st-row')) === 6 && (await count('.pp-row')) === 4);
+  check('Übersicht: KPIs, Kostenziele, Hauptgruppen list with KS-31 ticks, Verlauf steps, Beteiligte', (await count('.kpi')) === 3 && (await bodyText()).includes('Kosten nach Hauptgruppen') && (await count('.tgt-dot')) === 3 && (await count('.ov-row')) === 11 && (await count('.ov-tick')) === 11 && (await count('.ov-sub')) === 3 && (await count('.st-row')) === 6 && (await count('.pp-row')) === 4);
   check('tab badges: 1 missing value, 2 documents', (await text('.tab-badge')) === '1' && (await count('.tab-badge')) === 2);
   await shot('e2e-kv-uebersicht');
   await clickText('.tab', 'Erfassung');
@@ -138,7 +138,11 @@ try {
 
   // 4. Reviews as Paula: THG-32 (Prüfung → Freigeben → Übertragen), KV-32 (review starts, reject)
   await go('/'); await click('[data-action="toggleUserMenu"]'); await click('[data-action="setUser"][data-key="PM"]');
-  await go('/projects/musterhausen/deliveries/thg-32'); await sleep(100); check('THG lands on Übersicht as PM: Grundlagen, Betrieb rows, Zielwerte SIA 390/1', (await hash()).endsWith('/thg-32/uebersicht') && (await count('.tz-row')) === 3 && (await count('.tz-dot')) === 8 && (await bodyText()).includes('gilt für Erstellung und Betrieb') && (await bodyText()).includes('Erstellung + Betrieb') && (await count('.thg-head select:not([disabled])')) === 2 && (await count('.tab')) === 7);
+  await go('/projects/musterhausen/deliveries/thg-32'); await sleep(100); check('THG lands on Übersicht as PM: Grundlagen, Betrieb rows, Zielwerte SIA 390/1', (await hash()).endsWith('/thg-32/uebersicht') && (await count('.tz-row')) === 3 && (await count('.tz-dot')) === 8 && (await bodyText()).includes('gilt für Erstellung und Betrieb') && (await bodyText()).includes('Erstellung + Betrieb') && (await count('.thg-head select:not([disabled])')) === 2 && (await count('.tab')) === 7 && (await count('.seg-btn')) === 2 && (await count('.ov-row')) === 6);
+  await click('.seg-btn[data-arg="b"]'); check('Wo entstehen die Emissionen? · Betrieb per Energiedienstleistung with the PV credit', (await count('.ov-row')) === 9 && (await bodyText()).includes('Photovoltaik (Gutschrift)') && (await bodyText()).includes('keine Vorphase'));
+  await click('.seg-btn[data-arg="e"]'); await click('.ov-row[data-group="D"]'); check('row opens the Hauptgruppe in the Erfassung', (await hash()).endsWith('/thg-32/erfassung') && (await state()).projects.musterhausen.forms.thg.modes.D === 'detail');
+  await click('.ent-group[data-group="D"]'); check('group D closed again', (await state()).projects.musterhausen.forms.thg.modes.D === 'direct');
+  await go('/projects/musterhausen/deliveries/thg-32/uebersicht');
   await go('/projects/musterhausen/deliveries/thg-32/erfassung');
   check('THG-32 In Bearbeitung: head selects enabled, add rows, complete → Einreichen enabled', (await count('.thg-head select:not([disabled])')) === 4 && (await count('.ent-add')) === 2 && (await count('.ent-input[readonly]')) < 10 && await enabled('[data-action="formSubmit"]'));
   check('every Emissionsquelle in edit mode: code control and Tool-Export input per row', (await count('.ent-src .ent-code-wrap')) === 9 && (await count('.ent-src input[data-field="dataset"]')) === 9 && await evaluate(`document.querySelector('.ent-src input[data-field="dataset"]').value.includes('Bauteil Lesosai')`));
@@ -153,7 +157,7 @@ try {
   await shot('e2e-thg-betrieb');
   await click('[data-action="formSubmit"]'); check('THG submitted → Eingereicht', (await state()).projects.musterhausen.forms.thg.step === 3 && (await text('.page-title')).includes('Eingereicht'));
   await go('/projects/musterhausen/deliveries/thg-32/pruefung');
-  check('Prüfung: comparison, checks, Freigeben disabled', (await count('.fm-tr')) >= 6 && (await disabled('[data-action="formApprove"]')) && (await bodyText()).includes('Erst alle Prüfpunkte bestätigen') && (await bodyText()).includes('Alle 22 Emissionsquellen') && (await bodyText()).includes('Zusatzanforderung B eingehalten') && (await count('.rv-check')) === 9);
+  check('Prüfung: deviations with Begründung, checks, Freigeben disabled', (await count('.ov-row')) === 6 && (await count('.ov-begr')) === 1 && (await count('.ov-dot-prev')) >= 1 && (await bodyText()).includes('begründet') && (await disabled('[data-action="formApprove"]')) && (await bodyText()).includes('Erst alle Prüfpunkte bestätigen') && (await bodyText()).includes('Alle 22 Emissionsquellen') && (await bodyText()).includes('Zusatzanforderung B eingehalten') && (await count('.rv-check')) === 9);
   for (const k of ['t1', 't2', 't3', 't4', 't5']) await click(`[data-action="formToggleCheck"][data-key="${k}"]`);
   check('checklist enables Freigeben', await enabled('[data-action="formApprove"]'));
   await shot('e2e-thg-pruefung');

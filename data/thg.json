@@ -295,5 +295,5 @@
     {"id": "G02.02-1", "grp": "G", "code": "G02.02", "tcode": "Bo01", "name": "Unterlagsboden Anhydrit mit Linoleum", "quelle": "Bauteil Lesosai", "unit": "m²", "q": 4850, "kw": 0.36},
     {"id": "G04.02-1", "grp": "G", "code": "G04.02", "tcode": "De01", "name": "Abhangdecke Gipskarton", "quelle": "Bauteil Lesosai", "unit": "m²", "q": 3200, "kw": 0.17}
   ],
-  "prev31": {"B": 100600, "C": 1142000, "D": 773000, "E": 487000, "F": 93900, "G": 221700}
+  "prev31": {"B": 100600, "C": 1142000, "D": 711700, "E": 487000, "F": 93900, "G": 221700}
 }

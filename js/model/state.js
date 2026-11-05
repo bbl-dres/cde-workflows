@@ -5,7 +5,7 @@ import { DEFAULT_TASK_COLS } from './columns.js';
 import { initialPlans } from './plan.js';
 import { mockProject, groupAmounts, KEYS } from './mock.js';
 
-export const STATE_VERSION = 14;   // bump whenever the shape of the persisted state changes (sessions with an older version start fresh)
+export const STATE_VERSION = 15;   // bump whenever the shape of the persisted state changes (sessions with an older version start fresh)
 
 /** Values and workflow state of the Datenformulare of one project (see model/form.js and model/mock.js). */
 export function initProject(data, project) {
@@ -19,6 +19,7 @@ export function initProject(data, project) {
     gvals: KEYS[kind] ? groupAmounts(M[KEYS[kind][1]], data) : {}, checks: {}, missingOnly: false, events: [], comment: '',
     removed: {}, added: [], nNew: 0,                       // positions removed / Kostenelemente added in the Erfassung (KV/KS)
     docs: [],                                              // files the imports brought in ([name, type, req, by, date]), on top of the documents of the instance
+    begr: { ...(I.begr || {}) },                           // Begründung des Planers je Hauptgruppe mit markierter Abweichung zur Vorphase (THG-32)
   }]));
   return { kvQ: M.kvQ, kvV: M.kvV, ksQ: M.ksQ, ksV: M.ksV, thgSrc: M.thgSrc, thgHead: M.thgHead, thgBetr: M.thgBetr, sia: M.sia, forms };
 }
@@ -29,7 +30,7 @@ export function initialState(data) {
     __v: STATE_VERSION,
     // Application shell
     user: data.users.defaultUser,
-    ui: { studyOpen: false, dialog: null, notif: false, notifUnreadOnly: false, userMenu: false, navOpen: {}, toast: null, sideOpen: false, planTab: 'rules', planFilter: 'all', planSearch: '', importMenu: false, busy: null, search: '', searchOpen: false, searchIdx: -1 },
+    ui: { studyOpen: false, dialog: null, notif: false, notifUnreadOnly: false, userMenu: false, navOpen: {}, toast: null, sideOpen: false, planTab: 'rules', planFilter: 'all', planSearch: '', importMenu: false, ovArea: 'e', busy: null, search: '', searchOpen: false, searchIdx: -1 },
     favorites: ['musterhausen'],
     taskCols: [...DEFAULT_TASK_COLS],
     notifRead: [],

@@ -1,5 +1,5 @@
 {
-  "note": "Datenformulare nach dem Design vom 05.11.2026 (docs/wireframes/261105_CDE-Workflows Datenformular Design.zip, Komponente Datenformular.dc.html): eine Struktur für alle Lieferungen mit den Tabs Übersicht · Erfassung · Prüfung · Beteiligte · Dokumente · Verlauf; die Ökobilanz erfasst Erstellung und Betrieb in zwei Tabs. «kinds» beschreibt die drei Formulararten (Kostenvoranschlag KV-32, Kostenschätzung KS-31, Ökobilanz THG-32), «byProject» welche Formulare ein Projekt hat und wo sie im Workflow stehen (step 0 Erstellt/Offen · 1 In Bearbeitung · 3 Eingereicht · 4 In Prüfung · 5 Freigegeben · 6 Übertragen); «missing» blendet einzelne Werte aus (kvQ:D08 = Menge der Position, thg:C04.01-1:kw = Kennwert einer Emissionsquelle, thgB:b0_n = Nutzenergie einer Energiedienstleistung des Betriebs), «endwert» kalibriert die Erstellung der Ökobilanz (kg CO₂-eq/m² EBF·a), «head» überschreibt die Grundlagen der Ökobilanz. Werte kommen aus ebkp.json, thg.json und sia416.json, für die weiteren Projekte skaliert (js/model/mock.js). FV-32 entfällt: die Flächen kommen aus den Grundrissen (DWG). Personen, Firmen und Werte sind fiktiv.",
+  "note": "Datenformulare nach dem Design vom 05.11.2026 (docs/wireframes/261105_CDE-Workflows Datenformular Design.zip, Komponente Datenformular.dc.html): eine Struktur für alle Lieferungen mit den Tabs Übersicht · Erfassung · Prüfung · Beteiligte · Dokumente · Verlauf; die Ökobilanz erfasst Erstellung und Betrieb in zwei Tabs. «kinds» beschreibt die drei Formulararten (Kostenvoranschlag KV-32, Kostenschätzung KS-31, Ökobilanz THG-32), «byProject» welche Formulare ein Projekt hat und wo sie im Workflow stehen (step 0 Erstellt/Offen · 1 In Bearbeitung · 3 Eingereicht · 4 In Prüfung · 5 Freigegeben · 6 Übertragen); «missing» blendet einzelne Werte aus (kvQ:D08 = Menge der Position, thg:C04.01-1:kw = Kennwert einer Emissionsquelle, thgB:b0_n = Nutzenergie einer Energiedienstleistung des Betriebs), «endwert» kalibriert die Erstellung der Ökobilanz (kg CO₂-eq/m² EBF·a), «head» überschreibt die Grundlagen der Ökobilanz, «begr» sind die Begründungen des Planers je Hauptgruppe mit markierter Abweichung zur Vorphase. Werte kommen aus ebkp.json, thg.json und sia416.json, für die weiteren Projekte skaliert (js/model/mock.js). FV-32 entfällt: die Flächen kommen aus den Grundrissen (DWG). Personen, Firmen und Werte sind fiktiv.",
   "steps": ["Erstellt", "In Bearbeitung", "Intern geprüft", "Eingereicht", "In Prüfung", "Freigegeben", "Übertragen"],
   "people": {
     "AB": ["Alex Beispiel", "Muster Architekten AG"],
@@ -33,7 +33,7 @@
       "targets": [["Kostenziel B–W", "ziel", "#b07a00"], ["KS-31 Kostenschätzung", "prev", "#6b7280"], ["Kostendach Projektauftrag", "dach", "#9b2c44"]],
       "manual": [["k1", "Kostenziel eingehalten"], ["k2", "Beilage detaillierter KV geprüft"]],
       "docs": [["Kostenvoranschlag_detail.pdf", "PDF", "Pflicht"], ["Kostenvoranschlag_positionen.xlsx", "Excel", "Optional"]],
-      "ov": { "tableTitle": "Kosten nach Hauptgruppen · Vergleich mit Vorphase", "colCur": "KV-32 CHF", "colPrev": "KS-31 CHF", "colKw": "CHF/m² GF", "chartTitle": "Kostenziel", "chartHint": "Ziele werden in ePPM verwaltet", "istLabel": "Ist · KV-32 Erstellungskosten B–W" },
+      "ov": { "tableTitle": "Kosten nach Hauptgruppen · Vergleich mit Vorphase", "colCur": "KV-32 CHF", "colPrev": "KS-31 CHF", "colKw": "CHF/m² GF", "chartTitle": "Kostenziele", "chartHint": "Ziele werden in ePPM verwaltet", "istLabel": "Ist · KV-32 Erstellungskosten B–W" },
       "importItems": [["excel", "Excel importieren"], ["ifc", "IFC importieren"], ["dwg", "Bezugsmengen aus den Grundrissen übernehmen"]]
     },
     "ks": {
@@ -51,7 +51,7 @@
       "targets": [["Kostenziel B–W", "ziel", "#b07a00"], ["Kostengrobschätzung SIA 21", "prev", "#6b7280"], ["Kostendach Projektauftrag", "dach", "#9b2c44"]],
       "manual": [["k1", "Kostenziel eingehalten"], ["k2", "Beilage Kostenschätzung geprüft"]],
       "docs": [["Kostenschaetzung_eBKP-H.pdf", "PDF", "Pflicht"]],
-      "ov": { "tableTitle": "Kosten nach Hauptgruppen · Vergleich mit Vorphase", "colCur": "KS-31 CHF", "colPrev": "SIA 21 CHF", "colKw": "CHF/m² GF", "chartTitle": "Kostenziel", "chartHint": "Ziele werden in ePPM verwaltet", "istLabel": "Ist · KS-31 Erstellungskosten B–W" },
+      "ov": { "tableTitle": "Kosten nach Hauptgruppen · Vergleich mit Vorphase", "colCur": "KS-31 CHF", "colPrev": "SIA 21 CHF", "colKw": "CHF/m² GF", "chartTitle": "Kostenziele", "chartHint": "Ziele werden in ePPM verwaltet", "istLabel": "Ist · KS-31 Erstellungskosten B–W" },
       "importItems": [["excel", "Excel importieren"], ["ifc", "IFC importieren"], ["dwg", "Bezugsmengen aus den Grundrissen übernehmen"]]
     },
     "thg": {
@@ -108,6 +108,7 @@
         ],
         "frist": "31.05.2027",
         "head": { "art": "Erweiterung, Aufstockung (als Neubau bilanziert)", "tool": "Lesosai" },
+        "begr": { "D": "Lüftung neu mit spezifischer Luftmenge 4 m³/h·m² EBF (Nutzungsanforderung), zusätzliche Kälteerzeugung" },
         "lead": "OB",
         "people": [
           [

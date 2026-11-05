@@ -17,6 +17,10 @@ const check = c => html`<div class="rv-check">${icon(c.icon, 16, c.color)}<span 
 const devCell = c => html`<span class="right${c.hi ? ' is-over' : ''}" ${c.hi ? raw('title="Abweichung über dem Schwellenwert, Begründung nötig"') : ''}>${c.delta}</span>`;
 const kvRow = (k, v) => html`<div class="rv-kv"><span class="rv-kv-k">${k}</span><span>${v}</span></div>`;
 const RO = F => (F.locked ? raw('readonly') : '');
+/** Icon from a URL (Hauptgruppen pictograms in assets/ebkp, lucide icons in assets/icons), as a CSS mask like icon(). */
+const urlIcon = (url, size = 18) => html`<span class="ic" style="width:${size}px;height:${size}px;background:currentColor;-webkit-mask:url(${url}) center/contain no-repeat;mask:url(${url}) center/contain no-repeat" aria-hidden="true"></span>`;
+const OV_COLS = 'grid-template-columns:28px minmax(120px,220px) minmax(0,1fr) 60px 44px 56px';   // bar lists of the Übersicht: icon · name · bar · value · share · Δ
+const DEV_COLS = 'grid-template-columns:28px minmax(120px,200px) minmax(0,1fr) 48px 48px 56px';
 const DIS = F => (F.locked ? raw('disabled') : '');
 
 export const tabBadge = b => (b ? html`<span class="tab-badge" style="background:${b.bg};color:${b.fg}">${b.n}</span>` : '');
@@ -42,7 +46,7 @@ function uebersicht(ctx, F) {
         ${F.kpis.map(k => html`<div class="card kpi"><span class="kpi-k">${k.k}</span><span class="kpi-row"><span class="kpi-v">${k.v}</span><span class="kpi-u">${k.u}</span></span></div>`)}
         <div class="card kpi"><span class="kpi-k">${F.comp.label}</span><span class="kpi-v">${F.comp.pct}</span>${progress(F.comp.w, F.comp.bar)}<span class="fs-12" style="color:${F.comp.fg}">${F.comp.text}</span></div>
       </div>
-      ${F.kind === 'plan' ? planOverview(F, L) : F.erf.isTHG ? thgOverview(F, L) : costOverview(F, L)}
+      ${F.kind === 'plan' ? planOverview(F, L) : F.erf.isTHG ? thgOverview(F, L, ctx) : costOverview(F, L)}
     </div>
     <div class="fm-side">
       ${card('Lieferung', html`<div style="padding:4px 0 6px">${metaRows(F.meta)}</div>`)}
@@ -71,14 +75,31 @@ const ovTable = (F, L) => {
 };
 
 function costOverview(F, L) {
-  return html`${ovTable(F, L)}${card(html`<span class="flex-1">${F.ov.chartTitle}</span>${hint(F.ov.chartHint)}`, targetChart(F))}`;
+  return html`${card(html`<span class="flex-1">${F.ov.chartTitle}</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`${targetChart(F)}<div class="card-foot">${F.ov.chartHint}</div>`)}
+    ${card(html`<span class="flex-1">Kosten nach Hauptgruppen</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`${ovListBody(F, F.ovList)}<div class="card-foot">${F.ovList.foot}</div>`)}`;
 }
 
+/** Bar list of the Übersicht (design 05.11.2026): one row per Hauptgruppe or Energiedienstleistung, the previous phase as a tick, share and Δ; rows open the Erfassung. */
+const ovRow = (F, g) => html`<div class="ov-row${g.tab ? ' is-link' : ''}" style="${OV_COLS}" title="${g.tip}${g.tab ? ' · Klick öffnet die Erfassung' : ''}" ${g.tab ? html`role="link" tabindex="0" data-action="formOpenGroup" data-form="${F.id}" data-group="${g.code}" data-tab="${g.tab}"` : ''}>
+  <span class="ov-ic">${urlIcon(g.icon)}</span>
+  <span class="ellipsis"><span class="fw-600">${g.code}</span> ${g.name}</span>
+  <div class="ov-bar"><div class="ov-track"></div><div class="ov-fill" style="width:${g.w}${g.bc ? ';background:' + g.bc : ''}"></div>${g.tx != null ? html`<div class="ov-tick" style="left:${g.tx}"></div>` : ''}</div>
+  <span class="right fw-600">${g.cur}</span><span class="right muted fs-12">${g.share}</span><span class="right" style="color:${g.dfg};font-weight:${g.dw}" title="${g.dp}">${g.d}</span>
+</div>`;
+const ovListBody = (F, Lst) => html`<div class="fm-table"><div class="ov-body">
+  <div class="ov-head" style="${OV_COLS}"><span></span><span>${Lst.col}</span><div class="ov-axis"><span>0</span><span>${Lst.max}</span></div><span class="right">${Lst.unit}</span><span class="right">Anteil</span><span class="right">${Lst.dUnit}</span></div>
+  ${Lst.rows.map(g => ovRow(F, g))}
+  ${Lst.rows.length === 0 ? html`<div class="muted fs-13" style="padding:14px 0">Noch keine Werte erfasst.</div>` : ''}
+  <div class="ov-total" style="${OV_COLS}"><span></span><span>${Lst.totalLabel}</span><span class="muted fs-12">${Lst.prevText}</span><span class="right fw-600">${Lst.tot}</span><span class="right muted fs-12">100 %</span><span class="right">${Lst.dTot}</span></div>
+  ${Lst.subs.length ? html`<div style="height:10px"></div>${Lst.subs.map(u => html`<div class="ov-sub" style="${OV_COLS}"><span></span><span><span>${u.code}</span> ${u.name}</span><span class="muted fs-12 fw-400">${u.prevText}</span><span class="right">${u.cur}</span><span class="right muted fs-12 fw-400">${u.share}</span><span class="right fw-400" style="color:${u.dfg};font-weight:${u.dw}">${u.d}</span></div>`)}` : ''}
+</div></div>`;
+
 /** Ökobilanz: the Grundlagen shared by Erstellung and Betrieb, the Hauptgruppen with the Betrieb rows, the Zielwerte SIA 390/1. */
-function thgOverview(F, L) {
+function thgOverview(F, L, ctx) {
+  const area = ctx.state.ui.ovArea === 'b' ? 'b' : 'e', Lst = area === 'b' ? F.ovBetr : F.ovList;
   return html`${card(html`<span class="flex-1">Grundlagen</span>${hint('gilt für Erstellung und Betrieb')}`, headFields(F, F.headShared))}
-    ${ovTable(F, L)}
-    ${card(html`<span class="flex-1">${F.tz.title}</span>${hint(F.tz.hint)}`, zielwerte(F))}`;
+    ${card(html`<span class="flex-1">${F.tz.title}</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`${zielwerte(F)}<div class="card-foot">${F.tz.hint} · Nur die Zusatzanforderung (Erstellung + Betrieb) ist einzuhalten; Richtwerte sind informativ.</div>`)}
+    ${card(html`<span class="flex-1">Wo entstehen die Emissionen?</span>${headLink('Zur Erfassung', L(area === 'b' ? 'betrieb' : 'erfassung'))}`, html`<div class="seg" role="group" aria-label="Bereich">${[['e', 'Erstellung'], ['b', 'Betrieb']].map(([k, label]) => html`<button type="button" class="seg-btn${area === k ? ' is-on' : ''}" data-action="ovArea" data-arg="${k}" aria-pressed="${area === k ? 'true' : 'false'}">${label}</button>`)}</div>${ovListBody(F, Lst)}<div class="card-foot">${F.ovList.foot}</div>`)}`;
 }
 
 const targetChart = F => {
@@ -340,7 +361,7 @@ function submitBar(F) {
 function pruefung(ctx, F) {
   const L = tab => ctx.link.delivery(F.codeLc, tab), A = F.act;
   return html`<div class="fm-cols">
-    <div class="fm-main">${F.kind === 'plan' ? planResult(F, L) : compareCard(F)}</div>
+    <div class="fm-main">${F.kind === 'plan' ? planResult(F, L) : F.cmpList ? devCard(F) : compareCard(F)}</div>
     <div class="fm-side">
       ${card(html`<span class="flex-1">Prüfung BBL</span>${hint(`${F.reviewer}, BBL`)}`, html`<div class="card-body flex-col" style="gap:10px">
         ${F.rv.notSubmitted ? html`<div class="note note-grey">Wartet auf die Einreichung durch ${F.leadName}.</div>` : F.autoChecks.map(check)}
@@ -367,6 +388,19 @@ function compareCard(F) {
     <div class="fm-total" style="${C}"><span></span><span>Total</span><span class="right">${F.cmpT.cur}</span><span class="right muted">${F.cmpT.prev}</span>${devCell(F.cmpT)}</div>
     ${subs.length ? html`<div class="fm-space"></div>${subs.map(u => html`<div class="fm-sub" style="${C}"><span>${u.code}</span><span>${u.name}</span><span class="right">${u.cur}</span><span class="right muted fw-400">${u.prev}</span>${devCell(u)}</div>`)}<div style="height:8px"></div>` : ''}
   </div></div><div class="card-foot">Abweichungen ab ${F.devPct} % sind rot markiert und brauchen eine Begründung.</div>`);
+}
+
+/** Prüfung THG-32 (design 05.11.2026): deviation per Hauptgruppe as a dumbbell (Vorphase ○, THG-32 ●); a flagged deviation asks for the Begründung des Planers. */
+function devCard(F) {
+  const J = F.cmpList, ro = RO(F);
+  return card(html`<span class="flex-1">Abweichungen zur Vorphase ${F.cmpPrevLabel}</span>${hint('kg CO₂-eq/m² EBF·a')}`, html`<div class="fm-table"><div class="ov-body">
+    <div class="ov-head" style="${DEV_COLS}"><span></span><span>Hauptgruppe</span><div class="ov-axis"><span>0</span><span>${J.max}</span></div><span class="right">${J.cur}</span><span class="right">${J.prev}</span><span class="right">Δ</span></div>
+    ${J.rows.map(g => html`<div class="ov-row" style="${DEV_COLS}">
+      <span class="ov-ic">${urlIcon(g.icon)}</span><span class="ellipsis"><span class="fw-600">${g.code}</span> ${g.name}</span>
+      <div class="ov-bar ov-dumb" role="img" aria-label="${g.code}: ${J.cur} ${g.kg}, ${J.prev} ${g.prev}"><div class="ov-line"></div>${g.two ? html`<div class="ov-span" style="left:${g.lo};width:${g.span};background:${g.lc}"></div><div class="ov-dot ov-dot-prev" style="left:${g.xp}"></div>` : ''}<div class="ov-dot" style="left:${g.xc}"></div></div>
+      <span class="right fw-600">${g.kg}</span><span class="right muted">${g.prev}</span><span class="right" style="color:${g.dfg};font-weight:${g.dw}" title="${g.dp}">${g.d}</span>
+    </div>${g.fl ? html`<div class="ov-begr"><span></span><label class="ov-begr-field"><span>Abweichung ${g.dp} · Begründung des Planers erforderlich</span><input class="ent-text" value="${g.beg}" placeholder="z. B. Lüftung neu mit höherer Luftmenge" style="border-color:${g.begBd}" aria-label="Begründung Abweichung ${g.code}" data-change="formBegr" data-form="${F.id}" data-group="${g.code}" data-fid="${F.id}-begr-${g.code}" ${ro}></label></div>` : ''}`)}
+  </div></div><div class="card-foot">${J.foot}</div>`);
 }
 
 function planResult(F, L) {

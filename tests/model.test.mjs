@@ -144,6 +144,7 @@ test('KV-32: Übersicht and Prüfung figures', () => {
   assert.equal(kv.chart.targets.length, 3); assert.equal(kv.chart.targets[0].val, 'CHF 17.00 Mio'); assert.equal(kv.chart.targets[0].delta, '+5.9 %');
   assert.equal(kv.chart.band, '15.30–18.70 Mio'); assert.ok(kv.chart.hasBand);
   assert.equal(kv.costRows.length, 13); assert.equal(kv.totalRow.prev, "18'090'000");
+  assert.equal(kv.ovList.rows.length, 11, 'A and H (0) are not listed'); assert.equal(kv.ovList.subs.length, 3); assert.equal(kv.ovList.unit, 'Mio CHF'); assert.ok(kv.ovList.rows.every(r => r.icon.startsWith('assets/ebkp/')));
   const d = kv.cmp.find(c => c.code === 'D');
   assert.equal(d.delta, '+19.0 %'); assert.equal(d.hi, true, 'deviation ≥ 10 % is highlighted');
   assert.equal(kv.cmpT.delta, '+5.6 %');
@@ -169,14 +170,19 @@ test('THG-32: Emissionsquellen (Erstellung), Betrieb, Zielwerte SIA 390/1 and th
   assert.equal(thg.chart, null); assert.equal(thg.tz.rows.length, 3); assert.deepEqual(thg.tz.ist, ['8.7', '0.5', '9.2']);
   assert.deepEqual(thg.tz.rows.map(r => r.marks.map(m => m.n).join('')), ['AMVB', 'AB', 'AB']);
   assert.equal(thg.tz.legend.length, 4); assert.deepEqual(thg.tz.legend[0].cells.map(c => c.v), ['9.0', '2.0', '11.0']); assert.equal(thg.tz.legend[0].cells[2].over, false);
-  assert.ok(thg.tz.hint.includes('Richtwerte Verwaltung') && thg.tz.hint.includes('Annahme'), 'Betrieb and Zusatzanforderung of Verwaltung are assumptions');
+  assert.ok(thg.tz.hint.includes('Verwaltung') && thg.tz.hint.includes('Annahme'), 'Betrieb and Zusatzanforderung of Verwaltung are assumptions');
   assert.equal(thg.autoChecks.length, 9); assert.equal(thg.devPct, 15);
   assert.ok(thg.autoChecks.filter(c => !c.info).every(c => c.ok), thg.autoChecks.filter(c => !c.ok).map(c => c.label).join(' | '));
   assert.equal(thg.autoChecks[0].label, 'Alle 22 Emissionsquellen mit Elementgruppe, Referenzgrösse und Kennwert');
   assert.ok(thg.autoChecks[4].label.startsWith('Zusatzanforderung B eingehalten: Erstellung + Betrieb 9.2, Grenze 11.0'));
   assert.ok(thg.autoChecks[5].info && thg.autoChecks[5].label.includes('Erstellung 8.7 zu 9.0, Betrieb 0.5 zu 2.0'));
   assert.ok(thg.autoChecks[7].label.includes('62 kWp') && thg.autoChecks[7].label.includes("55'800 kWh/a"));
-  assert.equal(thg.cmp.find(c => c.code === 'D').hi, false, 'Technik deviates 9 % from SIA 31, below the 15 % threshold of the Ökobilanz');
+  assert.equal(thg.cmp.find(c => c.code === 'D').hi, true, 'Technik deviates 18 % from SIA 31, above the 15 % threshold of the Ökobilanz');
+  // Übersicht lists (design 05.11.2026) and the Prüfung rows with the Begründung of the flagged deviation
+  assert.equal(thg.ovList.rows.length, 6); assert.deepEqual(thg.ovList.rows.map(r => r.code), ['B', 'C', 'D', 'E', 'F', 'G']); assert.equal(thg.ovList.rows[2].d, '+0.4'); assert.equal(thg.ovList.rows[2].dfg, '#9b2c44'); assert.equal(thg.ovList.tot, '8.7'); assert.equal(thg.ovList.dTot, '+0.5'); assert.ok(thg.ovList.rows[2].tx && thg.ovList.rows[0].icon === 'assets/ebkp/B.svg');
+  assert.equal(thg.ovBetr.rows.length, 9); assert.equal(thg.ovBetr.rows[8].name, 'Photovoltaik (Gutschrift)'); assert.ok(thg.ovBetr.rows[8].cur.startsWith('−') && thg.ovBetr.rows[8].bc === '#389e0d'); assert.equal(thg.ovBetr.rows[1].name, 'Warmwasser'); assert.equal(thg.ovBetr.rows[1].cur, '0.15', 'both Warmwasser carriers add up'); assert.equal(thg.ovBetr.tot, '0.52');
+  const dRow = thg.cmpList.rows.find(r => r.code === 'D'); assert.ok(dRow.fl && dRow.two && dRow.beg.includes('Lüftung') && dRow.begBd === '#d9d9d9'); assert.equal(thg.cmpList.rows.filter(r => r.fl).length, 1);
+  assert.ok(thg.autoChecks[3].ok && thg.autoChecks[3].label.includes('bei D, begründet'));
   assert.equal(thg.rv.notSubmitted, true);
   assert.equal(thg.manual.length, 5); assert.equal(thg.docs.length, 3);
   assert.equal(thg.rv.canReview, false); assert.equal(thg.rv.canApprove, false); assert.equal(thg.bar.canSubmit, true, 'complete → Einreichen possible');
@@ -280,7 +286,7 @@ test('every project: complete, plausible Datenformulare', () => {
   assert.equal(eiger.forms.thg.status, 'Überfällig'); assert.equal(eiger.forms.thg.missing, 3, 'three fields of three Emissionsquellen'); assert.equal(eiger.forms.kv.status, 'Offen'); assert.equal(eiger.forms.kv.kpis[0].v, '–');
   const agro = vmFor(base, data.projects.projects.find(p => p.id === 'agroscope-posieux'));
   assert.equal(agro.forms.thg.status, 'Abgeschlossen'); assert.equal(agro.forms.thg.endwertStr, '11.4', 'calibrated to the Endwert of the instance'); assert.equal(agro.forms.kv.locked, true); assert.equal(agro.forms.thg.reviewer, 'Reto Muster');
-  assert.equal(agro.forms.thg.erf.head.find(h => h.key === 'tool').val, 'Lesosai'); assert.equal(agro.forms.thg.autoChecks[4].ok, true, 'Restaurant: 11.4 + Betrieb is below the Zusatzanforderung 16'); assert.ok(agro.forms.thg.autoChecks[5].label.includes('Erstellung 11.4 zu 9.0') && agro.forms.thg.tz.hint.includes('Richtwerte Restaurant') && !agro.forms.thg.tz.hint.includes('Annahme'));
+  assert.equal(agro.forms.thg.erf.head.find(h => h.key === 'tool').val, 'Lesosai'); assert.equal(agro.forms.thg.autoChecks[4].ok, true, 'Restaurant: 11.4 + Betrieb is below the Zusatzanforderung 16'); assert.ok(agro.forms.thg.autoChecks[5].label.includes('Erstellung 11.4 zu 9.0') && agro.forms.thg.tz.hint.includes('Restaurant') && !agro.forms.thg.tz.hint.includes('Annahme'));
   assert.equal(vm.pfRows.find(r => r.project === 'agroscope-posieux').ew, '11.4'); assert.equal(vm.pfRows.find(r => r.project === 'eigerplatz').status, 'Überfällig'); assert.equal(vm.pfRows.find(r => r.project === 'zollikofen').status, 'Nicht bestellt');
   assert.equal(vmFor(base, data.projects.projects.find(p => p.id === 'prangins')).formByCode('kv-32'), null, 'no KV-32 in Prangins');
   assert.equal(vm.forms.ks.status, 'Abgeschlossen'); assert.equal(vm.forms.ks.cmpPrevLabel, 'SIA 21');

@@ -52,6 +52,35 @@
 .tgt-legend > * { min-width: 0; }
 .tgt-bandsw { width: 16px; height: 10px; background: #e2efe6; border-radius: 2px; }
 
+/* Übersicht (design 05.11.2026): bar lists with the previous phase as a tick; Prüfung THG-32: dumbbell rows with Begründung */
+.ov-body { padding: 8px 16px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 460px; }
+.ov-head, .ov-row, .ov-total, .ov-sub { display: grid; gap: 0 10px; align-items: center; font-variant-numeric: tabular-nums; }
+.ov-head > *, .ov-row > *, .ov-total > *, .ov-sub > * { min-width: 0; }
+.ov-head { height: 30px; font-size: 12px; color: var(--muted); }
+.ov-axis { display: flex; justify-content: space-between; }
+.ov-row { min-height: 42px; font-size: 13px; border-radius: 4px; }
+.ov-row.is-link { cursor: pointer; }
+.ov-row.is-link:hover, .ov-row.is-link:focus-visible { background: #f3f6f9; outline: none; }
+.ov-row.is-link:focus-visible { box-shadow: 0 0 0 2px var(--primary-ring); }
+.ov-ic { width: 28px; height: 28px; border-radius: 6px; background: #e2e8ee; color: var(--navy); display: flex; align-items: center; justify-content: center; }
+.ov-bar { position: relative; height: 18px; }
+.ov-track { position: absolute; left: 0; right: 0; top: 5px; height: 8px; background: #eef0f3; border-radius: 4px; }
+.ov-fill { position: absolute; left: 0; top: 5px; height: 8px; border-radius: 4px; background: var(--navy); }
+.ov-tick { position: absolute; top: 0; height: 18px; width: 2px; margin-left: -1px; background: #374151; }
+.ov-total { height: 38px; font-size: 13px; border-top: 1px solid #1f2d3f; margin-top: 4px; }
+.ov-sub { min-height: 36px; font-size: 13.5px; font-weight: 700; }
+.ov-dumb { height: 20px; }
+.ov-line { position: absolute; left: 0; right: 0; top: 9px; height: 2px; background: #eef0f3; }
+.ov-span { position: absolute; top: 7px; height: 6px; border-radius: 3px; }
+.ov-dot { position: absolute; top: 3px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--navy); }
+.ov-dot-prev { border: 2px solid #56687a; background: #fff; box-sizing: border-box; }
+.ov-begr { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 0 10px; padding: 0 0 8px; }
+.ov-begr-field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #9b2c44; }
+.seg { display: inline-flex; border: 1px solid #d1d5db; border-radius: 4px; overflow: hidden; margin: 12px 16px 0; }
+.seg-btn { height: 26px; padding: 0 12px; border: 0; font-size: 12.5px; font-weight: 600; cursor: pointer; background: #fff; color: var(--navy); white-space: nowrap; }
+.seg-btn.is-on { background: var(--navy); color: #fff; }
+.seg-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: -2px; }
+
 /* Übersicht: Verlauf (steps) and Beteiligte (short list) */
 .st-list { padding: 8px 8px 10px; display: flex; flex-direction: column; gap: 2px; }
 .st-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 6px 10px; align-items: start; padding: 7px 8px; border-radius: 4px; }

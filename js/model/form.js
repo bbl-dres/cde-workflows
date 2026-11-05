@@ -36,6 +36,10 @@ function compareRows(groups, prev, kwOf, dv, limit) {
   return { prevTotal, costRows, totalRow: { cur: FMT(total / dv), prev: FMT(prevTotal / dv), kw: kwOf(total) }, cmp, cmpT: dRow(total, prevTotal, dv, limit), hiCodes: cmp.filter(c => c.hi).map(c => c.code) };
 }
 const ck = (ok, label) => ({ label, ok, icon: ok ? 'circle-check' : 'triangle-alert', color: ok ? '#2f7d63' : '#c49a1c' });
+/** Deviation of a value from the previous phase: flagged from `limit` % and an absolute minimum (0.1 Mio / 0.1 kg), so small bases do not flag. */
+const devOf = (cur, pv, limit, absMin) => { const d = cur - pv, dp = pv ? d / pv * 100 : 0, fl = pv > 0 && Math.abs(dp) >= limit && Math.abs(d) >= absMin; return { d, dp, fl, dfg: fl ? (d > 0 ? '#9b2c44' : '#2f6b12') : '#374151', dw: fl ? 600 : 400 }; };
+const sgn = (v, fmt = FMT1) => (v > 0.04 ? '+' : v < -0.04 ? '−' : '±') + fmt(Math.abs(v));
+const ebkpIcon = code => `assets/ebkp/${code}.svg`;
 const alt = i => (i % 2 ? 'transparent' : '#f6f7f9');
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const missingText = n => plural(n, 'Wert fehlt', 'Werte fehlen');
@@ -180,8 +184,15 @@ function costPart(kind, P, f, data, T, M, ref, locked, bd) {
     ck(C.hiCodes.length === 0, C.hiCodes.length ? `Abweichung zu ${T.cmpPrevLabel} über ${limit} % bei ${C.hiCodes.join(', ')}` : `Abweichungen zu ${T.cmpPrevLabel} unter ${limit} %`),
     ck(true, 'Bezugsmengen aus den Grundrissen (DWG) übernommen'),
   ];
+  // Übersicht: Kosten nach Hauptgruppen as a bar list in eBKP order with the previous phase as a tick (Mio CHF)
+  const listG = groups.filter(G => G.sum || prev[G.code]), mxL = Math.max(1, ...listG.flatMap(G => [G.sum, prev[G.code] || 0])) * 1.08;
+  const mio1 = v => FMT1(v / 1e6), sgM = v => sgn(v / 1e6);
+  const ovList = { col: 'Hauptgruppe', unit: 'Mio CHF', dUnit: 'Δ Mio', max: mio1(mxL), totalLabel: 'Total', prevText: `${T.cmpPrevLabel}: ${mio1(C.prevTotal)} Mio`, tot: mio1(total), dTot: sgM(total - C.prevTotal),
+    rows: listG.map(G => { const pv = prev[G.code] || 0, x = devOf(G.sum, pv, limit, 1e5); return { code: G.code, name: G.name, icon: ebkpIcon(G.code), cur: mio1(G.sum), share: total ? Math.round(G.sum / total * 100) + ' %' : '', w: (G.sum / mxL * 100).toFixed(2) + '%', tx: pv ? (pv / mxL * 100).toFixed(2) + '%' : null, d: sgM(x.d), dp: signed(x.dp), dfg: x.dfg, dw: x.dw, tip: `${T.cmpPrevLabel}: ${mio1(pv)} Mio · ${T.code}: ${mio1(G.sum)} Mio`, tab: 'erfassung' }; }),
+    subs: SUBS.map(([code, name, set, withMwst]) => { const cur = sumOf(set) * (withMwst ? 1 + mwst : 1) + (withMwst ? sumOf('A') : 0), pv = withMwst ? null : sumOf(set, prev), x = pv != null ? devOf(cur, pv, limit, 1e5) : null; return { code, name, cur: mio1(cur), prevText: pv != null ? `${T.cmpPrevLabel}: ${mio1(pv)} Mio` : '', share: total && !withMwst ? Math.round(cur / total * 100) + ' %' : '', d: x ? sgM(x.d) : '–', dfg: x ? x.dfg : '#6b7280', dw: x ? x.dw : 400 }; }),
+    foot: `Mio CHF · Strich = ${T.cmpPrevLabel} · markiert ab ${limit} % und 0.1 Mio Abweichung` };
   const value = `Erstellungskosten B–W CHF ${FMT(bw)}`;
-  return { fields, missing, total, bw, groups: groups.map(G => ({ code: G.code, direct: G.direct, sum: G.sum, n: G.pos.length })), subtotals, kpis, costRows: C.costRows, totalRow: C.totalRow, chart, cmp: C.cmp, cmpT: C.cmpT, autoChecks,
+  return { fields, missing, total, bw, groups: groups.map(G => ({ code: G.code, direct: G.direct, sum: G.sum, n: G.pos.length })), subtotals, kpis, costRows: C.costRows, totalRow: C.totalRow, chart, ovList, cmp: C.cmp, cmpT: C.cmpT, autoChecks,
     handoverValue: value, submitDetail: value, canSubmitData: missing === 0, reason: 'Einreichen erst, wenn alle Werte erfasst sind', endwert: null, endwertStr: '–', nSrc: 0,
     erf: { isTHG: false, qtyLabel: T.qtyLabel, valLabel: T.valLabel, kwLabel: T.kwLabel, rows: shownRows, totalStr: FMT(total), totalKw: kwOf(total) } };
 }
@@ -244,7 +255,7 @@ function thgPart(P, f, data, T, M, ref, locked, bd, docs) {
     const end = n != null && a != null && etaOk ? n * a / 100 / eta : 0, kRow = kf === 'strom' ? kE : kf, thg = end * kRow;
     endSum += end; thgSum += thg;
     return { isRow: true, key, name, carrier, std: !!B[key + '_std'], nStr: disp01(B[key + '_n']), aStr: disp01(B[key + '_a']), etaStr: disp01(B[key + '_eta']),
-      nBd: bd(n == null), aBd: bd(a == null), etaBd: bd(!etaOk), end: miss ? '–' : FMT1(end), kE: kRow.toFixed(3), thg: miss ? '–' : FMT2(thg), miss: miss > 0 };
+      nBd: bd(n == null), aBd: bd(a == null), etaBd: bd(!etaOk), end: miss ? '–' : FMT1(end), kE: kRow.toFixed(3), thg: miss ? '–' : FMT2(thg), tv: miss ? 0 : thg, miss: miss > 0 };
   });
   const pvSrc = S.find(s => s.id === TH.pv.kWpId), kWp = pvSrc ? num(pvSrc.q) || 0 : 0;
   const Y = bv('pv_y'), EV = bv('pv_ev'); fieldsB += 2; missB += (Y == null ? 1 : 0) + (EV == null ? 1 : 0);
@@ -285,9 +296,29 @@ function thgPart(P, f, data, T, M, ref, locked, bd, docs) {
     label, sub, ist: istOk[j] ? neg(IST[j], FMT1) : '–', istW: istOk[j] ? X(IST[j]) : '0%',
     marks: MK.filter(m => m.v[j] != null).sort((a, b) => a.v[j] - b.v[j]).map((m, i) => ({ n: m.n, c: m.c, x: X(m.v[j]), below: i % 2 === 1, title: `${m.label} ${FMT1(m.v[j])}` })) }));
   const zusB = rw('zus')[0];
-  const tz = { title: T.ov.chartTitle, hint: `kg CO₂-eq/m² EBF·a · Richtwerte ${kat}${RW.zus ? (RW.verified ? '' : ' (Betrieb, Zusatzanforderung: Annahme)') : ' (keine Richtwerte Betrieb, Zusatzanforderung)'}`, max: FMT1(mx), rows: tzRows,
+  const tz = { title: T.ov.chartTitle, hint: `Ziele nach SIA 390/1 · ${kat} · kg CO₂-eq/m² EBF·a${RW.zus ? (RW.verified ? '' : ` · Betrieb und Zusatzanforderung für ${kat} als Annahme`) : ` · keine Richtwerte Betrieb und Zusatzanforderung für ${kat}`}`, max: FMT1(mx), rows: tzRows,
     ist: IST.map((v, j) => (istOk[j] ? neg(v, FMT1) : '–')), legend: MK.map(m => ({ n: m.n, c: m.c, label: m.label, cells: m.v.map((v, j) => ({ v: v == null ? '–' : FMT1(v), over: v != null && j === 2 && istOk[2] && sumIst > v })) })) };
   const kpis = [{ k: 'Erstellung', v: erstStr, u: 'kg CO₂-eq/m² EBF·a' }, { k: 'Betrieb', v: betrStr, u: 'kg CO₂-eq/m² EBF·a' }];
+
+  // Übersicht «Wo entstehen die Emissionen?»: Erstellung per Hauptgruppe with the Vorphase as a tick, Betrieb per Energiedienstleistung (no Vorphase)
+  const prevKw = code => (EBF ? (prev[code] || 0) / 60 / EBF : 0), prevAnnTot = EBF ? C.prevTotal / 60 / EBF : 0;
+  const listG = groups.filter(G => G.n || prev[G.code]), mxE = Math.max(0.1, ...listG.flatMap(G => [G.kw, prevKw(G.code)])) * 1.08;
+  const gRow = G => { const pv = prevKw(G.code), x = devOf(G.kw, pv, limit, 0.1); return { G, pv, x, code: G.code, name: G.name, icon: ebkpIcon(G.code), d: sgn(x.d), dp: signed(x.dp), fl: x.fl, dfg: x.dfg, dw: x.dw }; };
+  const ovList = { col: 'Hauptgruppe', unit: 'kg', dUnit: 'Δ kg', max: FMT1(mxE), totalLabel: 'Total B–G', prevText: `${T.cmpPrevLabel}: ${FMT1(prevAnnTot)} kg`, tot: hasSrc ? FMT1(erst) : '–', dTot: hasSrc ? sgn(erst - prevAnnTot) : '–', subs: [],
+    rows: listG.map(G => { const r = gRow(G); return { code: r.code, name: r.name, icon: r.icon, cur: FMT1(G.kw), share: share(G.kw), w: (G.kw / mxE * 100).toFixed(2) + '%', tx: r.pv ? (r.pv / mxE * 100).toFixed(2) + '%' : null, d: r.d, dp: r.dp, dfg: r.dfg, dw: r.dw, tip: `${T.cmpPrevLabel}: ${FMT1(r.pv)} kg · ${T.code}: ${FMT1(G.kw)} kg`, tab: 'erfassung' }; }),
+    foot: `kg CO₂-eq/m² EBF·a · Erstellung: Strich = ${T.cmpPrevLabel}, markiert ab ${limit} % und 0.1 kg · Betrieb: keine Vorphase, PV-Gutschrift in Grün` };
+  const agg = new Map(); betrRows.forEach(r => agg.set(r.name, (agg.get(r.name) || 0) + r.tv));
+  if (pvOn) agg.set('Photovoltaik (Gutschrift)', -eig * kE - credit);
+  const BR = [...agg].map(([name, v]) => ({ name, v })).filter(x => Math.abs(x.v) > 0.0005);
+  const mxB = Math.max(0.01, ...BR.map(x => Math.abs(x.v))) * 1.08, posSum = BR.filter(x => x.v > 0).reduce((a, x) => a + x.v, 0);
+  const ovBetr = { col: 'Energiedienstleistung', unit: 'kg', dUnit: 'Δ kg', max: FMT2(mxB), totalLabel: 'Total Betrieb', prevText: 'keine Vorphase', tot: hasBetr ? neg(thgB) : '–', dTot: '–', subs: [],
+    rows: BR.map(x => ({ code: '', name: x.name, icon: x.v < 0 ? 'assets/icons/zap.svg' : ebkpIcon('D'), cur: neg(x.v), share: x.v > 0 && posSum ? Math.round(x.v / posSum * 100) + ' %' : '', w: (Math.abs(x.v) / mxB * 100).toFixed(2) + '%', tx: null, bc: x.v < 0 ? '#389e0d' : null, d: '–', dp: '', dfg: '#6b7280', dw: 400, tip: x.name, tab: 'betrieb' })), foot: ovList.foot };
+
+  // Prüfung: deviation per Hauptgruppe as a dumbbell (Vorphase ○, THG-32 ●); a flagged deviation needs the Begründung des Planers
+  const begr = f.begr || {}, mxJ = Math.max(0.1, ...listG.flatMap(G => [G.kw, prevKw(G.code)])) * 1.1;
+  const cmpList = { max: FMT1(mxJ), cur: T.code, prev: T.cmpPrevLabel, foot: `● ${T.code} · ○ ${T.cmpPrevLabel} · markiert ab ${limit} % und 0.1 kg`,
+    rows: listG.map(G => { const r = gRow(G), a = G.kw / mxJ * 100, b = r.pv / mxJ * 100, beg = String(begr[G.code] || ''); return { code: r.code, name: r.name, icon: r.icon, kg: FMT1(G.kw), prev: FMT1(r.pv), d: r.d, dp: r.dp, fl: r.fl, dfg: r.dfg, dw: r.dw, xc: a.toFixed(2) + '%', xp: b.toFixed(2) + '%', lo: Math.min(a, b).toFixed(2) + '%', span: Math.abs(a - b).toFixed(2) + '%', two: Math.abs(a - b) >= 1.6, lc: r.fl ? (G.kw > r.pv ? '#9b2c44' : '#389e0d') : '#c3c9d1', beg, begBd: bd(r.fl && !beg.trim()) }; }) };
+  const flagged = cmpList.rows.filter(r => r.fl), unexplained = flagged.filter(r => !r.beg.trim()).map(r => r.code);
 
   // Prüfung
   const docNames = docs.map(d => d[0]), missingDocs = T.docs.map(d => d[0]).filter(n => !docNames.includes(n));
@@ -301,7 +332,7 @@ function thgPart(P, f, data, T, M, ref, locked, bd, docs) {
     ck(nSrc > 0 && missing === 0, !nSrc ? 'Keine Emissionsquellen erfasst' : missing ? missingText(missing) : `Alle ${nSrc} Emissionsquellen mit Elementgruppe, Referenzgrösse und Kennwert`),
     ck(!missingDocs.length, missingDocs.length ? `Pflichtdokumente fehlen: ${missingDocs.join(', ')}` : 'Ökobilanz-Bericht, Tool-Export und Rechenhilfe Betrieb hochgeladen'),
     ck(stdBasis, stdBasis ? `${DEF.kbob}, Systemgrenze SIA 2032` : `Abweichende Grundlagen: ${hv('kbob')} · ${hv('sys')}`),
-    ck(C.hiCodes.length === 0, C.hiCodes.length ? `Abweichung zu ${T.cmpPrevLabel} über ${limit} % bei ${C.hiCodes.join(', ')}` : `Abweichungen zu ${T.cmpPrevLabel} unter ${limit} %`),
+    ck(!unexplained.length, !flagged.length ? `Abweichungen zu ${T.cmpPrevLabel} unter ${limit} %` : unexplained.length ? `Abweichung zu ${T.cmpPrevLabel} über ${limit} % bei ${unexplained.join(', ')} ohne Begründung des Planers` : `Abweichung zu ${T.cmpPrevLabel} über ${limit} % bei ${flagged.map(r => r.code).join(', ')}, begründet`),
     zusB == null ? ck(false, `Keine Zusatzanforderung für die Gebäudekategorie ${kat}: Vergleichskategorie SIA 390/1 wählen`)
       : ck(hasSrc && sumIst <= zusB, `Zusatzanforderung B ${hasSrc && sumIst <= zusB ? 'eingehalten' : 'überschritten'}: Erstellung + Betrieb ${sumStr}, Grenze ${FMT1(zusB)}`),
     info(`Richtwerte B, informativ: Erstellung ${erstStr} zu ${rw('erst')[0] != null ? FMT1(rw('erst')[0]) : '–'}, Betrieb ${betrStr} zu ${rw('betr')[0] != null ? FMT1(rw('betr')[0]) : '–'}`),
@@ -310,7 +341,7 @@ function thgPart(P, f, data, T, M, ref, locked, bd, docs) {
     ck(gt >= 15 && gt <= 50, `Anteil Gebäudetechnik ${Math.round(gt)} % der Erstellung (Erfahrungswert 15–50 %)`),
   ];
   const value = hasSrc ? `Erstellung ${erstStr}, Betrieb ${betrStr} kg CO₂-eq/m² EBF·a` : '–';
-  return { fields: fieldsE + fieldsB, missing, missE, missB, total, bw: total, groups: groups.map(G => ({ code: G.code, open: G.open, sum: G.sum, kw: G.kw, n: G.n })), subtotals, cmpSubs: [], kpis, costRows: C.costRows, totalRow: C.totalRow, chart: null, tz, cmp: C.cmp, cmpT: C.cmpT, autoChecks,
+  return { fields: fieldsE + fieldsB, missing, missE, missB, total, bw: total, groups: groups.map(G => ({ code: G.code, open: G.open, sum: G.sum, kw: G.kw, n: G.n })), subtotals, cmpSubs: [], kpis, costRows: C.costRows, totalRow: C.totalRow, chart: null, tz, ovList, ovBetr, cmpList, cmp: C.cmp, cmpT: C.cmpT, autoChecks,
     handoverValue: value, submitDetail: `${value} · ${plural(nSrc, 'Emissionsquelle', 'Emissionsquellen')}`, canSubmitData: nSrc > 0 && missing === 0,
     reason: nSrc ? 'Einreichen erst, wenn alle Werte erfasst sind' : 'Einreichen erst, wenn Emissionsquellen erfasst sind', endwert: hasSrc ? erst : null, endwertStr: erstStr, nSrc,
     headShared, erf: { isTHG: true, rows, head: headErst, tot, derived, nSrc, missing: missE },
@@ -356,7 +387,7 @@ function dataForm(kind, P, data, project, user) {
     badges: badgesOf(isTHG ? { erfassung: C.missE, betrieb: C.missB } : missing, locked, X.docs.length),
     steps: stepRows(D.steps, step, f.dates, rejected), next: nextStep(step, T.target, reviewer, open),
     kpis: C.kpis, comp, meta, people: peopleShort(people, X.peopleList), peopleRows: peopleRows(people, X.peopleList), docs: docRows(X.docs), hist: histRows(people, [...X.history, ...f.events]),
-    ov: T.ov, costRows: C.costRows, totalRow: C.totalRow, subtotals: C.subtotals, cmpSubs: C.cmpSubs || C.subtotals, chart: C.chart, tz: C.tz, headShared: C.headShared, betr: C.betr,
+    ov: T.ov, costRows: C.costRows, totalRow: C.totalRow, subtotals: C.subtotals, cmpSubs: C.cmpSubs || C.subtotals, chart: C.chart, tz: C.tz, headShared: C.headShared, betr: C.betr, ovList: C.ovList, ovBetr: C.ovBetr, cmpList: C.cmpList,
     erf: { tableTitle: T.tableTitle, totalLabel: T.totalLabel, missingOnly: !!f.missingOnly, importItems: T.importItems, inputBg: locked ? '#f3f4f6' : '#fff', ...C.erf },
     bar, cmp: C.cmp, cmpT: C.cmpT, cmpPrevLabel: T.cmpPrevLabel, cmpUnit: T.cmpUnit, devPct: T.devPct || DEV_PCT, autoChecks: C.autoChecks, manual, rv, handover: { ziel: T.ziel, value: C.handoverValue, status: handoverStatus(step, f.dates[6]) }, canTransfer: step === 5,
     missing, fields, missE: C.missE, missB: C.missB, total: C.total, bw: C.bw, groups: C.groups, endwert: C.endwert, endwertStr: C.endwertStr, nSrc: C.nSrc,
