@@ -190,8 +190,8 @@ const costTable = F => {
 };
 
 /** Einheit of a Kostenelement: dropdown (the Bezugsgrösse of the norm is preselected; «pauschal» needs no Menge); text on a locked form. */
-const unitCell = (F, r, attrs) => (F.locked ? html`<span class="muted fs-12">${r.unit}</span>`
-  : html`<span class="ent-cell-input"><select class="ent-select" aria-label="Einheit ${r.code || ''}" ${attrs}>${r.unitOpts.map(o => html`<option value="${o.v}" ${o.sel ? raw('selected') : ''}>${o.v}</option>`)}</select></span>`);
+const unitCell = (F, r, attrs) => (F.locked ? html`<span class="muted fs-12" title="${r.unitTip}">${r.unit}</span>`
+  : html`<span class="ent-cell-input"><select class="ent-select" aria-label="Einheit ${r.code || ''}" title="${r.unitTip}" ${attrs}>${r.unitOpts.map(o => html`<option value="${o.v}" ${o.sel ? raw('selected') : ''}>${o.v}</option>`)}</select></span>`);
 /** Kennwert CHF/m² GF: shows the derived value (grey); an own value replaces it until the field is cleared. */
 const kwCell = (F, r, ro) => html`<span class="ent-cell-input"><input class="ent-input${r.kwOwn ? '' : ' is-calc'}" aria-label="Kennwert CHF/m² GF ${r.code || ''}" title="${r.kwTip}" value="${r.kw}" placeholder="–" style="background:${F.erf.inputBg}" data-change="formKw" data-form="${F.id}" data-code="${r.kwKey}" data-fid="${F.id}-kw-${r.kwKey}" ${ro}></span>`;
 

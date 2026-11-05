@@ -52,7 +52,10 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   zeigen die Kostenformulare die Beispieldatei des Prototyps (`data/ebkp.json › import`), die Ökobilanz wartet auf eine Datei.
 - **Kosten erfassen (KV-32, KS-31)**: alle Hauptgruppen A–Z der eBKP-H 2020, standardmässig aufgeklappt in ihre Elementgruppen
   (A01, B02, C01 … Z01 Mehrwertsteuer; keine Pauschalzeilen, H hat im Musterprojekt kein Element). Je Elementgruppe: Einheit
-  als Auswahl (die Bezugsgrösse der Norm ist vorgewählt, «pauschal» braucht keine Menge), Menge, Kosten und der Kennwert
+  als Auswahl mit den Einheiten der Bezugsgrössen der Norm (m², m³, m, St, m³/h, CHF) und «pauschal»; vorgewählt ist die
+  Bezugsgrösse A der Norm, soweit öffentlich belegt (54 von 71 Elementgruppen, Abkürzung und Name im Hover der Einheit; Quellen
+  und Lücken in `docs/research/2026-11-05-ebkp-h-bezugsgroessen.md`), sonst «pauschal». «pauschal» und «CHF» (Berechnungsbezug,
+  eine Kostensumme) brauchen keine Menge. Dazu Menge, Kosten und der Kennwert
   CHF/m² GF als Eingabe (grau = aus Kosten und GF der Grundrisse abgeleitet; ein eigener Wert ersetzt ihn, auch je
   Hauptgruppe). Z Mehrwertsteuer wird wie jeder Betrag erfasst (die Musterprojekte tragen 8.1 % auf B–Y). Ein Klick auf die
   Zeile der Hauptgruppe fasst sie zu einem Betrag zusammen und klappt sie wieder auf. Positionen lassen sich entfernen

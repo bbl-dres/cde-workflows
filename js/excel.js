@@ -10,7 +10,7 @@
 // All of that is pure and runs without a browser (tests). SheetJS is only needed to turn rows into an .xlsx file and back
 // (workbookBlob, sheetsOfFile); it is loaded from the CDN on first use, like jsPDF for the Prüfbericht.
 import { num, FMT, FMT2 } from './format.js';
-import { KEYS, egOf } from './model/mock.js';
+import { KEYS, egOf, needsQty } from './model/mock.js';
 
 const XLSX_SRC = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';   // SheetJS Community Edition, Apache-2.0
 const XLSX_SRI = 'sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw';
@@ -57,7 +57,7 @@ export const BETR_HEAD = ['Nr', 'Energiedienstleistung', 'Energieträger', 'Proj
 export const SHEET = { head: 'Grundlagen', src: 'Erstellung', betr: 'Betrieb' };
 const PV_KEYS = [['pv_y', 'PV-Ertrag kWh/a'], ['pv_ev', 'Eigenverbrauch %']];
 const BETR_FIELDS = [['n', 4, 'Nutzenergie'], ['a', 5, 'Anteil'], ['eta', 6, 'η / JAZ'], ['end', 7, 'Endenergie'], ['kf', 8, 'Koeffizient']];   // [state key suffix, column, label]
-const UNIT_ALIAS = { m2: 'm²', m3: 'm³', stk: 'Stk.', 'stück': 'Stk.', st: 'Stk.', 'm2 gf': 'm² GF', psch: 'pauschal', pauschale: 'pauschal' };
+const UNIT_ALIAS = { m2: 'm²', m3: 'm³', 'm3/h': 'm³/h', 'stk': 'St', 'stk.': 'St', 'st.': 'St', 'stück': 'St', 'm2 gf': 'm²', 'm² gf': 'm²', fr: 'CHF', 'fr.': 'CHF', pl: 'pauschal', 'gl.': 'pauschal', psch: 'pauschal', pauschale: 'pauschal' };   // spellings of practice and of earlier exports
 
 const byCode = (a, b) => a.code.localeCompare(b.code);
 const text = v => String(v ?? '').trim();
@@ -79,10 +79,10 @@ function costSheet(kind, P, data, empty) {
     const direct = !empty && isDirect(f, g.code);   // «zusammengefasst»: the Hauptgruppe carries the amount, its Kostenelemente are not part of the form
     rows.push([g.code, g.name, '', '', direct ? val((f.gvals || {})[g.code]) : '', val(kws[g.code])]);
     if (direct) continue;
-    for (const k of g.kids.filter(x => !removed[x.code])) { const u = units[k.code] ?? (k.unit || 'pauschal'); rows.push([k.code, k.name, u === 'pauschal' ? '' : val(Q[k.code]), u, val(V[k.code]), val(kws[k.code])]); }
+    for (const k of g.kids.filter(x => !removed[x.code])) { const u = units[k.code] ?? (k.unit || 'pauschal'); rows.push([k.code, k.name, needsQty(u) ? val(Q[k.code]) : '', u, val(V[k.code]), val(kws[k.code])]); }
     for (const a of (f.added || []).filter(x => x.grp === g.code && x.code)) {
       const el = (data.ebkp.elements[g.code] || []).find(x => x[0] === a.code), u = units[`new-${a.id}`] ?? ((el && el[2]) || 'pauschal');
-      rows.push([a.code, el ? el[1] : '', u === 'pauschal' ? '' : val(a.q), u, val(a.v), val(kws[`new-${a.id}`])]);
+      rows.push([a.code, el ? el[1] : '', needsQty(u) ? val(a.q) : '', u, val(a.v), val(kws[`new-${a.id}`])]);
     }
   }
   return { name: data.forms.kinds[kind].code, rows, widths: [8, 46, 12, 12, 16, 34] };
@@ -177,7 +177,7 @@ function planCost(kind, payload, P, data, mode) {
       : add ? { q: num(add.q), v: num(add.v), kw: num(kws[key]), unit: units[key] ?? (el[2] || 'pauschal') }
         : { q: num(Q[r.code]), v: num(V[r.code]), kw: num(kws[key]), unit: units[key] ?? (base.unit || 'pauschal') };
     const want = r.unit === cur.unit ? cur.unit : unitIn(UNITS, r.unit);   // '' = no unit in the file, null = a unit the form does not know
-    const unit = want && (inForm ? takesText(mode, cur.unit, want) : want !== cur.unit) ? want : cur.unit, hasQty = unit !== 'pauschal';
+    const unit = want && (inForm ? takesText(mode, cur.unit, want) : want !== cur.unit) ? want : cur.unit, hasQty = needsQty(unit);
     const tu = unit !== cur.unit, tq = hasQty && takes(mode, cur.q, r.q), tv = takes(mode, cur.v, r.v), tk = takes(mode, cur.kw, r.kw);
     const hints = [];
     if (want === null) hints.push(`Einheit «${r.unit}» unbekannt`);

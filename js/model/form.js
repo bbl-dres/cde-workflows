@@ -10,7 +10,7 @@ import { FMT, FMT1, FMT2, num, disp, disp2, disp01, mio } from '../format.js';
 import { pillSpec } from './pill.js';
 import { PLAN_STATUS } from './plan.js';
 import { RULES } from '../plancheck/rules.js';
-import { mockProject, KEYS, KIND_OF } from './mock.js';
+import { mockProject, KEYS, KIND_OF, needsQty } from './mock.js';
 
 export const LOCKED_FROM = 3;
 const STATUS = ['Offen', 'In Bearbeitung', 'In Bearbeitung', 'Eingereicht', 'In Prüfung', 'Freigegeben', 'Abgeschlossen'];
@@ -128,7 +128,11 @@ function costPart(kind, P, f, data, T, M, ref, locked, bd) {
   const kwOf = v => (GF ? FMT(v / GF) : '–');
   const UNITS = T.units || ['pauschal'];
   /** Einheit of a Kostenelement: the one picked in the dropdown, else the Bezugsgrösse of the norm; «pauschal» = no Menge. */
-  const unitOf = (key, def) => { const u = units[key] ?? (def || 'pauschal'); return { unit: u, hasQty: u !== 'pauschal', unitOpts: [...new Set([...UNITS, u])].map(o => ({ v: o, sel: o === u })) }; };
+  const unitOf = (key, def) => { const u = units[key] ?? (def || 'pauschal'); return { unit: u, hasQty: needsQty(u), unitOpts: [...new Set([...UNITS, u])].map(o => ({ v: o, sel: o === u })) }; };
+  /** Hover of the Einheit: the Bezugsgrösse A of the norm for the Elementgruppe (unit, abbreviation, name), as far as it is publicly documented. */
+  const refTip = (grp, code) => { const el = (E.elements[grp] || []).find(x => x[0] === code);
+    return !el ? 'Einheit der Menge' : !el[3] ? 'Keine Bezugsgrösse der Norm belegt. «pauschal» braucht keine Menge'
+      : `Bezugsgrösse der Norm (eBKP-H 2020, System A): ${el[2]} ${el[3]}${el[4] ? ` · ${el[4]}` : ''}${el[2] === 'CHF' ? ' · Berechnungsbezug (Kostensumme), keine Menge' : ''}`; };
   /** Kennwert CHF/m² GF: derived from the costs and the GF of the Grundrisse; an own value of the delivery team replaces it (plans are not always complete). */
   const kwCell = (key, v, known) => { const own = num(kws[key]), der = GF && known ? v / GF : null, val = own ?? der;
     return { kwKey: key, kw: val == null ? '' : FMT(val), kwOwn: own != null, kwTip: own != null ? `Eigener Wert${der != null ? `, berechnet ${FMT(der)}` : ''}. Feld leeren: wieder berechnen` : GF ? 'Berechnet: Kosten / Geschossfläche GF der Grundrisse. Ein eigener Wert ersetzt die Berechnung' : 'Keine Geschossfläche aus den Grundrissen: Kennwert eingeben' }; };
@@ -142,7 +146,7 @@ function costPart(kind, P, f, data, T, M, ref, locked, bd) {
     const addPos = ({ code, name, unit: def, q, v }, more) => {
       const isNew = !!more.isNewPos, uKey = isNew ? `new-${more.id}` : code, { unit, hasQty, unitOpts } = unitOf(uKey, def), codeMiss = isNew && !code, qMiss = hasQty && num(q) == null, vMiss = num(v) == null, vn = num(v) || 0;
       fields += (hasQty ? 2 : 1) + (isNew ? 1 : 0); missing += (codeMiss ? 1 : 0) + (qMiss ? 1 : 0) + (vMiss ? 1 : 0); G.sum += vn;
-      G.pos.push({ code, name, unit, unitOpts, uKey, hasQty, qStr: disp(q), vStr: disp(v), ...kwCell(uKey, vn, !vMiss), qBd: bd(qMiss), vBd: bd(vMiss), codeBd: bd(codeMiss), miss: codeMiss || qMiss || vMiss, qKey, vKey, ...more });
+      G.pos.push({ code, name, unit, unitOpts, unitTip: refTip(G.code, code), uKey, hasQty, qStr: disp(q), vStr: disp(v), ...kwCell(uKey, vn, !vMiss), qBd: bd(qMiss), vBd: bd(vMiss), codeBd: bd(codeMiss), miss: codeMiss || qMiss || vMiss, qKey, vKey, ...more });
     };
     if (direct) { fields++; const v = num(gval); if (v == null) { missing++; G.gMiss = true; } else G.sum = v; }
     else {

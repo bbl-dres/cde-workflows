@@ -11,6 +11,8 @@ export const BASE_EBF = 5600;
 export const KIND_OF = { 'KV-32': 'kv', 'KS-31': 'ks', 'THG-32': 'thg' };
 /** Value maps of the cost forms (quantities, values per position); the THG keeps its Emissionsquellen in thgSrc, the Grundlagen in thgHead and the Betrieb in thgBetr. */
 export const KEYS = { kv: ['kvQ', 'kvV'], ks: ['ksQ', 'ksV'] };
+/** Does a Kostenelement with this Einheit carry a Menge? «pauschal» has no Bezugsgrösse; «CHF» is a Berechnungsbezug of the norm (a sum of cost groups), not a quantity that is measured. */
+export const needsQty = unit => unit !== 'pauschal' && unit !== 'CHF';
 
 function rng(seed) {
   let h = 2166136261;

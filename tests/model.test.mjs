@@ -20,6 +20,7 @@ const { LEGACY, screenIdFor, defaultDeliveryTab, FORM_TABS, link } = await mod('
 const { TASK_COLUMNS, DEFAULT_TASK_COLS } = await mod('js/model/columns.js');
 const { planLists, withUsage, donutOf } = await mod('js/model/plan.js');
 const { searchModel } = await mod('js/model/search.js');
+const { needsQty } = await mod('js/model/mock.js');
 
 const detailed = data.projects.projects.find(p => p.detailed);
 const userOf = key => data.users.users.find(u => u.key === key);
@@ -90,7 +91,7 @@ test('KV-32: Hauptgruppen, totals and completeness', () => {
   const kv = vm.forms.kv;
   assert.equal(kv.kind, 'data'); assert.equal(kv.status, 'In Bearbeitung'); assert.equal(kv.step, 1);
   assert.equal(kv.total, 20647100, 'Anlagekosten A–Z, with Z Mehrwertsteuer'); assert.equal(kv.bw, 18000000, 'Erstellungskosten B–W incl. J');
-  assert.equal(kv.fields, 50, '31 Elementgruppen: 19 with Menge + Kosten, 12 with Kosten only');
+  assert.equal(kv.fields, 55, '31 Elementgruppen: 24 with Menge + Kosten, 7 with Kosten only (CHF as Berechnungsbezug or no Bezugsgrösse)');
   assert.equal(kv.missing, 1, 'D08 Menge fehlt'); assert.equal(kv.bar.canSubmit, false);
   assert.equal(kv.badges, undefined, 'the tabs carry no numbers');
   const rows = kv.erf.rows;
@@ -114,7 +115,7 @@ test('KV-32: Hauptgruppen, totals and completeness', () => {
   // «Zusammenfassen» of C replaces its four positions (Menge + Kosten) by one amount.
   const det = structuredClone(base); det.projects.musterhausen.forms.kv.modes.C = 'direct';
   v = vmFor(det);
-  assert.equal(v.forms.kv.fields, 50 - 8 + 1); assert.equal(v.forms.kv.erf.rows.filter(r => r.isPos).length, 27);
+  assert.equal(v.forms.kv.fields, 55 - 8 + 1); assert.equal(v.forms.kv.erf.rows.filter(r => r.isPos).length, 27);
   assert.equal(v.forms.kv.total, 20647100, 'the direct amount equals the sum of the positions');
   // A missing direct amount counts as missing; H has no element, its direct amount is 0.
   const empty = structuredClone(base); empty.projects.musterhausen.forms.kv.modes.B = 'direct'; empty.projects.musterhausen.forms.kv.gvals.B = ''; empty.projects.musterhausen.forms.kv.modes.H = 'direct';
@@ -125,21 +126,24 @@ test('KV-32: Hauptgruppen, totals and completeness', () => {
   ed.projects.musterhausen.forms.kv.removed = { D08: true };
   ed.projects.musterhausen.forms.kv.added = [{ id: 'kn1', grp: 'G', code: '', q: '', v: '' }];
   v = vmFor(ed);
-  assert.equal(v.forms.kv.erf.rows.filter(r => r.isPos).length, 30); assert.equal(v.forms.kv.fields, 50 - 2 + 2, 'D08 gone, new row counts code + Kosten (Menge once the element group has a unit)');
+  assert.equal(v.forms.kv.erf.rows.filter(r => r.isPos).length, 30); assert.equal(v.forms.kv.fields, 55 - 2 + 2, 'D08 gone, new row counts code + Kosten (Menge once the element group has a unit)');
   assert.equal(v.forms.kv.missing, 2);
   const nr = v.forms.kv.erf.rows.find(r => r.isNewPos);
   assert.ok(nr && nr.opts.length === 2 && nr.opts.map(o => o.v).join() === 'G05,G06', 'only element groups not yet in G');
   ed.projects.musterhausen.forms.kv.added[0] = { id: 'kn1', grp: 'G', code: 'G05', q: '120', v: '240000' };
   v = vmFor(ed);
-  assert.equal(v.forms.kv.missing, 0); assert.equal(v.forms.kv.fields, 51); assert.equal(v.forms.kv.total, 20647100 - 540000 + 240000);
+  assert.equal(v.forms.kv.missing, 0); assert.equal(v.forms.kv.fields, 56); assert.equal(v.forms.kv.total, 20647100 - 540000 + 240000);
   assert.equal(v.forms.kv.erf.rows.find(r => r.isNewPos).name, 'Einbauten, Schutzeinrichtung zu Ausbau');
   // Einheit from the dropdown: the Bezugsgrösse of the norm is preselected, «pauschal» needs no Menge, a unit asks for one.
   const pos = code => v.forms.kv.erf.rows.find(r => r.code === code);
   assert.equal(pos('C01').unit, 'm²'); assert.ok(pos('C01').hasQty && pos('C01').unitOpts.find(o => o.sel).v === 'm²' && pos('C01').unitOpts.some(o => o.v === 'pauschal'));
-  assert.equal(pos('V01').unit, 'pauschal'); assert.ok(!pos('V01').hasQty && !pos('V01').miss);
-  ed.projects.musterhausen.forms.kv.units = { V01: 'm² GF', C01: 'pauschal' };
+  assert.equal(pos('V01').unit, 'CHF'); assert.ok(!pos('V01').hasQty && !pos('V01').miss, 'CHF is a Berechnungsbezug of the norm: no Menge');
+  assert.equal(pos('W05').unit, 'pauschal'); assert.ok(!pos('W05').hasQty, 'no sourced Bezugsgrösse: «pauschal»');
+  assert.deepEqual(pos('C01').unitOpts.map(o => o.v), ['pauschal', 'm²', 'm³', 'm', 'St', 'm³/h', 'CHF'], 'the units of the Bezugsgrössen of the norm, and «pauschal»');
+  assert.equal(pos('D05').unitTip, 'Bezugsgrösse der Norm (eBKP-H 2020, System A): m² HRA · Energiebezugsfläche (EBF) Wärme'); assert.equal(pos('Z01').unitTip, 'Bezugsgrösse der Norm (eBKP-H 2020, System A): CHF PSBY · Summe aller Hauptgruppen B bis Y · Berechnungsbezug (Kostensumme), keine Menge'); assert.ok(pos('Y01').unitTip.startsWith('Keine Bezugsgrösse der Norm belegt'));
+  ed.projects.musterhausen.forms.kv.units = { V01: 'm²', C01: 'pauschal' };
   v = vmFor(ed);
-  assert.ok(pos('V01').hasQty && pos('V01').miss, 'a unit asks for the Menge'); assert.ok(!pos('C01').hasQty && !pos('C01').miss); assert.equal(v.forms.kv.fields, 51, 'one Menge more, one less'); assert.equal(v.forms.kv.missing, 1);
+  assert.ok(pos('V01').hasQty && pos('V01').miss, 'a unit asks for the Menge'); assert.ok(!pos('C01').hasQty && !pos('C01').miss); assert.equal(v.forms.kv.fields, 56, 'one Menge more, one less'); assert.equal(v.forms.kv.missing, 1);
   // Kennwert CHF/m² GF: derived from the costs and the GF of the Grundrisse; an own value replaces it, for an element or a Hauptgruppe.
   assert.equal(pos('D01').kw, '191'); assert.ok(!pos('D01').kwOwn && pos('D01').kwTip.startsWith('Berechnet'));
   ed.projects.musterhausen.forms.kv.kws = { D01: 250, D: 600, D05: '' };
@@ -422,12 +426,19 @@ test('ebkp: every Hauptgruppe A–Z with all its Elementgruppen; A and H are gro
     assert.deepEqual(el[g].map(x => x[0]), [...el[g].map(x => x[0])].sort(), `${g} sorted by code`);
   }
   assert.equal(Object.values(el).flat().length, 71);
+  // Bezugsgrösse A of the norm per Elementgruppe (docs/research/2026-11-05-ebkp-h-bezugsgroessen.md): unit, abbreviation, name; 54 of 71 are publicly documented
+  const UNITS = data.forms.kinds.kv.units, sourced = Object.values(el).flat().filter(e => e[3]);
+  assert.deepEqual(UNITS, ['pauschal', 'm²', 'm³', 'm', 'St', 'm³/h', 'CHF']); assert.deepEqual(data.forms.kinds.ks.units, UNITS);
+  assert.equal(sourced.length, 54); assert.ok(sourced.every(e => UNITS.includes(e[2]) && e[2] !== 'pauschal' && /^[A-Z0-9]+$/.test(e[3]) && typeof e[4] === 'string'), 'sourced: a unit of the norm and an abbreviation');
+  assert.ok(Object.values(el).flat().filter(e => !e[3]).every(e => e[2] === '' && e.length === 3), 'not sourced: no unit, «pauschal» in the form');
+  assert.deepEqual(el.D.find(e => e[0] === 'D08').slice(2), ['St', 'WCP', 'Anzahl Apparate']); assert.deepEqual(el.Z[0].slice(2), ['CHF', 'PSBY', 'Summe aller Hauptgruppen B bis Y']);
+  assert.ok(data.ebkp.ebkp.flatMap(g => g.kids).every(k => !k.unit || UNITS.includes(k.unit)), 'every unit of the sample rows is in the dropdown');
   const formGroups = data.ebkp.ebkp.map(g => g.code);
   assert.equal(data.ebkp.extra, undefined, 'no Hauptgruppen with a lump sum');
   assert.deepEqual(formGroups, Object.keys(EXPECT), 'the form has every Hauptgruppe A–Z');
   for (const g of data.ebkp.ebkp) {
     assert.ok(el[g.code] && el[g.code].length, `dropdown of ${g.code} has options`);
-    for (const k of g.kids) { const e = el[g.code].find(x => x[0] === k.code); assert.ok(e && e[1] === k.name && e[2] === k.unit && (k.unit ? k.qty > 0 : k.qty == null), `${k.code} is an Elementgruppe of the norm with its Bezugsgrösse`); }
+    for (const k of g.kids) { const e = el[g.code].find(x => x[0] === k.code); assert.ok(e && e[1] === k.name && (e[3] ? e[2] === k.unit : true) && (needsQty(k.unit || 'pauschal') ? k.qty > 0 : k.qty == null), `${k.code} is an Elementgruppe of the norm with its Bezugsgrösse`); }
   }
   assert.deepEqual(data.ebkp.ebkp.filter(g => !g.kids.length).map(g => g.code), ['H'], 'only H has no element in an office building');
   assert.equal(data.ebkp.ebkp.find(g => g.code === 'W').name, 'Nebenkosten zu Erstellung');

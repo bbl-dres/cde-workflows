@@ -88,9 +88,9 @@ test('actions: Hauptgruppen toggle and sums (KV-32)', () => {
   actions.formMode({ form: 'kv', group: 'V' });
   assert.equal(P().forms.kv.gvals.V, v0 + 100000); assert.equal(P().forms.kv.added.length, 1); assert.equal(F('kv').groups.find(g => g.code === 'V').sum, v0 + 100000);
   // Einheit and Kennwert of a Kostenelement: own values, cleared again; nothing on a locked form
-  actions.formUnit({ form: 'kv', code: 'V01' }, { value: 'm² GF' });
+  actions.formUnit({ form: 'kv', code: 'V01' }, { value: 'm²' });
   actions.formKw({ form: 'kv', code: 'C01' }, { value: "1'250" });
-  assert.equal(P().forms.kv.units.V01, 'm² GF'); assert.equal(P().forms.kv.kws.C01, 1250); assert.equal(F('kv').erf.rows.find(r => r.code === 'C01').kw, "1'250");
+  assert.equal(P().forms.kv.units.V01, 'm²'); assert.equal(P().forms.kv.kws.C01, 1250); assert.equal(F('kv').erf.rows.find(r => r.code === 'C01').kw, "1'250");
   actions.formKw({ form: 'kv', code: 'C01' }, { value: '' });
   assert.ok(!F('kv').erf.rows.find(r => r.code === 'C01').kwOwn, 'cleared: derived again');
   actions.formUnit({ form: 'ks', code: 'C01' }, { value: 'pauschal' }); actions.formKw({ form: 'ks', code: 'C01' }, { value: '9' });
@@ -354,7 +354,7 @@ test('Excel round trip (js/excel.js): export → edit → import of KV-32 and TH
   const kv = X.sheetsOf('kv', P(), data);
   assert.deepEqual(kv.map(s => s.name), ['KV-32']); assert.deepEqual(kv[0].rows[0], X.COST_HEAD); assert.equal(kv[0].rows.length, 1 + 14 + 31);
   assert.deepEqual(pick(asFile(kv), 'KV-32', 'C02').slice(0, 5), ['C02', 'Wandkonstruktion', 5240, 'm²', 1310000]);
-  assert.deepEqual(pick(asFile(kv), 'KV-32', 'V01').slice(2, 4), ['', 'pauschal'], '«pauschal» carries no Menge');
+  assert.deepEqual(pick(asFile(kv), 'KV-32', 'V01').slice(2, 4), ['', 'CHF'], 'a Berechnungsbezug in CHF carries no Menge'); assert.deepEqual(pick(asFile(kv), 'KV-32', 'W05').slice(2, 4), ['', 'pauschal'], 'neither does «pauschal»');
   assert.equal(X.fileNameOf('kv', { id: 'musterhausen' }, data, false), 'KV-32_musterhausen.xlsx'); assert.equal(X.fileNameOf('kv', { id: 'musterhausen' }, data, true), 'KV-32_Vorlage.xlsx');
   const tpl = X.sheetsOf('kv', P(), data, { empty: true })[0].rows;
   assert.equal(tpl.length, 46); assert.ok(tpl.slice(1).every(r => r[2] === '' && r[4] === '' && r[5] === ''), 'the template has the rows, no values'); assert.equal(tpl.find(r => r[0] === 'C02')[3], 'm²', 'and the units');
@@ -373,7 +373,7 @@ test('Excel round trip (js/excel.js): export → edit → import of KV-32 and TH
   p = plan('kv', file);
   const note = Object.fromEntries(p.rows.map(r => [r.code, `${r.st}: ${r.note}`]));
   assert.equal(note.C02, "Geändert: bisher 1'310'000"); assert.equal(note.C01, "Geändert: Menge bisher 1'620"); assert.equal(note.D08, 'Geändert: Menge neu');
-  assert.equal(note.V01, 'Geändert: Menge neu, Einheit bisher pauschal'); assert.equal(note.E02, 'Geändert: Kennwert neu'); assert.equal(note.G02, 'Hinweis: Einheit «Fuder» unbekannt');
+  assert.equal(note.V01, 'Geändert: Menge neu, Einheit bisher CHF'); assert.equal(note.E02, 'Geändert: Kennwert neu'); assert.equal(note.G02, 'Hinweis: Einheit «Fuder» unbekannt');
   assert.equal(note.C04, 'Hinweis: Kosten fehlen in Datei', 'an empty cell does not clear the value'); assert.equal(note.E01, 'Geändert: neues Kostenelement'); assert.equal(note.X9, 'Ignoriert: Code nicht in eBKP-H');
   assert.equal(p.changed, 6); assert.equal(p.values, 8); assert.equal(p.hints, 3);
   assert.equal(plan('kv', file, 'leer').values, 4, '«nur leere Felder»: the missing Menge of D08, the Kennwert and the new Kostenelement (Menge, Kosten); filled fields and the unit stay');
@@ -385,7 +385,7 @@ test('Excel round trip (js/excel.js): export → edit → import of KV-32 and TH
   const before = JSON.stringify(X.importScope('kv', P()));
   actions.impApply();
   const f = P().forms.kv, e01 = f.added.find(a => a.code === 'E01');
-  assert.equal(P().kvV.C02, 1500000); assert.equal(P().kvQ.C01, 1700); assert.equal(P().kvQ.D08, 480); assert.equal(P().kvQ.V01, 6000); assert.equal(f.units.V01, 'm² GF'); assert.equal(f.kws.E02, 250);
+  assert.equal(P().kvV.C02, 1500000); assert.equal(P().kvQ.C01, 1700); assert.equal(P().kvQ.D08, 480); assert.equal(P().kvQ.V01, 6000); assert.equal(f.units.V01, 'm²', 'spellings of practice and of earlier exports are read («m2 GF» → «m²»)'); assert.equal(f.kws.E02, 250);
   assert.equal(P().kvV.C04, 2010000); assert.equal(f.units.G02, undefined); assert.deepEqual([e01.grp, e01.q, e01.v], ['E', 900, 45000]); assert.equal(f.modes.E, 'detail');
   assert.equal(store.get().imp.done, true); assert.equal(store.get().imp.applied, 8);
   assert.deepEqual(f.events.at(-1).slice(3), ['Excel importiert', 'KV-32_musterhausen.xlsx · 8 Werte übernommen']); assert.ok(F('kv').docs.some(d => d.name === 'KV-32_musterhausen.xlsx'));
