@@ -28,8 +28,9 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   Vergleich mit der Vorphase, Kostenziel oder Zielwerte SIA 390/1, Lieferung, Verlauf mit dem nächsten Schritt, Beteiligte), Erfassung
   (siehe unten; die Ökobilanz in den zwei Tabs Erfassung Erstellung und Erfassung Betrieb), Prüfung (Vergleich mit der Vorphase oder Prüfergebnis des Plans, Prüfung BBL mit automatischen Prüfungen
   und Checkliste, Übergabe), Beteiligte, Dokumente (mit Pflicht), Verlauf (alle Ereignisse). Die Erfassung ist nach dem
-  Einreichen gesperrt; «Erfassung wieder öffnen (Prototyp)» öffnet sie wieder (Werte bleiben), «Zurücksetzen» in der
-  Prüfung stellt den Ausgangszustand des Formulars her. Der Kommentar der Prüfung bleibt beim Rendern erhalten.
+  Einreichen gesperrt; «Erfassung wieder öffnen (Prototyp)» öffnet sie wieder (Werte bleiben). Prüfen (Checkliste, Freigeben,
+  Zurückweisen) können nur BBL-Personen. Der Kommentar der Prüfung und ein Feld, in dem gerade getippt wird, bleiben beim
+  Rendern erhalten. Dateien, die ein Import mitbringt (Tool-Export, Rechenhilfe, Excel), erscheinen unter Dokumente.
 - **Kosten erfassen (KV-32, KS-31)**: Betrag pro Hauptgruppe oder, nach Klick auf die Zeile, die Positionen (Menge + Kosten)
   nach eBKP-H 2020 (B02, C01 …); Positionen lassen sich entfernen (Papierkorb) und mit «+ Kostenelement hinzufügen» aus den
   Elementgruppen der Hauptgruppe ergänzen. Importieren (Excel-Dialog), «Nur fehlende Werte anzeigen», Leiste mit
@@ -116,12 +117,14 @@ vorgeben (Deep-Links, Screenshots): `#/projects/musterhausen/deliveries/thg-32/p
 
 ## Prüfen
 
+Code-Reviews mit Befunden und Status: `docs/reviews/` (zuletzt `2026-11-05-code-review-gesamt.md`).
+
 - `node --test` (oder `npm test`) prüft ohne Browser das Rechenmodell der Datenformulare (Hauptgruppen, Kostenelemente,
   Emissionsquellen, Betrieb, Vollständigkeit, Vergleich, Zielwerte SIA 390/1, Workflow, alle Projekte), die Datenkonsistenz (Codes, Quellen, Richtwerte,
   Vorlagen, Benachrichtigungen, veraltete Begriffe), den Router, die Zuordnung der Studien-Screens und die DWG-Prüf-Engine
   gegen die vorberechneten Ergebnisse (`tests/model.test.mjs`) sowie die Benutzeraktionen gegen den echten Store
   (Aufschlüsseln, Kostenelemente, Emissionsquellen, Importe, Workflow, Planprüfung), den Mock, den Store und die
-  Formatierung (`tests/actions.test.mjs`), Statusfilter und Suche der Planprüfung; 32 Tests, Node 22+.
+  Formatierung (`tests/actions.test.mjs`), Rollen der Prüfung, Statusfilter und Suche der Planprüfung; 34 Tests, Node 22+.
 - `node tests/e2e.mjs` fährt bei laufendem Server einen Headless-Browser (Edge/Chrome/Brave) durch die Anwendung: Startseite mit
   Karte, Bestellen-Drawer, Rollenwechsel, Benachrichtigungen, KV-32 (Übersicht, Erfassung mit Aufschlüsseln, Kostenelemente,
   Filter, Excel-Import, Einreichen), THG-32 (Übersicht mit Zielwerten, Emissionsquellen, Betrieb, Tool-Export, Rechenhilfe, neue Quelle, Hersteller-Flag, Einreichen),
@@ -164,7 +167,7 @@ docs/                 wireframes (Design), reviews, research, reference (Referen
 ## Daten
 
 Das Projekt «Verwaltungszentrum Musterhausen» trägt den vollständigen Workflow (KS-31, KV-32, THG-32, DWG-UG … DWG-DG) mit den
-Basiswerten aus `data/ebkp.json` (Positionen, KS-31), `data/thg.json` (25 Emissionsquellen mit KBOB-IDs, SIA 31) und
+Basiswerten aus `data/ebkp.json` (Positionen, KS-31), `data/thg.json` (22 Emissionsquellen aus dem Tool-Export, Betrieb, SIA 31) und
 `data/sia416.json` (Bezugsmengen). Die sieben weiteren Projekte haben eigene Datenformulare in verschiedenen
 Workflow-Zuständen (`data/forms.json` › `byProject`: Schritt, Daten, Lieferverantwortliche, überfällig, fehlende Werte,
 Endwert, Grundlagen); ihre Werte leitet `js/model/mock.js` deterministisch aus den Basiswerten ab, skaliert mit den

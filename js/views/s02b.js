@@ -11,9 +11,9 @@ export default {
       ${pageHead('Aufgaben', ctx.crumbs('Aufgaben'), { style: 'margin-bottom:14px' })}
 
       <div class="toolbar" style="margin-bottom:10px">
-        <button type="button" class="btn btn-primary">Aufgabe erstellen</button>
-        <button type="button" class="btn btn-secondary">Importieren</button>
-        <button type="button" class="btn btn-secondary">Exportieren</button>
+        <button type="button" class="btn btn-primary" data-action="proto">Aufgabe erstellen</button>
+        <button type="button" class="btn btn-secondary" data-action="proto">Importieren</button>
+        <button type="button" class="btn btn-secondary" data-action="proto">Exportieren</button>
         <span class="flex-1"></span>
         ${searchBox(282)}
         <span style="width:60px"></span>

@@ -83,7 +83,8 @@ export function mockProject(project, data, opts = {}) {
     else if (values[k] && c in values[k]) values[k][c] = null;
   });
   if (!opts.complete) {
-    Object.entries(inst).forEach(([kind, i]) => { if (i.step === 0) (KEYS[kind] || []).forEach(k => Object.keys(values[k]).forEach(c => { values[k][c] = null; })); });
+    const zeroExtra = new Set(E.extra.filter(g => !g.cost).map(g => g.code));   // A Grundstück and H Nutzungsspezifische Anlage are 0 in every sample project, also on an open form
+    Object.entries(inst).forEach(([kind, i]) => { if (i.step === 0) (KEYS[kind] || []).forEach(k => Object.keys(values[k]).forEach(c => { values[k][c] = k.endsWith('V') && zeroExtra.has(c) ? 0 : null; })); });
     if (thgInst.step === 0) { thgSrc = []; thgBetr = {}; }   // an open THG-32 has no Emissionsquellen and no Betrieb yet (Tool-Export, Rechenhilfe or manual entry)
   }
   const kostenziel = project.kostenzielBW || roundTo(sum(prev.kv) * 1.03, 1e5);

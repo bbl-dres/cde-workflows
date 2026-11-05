@@ -28,7 +28,7 @@ function setup(pid = 'musterhausen') {
   setup.pid = pid;
   const actions = makeActions(store, data, nav);
   const P = () => store.get().projects[setup.pid];
-  const F = kind => formModel(store.get(), data, data.projects.projects.find(p => p.id === setup.pid))[kind];
+  const F = kind => formModel(store.get(), data, data.projects.projects.find(p => p.id === setup.pid), data.users.users.find(u => u.key === store.get().user))[kind];   // as the app: the signed-in user decides who may review
   const el = value => ({ value });
   return { store, actions, nav, P, F, el, toast: () => (store.get().ui.toast || {}).text || '' };
 }
@@ -163,6 +163,7 @@ test('actions: Importieren (Tool-Export, Excel, others)', () => {
   assert.equal(F('thg').missing, 29, 'the Betrieb of an open form is still empty'); assert.equal(F('thg').next.tab, 'betrieb');
   actions.importItem({ arg: 'rechenhilfe', form: 'thg' });
   assert.equal(F('thg').missing, 0); assert.match(toast(), /29 Werte übernommen/); assert.ok(eventTitles(P().forms.thg).includes('Rechenhilfe SIA 390/1 importiert')); assert.equal(F('thg').bar.canSubmit, true);
+  assert.equal(F('thg').docs.length, 2, 'Tool-Export and Rechenhilfe appear under Dokumente'); assert.ok(F('thg').autoChecks[1].label.includes('Oekobilanz_Bericht'), 'the report is still missing');
   actions.importItem({ arg: 'rechenhilfe', form: 'thg' });
   assert.match(toast(), /keine neuen Werte/);
   // Excel: form-aware dialog; locked forms refuse every import
@@ -292,4 +293,37 @@ test('format: de-CH numbers', () => {
   for (const [i, o] of [['1’234', 1234], ["1'234", 1234], ['1 234', 1234], ['1234,5', 1234.5], ['', null], [null, null], ['abc', null], [12, 12], [Infinity, null]]) assert.equal(num(i), o, `num(${i})`);
   assert.equal(disp(1234), (1234).toLocaleString('de-CH')); assert.equal(disp('x'), 'x'); assert.equal(disp(null), ''); assert.equal(disp1(7.56), '7.6');
   assert.equal(mio(17e6), 'CHF 17.00 Mio'); assert.equal(mio(17e6, 1), 'CHF 17.0 Mio');
+});
+
+test('actions: only BBL users review (checklist, Freigeben, Zurückweisen)', () => {
+  const { actions, P, F, store } = setup('musterhausen');
+  store.setIn('projects', { musterhausen: { ...P(), forms: { ...P().forms, thg: { ...P().forms.thg, step: 3 } } } });
+  store.set({ user: 'AB' });
+  actions.formToggleCheck({ arg: 'thg', key: 't1' }); actions.formReject({ key: 'thg' });
+  assert.equal(P().forms.thg.step, 3); assert.deepEqual(P().forms.thg.checks, {}); assert.equal(F('thg').rv.decide, false);
+  store.set({ user: 'PM' });
+  actions.formToggleCheck({ arg: 'thg', key: 't1' });
+  assert.equal(P().forms.thg.step, 4); assert.equal(P().forms.thg.checks.t1, true); assert.equal(F('thg').rv.decide, true);
+});
+
+test('review 05.11.: strict numbers, no «-0», persisted slices merge per key, A–Z incl. A, import mode «leer», documents of imports, locked inputs', () => {
+  assert.equal(num('12abc'), null); assert.equal(num('5 %'), null); assert.equal(num('0x10'), null); assert.equal(num("1'234.5"), 1234.5); assert.equal(num('13,27'), 13.27); assert.equal(num('−2'), -2); assert.equal(FMT(-0.4), '0');
+  const saved = [];
+  globalThis.sessionStorage = { getItem: () => saved[0] || null, setItem: (k, v) => { saved[0] = v; }, removeItem: () => { saved.length = 0; } };
+  try {
+    const s1 = createStore({ __v: 1, ui: { a: 1, search: 'x' }, projects: { p1: { v: 1 } } }); s1.set({ x: 1 });
+    const s2 = createStore({ __v: 1, ui: { a: 1, search: '' }, projects: { p1: { v: 0 }, p2: { v: 2 } } });
+    assert.deepEqual(s2.get().projects, { p1: { v: 1 }, p2: { v: 2 } }, 'a project added to the data keeps its defaults'); assert.equal(s2.get().ui.search, '', 'transient keys are dropped, not saved as null');
+  } finally { delete globalThis.sessionStorage; }
+  const { actions, P, F, store } = setup('musterhausen');
+  actions.setMap({ key: 'kvV', code: 'A' }, { value: '2000000' });
+  const az = F('kv').subtotals.find(u => u.code === 'A–Z'), bw = F('kv').subtotals.find(u => u.code === 'B–W');
+  assert.ok(num(az.cur) > num(bw.cur) + 2000000, 'A–Z includes A Grundstück');
+  actions.setMap({ key: 'kvV', code: 'C02' }, { value: '' }); store.setIn('imp', { form: 'kv', mode: 'leer', step: 2 });
+  actions.impApply();
+  assert.equal(P().kvV.C02, data.ebkp.import.changes.C02, '«Nur leere Felder füllen» fills the empty field'); assert.notEqual(P().kvV.G02, data.ebkp.import.changes.G02, 'filled fields stay'); assert.ok(F('kv').docs.some(d => d.name === data.ebkp.import.file), 'the imported file is a document');
+  store.setIn('projects', { musterhausen: { ...P(), forms: { ...P().forms, kv: { ...P().forms.kv, step: 4 } } } });
+  const before = JSON.stringify(P());
+  actions.setMap({ key: 'kvV', code: 'C02' }, { value: '1' }); actions.formGroupVal({ form: 'kv', group: 'B' }, { value: '1' }); actions.formNewVal({ form: 'kv', id: 'kn1', field: 'v' }, { value: '1' }); actions.formDropNew({ form: 'kv', id: 'kn1' });
+  assert.equal(JSON.stringify(P()), before, 'locked: no changes');
 });

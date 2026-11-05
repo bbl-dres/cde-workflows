@@ -72,8 +72,8 @@ function nextStep(step, target, reviewer, open) {
   return { text: `Abgeschlossen und an ${target} übertragen.`, btn: '', tab: '' };
 }
 /** Prüfung BBL: who may decide, whether all manual checks are ticked, the text after the decision. */
-const reviewOf = ({ step, canReview, allChecked, target, reviewer, notSubmitted, comment }) => ({
-  decide: step < 5, canReview, canApprove: canReview && allChecked, notSubmitted, comment: comment || '',
+const reviewOf = ({ step, canReview, allChecked, target, reviewer, notSubmitted, comment, internal = true }) => ({
+  decide: step < 5 && internal, canReview, canApprove: canReview && allChecked, notSubmitted, comment: comment || '',   // only BBL users see Freigeben / Zurückweisen
   reason: !canReview ? 'Erst nach der Einreichung möglich' : allChecked ? '' : 'Erst alle Prüfpunkte bestätigen',
   done: step >= 5, transferred: step >= 6, doneText: step >= 6 ? `Freigegeben und an ${target} übertragen. Lieferung abgeschlossen.` : `Freigegeben durch ${reviewer}.`,
 });
@@ -94,7 +94,7 @@ function instanceOf(D, kind, project, f) {
   const lead = I.lead || 'AB', step = I.step ?? f.step, dates = I.dates || f.dates;
   const leadName = person(people, lead)[0];
   const docDate = dates[3] || dates[1] || dates[0] || '–';
-  const docs = I.docs || (step >= 1 ? T.docs.map(([name, type, req]) => [name, type, req, leadName, docDate]) : []);
+  const docs = [...(I.docs || (step >= 1 ? T.docs.map(([name, type, req]) => [name, type, req, leadName, docDate]) : [])), ...(f.docs || [])];   // plus the files the imports brought in
   const history = I.history || [
     [dates[0] || '–', '', reviewer, 'Lieferung erstellt', `Vorlage ${T.vorlage}, Frist ${I.frist || '–'}, Zielsystem ${T.ziel}`],
     ...(step >= 1 ? [[dates[1] || '–', '', lead, 'Erfassung begonnen', '']] : []),
@@ -164,7 +164,7 @@ function costPart(kind, P, f, data, T, M, ref, locked, bd) {
   });
   const shownRows = f.missingOnly ? rows.filter(r => r.miss) : rows;
   const SUBS = [['C–G', 'Bauwerkskosten', 'CDEFG', false], ['B–W', 'Erstellungskosten', 'BCDEFGHIJVW', false], ['A–Z', 'Anlagekosten', 'BCDEFGHIJVWY', true]];
-  const subtotals = SUBS.map(([code, name, set, withMwst]) => { const cur = sumOf(set) * (withMwst ? 1 + mwst : 1), pv = withMwst ? null : sumOf(set, prev); return { code, name, kw: kwOf(cur), ...dRow(cur, pv, 1, limit) }; });
+  const subtotals = SUBS.map(([code, name, set, withMwst]) => { const cur = sumOf(set) * (withMwst ? 1 + mwst : 1) + (withMwst ? sumOf('A') : 0), pv = withMwst ? null : sumOf(set, prev); return { code, name, kw: kwOf(cur), ...dRow(cur, pv, 1, limit) }; });   // A–Z = A Grundstück (ohne MWST) + B–Y × (1 + MWST)
 
   // Übersicht and Prüfung
   const kpis = [{ k: 'Erstellungskosten B–W', v: bw ? FMT1(bw / 1e6) : '–', u: 'Mio CHF' }, { k: 'Kennwert B–W', v: bw && GF ? FMT(bw / GF) : '–', u: 'CHF/m² GF' }];
@@ -223,7 +223,7 @@ function thgPart(P, f, data, T, M, ref, locked, bd, docs) {
   groups.forEach(G => {
     if (f.missingOnly && !G.miss) return;
     const open = G.open || !!f.missingOnly;
-    rows.push({ isGroupRow: true, code: G.code, name: G.name, canToggle: !locked, direct: !open, sub: plural(G.n, 'Emissionsquelle', 'Emissionsquellen'), kw: G.n ? FMT1(G.kw) : '', share: G.n ? share(G.kw) : '', chev: open ? 'chevron-down' : 'chevron-right', toggleLabel: open ? 'Zuklappen' : 'Aufklappen', bg: open ? '#f3f4f6' : '#fff', miss: G.miss > 0 });
+    rows.push({ isGroupRow: true, code: G.code, name: G.name, canToggle: !locked && !f.missingOnly, direct: !open, sub: plural(G.n, 'Emissionsquelle', 'Emissionsquellen'), kw: G.n ? FMT1(G.kw) : '', share: G.n ? share(G.kw) : '', chev: open ? 'chevron-down' : 'chevron-right', toggleLabel: open ? 'Zuklappen' : 'Aufklappen', bg: open ? '#f3f4f6' : '#fff', miss: G.miss > 0 });
     if (!open) return;
     rows.push(...(f.missingOnly ? G.src.filter(r => r.miss) : G.src));
     if (!locked && !f.missingOnly) rows.push({ isAdd: true, grp: G.code, label: '+ Emissionsquelle hinzufügen' });
@@ -239,12 +239,12 @@ function thgPart(P, f, data, T, M, ref, locked, bd, docs) {
   const bv = key => num(B[key]);
   let fieldsB = 0, missB = 0, endSum = 0, thgSum = 0;
   const betrRows = TH.betrieb.map(([name, carrier, , , , kf], i) => {
-    const key = `b${i}`, n = bv(key + '_n'), a = bv(key + '_a'), eta = bv(key + '_eta');
-    const miss = [n, a, eta].filter(v => v == null).length; fieldsB += 3; missB += miss;
-    const end = n != null && a != null && eta ? n * a / 100 / eta : 0, kRow = kf === 'strom' ? kE : kf, thg = end * kRow;
+    const key = `b${i}`, n = bv(key + '_n'), a = bv(key + '_a'), eta = bv(key + '_eta'), etaOk = eta != null && eta > 0;   // a Nutzungsgrad of 0 is a typo, not a value
+    const miss = [n, a].filter(v => v == null).length + (etaOk ? 0 : 1); fieldsB += 3; missB += miss;
+    const end = n != null && a != null && etaOk ? n * a / 100 / eta : 0, kRow = kf === 'strom' ? kE : kf, thg = end * kRow;
     endSum += end; thgSum += thg;
     return { isRow: true, key, name, carrier, std: !!B[key + '_std'], nStr: disp01(B[key + '_n']), aStr: disp01(B[key + '_a']), etaStr: disp01(B[key + '_eta']),
-      nBd: bd(n == null), aBd: bd(a == null), etaBd: bd(eta == null), end: miss ? '–' : FMT1(end), kE: kRow.toFixed(3), thg: miss ? '–' : FMT2(thg), miss: miss > 0 };
+      nBd: bd(n == null), aBd: bd(a == null), etaBd: bd(!etaOk), end: miss ? '–' : FMT1(end), kE: kRow.toFixed(3), thg: miss ? '–' : FMT2(thg), miss: miss > 0 };
   });
   const pvSrc = S.find(s => s.id === TH.pv.kWpId), kWp = pvSrc ? num(pvSrc.q) || 0 : 0;
   const Y = bv('pv_y'), EV = bv('pv_ev'); fieldsB += 2; missB += (Y == null ? 1 : 0) + (EV == null ? 1 : 0);
@@ -321,7 +321,7 @@ function thgPart(P, f, data, T, M, ref, locked, bd, docs) {
 }
 
 // ---- KV-32 / KS-31 / THG-32 of one project ----
-function dataForm(kind, P, data, project) {
+function dataForm(kind, P, data, project, user) {
   const D = data.forms, f = P.forms[kind], people = D.people;
   const X = instanceOf(D, kind, project, f), T = X.T;
   const M = mockProject(project, data);
@@ -344,9 +344,9 @@ function dataForm(kind, P, data, project) {
   const meta = [['Kürzel', T.code], ['Vorlage', T.vorlage], ['Lieferverantwortlich', `${X.leadName}, ${X.leadFirm}`], ['Prüfend', `${reviewer}, BBL`], ['Frist', X.frist], ['Zielsystem', T.ziel], ...(T.reporting ? [['Berichterstattung', T.reporting]] : []), ...(X.kann ? [['Pflicht', 'Kann · nur Ablage (Anlagekosten unter CHF 1 Mio)']] : [])].map(([k, v], i) => ({ k, v, bg: alt(i) }));
 
   // Prüfung, Übergabe, Leiste
-  const canReview = step === 3 || step === 4;
+  const canReview = (step === 3 || step === 4) && (!user || !!user.internal);   // only BBL users review; a missing user (tests) is not restricted
   const manual = T.manual.map(([key, label]) => ({ key, label, checked: !!f.checks[key], disabled: !canReview }));
-  const rv = reviewOf({ step, canReview, allChecked: manual.every(m => m.checked), target: T.target, reviewer, notSubmitted: step < LOCKED_FROM && !rejected, comment: f.comment });
+  const rv = reviewOf({ step, canReview, allChecked: manual.every(m => m.checked), target: T.target, reviewer, notSubmitted: step < LOCKED_FROM && !rejected, comment: f.comment, internal: !user || !!user.internal });
   const canSubmit = step <= 1 && C.canSubmitData;
   const bar = barOf({ editing: step <= 1, locked, canFilter: missing > 0 || !!f.missingOnly, canSubmit, reason: C.reason, comp, reviewer });
 
@@ -365,16 +365,17 @@ function dataForm(kind, P, data, project) {
 }
 
 /** The Datenformulare of one project (kv, ks, thg as far as the project has them). */
-export function formModel(state, data, project) {
+export function formModel(state, data, project, user) {
   const P = (state.projects || {})[project.id];
   const inst = (data.forms.byProject || {})[project.id] || {};
   if (!P) return {};
-  return Object.fromEntries(Object.keys(inst).filter(kind => P.forms[kind]).map(kind => [kind, dataForm(kind, P, data, project)]));
+  return Object.fromEntries(Object.keys(inst).filter(kind => P.forms[kind]).map(kind => [kind, dataForm(kind, P, data, project, user)]));
 }
 export const kindOfCode = code => KIND_OF[String(code).toUpperCase()] || null;
 
 // ---- Planlieferung DWG (one floor plan) in the same shape, on top of model/plan.js ----
-export function planForm(plan, data) {
+export function planForm(plan, data, user) {
+  const internal = !user || !!user.internal;
   const D = data.forms, P = data.plans, PF = D.plan, people = D.people, sup = P.supplier;
   const reviewer = (people.PM || ['Paula Muster'])[0];
   const step = (PLAN_STATUS[plan.status] || PLAN_STATUS.offen).formStep, rejected = plan.status === 'zurueck', locked = plan.locked;
@@ -404,7 +405,7 @@ export function planForm(plan, data) {
     : errors ? { sym: '×', bg: '#fff1f0', fg: '#9b2c44', title: `${errors} Fehler`, sub: `${passed} von ${total} Regeln bestanden · ${warnings} Warnungen` }
     : { sym: '✓', bg: '#e2efed', fg: '#1f4a3b', title: 'Keine Fehler', sub: `${passed} von ${total} Regeln bestanden · ${warnings} Warnungen, zulässig` };
   const reviewIssues = plan.rules.failed.map(x => ({ icon: x.status === 'fail' ? 'circle-x' : 'triangle-alert', color: x.status === 'fail' ? '#9b2c44' : '#8a6100', text: x.text, code: x.code, count: x.count }));
-  const rv = reviewOf({ step, canReview: plan.isReviewable, allChecked: !plan.approveDisabled, target: 'SAP RE-FX', reviewer, notSubmitted: step < LOCKED_FROM && !rejected, comment: plan.comment });
+  const rv = reviewOf({ step, canReview: plan.isReviewable && internal, allChecked: !plan.approveDisabled, target: 'SAP RE-FX', reviewer, notSubmitted: step < LOCKED_FROM && !rejected, comment: plan.comment, internal });
   const bar = barOf({ editing: !locked, locked, canFilter: false, canSubmit: plan.canSubmit, reviewer,
     reason: !r ? 'Einreichen erst, wenn eine DWG-Datei geprüft wurde' : errors ? 'Einreichen erst, wenn der Plan keine Fehler hat' : '',
     comp: { text: r ? `${passed} von ${total} Prüfregeln bestanden · ${errors} Fehler · ${warnings} Warnungen` : 'Noch keine DWG-Datei geprüft', w: comp.w, bar: comp.bar } });
@@ -417,7 +418,7 @@ export function planForm(plan, data) {
     kpis, comp, meta, people: peopleShort(people, peopleList), peopleRows: peopleRows(people, peopleList, sc => sc.replace('{floor}', plan.name)), docs, hist,
     planOv: { sia, cats },
     erf: { tableTitle: `${plan.name} · ${plan.floor}`, fileMeta, isTHG: false },
-    bar, res, reviewIssues, autoChecks: plan.autoChecks, manual: plan.manualChecks, rv,
+    bar, res, reviewIssues, autoChecks: plan.autoChecks, manual: plan.manualChecks.map(m => ({ ...m, disabled: m.disabled || !internal })), rv,
     handover: { ziel: P.target, value: r ? `${plan.roomCount} Raumpolygone mit AOID, NGF ${plan.ngf}, GF ${plan.gf}` : '–', status: plan.transferStatus },
     canTransfer: plan.isFrei,
   };

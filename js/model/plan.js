@@ -107,7 +107,7 @@ export function planModel(s, data) {
     const gateChecks = !result ? [ok(false, 'Noch keine DWG-Datei geprüft', true)] : [
       ok(errors === 0, errors === 0 ? 'Keine Fehler in den Prüfregeln (Schweregrad Fehler)' : `${errors} Fehler in ${rules.failed.filter(r => r.severity === 'error').length} Prüfregel(n) — im CAD beheben und neu hochladen`),
       ok(warnings === 0, warnings === 0 ? 'Keine Warnungen' : `${warnings} Warnung(en) in ${rules.failed.filter(r => r.severity === 'warning').length} Prüfregel(n) — zulässig, werden in der Prüfung angezeigt`, true),
-      ok(hasRooms && !fired('AOID_001'), hasRooms ? `${rooms.length} Räume mit AOID erkannt` : 'Keine Raumpolygone auf R_RAUMPOLYGON', !hasRooms),
+      ok(hasRooms && !fired('AOID_001'), hasRooms ? (fired('AOID_001') ? `${rooms.length} Räume, davon ${result.issues.filter(i => i.code === 'AOID_001').length} ohne AOID` : `${rooms.length} Räume mit AOID erkannt`) : 'Keine Raumpolygone auf R_RAUMPOLYGON', !hasRooms),
       ok(hasAreas, hasAreas ? `Geschosspolygon vorhanden · GF ${area(k.gf)}` : 'Kein Geschosspolygon auf R_GESCHOSSPOLYGON', true),
     ];
     const autoChecks = !result ? [] : [

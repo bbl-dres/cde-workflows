@@ -79,3 +79,15 @@ body.study-open #app { padding-right: 360px; }
 .varb-reco { grid-column: span 2; background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 14px 22px; font-size: 14.5px; line-height: 1.5; }
 
 @media (max-width: 1500px) { .review-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* Study pages on tablets and phones: one column, no fixed side padding */
+@media (max-width: 1023.98px) {
+  .study-page { padding: 24px 16px 48px; }
+  .study-intro { flex-wrap: wrap; gap: 24px; }
+  .study-intro-main, .study-intro-side { max-width: none; flex-basis: 100%; }
+  .review-grid, .qs-grid, .varb-grid { grid-template-columns: 1fr; }
+  .qs-rows { grid-template-columns: 1fr; gap: 2px 0; }
+  .qs-card, .review-card, .varb-reco { min-width: 0; padding: 18px 16px; }
+  .varb-reco { grid-column: auto; }
+  .study-h1 { font-size: 30px; }
+}

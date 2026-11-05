@@ -17,11 +17,15 @@ export function createStore(initial) {
       if (!raw) return null;
       const s = JSON.parse(raw);
       if (!s || s.__v !== version) return null;
-      // Shallow merge: keys added to the initial state since the session was saved get their defaults.
-      return { ...structuredClone(initial), ...s, ui: { ...initial.ui, ...(s.ui || {}) } };
+      // Merge one level into every object slice (ui, projects, plans, tplOn …): keys added to the initial state since the
+      // session was saved (a new project, a new floor) get their defaults instead of vanishing until the version is bumped.
+      const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
+      const merged = { ...structuredClone(initial), ...s };
+      for (const k of Object.keys(initial)) if (isObj(initial[k]) && isObj(s[k])) merged[k] = { ...initial[k], ...s[k] };
+      return merged;
     } catch { return null; }
   }
-  function save() { try { sessionStorage.setItem(KEY, JSON.stringify(state, (k, v) => (TRANSIENT.has(k) ? null : v))); } catch { /* private mode etc. */ } }
+  function save() { try { sessionStorage.setItem(KEY, JSON.stringify(state, (k, v) => (TRANSIENT.has(k) ? undefined : v))); } catch { /* private mode etc. */ } }   // transient keys are dropped, so their defaults apply after a reload
   function emit() { save(); subs.forEach(fn => fn(state)); }
 
   const store = {

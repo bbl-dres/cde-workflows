@@ -44,6 +44,10 @@ export function makeActions(store, data, nav) {
   const now = () => { const d = new Date(); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
   const ev = (who, text, detail = '') => ['heute', now(), who, text, detail];
   const me = () => s().user;
+  const userOf = () => data.users.users.find(u => u.key === me());
+  const isInternal = () => { const u = userOf(); return !u || !!u.internal; };   // only BBL users review
+  /** A file an import brought in becomes a document of the form (once). */
+  const addDoc = (kind, name, type = 'Excel') => setForm(kind, f => ((f.docs || []).some(d => d[0] === name) ? {} : { docs: [...(f.docs || []), [name, (data.forms.kinds[kind].docs.find(d => d[0] === name) || [name, type, 'Optional'])[1], (data.forms.kinds[kind].docs.find(d => d[0] === name) || [name, type, 'Optional'])[2], (userOf() || { name: me() }).name, 'heute']] }));
   /** Patch a form and append an event to its Verlauf. */
   const logEv = (kind, who, text, detail, patch = {}) => setForm(kind, f => ({ ...(typeof patch === 'function' ? patch(f) : patch), events: [...f.events, ev(who, text, detail)] }));
   /** Move the form to a later step; the steps reached on the way get today's date (dates[i] = date step i was reached). */
@@ -54,7 +58,7 @@ export function makeActions(store, data, nav) {
   });
   /** Back to the Erfassung (rejection or reopening in the prototype). */
   const backToEntry = (kind, rejected, text, detail) => logEv(kind, me(), text, detail, f => ({ step: 1, dates: f.dates.slice(0, 2), checks: {}, rejected }));
-  const vm = kind => { const p = projectOf(pid()); return p ? formModel(s(), data, p)[kind] : null; };
+  const vm = kind => { const p = projectOf(pid()); return p ? formModel(s(), data, p, userOf())[kind] : null; };
   const setSrc = (id, patch) => setP(p => ({ thgSrc: (p.thgSrc || []).map(x => (x.id === id ? { ...x, ...patch } : x)) }));
   /** Typed numbers are stored as numbers (rounded to `decimals`), so they render with thousands separators; other text stays as typed. */
   const normNum = (raw, decimals = 0) => { const n = num(raw); if (n == null) return String(raw ?? '').trim(); const f = 10 ** decimals; return Math.round(n * f) / f; };
@@ -124,11 +128,13 @@ export function makeActions(store, data, nav) {
     closeDialog,
     dismissToast: () => ui({ toast: null }),
 
-    // ---- Inputs of the Datenformulare (values of the current project) ----
-    setMap: (ds, el) => setP(p => ({ [ds.key]: { ...(p[ds.key] || {}), [ds.code]: normNum(el.value) } })),
+    // ---- Inputs of the Datenformulare (values of the current project); locked forms ignore every input ----
+    setMap: (ds, el) => { if (editable(String(ds.key).slice(0, 2))) setP(p => ({ [ds.key]: { ...(p[ds.key] || {}), [ds.code]: normNum(el.value) } })); },
+    skipToMain: () => { const main = document.querySelector('.app-main'); if (main) { main.tabIndex = -1; main.focus(); } },
+    proto: () => toast('Im Prototyp ohne Funktion.'),
 
     // ---- Datenformulare: Erfassung (KV-32, KS-31) ----
-    formGroupVal: (ds, el) => setForm(ds.form, f => ({ gvals: { ...f.gvals, [ds.group]: normNum(el.value) } })),
+    formGroupVal: (ds, el) => { if (editable(ds.form)) setForm(ds.form, f => ({ gvals: { ...f.gvals, [ds.group]: normNum(el.value) } })); },
     /** The code of a position is a dropdown: choosing another eBKP-H element group replaces the position by an edited row with the same values. */
     formPosCode: (ds, el) => {
       const kind = ds.form, f = formOf(kind), code = el.value;
@@ -157,8 +163,8 @@ export function makeActions(store, data, nav) {
       logEv(kind, me(), 'Kostenelement entfernt', `${k.code} ${k.name}`, { removed: { ...(f.removed || {}), [ds.code]: true } });
     },
     formAddPos: ds => { if (editable(ds.form)) setForm(ds.form, f => { const n = (f.nNew || 0) + 1; return { nNew: n, added: [...(f.added || []), { id: `kn${n}`, grp: ds.group, code: '', q: '', v: '' }] }; }); },
-    formNewVal: (ds, el) => setForm(ds.form, f => ({ added: (f.added || []).map(a => (a.id === ds.id ? { ...a, [ds.field]: ds.field === 'code' ? el.value : normNum(el.value) } : a)) })),
-    formDropNew: ds => setForm(ds.form, f => ({ added: (f.added || []).filter(a => a.id !== ds.id) })),
+    formNewVal: (ds, el) => { if (editable(ds.form)) setForm(ds.form, f => ({ added: (f.added || []).map(a => (a.id === ds.id ? { ...a, [ds.field]: ds.field === 'code' ? el.value : normNum(el.value) } : a)) })); },
+    formDropNew: ds => { if (editable(ds.form)) setForm(ds.form, f => ({ added: (f.added || []).filter(a => a.id !== ds.id) })); },
     formToggleMissing: ds => setForm(ds.key, f => ({ missingOnly: !f.missingOnly })),
     toggleImportMenu: () => ui({ importMenu: !s().ui.importMenu, userMenu: false, notif: false }),
     importItem: ds => {
@@ -174,6 +180,7 @@ export function makeActions(store, data, nav) {
         const tool = (p.thgHead || {}).tool || data.thg.head.find(h => h[0] === 'tool')[2];
         const what = added ? `${added} Emissionsquellen übernommen` : `${filled} Werte ergänzt`;
         setP({ thgSrc: next });
+        addDoc('thg', doc);
         logEv('thg', me(), 'Tool-Export importiert', `${doc} · ${tool} · ${what}`);
         toast(`Tool-Export importiert: ${what}.`);
         return;
@@ -185,6 +192,7 @@ export function makeActions(store, data, nav) {
         if (!filled) { toast('Rechenhilfe enthält keine neuen Werte.'); return; }
         const doc = (data.forms.kinds.thg.docs.find(d => /rechenhilfe/i.test(d[0])) || [])[0] || 'Rechenhilfe';
         setP({ thgBetr: next });
+        addDoc('thg', doc);
         logEv('thg', me(), 'Rechenhilfe SIA 390/1 importiert', `${doc} · ${filled} Werte übernommen`);
         toast(`Rechenhilfe importiert: ${filled} Werte übernommen.`);
         return;
@@ -193,8 +201,9 @@ export function makeActions(store, data, nav) {
     },
 
     // ---- Datenformulare: Erfassung Erstellung (THG-32, Emissionsquellen je eBKP-H-Elementgruppe) and Erfassung Betrieb ----
-    thgHead: (ds, el) => setP(p => ({ thgHead: { ...(p.thgHead || {}), [ds.key]: el.value } })),
+    thgHead: (ds, el) => { if (editable('thg')) setP(p => ({ thgHead: { ...(p.thgHead || {}), [ds.key]: el.value } })); },
     thgVal: (ds, el) => {
+      if (!editable('thg')) return;
       const src = ((P() || {}).thgSrc || []).find(x => x.id === ds.id) || {};
       let patch;
       if (ds.field === 'dataset') {                               // «Wa01 Aussenwand Beton 25 cm · Bauteil Lesosai»: tool code, Bezeichnung, Ökobilanzdaten
@@ -232,8 +241,8 @@ export function makeActions(store, data, nav) {
     formReopen: ds => { if (!editable(ds.key)) backToEntry(ds.key, false, 'Erfassung wieder geöffnet', 'Prototyp'); },
     formComment: (ds, el) => setForm(ds.key, { comment: el.value }),
     formToggleCheck: ds => {
-      const kind = ds.arg, f = formOf(kind);
-      if (!f || !(f.step === 3 || f.step === 4)) return;
+      const kind = ds.arg, f = formOf(kind), F = vm(kind);
+      if (!f || !F || !F.rv.canReview) return;
       const checks = { ...f.checks, [ds.key]: !f.checks[ds.key] };
       if (f.step === 3) advance(kind, 4, me(), 'Prüfung begonnen');              // the first check starts the review
       setForm(kind, { checks });
@@ -276,15 +285,17 @@ export function makeActions(store, data, nav) {
     impNext: () => store.setIn('imp', { step: 2 }),
     impBack: () => store.setIn('imp', { step: 1 }),
     impClose: closeDialog,
-    impGoto: ds => { closeDialog(); nav.navigate(ds.arg); },
+    impGoto: ds => { closeDialog(); nav.navigate(ds.arg); },   // ds.arg: path of the current form (Erfassung or Übersicht)
     impApply: () => {
       const st = s(), p = P(), kind = (st.imp && KEYS[st.imp.form] ? st.imp.form : 'kv'), CH = data.ebkp.import.changes, vKey = KEYS[kind][1];
       if (!p || !p.forms[kind] || !editable(kind)) return;
-      const applied = st.imp.mode === 'ueber' ? Object.keys(CH).length : 0;
+      const patch = st.imp.mode === 'ueber' ? CH : Object.fromEntries(Object.entries(CH).filter(([c]) => num(p[vKey][c]) == null));   // «Nur leere Felder füllen»
+      const applied = Object.keys(patch).length;
       const modes = { ...p.forms[kind].modes };
-      if (applied) for (const g of data.ebkp.ebkp) if (g.kids.some(k => CH[k.code] != null)) modes[g.code] = 'detail';   // imported positions are shown in detail
+      if (applied) for (const g of data.ebkp.ebkp) if (g.kids.some(k => patch[k.code] != null)) modes[g.code] = 'detail';   // imported positions are shown in detail
       const events = applied ? [...p.forms[kind].events, ev(me(), 'Excel importiert', `${data.ebkp.import.file} · ${applied} Werte übernommen`)] : p.forms[kind].events;
-      setP({ [vKey]: applied ? { ...p[vKey], ...CH } : p[vKey], forms: { ...p.forms, [kind]: { ...p.forms[kind], modes, events } } });
+      setP({ [vKey]: applied ? { ...p[vKey], ...patch } : p[vKey], forms: { ...p.forms, [kind]: { ...p.forms[kind], modes, events } } });
+      if (applied) addDoc(kind, data.ebkp.import.file);
       store.setIn('imp', { done: true, applied });
     },
     impReset: () => {
@@ -307,10 +318,11 @@ export function makeActions(store, data, nav) {
       const file = el && el.files && el.files[0];
       if (el && 'value' in el) { try { el.value = ''; } catch { /* drop event stand-in */ } }
       if (!file) return;
+      if ((planVm(ds.key) || {}).locked) { toast('Die Lieferung ist gesperrt.'); return; }
       runPlanCheck(ds.key, () => planSession.checkFile(ds.key, file));
     },
-    planLoadSample: ds => runPlanCheck(ds.key, () => planSession.checkAsset(ds.key, data.plans.samples[data.plans.defaultSample || 'cadv01'].src)),
-    planRemove: ds => { const f = floorOf(ds.key); if (!f || planOf(ds.key).busy) return; setPlan(ds.key, { result: null, error: null, status: f.seed ? 'bearbeitung' : 'offen' }); },
+    planLoadSample: ds => { if ((planVm(ds.key) || {}).locked) { toast('Die Lieferung ist gesperrt.'); return; } runPlanCheck(ds.key, () => planSession.checkAsset(ds.key, data.plans.samples[data.plans.defaultSample || 'cadv01'].src)); },
+    planRemove: ds => { const f = floorOf(ds.key), pv = planVm(ds.key); if (!f || !pv || pv.locked || planOf(ds.key).busy) return; setPlan(ds.key, { result: null, error: null, status: f.seed ? 'bearbeitung' : 'offen' }); },
     planSubmit: ds => {
       const pv = planVm(ds.key);
       if (!pv || !pv.canSubmit) return;
@@ -319,9 +331,9 @@ export function makeActions(store, data, nav) {
     },
     planReopen: ds => { const pv = planVm(ds.key); if (pv && pv.locked) setPlan(ds.key, { status: 'bearbeitung', checks: { c1: false, c2: false } }); },
     planComment: (ds, el) => setPlan(ds.key, { comment: el.value }),
-    planToggleCheck: ds => { const pv = planVm(ds.arg); if (!pv || !pv.isReviewable) return; setPlan(ds.arg, { checks: { ...planOf(ds.arg).checks, [ds.key]: !planOf(ds.arg).checks[ds.key] }, status: 'pruefung' }); },
-    planApprove: ds => { const pv = planVm(ds.key); if (!pv || !pv.isReviewable || pv.approveDisabled) return; setPlan(ds.key, { status: 'freigegeben' }); toast(`${pv.code} freigegeben.`); },
-    planReject: ds => { const pv = planVm(ds.key); if (!pv || !pv.isReviewable) return; setPlan(ds.key, { status: 'zurueck', checks: { c1: false, c2: false } }); toast(`${pv.code} zurückgewiesen. ${supplier.name} wurde benachrichtigt.`); },
+    planToggleCheck: ds => { const pv = planVm(ds.arg); if (!pv || !pv.isReviewable || !isInternal()) return; setPlan(ds.arg, { checks: { ...planOf(ds.arg).checks, [ds.key]: !planOf(ds.arg).checks[ds.key] }, status: 'pruefung' }); },
+    planApprove: ds => { const pv = planVm(ds.key); if (!pv || !pv.isReviewable || pv.approveDisabled || !isInternal()) return; setPlan(ds.key, { status: 'freigegeben' }); toast(`${pv.code} freigegeben.`); },
+    planReject: ds => { const pv = planVm(ds.key); if (!pv || !pv.isReviewable || !isInternal()) return; setPlan(ds.key, { status: 'zurueck', checks: { c1: false, c2: false } }); toast(`${pv.code} zurückgewiesen. ${supplier.name} wurde benachrichtigt.`); },
     planTransfer: ds => { const pv = planVm(ds.key); if (!pv || !pv.isFrei) return; setPlan(ds.key, { status: 'uebertragen' }); toast(`${pv.code}: Raumpolygone, AOID und Flächen an SAP RE-FX übertragen.`); },
     planResetReview: ds => { const f = floorOf(ds.key); if (f) setPlan(ds.key, { status: f.status, checks: { ...f.checks }, comment: '' }); },
     /** Prüfbericht (PDF) of the checked plan with the drawing images of the viewer; opts.save = false returns the Blob only (tests). */

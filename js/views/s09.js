@@ -15,17 +15,19 @@ export default {
         </div>
 
         <div class="s09-main">
-          <div class="rel">
+          <div class="rel scroll-x">
             ${ctx.marker(1, 'top:-10px;left:-10px')}
+            <div style="min-width:620px">
             <div class="s09-head" style="${COLS}">
               <span>Vorlage</span><span>Gliederung</span><span>Version</span><span>Zielsystem</span><span>Pflicht</span><span>Im Projekt</span>
             </div>
             ${vm.tplRows.map(t => html`
-              <div class="s09-row" role="button" tabindex="0" data-action="tplSelect" data-key="${t.key}" aria-pressed="${t.selected ? 'true' : 'false'}"
+              <div class="s09-row" data-action="tplSelect" data-key="${t.key}"
                    style="${COLS};background:${t.bg};box-shadow:inset 3px 0 0 ${t.bl}">
-                <a>${t.name}</a><span>${t.gl}</span><span class="num">${t.ver}</span><span>${t.ziel}</span><span style="color:#3d4650">${t.pflicht}</span>
+                <button type="button" class="btn-link" style="text-align:left" data-action="tplSelect" data-key="${t.key}" aria-pressed="${t.selected ? 'true' : 'false'}">${t.name}</button><span>${t.gl}</span><span class="num">${t.ver}</span><span>${t.ziel}</span><span style="color:#3d4650">${t.pflicht}</span>
                 <span class="s09-toggle">${toggle({ on: t.on, label: `${t.name} im Projekt aktiv`, action: 'tplToggle', key: t.key })}</span>
               </div>`)}
+            </div>
           </div>
 
           <div class="s09-detail">
@@ -57,8 +59,8 @@ export default {
             </div>
             <div class="s09-detail-foot">
               <span class="flex-1" style="font-size:12.5px;color:#5b6573">Projektspezifisch anpassbar: Fälligkeiten, Prüfende, optionale Positionen.</span>
-              <button type="button" class="btn btn-secondary btn-sm" style="padding:5px 12px">Excel-Vorlage ansehen</button>
-              <button type="button" class="btn btn-primary btn-sm" style="padding:6px 14px">Projektanpassungen</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="padding:5px 12px" data-action="proto">Excel-Vorlage ansehen</button>
+              <button type="button" class="btn btn-primary btn-sm" style="padding:6px 14px" data-action="proto">Projektanpassungen</button>
             </div>
           </div>
         </div>

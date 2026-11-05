@@ -5,7 +5,7 @@ import { DEFAULT_TASK_COLS } from './columns.js';
 import { initialPlans } from './plan.js';
 import { mockProject, groupAmounts, KEYS } from './mock.js';
 
-export const STATE_VERSION = 13;   // bump whenever the shape of the persisted state changes (sessions with an older version start fresh)
+export const STATE_VERSION = 14;   // bump whenever the shape of the persisted state changes (sessions with an older version start fresh)
 
 /** Values and workflow state of the Datenformulare of one project (see model/form.js and model/mock.js). */
 export function initProject(data, project) {
@@ -18,6 +18,7 @@ export function initProject(data, project) {
     modes: Object.fromEntries(groupCodes(kind).map(g => [g, (D.kinds[kind].detailDefault || []).includes(g) ? 'detail' : 'direct'])),
     gvals: KEYS[kind] ? groupAmounts(M[KEYS[kind][1]], data) : {}, checks: {}, missingOnly: false, events: [], comment: '',
     removed: {}, added: [], nNew: 0,                       // positions removed / Kostenelemente added in the Erfassung (KV/KS)
+    docs: [],                                              // files the imports brought in ([name, type, req, by, date]), on top of the documents of the instance
   }]));
   return { kvQ: M.kvQ, kvV: M.kvV, ksQ: M.ksQ, ksV: M.ksV, thgSrc: M.thgSrc, thgHead: M.thgHead, thgBetr: M.thgBetr, sia: M.sia, forms };
 }

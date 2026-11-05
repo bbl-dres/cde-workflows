@@ -1,6 +1,7 @@
 {
   "name": "cde-workflows",
   "private": true,
+  "type": "module",
   "description": "Prototyp der Datenlieferungen in der CDE Bund (statisch, ohne Build)",
   "license": "MIT",
   "engines": { "node": ">=22" },

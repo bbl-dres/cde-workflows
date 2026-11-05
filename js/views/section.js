@@ -29,28 +29,28 @@ export default {
     switch (key) {
       case 'da':
         return html`${head}
-          <div class="toolbar toolbar-page"><span class="btn-split"><button type="button" class="btn btn-primary">Hochladen</button><button type="button" class="btn btn-primary btn-split-more" aria-label="Weitere Aktionen">${icon('ellipsis', 14, '#fff')}</button></span><button type="button" class="btn btn-secondary">Ordner erstellen</button><span class="flex-1"></span>${searchBox(290)}</div>
+          <div class="toolbar toolbar-page"><span class="btn-split"><button type="button" class="btn btn-primary" data-action="proto">Hochladen</button><button type="button" class="btn btn-primary btn-split-more" aria-label="Weitere Aktionen" data-action="proto">${icon('ellipsis', 14, '#fff')}</button></span><button type="button" class="btn btn-secondary" data-action="proto">Ordner erstellen</button><span class="flex-1"></span>${searchBox(290)}</div>
           <div class="card card-page"><div class="ant-table scroll-x has-sticky">
             <div class="ant-head" style="grid-template-columns:minmax(0,2fr) 90px 90px minmax(0,1fr) 110px 70px;min-width:560px">${thSort('Name', '#bfbfbf')}<span>Typ</span><span>Grösse</span><span>Hochgeladen von</span>${thSort('Datum', '#bfbfbf')}<span></span></div>
             ${(project.detailed ? FILES : FILES.slice(3)).map(f => html`<div class="ant-row" style="grid-template-columns:minmax(0,2fr) 90px 90px minmax(0,1fr) 110px 70px;min-width:560px">
-              <span class="flex items-center gap-8 min-w-0">${icon(f[1] === 'Excel' ? 'file-spreadsheet' : 'file-text', 16, '#3a4350')}<a class="ellipsis table-link">${f[0]}</a></span><span>${f[1]}</span><span>${f[2]}</span><span class="ellipsis">${f[3]}</span><span>${f[4]}</span><span class="row-actions-inline"><span class="btn-icon">${icon('download', 13, '#1f2937')}</span><span class="btn-icon">${icon('eye', 13, '#1f2937')}</span></span>
+              <span class="flex items-center gap-8 min-w-0">${icon(f[1] === 'Excel' ? 'file-spreadsheet' : 'file-text', 16, '#3a4350')}<span class="ellipsis table-link">${f[0]}</span></span><span>${f[1]}</span><span>${f[2]}</span><span class="ellipsis">${f[3]}</span><span>${f[4]}</span><span class="row-actions-inline"><button type="button" class="btn-icon" data-action="proto" aria-label="Herunterladen" title="Herunterladen">${icon('download', 13, '#1f2937')}</button><button type="button" class="btn-icon" data-action="proto" aria-label="Anzeigen" title="Anzeigen">${icon('eye', 13, '#1f2937')}</button></span>
             </div>`)}
           </div></div>`;
       case 'mi':
         return html`${head}
-          <div class="toolbar toolbar-page"><span class="btn-split"><button type="button" class="btn btn-primary">Mitglied hinzufügen</button><button type="button" class="btn btn-primary btn-split-more" aria-label="Weitere Aktionen">${icon('ellipsis', 14, '#fff')}</button></span><span class="flex-1"></span>${searchBox(290)}</div>
+          <div class="toolbar toolbar-page"><span class="btn-split"><button type="button" class="btn btn-primary" data-action="proto">Mitglied hinzufügen</button><button type="button" class="btn btn-primary btn-split-more" aria-label="Weitere Aktionen" data-action="proto">${icon('ellipsis', 14, '#fff')}</button></span><span class="flex-1"></span>${searchBox(290)}</div>
           <div class="card card-page"><div class="ant-table ant-table-striped scroll-x has-sticky">
             <div class="ant-head" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,3fr) 40px;min-width:480px">${thSort('Name', '#bfbfbf')}${thSort('Rolle', '#bfbfbf')}<span></span><span></span></div>
             ${vm.members.map(u => html`<div class="ant-row" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,3fr) 40px;min-width:480px">
-              <a class="ellipsis tasks-person" style="color:var(--text)" title="${u.org} · ${u.role}">${u.name}</a><span class="flex items-center gap-10">${ROLE(u)}${icon('ellipsis', 12, '#8c8c8c')}</span><span></span><span class="row-actions-inline"><span class="btn-icon btn-icon-danger" title="Entfernen">${icon('trash-2', 13, '#ff3162')}</span></span>
+              <span class="ellipsis tasks-person" style="color:var(--text)" title="${u.org} · ${u.role}">${u.name}</span><span class="flex items-center gap-10">${ROLE(u)}${icon('ellipsis', 12, '#8c8c8c')}</span><span></span><span class="row-actions-inline"><button type="button" class="btn-icon btn-icon-danger" data-action="proto" title="Entfernen" aria-label="Entfernen">${icon('trash-2', 13, '#ff3162')}</button></span>
             </div>`)}
           </div></div>`;
       case 'st':
         return html`${head}<div class="card card-page card-narrow">
           <div class="card-head">Projektdaten</div>
-          <div style="padding:4px 0 6px">${[['Projektnummer', project.number], ['Technischer Platz', project.technicalPlace], ['Projektbezeichnung', project.designation], ['Teilportfolio', project.teilportfolioLabel], ['SIA-Phase', project.phase], ['Anlagekosten', 'CHF ' + project.anlagekostenMio.toLocaleString('de-CH', { minimumFractionDigits: 1 }) + ' Mio'], ['Kostenziel B–W', 'CHF ' + (project.kostenzielBW / 1e6).toLocaleString('de-CH', { minimumFractionDigits: 2 }) + ' Mio'], ['Standort', project.location.place], ['Verantwortlicher', project.responsible]]
+          <div style="padding:4px 0 6px">${[['Projektnummer', project.number], ['Technischer Platz', project.technicalPlace], ['Projektbezeichnung', project.designation], ['Teilportfolio', project.teilportfolioLabel], ['SIA-Phase', project.phase], ['Anlagekosten', 'CHF ' + (project.detailed ? vm.ak : project.anlagekostenMio).toLocaleString('de-CH', { minimumFractionDigits: 1 }) + ' Mio'], ['Kostenziel B–W', 'CHF ' + (project.kostenzielBW / 1e6).toLocaleString('de-CH', { minimumFractionDigits: 2 }) + ' Mio'], ['Standort', project.location.place], ['Verantwortlicher', project.responsible]]
             .map(([k, v], i) => html`<div class="meta-row" style="grid-template-columns:190px 1fr;background:${i % 2 ? 'transparent' : '#f6f7f9'}"><span class="meta-k">${k}</span><span>${v}</span></div>`)}</div>
-          <div class="card-foot">Die Anlagekosten steuern die Pflicht zur Ökobilanz (ab CHF 1 Mio). Im Prototyp über das Studien-Panel änderbar.</div>
+          <div class="card-foot">Die Anlagekosten steuern die Pflicht zur Ökobilanz (ab CHF 1 Mio).${project.detailed ? ' Im Prototyp über das Studien-Panel änderbar.' : ''}</div>
         </div>`;
       default:
         return html`${head}<div class="card card-page" style="min-height:360px;display:flex;align-items:center;justify-content:center">${emptyState(key ? 'Keine Einträge' : 'Seite nicht gefunden', 56)}</div>`;

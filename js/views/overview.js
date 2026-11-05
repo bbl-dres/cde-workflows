@@ -57,7 +57,7 @@ export default {
             <div style="padding:4px 0 6px">${data.map(([k, v], i) => html`<div class="meta-row meta-row-wide" style="background:${i % 2 ? 'transparent' : '#f6f7f9'}"><span class="meta-k">${k}</span><span>${v}</span></div>`)}</div>
           </div>
           <div class="card">
-            <div class="card-head"><span class="flex-1">Verknüpfungen</span><span class="btn btn-secondary btn-sm">Hinzufügen</span></div>
+            <div class="card-head"><span class="flex-1">Verknüpfungen</span><button type="button" class="btn btn-secondary btn-sm" data-action="proto">Hinzufügen</button></div>
             <div style="padding:36px 0 44px">${emptyState()}</div>
           </div>
         </div>

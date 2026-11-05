@@ -60,10 +60,12 @@ export const planSession = {
     async checkFile(floorKey, file) {
         const key = `upload:${floorKey}:${file.name}`;
         if (file.size > MAX_FILE_SIZE) throw new Error(`Datei zu gross (${Math.round(file.size / 1048576)} MB, maximal ${Math.round(MAX_FILE_SIZE / 1048576)} MB).`);
-        evictFloor(floorKey, key);
         note(`Datei wird gelesen: ${file.name}`);
         const buffer = await file.arrayBuffer();
-        const entry = await run(key, buffer, { name: file.name, size: file.size });
+        let entry;
+        try { entry = await run(key, buffer, { name: file.name, size: file.size }); }
+        catch (err) { if (!cache.get(`upload:${floorKey}:${file.name}`)?.result) cache.delete(key); throw err; }   // a failed check keeps the floor's previous drawing (its result is still in the state)
+        evictFloor(floorKey, key);
         return { key, entry };
     },
 

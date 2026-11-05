@@ -227,7 +227,7 @@ a.filter-btn { color: var(--navy); }
 @media (max-width: 767.98px) {
   .dash-projects { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dash-cell { height: 120px; }
-  .toolbar, .toolbar-page, .projects-top, .filters, .tasks-filters { flex-wrap: wrap; }
+  .toolbar, .toolbar-page, .projects-top, .filters, .tasks-filters, .pf-filters { flex-wrap: wrap; }
   .form-two { grid-template-columns: 1fr; }
 }
 @media (max-width: 639.98px) {

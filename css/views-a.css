@@ -1,9 +1,6 @@
 /* Screen-specific styles (views-a: 02 Bestellen, 02b Aufgaben, 06 Kontrolle). Shared components live in components.css. */
 
 /* ---- 02 Datenlieferung bestellen ---- */
-.order-dialog { width: 760px; }
-.order-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-.order-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .order-rule { background: var(--field-bg); border: 1px solid var(--line-3); border-radius: 4px; padding: 14px 16px; }
 .order-rule-head { display: flex; gap: 28px; margin-bottom: 8px; font-size: 13px; }
 .order-rule-text { font-size: 13px; line-height: 1.5; color: var(--text-3); }

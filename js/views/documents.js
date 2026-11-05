@@ -16,7 +16,7 @@ export default {
     return html`
       ${pageHead('Dokumente', ctx.crumbs('Dokumente'))}
       <div class="toolbar toolbar-page">
-        <button type="button" class="btn btn-primary">Dokument importieren</button>
+        <button type="button" class="btn btn-primary" data-action="proto">Dokument importieren</button>
         <span class="flex-1"></span>
         ${searchBox(290)}
       </div>
@@ -26,7 +26,7 @@ export default {
           <div class="tree">
             ${groups.map(g => html`<a class="tree-item${g.key === sel ? ' is-active' : ''}" href="#${base}?group=${g.key}" data-nav="${base}?group=${g.key}">${g.label}</a>`)}
           </div>
-          <div class="pane-foot"><button type="button" class="btn btn-secondary btn-block">Neues Dokument</button></div>
+          <div class="pane-foot"><button type="button" class="btn btn-secondary btn-block" data-action="proto">Neues Dokument</button></div>
         </div>
         <div class="pane pane-table">
           <div class="pane-body">
@@ -39,7 +39,7 @@ export default {
                 <span class="ellipsis">${r.responsible}</span>
                 <span class="ellipsis">${r.updatedBy}</span>
                 <span>${r.updatedAt}</span>
-                <span class="row-actions-inline"><span class="btn-icon" title="Beteiligte">${icon('user', 13, '#1f2937')}</span><span class="btn-icon" title="Anzeigen">${icon('eye', 13, '#1f2937')}</span></span>
+                <span class="row-actions-inline"><button type="button" class="btn-icon" data-action="proto" title="Beteiligte" aria-label="Beteiligte">${icon('user', 13, '#1f2937')}</button><button type="button" class="btn-icon" data-action="proto" title="Anzeigen" aria-label="Anzeigen">${icon('eye', 13, '#1f2937')}</button></span>
               </div>`)}
               ${rows.length === 0 ? html`<div class="ant-empty">${emptyState()}</div>` : ''}
             </div>

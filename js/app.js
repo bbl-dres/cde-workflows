@@ -15,6 +15,7 @@ import { views, dialogs } from './views/index.js';
 const appRoot = document.getElementById('app');
 const studyRoot = document.getElementById('study');
 let data, store, actions, screens;
+let deferred = false;       // a render postponed because a text field had uncommitted input (it follows the field's change)
 let mountedView = null;      // view whose mount() ran last (for unmount)
 let overlayKey = '';         // which overlay is open, to move focus only when it opens
 let overlayInvoker = null;   // focus signature of the control that opened the overlay (focus returns there on close)
@@ -22,6 +23,9 @@ let DETAILED_PID = 'musterhausen';   // the project with the full workflow (proj
 const PROJECT_ROUTES = new Set(PROJECT_PAGES);
 // Paths of earlier prototype versions → paths of the CDE Bund
 const OLD_PATHS = { 'info-management/delivery-plan': 'delivery-plan', 'info-management/documents': 'documents', 'info-management/loin': 'loin', activities: 'timeline' };
+
+// «Zustand zurücksetzen und neu laden» must work before the data is loaded (the error page of loadData), so it does not go through bindEvents()
+document.addEventListener('click', e => { if (e.target.closest('[data-action="hardReset"]')) { e.preventDefault(); clearPersisted(); location.reload(); } });
 
 /** Error page: shown when the data cannot be loaded or the persisted state breaks the render (with a way out). */
 const errorPage = (title, detail, hint = '') => `<div class="boot-error"><h1>${esc(title)}</h1><pre>${esc(detail)}</pre>${hint}
@@ -112,6 +116,9 @@ function schedule() { if (pending) return; pending = setTimeout(() => { pending 
 
 function render() {
   if (pending) { clearTimeout(pending); pending = null; }                // a navigation renders at once, no second render afterwards
+  const el = document.activeElement;
+  if (el && el.dataset && el.dataset.change && 'defaultValue' in el && el.value !== el.defaultValue && !['checkbox', 'radio', 'file'].includes(el.type) && appRoot.contains(el)) { deferred = true; return; }   // typed text is not thrown away by a render in between (toast timer, background check); the render follows the field's change
+  deferred = false;
   try { renderPage(); } catch (e) {
     console.error(e);
     appRoot.innerHTML = errorPage('Fehler beim Rendern', String(e.stack || e));
@@ -153,6 +160,8 @@ function renderPage() {
         : r),
     ],
   };
+  const d = state.ui.dialog;
+  if (d && !(dialogs[d] && (!dialogs[d].when || dialogs[d].when(ctx)))) { store.setIn('ui', { dialog: null }); return renderPage(); }   // Back, deep link or another form: a dialog that does not belong to this page closes instead of leaving the page inert
   const view = (PROJECT_ROUTES.has(route.name) && !project) ? views.notfound : (views[route.name] || views.notfound);
   if (mountedView && mountedView !== view && mountedView.unmount) { try { mountedView.unmount(); } catch (e) { console.error(e); } }
   const focus = captureFocus();
@@ -192,7 +201,8 @@ function overlays(ctx) {
 /** Move focus into a dialog, drawer or menu when it opens; back to the control that opened it (or the page) when it closes.
  *  While a modal overlay is open, the page behind it is inert. */
 function focusOverlay(state, focusBefore) {
-  const key = state.ui.dialog ? 'dialog:' + state.ui.dialog : state.ui.notif ? 'notif' : state.ui.userMenu ? 'menu' : '';
+  const dialogShown = !!appRoot.querySelector('.dialog[role="dialog"], .drawer-wide[role="dialog"]');   // the page is inert only while a dialog is really on it
+  const key = state.ui.dialog && dialogShown ? 'dialog:' + state.ui.dialog : state.ui.notif ? 'notif' : state.ui.userMenu ? 'menu' : '';
   const modal = !!key && key !== 'menu';
   appRoot.querySelectorAll('.proto-banner, .topbar, .app-body, .app-footer').forEach(el => { el.inert = modal; });
   if (key === overlayKey) return;
@@ -252,14 +262,16 @@ function bindEvents() {
     if (a.dataset.action) {
       if (a.disabled) return;
       e.preventDefault();
-      if (a.dataset.action === 'hardReset') { clearPersisted(); location.reload(); return; }   // error page: works without a store
       run(a.dataset.action, a.dataset, a, e);
     }
   });
   document.body.addEventListener('change', e => {
     const el = e.target.closest('[data-change]');
-    if (el) run(el.dataset.change, el.dataset, el, e);
+    if (!el) return;
+    if ('defaultValue' in el) el.defaultValue = el.value;                 // committed: the next render may replace the field
+    run(el.dataset.change, el.dataset, el, e);
   });
+  document.body.addEventListener('focusout', () => { if (deferred) setTimeout(() => { if (deferred) render(); }, 0); });   // a postponed render catches up when the field loses focus
   document.body.addEventListener('input', e => {                      // live fields (search), focus survives the re-render by data-fid
     const el = e.target.closest('[data-input]');
     if (el) run(el.dataset.input, el.dataset, el, e);
@@ -274,7 +286,7 @@ function bindEvents() {
       const ui = store.get().ui;
       if (ui.searchOpen) actions.searchClose();
       else if (ui.dialog) actions.closeDialog();
-      else if (ui.notif || ui.userMenu || ui.sideOpen) actions.closeMenus();
+      else if (ui.notif || ui.userMenu || ui.sideOpen || ui.importMenu) actions.closeMenus();
       return;
     }
     if (e.key !== 'Enter' && e.key !== ' ') return;

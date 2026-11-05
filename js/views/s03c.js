@@ -20,13 +20,13 @@ export default {
         <div class="dialog-body" style="gap:18px">
           <div class="imp-drop">
             ${icon('upload', 30, '#5b6573')}
-            <div class="fs-14">Excel-Datei hierher ziehen oder <a>auswählen</a></div>
+            <div class="fs-14">Excel-Datei hierher ziehen oder <button type="button" class="btn-link" data-action="proto">auswählen</button></div>
             <div class="fs-12 muted">.xlsx, max. 10 MB</div>
           </div>
           <div class="imp-file">
             ${icon('file-spreadsheet', 18, '#2f7d63')}
             <div class="flex-1"><strong>${vm.impFile}</strong> <span class="muted">· ${vm.impFileSize}</span><div class="fs-12" style="color:#1f4a3b">Blatt «KV ${vm.glLabel}» erkannt · ${vm.impAll} Zeilen</div></div>
-            <a class="fs-125">Entfernen</a>
+            <button type="button" class="btn-link fs-125" data-action="proto">Entfernen</button>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
             <div class="imp-box">
@@ -34,8 +34,8 @@ export default {
               <div class="fs-14 fw-600" style="margin-bottom:4px">Vorlage</div>
               <div class="fs-125 muted" style="line-height:1.5;margin-bottom:12px">Enthält alle bestellten Positionen in der Gliederung ${vm.glLabel}, mit Einheiten und Spaltenköpfen.</div>
               <div class="flex-col gap-8 items-start">
-                <button type="button" class="btn btn-secondary btn-sm" style="padding:5px 12px">${icon('download', 14, '#3a4350')}Leere Vorlage ${vm.glLabel} (.xlsx)</button>
-                <button type="button" class="btn btn-secondary btn-sm" style="padding:5px 12px">${icon('download', 14, '#3a4350')}Vorlage mit aktuellen Werten (.xlsx)</button>
+                <button type="button" class="btn btn-secondary btn-sm" style="padding:5px 12px" data-action="proto">${icon('download', 14, '#3a4350')}Leere Vorlage ${vm.glLabel} (.xlsx)</button>
+                <button type="button" class="btn btn-secondary btn-sm" style="padding:5px 12px" data-action="proto">${icon('download', 14, '#3a4350')}Vorlage mit aktuellen Werten (.xlsx)</button>
               </div>
             </div>
             <div class="imp-box">

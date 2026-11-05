@@ -36,12 +36,12 @@ export default {
 
         <div class="o-section-head">
           <span class="flex-1 fs-14 fw-500">Geforderte Dokumente</span>
-          <span class="btn btn-secondary btn-sm">${icon('download', 13, 'currentColor')}Vorlage herunterladen</span>
-          <span class="btn btn-secondary btn-sm">${icon('upload', 13, 'currentColor')}Dokumentenliste importieren</span>
+          <button type="button" class="btn btn-secondary btn-sm" data-action="proto">${icon('download', 13, 'currentColor')}Vorlage herunterladen</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-action="proto">${icon('upload', 13, 'currentColor')}Dokumentenliste importieren</button>
         </div>
 
         <div class="o-req rel">
-          <div class="o-req-head">${icon('chevron-down', 14, '#3a4350')}<span class="flex-1">Neue Anforderung</span><span class="btn-icon" style="border-color:#e8a0ad">${icon('trash-2', 13, '#c8102e')}</span></div>
+          <div class="o-req-head">${icon('chevron-down', 14, '#3a4350')}<span class="flex-1">Neue Anforderung</span><button type="button" class="btn-icon" style="border-color:#e8a0ad" data-action="proto" aria-label="Anforderung entfernen" title="Anforderung entfernen">${icon('trash-2', 13, '#c8102e')}</button></div>
           <div class="o-grid">
             <div>${fieldLabel('Typ', true)}
               <select class="o-select" data-change="orderReqType" data-fid="order-reqtype" aria-label="Typ der Anforderung">

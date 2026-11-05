@@ -366,11 +366,11 @@ try {
   check('ILP tiles count the plans', (await tile('total')) === 11 && (await tile('check')) >= 1 && (await tile('done')) >= 4, `${await tile('total')} ${await tile('check')} ${await tile('done')}`);
   await go('/projects/musterhausen/deliveries/dwg-eg'); await sleep(100);
   check('DWG canonical URL (Übersicht)', (await hash()) === '#/projects/musterhausen/deliveries/dwg-eg/uebersicht', await hash());
-  check('DWG Übersicht: Flächen SIA 416, Prüfregeln nach Kategorie, 3 errors badge', (await count('.sia-tbl .grid-row')) === 9 && (await bodyText()).includes('Energiebezugsfläche') && (await text('.sia-tbl .grid-head')).includes('Flächenart') && (await count('.cat-row')) === 10 && (await count('.kpi')) === 3 && (await text('.tab-badge')) === '3');
+  check('DWG Übersicht: Flächen SIA 416, Prüfregeln nach Kategorie, 4 errors badge', (await count('.sia-tbl .grid-row')) === 9 && (await bodyText()).includes('Energiebezugsfläche') && (await text('.sia-tbl .grid-head')).includes('Flächenart') && (await count('.cat-row')) === 10 && (await count('.kpi')) === 3 && (await text('.tab-badge')) === '4');
   await shot('e2e-dwg-uebersicht');
   await go('/projects/musterhausen/deliveries/dwg-eg/erfassung');
   check('EG: failed rules listed, submit locked', (await count('.plan-list .plan-row')) === 40 && (await bodyText()).includes('LAYER_001') && (await disabled('[data-action="planSubmit"]')) && (await bodyText()).includes('Einreichen erst, wenn der Plan keine Fehler hat'));
-  check('EG: result strip shows 3 errors', /Fehler\s*3/.test(await text('.plan-result')), await text('.plan-result'));
+  check('EG: result strip shows 4 errors', /Fehler\s*4/.test(await text('.plan-result')), await text('.plan-result'));
   const egReady = await waitFor(`document.querySelector('.plan-viewer')?.dataset.planStatus === 'ready'`);
   check('viewer parsed the uploaded DWG with LibreDWG WASM', egReady, await evaluate(`(document.querySelector('.plan-viewer')?.dataset.planStatus || '') + ' ' + (document.querySelector('.plan-state-sub')?.textContent || '')`));
   check('viewer canvas sized', await evaluate(`(() => { const c = document.querySelector('.plan-viewer canvas'); return !!c && c.width > 100 && c.height > 100; })()`));

@@ -45,7 +45,7 @@ export default {
           <div class="pf-row" style="${COLS};background:${r.bg}">
             <div>
               <div class="pf-nr">${r.nr}</div>
-              ${r.href ? html`<a href="#${r.href}" data-nav="${r.href}">${r.name}</a>` : html`<a style="cursor:default">${r.name}</a>`}
+              ${r.href ? html`<a href="#${r.href}" data-nav="${r.href}">${r.name}</a>` : html`<span>${r.name}</span>`}
             </div>
             <span>${r.tp}</span>
             <span class="right num">${r.akStr}</span>

@@ -41,7 +41,7 @@ export default {
           <div class="imp-done">
             ${icon('circle-check', 40, '#2f7d63')}
             <div class="fs-16 fw-600">${vm.impDoneText}</div>
-            <div class="fs-13 muted" style="max-width:460px;line-height:1.5">Der Import ist im Verlauf protokolliert. Hinweise bleiben in der Erfassung markiert. Werte in <button type="button" class="btn-link" data-action="impGoto" data-arg="s03">der Erfassung</button> und <button type="button" class="btn-link" data-action="impGoto" data-arg="s03b">der Übersicht</button> sind aktualisiert.</div>
+            <div class="fs-13 muted" style="max-width:460px;line-height:1.5">Der Import ist im Verlauf protokolliert. Hinweise bleiben in der Erfassung markiert. Werte in <button type="button" class="btn-link" data-action="impGoto" data-arg="${ctx.link.delivery(ctx.route.params.code, 'erfassung')}">der Erfassung</button> und <button type="button" class="btn-link" data-action="impGoto" data-arg="${ctx.link.delivery(ctx.route.params.code, 'uebersicht')}">der Übersicht</button> sind aktualisiert.</div>
             <button type="button" class="btn-link fs-13" style="margin-top:6px" data-action="impReset">Import zurücksetzen</button>
           </div>`}
 

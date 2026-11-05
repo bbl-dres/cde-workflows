@@ -182,25 +182,13 @@
      "code": "STYLE_002",
      "severity": "warning",
      "category": "STYLE",
-     "message": "17 Element(e) mit Farbe nicht VONLAYER (Layer: V_PLANLAYOUT, V_BEMASSUNG)",
+     "message": "5 Element(e) mit Farbe nicht VONLAYER (Layer: V_PLANLAYOUT)",
      "handles": [
       "14AD",
       "14B0",
       "5179",
       "517A",
-      "517B",
-      "4BDA",
-      "4BDB",
-      "4BDC",
-      "4BDD",
-      "4BDE",
-      "4BDF",
-      "4BD1",
-      "4BD2",
-      "4BD3",
-      "4BD4",
-      "4BD5",
-      "4BD6"
+      "517B"
      ]
     }
    ],
@@ -627,12 +615,12 @@
    "layerCount": 32,
    "unit": 4,
    "summary": {
-    "errorCount": 3,
-    "warningCount": 43,
-    "firedRules": 13,
+    "errorCount": 4,
+    "warningCount": 44,
+    "firedRules": 14,
     "totalRules": 40,
-    "passedRules": 27,
-    "score": 68,
+    "passedRules": 26,
+    "score": 65,
     "scoreClass": "warning"
    },
    "issues": [
@@ -908,6 +896,12 @@
      "message": "Kein Geschosspolygon vorhanden"
     },
     {
+     "code": "GEOM_003",
+     "severity": "error",
+     "category": "GEOM",
+     "message": "Unzulässiger Entitätstyp: SPLINE (694× vorhanden, davon 694 in Blöcken)"
+    },
+    {
      "code": "TEXT_001",
      "severity": "warning",
      "category": "TEXT",
@@ -1086,7 +1080,7 @@
      "code": "TEXT_001",
      "severity": "warning",
      "category": "TEXT",
-     "message": "508 Textelement(e) auf unzulässigem Layer \"0\"",
+     "message": "6 Textelement(e) auf unzulässigem Layer \"0\"",
      "layer": "0",
      "handles": [
       "188F4",
@@ -1094,7 +1088,16 @@
       "188F6",
       "188FF",
       "18900",
-      "18901",
+      "18901"
+     ]
+    },
+    {
+     "code": "TEXT_001",
+     "severity": "warning",
+     "category": "TEXT",
+     "message": "502 Textelement(e) auf unzulässigem Layer \"A1Z29---T-\"",
+     "layer": "A1Z29---T-",
+     "handles": [
       "1BC64",
       "1BC65",
       "1BC67",
@@ -1488,7 +1491,13 @@
       "1BF51",
       "1BF52",
       "1BF53",
-      "1BF56"
+      "1BF56",
+      "1BF57",
+      "1BF58",
+      "1BF5B",
+      "1BF5C",
+      "1BF5D",
+      "1BF5E"
      ]
     },
     {

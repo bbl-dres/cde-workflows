@@ -40,7 +40,7 @@ function searchBox(ctx) {
   const q = state.ui.search || '', open = !!(state.ui.searchOpen && q.trim()), idx = state.ui.searchIdx;
   const m = open ? searchModel(q, data) : null;
   return html`<div class="topbar-search${open ? ' is-open' : ''}" role="search">
-    <input class="topbar-search-input" type="text" value="${q}" placeholder="Suchen nach Projekten und Bestandsdaten..." aria-label="Suchen nach Projekten und Bestandsdaten" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="${open ? 'true' : 'false'}" aria-controls="search-list" aria-autocomplete="list" ${open && idx >= 0 ? html`aria-activedescendant="search-opt-${idx}"` : ''} data-input="searchType" data-fid="topbar-search">
+    <input class="topbar-search-input" type="text" value="${q}" placeholder="Suchen nach Projekten und Bestandsdaten..." aria-label="Suchen nach Projekten und Bestandsdaten" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="${open ? 'true' : 'false'}" ${open ? raw('aria-controls="search-list"') : ''} aria-autocomplete="list" ${open && idx >= 0 ? html`aria-activedescendant="search-opt-${idx}"` : ''} data-input="searchType" data-fid="topbar-search">
     ${q ? html`<button type="button" class="topbar-search-clear" data-action="searchClear" aria-label="Suche löschen" title="Suche löschen">${icon('x', 14, '#1f2937')}</button>` : ''}
     <button type="button" class="topbar-search-btn" data-action="searchGo" aria-label="Suchen">${icon('search', 16, '#1f2937')}</button>
     ${open ? html`<div class="search-pop" id="search-list" role="listbox" aria-label="Vorschläge">${m.total ? m.groups.map(g => html`<div class="search-group" role="presentation">${g.label}</div>${g.items.map(it => html`<a class="search-item${it.idx === idx ? ' is-active' : ''}" id="search-opt-${it.idx}" role="option" aria-selected="${it.idx === idx ? 'true' : 'false'}" href="#${it.href}" data-nav="${it.href}"><span class="ellipsis">${it.label}</span>${it.sub ? html`<span class="search-sub ellipsis">${it.sub}</span>` : ''}</a>`)}`) : html`<div class="search-empty">Keine Treffer für «${m.query}»</div>`}</div>` : ''}
@@ -106,7 +106,7 @@ export function frame(ctx, content, extra) {
   const sb = sidebarFor(ctx);
   const white = ctx.route.name === 'tasks';
   const mainCls = `app-main${sb ? '' : ' app-main-full'}${white ? ' app-main-white' : ''}`;
-  return html`<div class="app-frame"><a class="skip-link" href="#main">Zum Inhalt</a>${banner()}${topbar(ctx, !!sb)}<div class="app-body">${sb}${sb ? html`<div class="side-backdrop" data-action="toggleSide"></div>` : ''}<main class="${mainCls}" id="main">${white ? html`<div class="page-card">${content}</div>` : content}</main></div>${footer()}${extra || ''}</div>`;
+  return html`<div class="app-frame"><a class="skip-link" href="#main" data-action="skipToMain">Zum Inhalt</a>${banner()}${topbar(ctx, !!sb)}<div class="app-body">${sb}${sb ? html`<div class="side-backdrop" data-action="toggleSide"></div>` : ''}<main class="${mainCls}" id="main">${white ? html`<div class="page-card">${content}</div>` : content}</main></div>${footer()}${extra || ''}</div>`;
 }
 
 // ---- Breadcrumb, page head, tabs ----
@@ -179,13 +179,13 @@ export function userMenu(ctx) {
   const { user, data } = ctx;
   return html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>
   <div class="user-menu" role="menu">
-    <div class="user-menu-head">${avatar(user.initials, 34, '#aab2bc')}<div><div class="fw-600">${user.name}</div><div class="muted fs-12">${user.role} · ${user.org}</div></div></div>
-    <div class="user-menu-label">Anmelden als (Prototyp)</div>
+    <div class="user-menu-head" role="presentation">${avatar(user.initials, 34, '#aab2bc')}<div><div class="fw-600">${user.name}</div><div class="muted fs-12">${user.role} · ${user.org}</div></div></div>
+    <div class="user-menu-label" role="presentation">Anmelden als (Prototyp)</div>
     ${data.users.users.map(u => html`<button type="button" role="menuitem" class="user-menu-item${u.key === user.key ? ' is-active' : ''}" data-action="setUser" data-key="${u.key}">${avatar(u.initials, 24, u.internal ? 'var(--navy)' : '#aab2bc')}<span class="flex-1"><span>${u.name}</span><span class="muted fs-12"> · ${u.role}</span></span>${u.key === user.key ? icon('check', 14, '#2f7d63') : ''}</button>`)}
-    <div class="user-menu-sep"></div>
+    <div class="user-menu-sep" role="separator"></div>
     ${[['user', 'Mein Account'], ['settings', 'Meine Einstellungen'], ['bell', 'Benachrichtigungseinstellungen'], ['book', 'Benutzerhandbuch'], ['circle-help', 'Support'], ['file-text', 'Release Notes'], ['info', 'Impressum']]
       .map(([ic, label]) => html`<span class="user-menu-item is-static" role="menuitem" aria-disabled="true" title="Im Prototyp ohne Funktion">${icon(ic, 16, '#6b7280')}<span class="flex-1">${label}</span></span>`)}
-    <div class="user-menu-sep"></div>
+    <div class="user-menu-sep" role="separator"></div>
     <button type="button" role="menuitem" class="user-menu-item" data-action="toggleStudy">${icon('book', 16, '#10384f')}<span class="flex-1 fw-600">Design-Studie ${ctx.state.ui.studyOpen ? 'schliessen' : 'öffnen'}</span></button>
     <span class="user-menu-item is-static" role="menuitem" aria-disabled="true" title="Im Prototyp ohne Funktion">${icon('log-out', 16, '#6b7280')}<span class="flex-1">Logout</span></span>
   </div>`;

@@ -199,6 +199,7 @@ test('THG-32: Emissionsquellen (Erstellung), Betrieb, Zielwerte SIA 390/1 and th
   const st = structuredClone(base);
   st.projects.musterhausen.forms.thg.step = 4; st.projects.musterhausen.forms.thg.dates = ['12.03.2027', '15.03.2027', null, '03.05.2027', '04.05.2027'];
   let v0 = vmFor(st); assert.equal(v0.forms.thg.status, 'In Prüfung'); assert.equal(v0.forms.thg.locked, true); assert.equal(v0.forms.thg.rv.canReview, true); assert.equal(v0.forms.thg.erf.rows.filter(r => r.isAdd).length, 0, 'locked: no add rows');
+  const ext = vmFor(st, detailed, userOf('AB')); assert.equal(ext.forms.thg.rv.canReview, false); assert.equal(ext.forms.thg.rv.decide, false); assert.ok(ext.forms.thg.manual.every(m => m.disabled), 'an external user cannot review');
   st.projects.musterhausen.forms.thg.checks = { t1: true, t2: true, t3: true, t4: true, t5: true };
   let v = vmFor(st);
   assert.equal(v.forms.thg.rv.canApprove, true);
@@ -219,6 +220,7 @@ test('THG-32: Emissionsquellen (Erstellung), Betrieb, Zielwerte SIA 390/1 and th
   v = vmFor(st);
   assert.equal(v.forms.thg.missing, 2); assert.equal(v.forms.thg.bar.canSubmit, false); assert.equal(v.forms.thg.badges.erfassung.n, 1); assert.equal(v.forms.thg.badges.betrieb.n, 1);
   assert.equal(v.forms.thg.betr.rows[3].end, '–');
+  st.projects.musterhausen.thgBetr.b3_eta = 0; v = vmFor(st); assert.equal(v.forms.thg.missB, 1, 'a Nutzungsgrad of 0 counts as missing');
   st.projects.musterhausen.forms.thg.missingOnly = true;
   v = vmFor(st);
   assert.deepEqual(v.forms.thg.erf.rows.map(r => r.code), ['B', 'B06.01'], 'filter shows the group and the row with the missing value');
@@ -258,7 +260,7 @@ test('every project: complete, plausible Datenformulare', () => {
       assert.ok(KNOWN.has(F.status), `${p.id}/${kind}: status ${F.status}`);
       assert.ok((F.fields > 0 || (kind === 'thg' && F.step === 0)) && F.steps.length === 6 && F.hist.length >= 1 && F.peopleRows.length >= 2 && F.kpis.length === 2, `${p.id}/${kind}: shape`);
       if (F.step >= 3) assert.equal(F.missing, 0, `${p.id}/${kind}: complete once submitted`);
-      if (F.step === 0) assert.equal(F.missing, F.fields, `${p.id}/${kind}: Offen has no values`);
+      if (F.step === 0) assert.equal(F.missing, F.fields - (kind === 'thg' ? 0 : 2), `${p.id}/${kind}: Offen has no values (A Grundstück and H keep their 0)`);
       if (F.step === 1 && !inst[kind].missing && !p.detailed) assert.equal(F.missing, 0, `${p.id}/${kind}: complete unless values are marked missing`);
       if (F.step >= 1) assert.ok(F.docs.length >= 1, `${p.id}/${kind}: documents`);
       assert.ok((kind === 'thg' ? F.tz.rows.length === 3 && F.tz.legend.length === 4 : F.chart.targets.length === 3) && F.costRows.length >= 6, `${p.id}/${kind}: Übersicht`);
@@ -327,6 +329,7 @@ test('router: patterns, query parsing, overrides', () => {
   assert.equal(matchRoute('/projects/x/info-management/delivery-plan').name, 'section', 'old path is a generic section until app.js redirects it');
   assert.equal(matchRoute('/nope/x/y/z/w').name, 'notfound');
   assert.deepEqual(parseHash('#/tasks/all?type=thg&endwert=9.5&ui.studyOpen=false').query, { type: 'thg', endwert: '9.5', 'ui.studyOpen': 'false' });
+  assert.equal(parseHash('#/x?a=b=c').query.a, 'b=c', 'a query value may contain «=»');
   assert.deepEqual(routeOverrides({ type: 'thg', endwert: '9.5', 'ui.studyOpen': 'false', n: '3' }), { endwert: 9.5, 'ui.studyOpen': false, n: 3 });
   assert.equal(routeOverrides({ view: 'card' }), null);
   assert.doesNotThrow(() => parseHash('#/projects/%E0%A4%A/overview?q=%'), 'malformed percent-encoding does not throw');
@@ -447,9 +450,9 @@ test('plans: Datenformular shape (Übersicht, Prüfung) of a floor plan', () => 
   const eg = vm.formByCode('dwg-eg'), ug = vm.formByCode('dwg-ug'), dg = vm.formByCode('dwg-dg');
   assert.equal(eg.kind, 'plan'); assert.equal(eg.status, 'In Bearbeitung'); assert.equal(eg.step, 1);
   assert.equal(eg.steps.length, 6); assert.equal(eg.planOv.cats.length, 10); assert.equal(eg.planOv.sia.length, 9, 'SIA 416 areas plus EBF (SIA 416/1)');
-  assert.equal(eg.comp.pct, '27 / 40'); assert.equal(eg.res.title, '3 Fehler'); assert.ok(eg.reviewIssues.length >= 10);
+  assert.equal(eg.comp.pct, '26 / 40'); assert.equal(eg.res.title, '4 Fehler'); assert.ok(eg.reviewIssues.length >= 10);
   assert.equal(eg.planOv.cats[0].ratio, '0/8', 'all Layer rules fail for the office layer structure');
-  assert.equal(eg.badges.erfassung.n, 3); assert.equal(eg.rv.notSubmitted, true); assert.match(eg.bar.reason, /keine Fehler/);
+  assert.equal(eg.badges.erfassung.n, 4); assert.equal(eg.rv.notSubmitted, true); assert.match(eg.bar.reason, /keine Fehler/);
   assert.equal(ug.status, 'Abgeschlossen'); assert.equal(ug.step, 6); assert.equal(ug.kpis[0].v, '30'); assert.equal(ug.kpis[1].v, '572.3');
   assert.ok(ug.steps.slice(0, 5).every(s => s.sym === '✓')); assert.equal(ug.docs[0].name, '9999.AA.U1_CAFM.dwg'); assert.equal(ug.docs[0].req, 'Pflicht');
   assert.ok(ug.hist.some(h => h.t === 'An SAP RE-FX übertragen') && ug.hist[0].t === 'An SAP RE-FX übertragen', 'newest first');
@@ -457,18 +460,18 @@ test('plans: Datenformular shape (Übersicht, Prüfung) of a floor plan', () => 
 });
 
 test('plans: status filter and search of the sub-tab lists (planLists, as in plan-check)', () => {
-  const eg = vm.plans.EG;   // office seed: 3 errors + 43 warnings in 13 rules, 32 layers (30 unknown), no rooms
+  const eg = vm.plans.EG;   // office seed: 4 errors + 44 warnings in 14 rules (GEOM_003 counts the splines inside blocks), 32 layers (30 unknown), no rooms
   const all = planLists(eg, { planFilter: 'all', planSearch: '' });
-  assert.equal(all.rules.failed.length + all.rules.passed.length, 40); assert.equal(all.issues.length, 46); assert.equal(all.layers.length, 32);
-  assert.deepEqual([all.counts.rules, all.counts.issues, all.counts.layers, all.counts.rooms], ['13 offen', '46', '32', '0']);
+  assert.equal(all.rules.failed.length + all.rules.passed.length, 40); assert.equal(all.issues.length, 48); assert.equal(all.layers.length, 32);
+  assert.deepEqual([all.counts.rules, all.counts.issues, all.counts.layers, all.counts.rooms], ['14 offen', '48', '32', '0']);
   assert.equal(all.issues[0].it.severity, 'error', 'errors first');
   const errRules = [...eg.rules.failed, ...eg.rules.passed].filter(r => r.severity === 'error').length;
   const err = planLists(eg, { planFilter: 'errors' });
   assert.ok(err.rules.failed.length >= 1 && err.rules.failed.every(r => r.severity === 'error')); assert.equal(err.rules.passed.length, 0, 'passed rules only without filter');
-  assert.equal(err.rules.total, errRules); assert.equal(err.issues.length, 3); assert.ok(err.issues.every(x => x.it.severity === 'error'));
-  assert.equal(err.layers.length, 0, 'layers never carry errors'); assert.equal(err.counts.issues, '3');
+  assert.equal(err.rules.total, errRules); assert.equal(err.issues.length, 4); assert.ok(err.issues.every(x => x.it.severity === 'error'));
+  assert.equal(err.layers.length, 0, 'layers never carry errors'); assert.equal(err.counts.issues, '4');
   const warn = planLists(eg, { planFilter: 'warnings' });
-  assert.equal(warn.layers.length, 30, 'unknown layers are the warnings of the Layer tab'); assert.equal(warn.issues.length, 43); assert.ok(warn.rules.failed.every(r => r.severity === 'warning'));
+  assert.equal(warn.layers.length, 30, 'unknown layers are the warnings of the Layer tab'); assert.equal(warn.issues.length, 44); assert.ok(warn.rules.failed.every(r => r.severity === 'warning'));
   const q = planLists(eg, { planFilter: 'all', planSearch: 'layer_00' });
   const qRules = [...q.rules.failed, ...q.rules.passed];
   assert.equal(qRules.length, 8); assert.ok(qRules.every(r => r.code.startsWith('LAYER_00')));
@@ -487,7 +490,7 @@ test('plans: status filter and search of the sub-tab lists (planLists, as in pla
 
 test('plans: submit gate (no errors), locking and review flow', () => {
   const eg = vm.plans.EG, ug = vm.plans.UG, og2 = vm.plans.OG2, dg = vm.plans.DG;
-  assert.equal(eg.errors, 3, 'EG seed (office layer structure) has 3 errors');
+  assert.equal(eg.errors, 4, 'EG seed (office layer structure) has 4 errors');
   assert.equal(eg.canSubmit, false);
   assert.equal(eg.rules.failed.length + eg.rules.passed.length, 40);
   assert.ok(eg.rules.failed.some(r => r.code === 'LAYER_001' && r.status === 'fail'));

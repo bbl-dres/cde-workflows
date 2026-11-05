@@ -57,15 +57,15 @@ export function buildKpiSections(k) {
     };
 }
 
-/** "517.1 m²" or the dash placeholder for null/zero. */
+/** "517.1 m²" or the dash placeholder for null (0 is a value: EBF of an unheated floor). */
 export function formatArea(v) {
-    if (v == null || v === 0) return DASH;
+    if (v == null) return DASH;
     return fmtNum(v, Math.abs(v) >= 100 ? 0 : 1) + ' m²';
 }
 
 /** "42%" or the dash placeholder. */
 export function formatShare(value, total) {
-    if (value == null || value === 0 || total == null || total <= 0) return DASH;
+    if (value == null || total == null || total <= 0) return DASH;
     return Math.round((value / total) * 100) + ' %';
 }
 

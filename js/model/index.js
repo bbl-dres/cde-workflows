@@ -10,15 +10,15 @@ import { formModel, planForm, kindOfCode } from './form.js';
 export function compute(state, data, project, user) {
   const s = state, tw = s.tweaks || {};
   const mk = tw.showMarkers !== false;
-  const ak = Number.isFinite(tw.anlagekostenMio) ? tw.anlagekostenMio : data.project.anlagekostenMio;
+  const ak = project.detailed && Number.isFinite(tw.anlagekostenMio) ? tw.anlagekostenMio : (Number.isFinite(project.anlagekostenMio) ? project.anlagekostenMio : data.project.anlagekostenMio);   // the study tweak only changes the detailed project
   const plan = planModel(s, data);                       // Planlieferungen DWG (status per floor, Musterhausen)
-  const formsAll = Object.fromEntries(data.projects.projects.map(p => [p.id, formModel(s, data, p)]));
+  const formsAll = Object.fromEntries(data.projects.projects.map(p => [p.id, formModel(s, data, p, user)]));
   const forms = formsAll[project.id] || {};
   /** Status of a Datenformular of a project by delivery code (null for classic deliveries). */
   const formStatusOf = (pid, code) => { const kind = kindOfCode(code), F = kind && formsAll[pid] && formsAll[pid][kind]; return F ? F.status : null; };
   const formByCode = code => {
     const c = String(code).toLowerCase();
-    if (c.startsWith('dwg-')) { const p = project.detailed ? plan.planByCode(c) : null; return p ? planForm(p, data) : null; }
+    if (c.startsWith('dwg-')) { const p = project.detailed ? plan.planByCode(c) : null; return p ? planForm(p, data, user) : null; }
     const kind = kindOfCode(c);
     return kind && forms[kind] ? forms[kind] : null;
   };
@@ -74,8 +74,7 @@ export function compute(state, data, project, user) {
 
     // 02 Bestellen
     orderType: ot,
-    orderCards: data.templates.orderOptions.map(o => ({ ...o, on: o.key === ot, bd: o.key === ot ? '2px solid var(--navy)' : '1px solid #d3d8de', bg: o.key === ot ? '#f4f6f8' : '#fff' })),
-    glText: 'eBKP-H (vorgegeben)', glBg: '#f4f6f8', glReadonly: true,
+    glText: 'eBKP-H (vorgegeben)', glReadonly: true,
     supplier: isTHG ? 'Olivia Beispiel, Ökobilanz Beispiel AG' : 'Gian Muster, Generalplaner Beispiel AG', supplierInitials: isTHG ? 'OB' : 'GM',
     target: isTHG ? 'SUS (THG Erstellung und Betrieb)' : 'ePPM (Leitsystem Baukosten)',
     ruleOrder: isTHG ? (big ? 'Muss' : 'Kann') : 'Muss', ruleCheck: isTHG ? (big ? 'Pflicht' : 'Keine') : 'Pflicht',

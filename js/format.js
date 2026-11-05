@@ -5,7 +5,7 @@ const nf = (min, max) => new Intl.NumberFormat('de-CH', { minimumFractionDigits:
 const NF0 = nf(0, 0), NF1 = nf(1, 1), NF2 = nf(2, 2), NF01 = nf(0, 1);
 const bad = n => n == null || typeof n !== 'number' || !isFinite(n);
 
-export const FMT = n => (bad(n) ? '' : NF0.format(Math.round(n)));
+export const FMT = n => (bad(n) ? '' : NF0.format(Math.round(n) || 0));   // || 0: no «-0» for small negative values
 export const FMT1 = n => (bad(n) ? '' : NF1.format(n));
 export const FMT2 = n => (bad(n) ? '' : NF2.format(n));
 export const FMT01 = n => (bad(n) ? '' : NF01.format(n));   // up to one decimal: 22, 1.5, 4
@@ -14,8 +14,8 @@ export const FMT01 = n => (bad(n) ? '' : NF01.format(n));   // up to one decimal
 export const num = x => {
   if (x == null || x === '') return null;
   if (typeof x === 'number') return isFinite(x) ? x : null;
-  const n = parseFloat(String(x).replace(/[’'\s]/g, '').replace(',', '.'));
-  return isNaN(n) ? null : n;
+  const t = String(x).replace(/[’'\s]/g, '').replace(',', '.').replace('−', '-');
+  return /^[-+]?\d+(\.\d+)?$/.test(t) ? parseFloat(t) : null;   // strict: «12abc», «5 %», «0x10» stay text and count as missing
 };
 
 // Display a stored value: numbers formatted, strings as typed.

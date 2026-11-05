@@ -12,7 +12,7 @@ const TAB_LABEL = { uebersicht: 'Übersicht', erfassung: 'Erfassung', pruefung: 
 const THG_LABEL = { erfassung: 'Erfassung Erstellung', betrieb: 'Erfassung Betrieb' };
 
 const verlauf = ev => html`<div class="card"><div class="card-head">Verlauf</div>${ev.map(([d, t]) => html`<div class="act-row"><span class="act-date">${d}</span><span>${t}</span></div>`)}</div>`;
-const dokumente = () => html`<div class="card"><div class="card-head"><span class="flex-1">Dokumente</span><span class="btn btn-secondary btn-sm">Hochladen</span></div><div style="padding:28px 0">${emptyState('Keine Dokumente')}</div></div>`;
+const dokumente = () => html`<div class="card"><div class="card-head"><span class="flex-1">Dokumente</span><button type="button" class="btn btn-secondary btn-sm" data-action="proto">Hochladen</button></div><div style="padding:28px 0">${emptyState('Keine Dokumente')}</div></div>`;
 
 function generic(ctx, code) {
   const { vm } = ctx;

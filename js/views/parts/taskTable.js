@@ -40,8 +40,8 @@ export function taskTable(ctx, rows, opts = {}) {
         ${cols.map(c => cell(ctx, c, t, opts))}
         <span class="row-actions">
           <a class="btn-icon" href="#${t.href}" data-nav="${t.href}" title="Öffnen">${icon('external-link', 13, '#1f2937')}</a>
-          <button type="button" class="btn-icon" title="Bearbeiten">${icon('pencil', 13, '#1f2937')}</button>
-          <button type="button" class="btn-icon btn-icon-danger" title="Löschen">${icon('trash-2', 13, '#ff3162')}</button>
+          <button type="button" class="btn-icon" title="Bearbeiten" data-action="proto">${icon('pencil', 13, '#1f2937')}</button>
+          <button type="button" class="btn-icon btn-icon-danger" title="Löschen" data-action="proto">${icon('trash-2', 13, '#ff3162')}</button>
         </span>
       </div>`)}
       ${rows.length === 0 ? html`<div class="muted" style="padding:28px;text-align:center">Keine Aufgaben</div>` : ''}

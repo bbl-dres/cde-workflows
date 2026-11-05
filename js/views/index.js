@@ -22,6 +22,7 @@ import qs from './qs.js';
 import varb from './varb.js';
 import { html } from '../ui.js';
 import { pageHead } from '../shell.js';
+import { kindOfCode } from '../model/form.js';
 
 const studyPages = { undefined: home, review, qs, 'variant-b': varb };
 const study = {
@@ -32,7 +33,7 @@ const study = {
 
 const notfound = {
   title: () => 'Nicht gefunden',
-  render: ctx => html`${pageHead('Seite nicht gefunden', [{ label: 'Startseite', href: '/' }, 'Nicht gefunden'])}<div class="card" style="padding:24px;max-width:640px">Die Adresse <code>${ctx.route.path}</code> gibt es nicht. <a href="#/" data-nav="/">Zur Startseite</a></div>`,
+  render: ctx => html`${pageHead('Seite nicht gefunden', [{ label: 'Startseite', href: '/' }, 'Nicht gefunden'])}<div class="card" style="padding:24px;max-width:640px">Die Adresse <code style="overflow-wrap:anywhere">${ctx.route.path}</code> gibt es nicht. <a href="#/" data-nav="/">Zur Startseite</a></div>`,
 };
 
 export const views = {
@@ -56,7 +57,7 @@ export const dialogs = {
   order,
   columns,
   import: {
-    when: ctx => ctx.route.name === 'delivery' && ['kv-32', 'ks-31'].includes(ctx.route.params.code) && (ctx.route.params.tab || 'erfassung') === 'erfassung',
+    when: ctx => ctx.route.name === 'delivery' && ['kv', 'ks'].includes(kindOfCode(ctx.route.params.code)) && kindOfCode(ctx.route.params.code) === (ctx.state.imp.form || 'kv') && (ctx.route.params.tab || 'erfassung') === 'erfassung',   // the dialog belongs to the form it was opened from
     render: ctx => (ctx.state.imp.step === 2 ? s03d : s03c).overlay(ctx),
   },
 };

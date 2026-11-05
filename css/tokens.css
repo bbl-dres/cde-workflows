@@ -24,7 +24,7 @@
   --text: #262626;          /* rgba(0,0,0,.85) on white */
   --text-2: #262626;
   --text-3: #374151;
-  --muted: #6b7280;         /* gray-500 */
+  --muted: #656c7a;         /* gray-500, darkened a step: 4.8:1 on the alternating row background #f3f4f6 (AA) */
   --muted-2: #8c8c8c;       /* rgba(0,0,0,.45) */
   --faint: #9ca3af;
   --placeholder: #bfbfbf;

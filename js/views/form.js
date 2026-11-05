@@ -135,7 +135,7 @@ function entryHead(ctx, F) {
         <button type="button" class="btn btn-secondary" data-action="toggleImportMenu" aria-haspopup="menu" aria-expanded="${open ? 'true' : 'false'}">Importieren ${icon('chevron-down', 12, 'currentColor')}</button>
         ${open ? html`<div class="dd-menu" role="menu">${E.importItems.map(([key, label]) => html`<button type="button" role="menuitem" class="dd-item" data-action="importItem" data-arg="${key}" data-form="${F.id}">${label}</button>`)}</div>` : ''}
       </div>`}
-      <button type="button" class="btn btn-secondary">Excel herunterladen</button>
+      <button type="button" class="btn btn-secondary" data-action="proto">Excel herunterladen</button>
     </div>
     ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}`;
 }
@@ -162,7 +162,7 @@ const costTable = F => {
 
 /** Hauptgruppe: the whole row toggles «Aufschlüsseln / Zusammenfassen» (not on locked forms), the chevron is the keyboard target. */
 const chevron = (F, r) => (r.canToggle
-  ? html`<button type="button" class="ent-toggle" data-action="formMode" data-form="${F.id}" data-group="${r.code}" aria-label="${r.toggleLabel} ${r.code}" aria-expanded="${r.direct ? 'false' : 'true'}">${icon(r.chev, 16, '#374151')}</button>`
+  ? html`<button type="button" class="ent-toggle" data-action="formMode" data-form="${F.id}" data-group="${r.code}" data-fid="${F.id}-toggle-${r.code}" aria-label="${r.toggleLabel} ${r.code}" aria-expanded="${r.direct ? 'false' : 'true'}">${icon(r.chev, 16, '#374151')}</button>`
   : html`<span class="ent-toggle" aria-hidden="true">${icon(r.chev, 16, '#9ca3af')}</span>`);
 const groupAttrs = (F, r) => (r.canToggle ? html`data-action="formMode" data-form="${F.id}" data-group="${r.code}"` : '');
 const delBtn = (action, attrs, label) => html`<span class="ent-del-cell"><button type="button" class="ent-del" data-action="${action}" ${attrs} aria-label="${label}" title="${label}">${icon('trash-2', 15, '#6b7280')}</button></span>`;
@@ -381,20 +381,20 @@ function planResult(F, L) {
 // ---- Beteiligte · Dokumente · Verlauf ----
 function beteiligte(F) {
   const C = 'grid-template-columns:minmax(0,1.3fr) minmax(0,1.3fr) 150px minmax(0,1.2fr) 130px 80px';
-  return html`<div class="fm-stack">${card(html`<span class="flex-1">Beteiligte an dieser Lieferung</span><button type="button" class="btn btn-secondary">Bearbeitende hinzufügen</button>`, html`<div class="fm-table"><div style="min-width:760px">
+  return html`<div class="fm-stack">${card(html`<span class="flex-1">Beteiligte an dieser Lieferung</span><button type="button" class="btn btn-secondary" data-action="proto">Bearbeitende hinzufügen</button>`, html`<div class="fm-table"><div style="min-width:760px">
     <div class="fm-th" style="${C};padding:0 12px;gap:0 12px"><span>Person</span><span>Firma</span><span>Rolle</span><span>Bereich</span><span>Status</span><span></span></div>
     ${F.peopleRows.map(p => html`<div class="fm-tr" style="${C};min-height:46px;padding:0 12px;gap:0 12px;background:${p.bg}">
       <span class="flex items-center gap-8 min-w-0">${avatar(p.ini, 24, '#aab2bc')}<span class="ellipsis">${p.name}</span></span><span class="ellipsis">${p.firm}</span><span class="fw-500">${p.role}</span><span class="ellipsis" style="color:#3d4650">${p.scope}</span><span style="color:${p.stC}">${p.st}</span>
-      <span class="flex justify-end gap-6"><button type="button" class="btn-icon" title="Rolle und Bereich bearbeiten" aria-label="Rolle und Bereich bearbeiten">${icon('pencil', 14, '#374151')}</button>${p.editable ? html`<button type="button" class="btn-icon btn-icon-danger" title="Aus Lieferung entfernen" aria-label="Aus Lieferung entfernen">${icon('trash-2', 14, '#374151')}</button>` : ''}</span>
+      <span class="flex justify-end gap-6"><button type="button" class="btn-icon" title="Rolle und Bereich bearbeiten" aria-label="Rolle und Bereich bearbeiten" data-action="proto">${icon('pencil', 14, '#374151')}</button>${p.editable ? html`<button type="button" class="btn-icon btn-icon-danger" title="Aus Lieferung entfernen" aria-label="Aus Lieferung entfernen" data-action="proto">${icon('trash-2', 14, '#374151')}</button>` : ''}</span>
     </div>`)}
   </div></div>`)}</div>`;
 }
 
 function dokumente(F) {
   const C = 'grid-template-columns:minmax(0,2fr) 70px 90px minmax(0,1fr) 100px';
-  return card(html`<span class="flex-1">Dokumente</span><button type="button" class="btn btn-secondary">Hochladen</button>`, html`<div class="fm-table"><div style="min-width:620px">
+  return card(html`<span class="flex-1">Dokumente</span><button type="button" class="btn btn-secondary" data-action="proto">Hochladen</button>`, html`<div class="fm-table"><div style="min-width:620px">
     <div class="fm-th" style="${C}"><span>Name</span><span>Typ</span><span>Pflicht</span><span>Hochgeladen von</span><span>Datum</span></div>
-    ${F.docs.map(d => html`<div class="fm-tr" style="${C};min-height:40px"><a class="ellipsis" title="${d.name}">${d.name}</a><span>${d.type}</span><span style="color:${d.reqFg};font-weight:${d.reqFw}">${d.req}</span><span class="ellipsis">${d.by}</span><span>${d.date}</span></div>`)}
+    ${F.docs.map(d => html`<div class="fm-tr" style="${C};min-height:40px"><span class="ellipsis" title="${d.name}">${d.name}</span><span>${d.type}</span><span style="color:${d.reqFg};font-weight:${d.reqFw}">${d.req}</span><span class="ellipsis">${d.by}</span><span>${d.date}</span></div>`)}
     ${F.docs.length === 0 ? html`<div style="padding:28px 0">${emptyState('Keine Dokumente')}</div>` : ''}
   </div></div><div class="card-foot">Pflichtdokumente sind Teil der Einreichung. Fehlt eines, ist «Einreichen» gesperrt.</div>`);
 }

@@ -147,7 +147,7 @@ export function extractPolygons(index, unitScale) {
         const host = smallestContaining(rooms, deduction.labelPoint.x, deduction.labelPoint.y, eps);
         if (!host) continue;
         host.deductionArea += deduction.rawArea;
-        host.area = round2(host.rawArea - host.deductionArea);
+        host.area = round2(Math.max(0, host.rawArea - host.deductionArea));   // overlapping or oversized deductions cannot make a room negative
         appliedDeductions++;
     }
 
@@ -225,8 +225,10 @@ function runPolygonLayerRules(index, spec, unitScale) {
         issues.push(createIssue(spec.none, msg('None')));
         return issues;
     }
+    const wrongSeen = new Set();   // block content is one render item per reference: report each entity once
     for (const item of items) {
-        if (item.entityType !== 'LWPOLYLINE') {
+        if (item.entityType !== 'LWPOLYLINE' && !wrongSeen.has(item.handle)) {
+            wrongSeen.add(item.handle);
             issues.push(createIssue(spec.wrongType, msg('NotLwpolyline')(spec.layer, item.entityType), { handle: item.handle }));
         }
     }
@@ -258,6 +260,7 @@ function runAoidRules(rooms, outsideTexts) {
     const roomRef = room => ({ roomId: room.id, handle: room.handle });
 
     for (const room of rooms) {
+        if (room.isDuplicate) continue;   // a duplicated polygon is reported by POLY_005; its AOID text sits in the original
         if (room.aoidMatches.length === 0) issues.push(createIssue('AOID_001', `Raum ${room.aoid}: kein AOID-Text auf R_AOID innerhalb des Polygons`, roomRef(room)));
         if (room.aoidMatches.length > 1) issues.push(createIssue('AOID_004', `Raum ${room.aoid}: ${room.aoidMatches.length} Texte auf R_AOID innerhalb desselben Polygons`, roomRef(room)));
         if (room.aoidText && !AOID_PATTERN.test(room.aoidText) && !PARKING_AOID_PATTERN.test(room.aoidText)) {
@@ -309,9 +312,12 @@ function runGeomRules(drawing, index) {
         const sample = drawing.nonZeroZEntities.slice(0, SAMPLE_SIZE).map(e => `${e.type}@${e.layer}`).join(', ');
         issues.push(createIssue('GEOM_002', `${drawing.nonZeroZEntities.length} Element(e) mit Z-Koordinate != 0 (z.B. ${sample})`, { handles: drawing.nonZeroZEntities.map(e => e.handle) }));
     }
-    for (const entry of drawing.entitySummary) {
-        if (FORBIDDEN_ENTITY_TYPES.has(entry.type)) issues.push(createIssue('GEOM_003', `Unzulässiger Entitätstyp: ${entry.type} (${entry.count}× vorhanden)`));
-    }
+    const forbidden = new Map();   // top-level entities plus the content of inserted blocks (drawn, so checked)
+    for (const entry of drawing.entitySummary) if (FORBIDDEN_ENTITY_TYPES.has(entry.type)) forbidden.set(entry.type, entry.count);
+    const inBlocks = new Map();
+    for (const item of drawing.renderList || []) if (item.inBlock && FORBIDDEN_ENTITY_TYPES.has(item.entityType)) (inBlocks.get(item.entityType) || inBlocks.set(item.entityType, new Set()).get(item.entityType)).add(item.handle);
+    for (const [type, handles] of inBlocks) forbidden.set(type, (forbidden.get(type) || 0) + handles.size);
+    for (const [type, count] of forbidden) issues.push(createIssue('GEOM_003', `Unzulässiger Entitätstyp: ${type} (${count}× vorhanden${inBlocks.has(type) ? `, davon ${inBlocks.get(type).size} in Blöcken` : ''})`));
     for (const xref of drawing.xrefBlocks) {
         issues.push(createIssue('GEOM_004', `Externe Referenz (XREF): "${xref.name}"`));
     }
@@ -321,7 +327,10 @@ function runGeomRules(drawing, index) {
         const outside = [];
         for (const [layer, items] of index.byLayer) {
             if (!CAFM_LAYER_SET.has(layer) || layer === FRAME_LAYER) continue;
-            for (const item of items) if (!boundsContain(frame, item.bounds, tolerance)) outside.push(item.handle);
+            for (const item of items) {
+                const b = item.kind === 'text' ? { minX: item.x, minY: item.y, maxX: item.x, maxY: item.y } : item.bounds;   // a text counts by its anchor: its envelope is a square around the anchor regardless of alignment
+                if (!boundsContain(frame, b, tolerance)) outside.push(item.handle);
+            }
         }
         if (outside.length > 0) issues.push(createIssue('GEOM_005', `${outside.length} Element(e) liegen ausserhalb des Planrahmens`, { handles: outside }));
     }
@@ -354,14 +363,15 @@ function runTextRules(index) {
 
 function runStyleRules(index) {
     const issues = [];
-    const widthPolys = index.ofKind('poly').filter(i => i.width > 0);
+    const widthSeen = new Set();
+    const widthPolys = index.ofKind('poly').filter(i => i.width > 0 && i.handle && !widthSeen.has(i.handle) && widthSeen.add(i.handle));   // one entry per entity, not per block reference
     if (widthPolys.length > 0) {
         const layers = [...new Set(widthPolys.map(p => p.layer))].slice(0, SAMPLE_SIZE).join(', ');
         issues.push(createIssue('STYLE_001', `${widthPolys.length} Polylinie(n) mit Breite != 0 mm (Layer: ${layers})`, { handles: widthPolys.map(p => p.handle) }));
     }
-    const notByLayer = [];
+    const notByLayer = [], colorSeen = new Set();
     for (const [layer, items] of index.byLayer) {
-        if (CAFM_LAYER_SET.has(layer)) for (const item of items) if (!item.byLayer) notByLayer.push(item);
+        if (CAFM_LAYER_SET.has(layer)) for (const item of items) if (!item.byLayer && !colorSeen.has(item.handle)) { colorSeen.add(item.handle); notByLayer.push(item); }
     }
     if (notByLayer.length > 0) {
         const layers = [...new Set(notByLayer.map(p => p.layer))].slice(0, SAMPLE_SIZE).join(', ');
@@ -373,7 +383,7 @@ function runStyleRules(index) {
 function runLayoutRules(drawing, index) {
     const issues = [];
     if (drawing.paperSpaceEntityCount > 0) {
-        issues.push(createIssue('LAYOUT_001', `${drawing.paperSpaceEntityCount} Layout-Tab(s) (Paper Space) vorhanden: ${drawing.paperSpaceLayouts.join(', ') || '-'}`));
+        issues.push(createIssue('LAYOUT_001', `${drawing.paperSpaceLayouts.length || 1} Layout-Tab(s) (Paper Space) vorhanden: ${drawing.paperSpaceLayouts.join(', ') || '-'} (${drawing.paperSpaceEntityCount} Objekte)`));
     }
     if (!planFrame(index, drawing.unitScale)) issues.push(createIssue('LAYOUT_002', 'Kein Planrahmen auf V_PLANLAYOUT erkannt'));
     return issues;

@@ -56,6 +56,7 @@ const DWG_ERROR_FLAGS = [
     [4096, 'IO-Fehler'], [8192, 'Speicherfehler'],
 ];
 
+const DWG_ERR_CRITICAL = 128;   // libredwg DWG_ERR_CRITICAL (CLASSESNOTFOUND and worse)
 const noop = () => {};
 
 // ── LibreDWG loading ──
@@ -125,6 +126,7 @@ export async function parseDwg(buffer, file = {}, log = noop) {
     log('DWG wird geparst...');
     const { pointer, errorCode } = readDwg(lib, buffer);
     if (pointer == null) throw new Error(describeReadFailure(errorCode));
+    if (errorCode >= DWG_ERR_CRITICAL) { lib.dwg_free(pointer); throw new Error(describeReadFailure(errorCode)); }   // LibreDWG returns a database even for garbage; from «Klassen nicht gefunden» on nothing in it is trustworthy
     if (errorCode > 0) log(`LibreDWG Warnung (Code ${errorCode}): Datei wurde geladen, aber einige Elemente sind möglicherweise unvollständig.`, 'warn');
     log('DWG geparst', 'success');
 
@@ -140,6 +142,7 @@ export async function parseDwg(buffer, file = {}, log = noop) {
 
     const entities = modelSpaceEntities(db);
     const layers = db.tables?.LAYER?.entries || [];
+    if (entities.length === 0 && layers.length === 0) throw new Error('DWG enthält weder Entitäten noch Layer: die Datei ist leer oder konnte nicht gelesen werden.');
     log(`${entities.length} Entitäten, ${layers.length} Layer`, 'success');
 
     const elapsed = (((globalThis.performance || Date).now() - t0) / 1000).toFixed(2);
@@ -251,12 +254,17 @@ export function prepareDrawing(entities, layers, db, log = noop) {
     function resolveColor(e, layer, ctx) {
         if (e.color != null) return { color: rgbIntToHex(e.color), byLayer: false };
         const index = e.colorIndex;
-        if (index === 0) return { color: ctx.color || layerColor[layer] || '#CCCCCC', byLayer: false };
+        if (index === 0) return { color: ctx.color || layerColor[layer] || '#CCCCCC', byLayer: !!ctx.byLayer };   // ByBlock under a ByLayer reference resolves to the layer colour
         if (index == null || index === 256) return { color: layerColor[layer] || '#CCCCCC', byLayer: true };
         return { color: aciToHex(index), byLayer: false };
     }
 
     function recordZ(e, base) {
+        if (e.elevation && Math.abs(e.elevation) > Z_EPSILON && !seenZ.has(base.handle)) {   // LWPOLYLINE, HATCH and POLYLINE2D carry their height as elevation, not in the vertices
+            seenZ.add(base.handle);
+            nonZeroZEntities.push({ handle: base.handle, layer: base.layer, type: base.entityType, z: e.elevation });
+            return;
+        }
         for (const pt of [e.startPoint, e.endPoint, e.insertionPoint, e.center, e.position, e.vertices?.[0]]) {
             if (pt && Math.abs(pt.z || 0) > Z_EPSILON && !seenZ.has(base.handle)) {
                 seenZ.add(base.handle);
@@ -433,7 +441,7 @@ export function prepareDrawing(entities, layers, db, log = noop) {
                 }
                 const block = e.name ? blocks.get(e.name) : null;
                 if (block) {
-                    expandBlock(block, { ...ctx, layer, color, depth: ctx.depth + 1 });
+                    expandBlock(block, { ...ctx, layer, color, byLayer, depth: ctx.depth + 1 });
                 } else {
                     const pts = [e.definitionPoint, e.subDefinitionPoint1, e.subDefinitionPoint2].filter(Boolean);
                     for (let i = 0; i + 1 < pts.length; i++) {
@@ -470,11 +478,11 @@ export function prepareDrawing(entities, layers, db, log = noop) {
                         // MINSERT cells are offset in block space before scaling and rotation
                         const cell = (r === 0 && c === 0) ? matrix
                             : affineMultiply(matrix, [1, 0, 0, 1, c * (e.columnSpacing || 0), r * (e.rowSpacing || 0)]);
-                        expandBlock(block, { m: cell, layer, color, depth: ctx.depth + 1, chain });
+                        expandBlock(block, { m: cell, layer, color, byLayer, depth: ctx.depth + 1, chain });
                     }
                 }
-                // Attribute values are stored in world coordinates on the reference itself
-                for (const attr of e.attribs || []) addEntity(attr, ctx);
+                // Attribute values are stored in world coordinates on the reference itself; on layer «0» they show on the reference's layer
+                for (const attr of e.attribs || []) addEntity(attr, { ...ctx, layer });
                 break;
             }
             default:

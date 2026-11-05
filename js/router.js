@@ -46,7 +46,7 @@ export function parseHash(hash = location.hash) {
   const query = {};
   for (const pair of qs.split('&')) {
     if (!pair) continue;
-    const [k, v = ''] = pair.split('=');
+    const j = pair.indexOf('='), k = j === -1 ? pair : pair.slice(0, j), v = j === -1 ? '' : pair.slice(j + 1);   // a value may contain «=»
     query[safeDecode(k)] = safeDecode(v);
   }
   return { path, query };

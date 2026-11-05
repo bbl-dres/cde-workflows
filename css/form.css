@@ -95,7 +95,7 @@
 .ent-pos:hover { background: var(--row-hover); }
 .ent-pos-code { padding-left: 34px !important; color: #374151; font-variant-numeric: tabular-nums; }
 .ent-cell-input { padding: 0 4px !important; }
-.ent-cell-input.pl30 { padding-left: 30px !important; } .ent-cell-input.pl6 { padding-left: 6px !important; }
+.ent-cell-input.pl6 { padding-left: 6px !important; }
 .ent-input { width: 100%; height: 28px; text-align: right; font-size: 13px; font-variant-numeric: tabular-nums; padding: 0 8px; border-radius: 4px; outline: none; border: 1px solid var(--line-2); background: #fff; transition: border-color .3s, box-shadow .3s; }
 .ent-input::placeholder { color: #b4242f; }
 .ent-input:hover { border-color: #21485c; }
@@ -143,7 +143,7 @@
 
 /* Import dropdown */
 .dd { position: relative; }
-.dd-menu { position: absolute; right: 0; top: 32px; z-index: 6; background: #fff; border-radius: 4px; box-shadow: var(--shadow-pop); padding: 4px; min-width: 230px; display: flex; flex-direction: column; }
+.dd-menu { position: absolute; right: 0; top: 32px; z-index: 61; background: #fff; border-radius: 4px; box-shadow: var(--shadow-pop); padding: 4px; min-width: 230px; display: flex; flex-direction: column; }
 .dd-item { text-align: left; background: #fff; border: 0; padding: 8px 10px; font-size: 13px; font-weight: 400; color: var(--text); cursor: pointer; border-radius: 3px; white-space: nowrap; }
 .dd-item:hover { background: var(--row-alt); }
 
@@ -166,7 +166,6 @@
 /* Ökobilanz: Betrieb (Energiedienstleistungen nach Rechenhilfe SIA 390/1) */
 .ent-betr { min-width: 900px; }
 .ent-betr .ent-two { padding: 5px 10px 5px 14px !important; }
-.ent-betr .ent-pos-ro { color: var(--muted); }
 .thg-field .ent-text.right { text-align: right; font-variant-numeric: tabular-nums; }
 .thg-field .ent-text::placeholder { color: #b4242f; }
 .thg-head.pv-strip { border-bottom: 1px solid var(--line-4); }
@@ -199,4 +198,6 @@
 }
 @media (max-width: 639.98px) {
   .kpi-grid { grid-template-columns: 1fr; }
+  .card-head { flex-wrap: wrap; }
+  .card-head .card-hint { flex-basis: 100%; }   /* long hints (Zielwerte, Prüfung) go below the title on the phone */
 }

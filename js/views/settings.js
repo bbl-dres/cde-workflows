@@ -46,7 +46,7 @@ function general(ctx) {
         <h3 class="form-h form-h-line">Projektbild</h3>
         <div class="form-label">Bild</div>
         ${project.image ? html`<img class="img-box img-box-img" src="${project.image}" alt="${project.name}">` : html`<div class="img-box">Kein Bild vorhanden</div>`}
-        <button type="button" class="btn btn-secondary" style="margin-top:12px">${project.image ? 'Bild ändern' : 'Bild hochladen'}</button>
+        <button type="button" class="btn btn-secondary" style="margin-top:12px" data-action="proto">${project.image ? 'Bild ändern' : 'Bild hochladen'}</button>
         <div class="form-hint">PNG (transparent) oder JPG, mind. 200×200px, quadratisch, max. 1 MB</div>
       </div>
     </div>

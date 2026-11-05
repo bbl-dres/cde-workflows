@@ -32,7 +32,7 @@
   {
     "id": "n3",
     "title": "Änderungen an Aufgabe Ökobilanz Erstellung und Betrieb (THG-32)",
-    "text": "Olivia Beispiel hat den Tool-Export für THG-32 importiert, 25 Emissionsquellen übernommen.",
+    "text": "Olivia Beispiel hat den Tool-Export für THG-32 importiert, 22 Emissionsquellen übernommen.",
     "date": "03.05.27",
     "unread": true,
     "for": [
@@ -167,7 +167,7 @@
   {
     "id": "n12",
     "title": "Prüfung fehlgeschlagen: Grundriss EG (DWG-EG)",
-    "text": "Die hochgeladene Datei 9999.AA.00_CAFM.dwg erfüllt 27 von 40 Prüfregeln (3 Fehler): Pflicht-Layer R_RAUMPOLYGON, R_AOID und R_GESCHOSSPOLYGON fehlen. Bitte im CAD korrigieren und neu hochladen.",
+    "text": "Die hochgeladene Datei 9999.AA.00_CAFM.dwg erfüllt 26 von 40 Prüfregeln (4 Fehler): Pflicht-Layer R_RAUMPOLYGON, R_AOID und R_GESCHOSSPOLYGON fehlen. Bitte im CAD korrigieren und neu hochladen.",
     "date": "14.04.27",
     "unread": true,
     "for": [

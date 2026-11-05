@@ -53,7 +53,8 @@ const viewerBox = plan => html`<div class="plan-viewer" data-plan-viewer="${plan
 
 const SEV_TEXT = { fail: 'Fehler', warn: 'Warnung', pass: 'Bestanden', error: 'Fehler', warning: 'Warnung', ok: 'In Ordnung' };
 const sevIcon = (table, key) => html`${icon(table[key][0], 15, table[key][1])}${srOnly(SEV_TEXT[key] || key)}`;
-const ruleRow = r => html`<button type="button" class="plan-row${r.count ? ' is-locatable' : ''}" data-plan-rule="${r.code}" title="${r.text}">
+const canLocate = it => !!(it && (it.roomId || it.handle || (it.handles && it.handles.length)));
+const ruleRow = (r, plan) => html`<button type="button" class="plan-row${plan && plan.result && canLocate(plan.result.issues.find(i => i.code === r.code)) ? ' is-locatable' : ''}" data-plan-rule="${r.code}" title="${r.text}">
   ${sevIcon(SEV_ICON, r.status)}<span class="plan-code">${r.code}</span><span class="plan-row-text">${r.text}</span>${r.count ? html`<span class="plan-row-count">${r.count}×</span>` : ''}</button>`;
 
 /** Empty list: the search or the status filter left nothing, or the plan has no such entries (per-tab text). */
@@ -63,15 +64,15 @@ function listRules(plan, L) {
   const { failed, passed, total } = L.rules;
   if (!failed.length && !passed.length) return emptyNote(L, 'Keine Prüfregeln.');
   return html`
-    ${failed.length ? html`<div class="plan-group"><span>Nicht bestanden</span><span>${failed.length}/${total}</span></div>${failed.map(ruleRow)}` : ''}
-    ${passed.length ? html`<div class="plan-group"><span>Bestanden</span><span>${passed.length}/${total}</span></div>${passed.map(ruleRow)}` : ''}`;
+    ${failed.length ? html`<div class="plan-group"><span>Nicht bestanden</span><span>${failed.length}/${total}</span></div>${failed.map(r => ruleRow(r, plan))}` : ''}
+    ${passed.length ? html`<div class="plan-group"><span>Bestanden</span><span>${passed.length}/${total}</span></div>${passed.map(r => ruleRow(r, plan))}` : ''}`;
 }
 
 function listIssues(plan, L) {
   if (!L.issues.length) return emptyNote(L, 'Keine Fehler oder Warnungen.');
   return html`<div class="plan-group"><span>Fehlermeldungen</span><span>${L.issues.length}</span></div>
     ${L.issues.map(({ it, i, ref }) => {
-      const locatable = !!(it.roomId || it.handle || (it.handles && it.handles.length));
+      const locatable = canLocate(it);
       const sev = it.severity === 'error' ? 'fail' : 'warn';
       return html`<button type="button" class="plan-row${locatable ? ' is-locatable' : ''}" data-plan-locate="${i}" title="${it.message}">
         ${sevIcon(SEV_ICON, sev)}<span class="plan-code">${it.code}</span>${ref ? html`<span class="plan-row-sub nowrap">${ref}</span>` : ''}<span class="plan-row-text">${it.message}</span></button>`;
