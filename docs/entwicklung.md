@@ -53,7 +53,8 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   Quellen des Projekts (bei einem offenen Formular alle 22, sonst die fehlenden Werte). **Erfassung Betrieb**: Grundlagen
   (Tool Betrieb, Stromprodukt, PV-Überschuss), Photovoltaik (Leistung aus D01.01 der Erstellung, Ertrag, Eigenverbrauch) und
   die Energiedienstleistungen nach Rechenhilfe SIA 390/1 (Nutzenergie, Anteil und Nutzungsgrad/JAZ je Energieträger mit
-  Standardwert-Flag; Endenergie = Nutzenergie × Anteil / Nutzungsgrad, THG = Endenergie × Koeffizient des Energieträgers, Strom
+  Flag «Projektwert» (angekreuzt = projektspezifischer Wert statt Standardwert der Rechenhilfe, dieselbe Logik wie «Hersteller»
+  in der Erstellung: das Kreuz markiert die Abweichung vom Standard); Endenergie = Nutzenergie × Anteil / Nutzungsgrad, THG = Endenergie × Koeffizient des Energieträgers, Strom
   nach Stromprodukt; der PV-Eigenverbrauch reduziert den Strombezug, der Überschuss folgt der gewählten Regel),
   «Rechenhilfe importieren», Total Betrieb und «THGE Erstellung + Betrieb pro Jahr». Die Prüfung zeigt neun automatische
   Prüfpunkte (Vollständigkeit, Pflichtdokumente, Grundlagen, Abweichung zur Vorphase, Zusatzanforderung B, Richtwerte

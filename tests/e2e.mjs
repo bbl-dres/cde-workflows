@@ -153,7 +153,9 @@ try {
   check('THG-32 Erfassung Betrieb: Grundlagen Betrieb, 9 Energiedienstleistungen and 2 PV rows, totals, Rechenhilfe button', (await count('.thg-head select:not([disabled])')) === 3 && (await count('.ent-betr .ent-src')) === 11 && (await bodyText()).includes('Total Betrieb') && (await bodyText()).includes('THGE Erstellung + Betrieb pro Jahr') && (await count('[data-action="importItem"][data-arg="rechenhilfe"]')) === 1 && await evaluate(`document.querySelector('.pv-strip input').value.startsWith('62 kWp')`));
   await setInput('[data-fid="thg-betr-b0-n"]', '30'); check('Betrieb value editable and live', (await state()).projects.musterhausen.thgBetr.b0_n === 30 && (await bodyText()).includes('7.5'));
   await setInput('[data-fid="thg-betr-b0-n"]', '22');
-  await click('[data-action="thgBetrStd"][data-key="b0_std"]'); check('Standardwert flag toggles', (await state()).projects.musterhausen.thgBetr.b0_std === true && (await count('.ent-betr .hs-box.is-on')) === 5);
+  check('Projektwert flags: ticked = project value instead of the Standardwert', (await count('.ent-betr .hs-box.is-on')) === 5 && (await bodyText()).includes('Projektwert') && !(await text('.ent-betr .ent-th')).includes('Standard'));
+  await click('[data-action="thgBetrFlag"][data-key="b0_proj"]'); check('Projektwert flag toggles', (await state()).projects.musterhausen.thgBetr.b0_proj === false && (await count('.ent-betr .hs-box.is-on')) === 4);
+  await click('[data-action="thgBetrFlag"][data-key="b0_proj"]');
   await shot('e2e-thg-betrieb');
   await click('[data-action="formSubmit"]'); check('THG submitted → Eingereicht', (await state()).projects.musterhausen.forms.thg.step === 3 && (await text('.page-title')).includes('Eingereicht'));
   await go('/projects/musterhausen/deliveries/thg-32/pruefung');
@@ -207,7 +209,7 @@ try {
   await click('[data-action="toggleImportMenu"]'); await click('[data-action="importItem"][data-arg="tool"]');
   check('Tool-Export brings the 22 Emissionsquellen, the Betrieb stays open', (await state()).projects['botschaft-wien'].thgSrc.length === 22 && /29 fehlen/.test(await bodyText()) && (await text('.tab-badge')) === '29');
   await go('/projects/botschaft-wien/deliveries/thg-32/betrieb'); check('open Betrieb: empty rows', (await count('.ent-betr .ent-input[value=""]')) === 27 && (await disabled('[data-action="formSubmit"]')));
-  await click('[data-action="importItem"][data-arg="rechenhilfe"]'); check('Rechenhilfe fills the Betrieb', /Alle 73 Werte erfasst/.test(await bodyText()) && (await enabled('[data-action="formSubmit"]')) && (await count('.ent-betr .hs-box.is-on')) === 4);
+  await click('[data-action="importItem"][data-arg="rechenhilfe"]'); check('Rechenhilfe fills the Betrieb', /Alle 73 Werte erfasst/.test(await bodyText()) && (await enabled('[data-action="formSubmit"]')) && (await count('.ent-betr .hs-box.is-on')) === 5);
   await clickText('.tab', 'Verlauf'); check('Verlauf lists the Tool-Export and the Rechenhilfe', (await bodyText()).includes('Tool-Export importiert') && (await bodyText()).includes('22 Emissionsquellen übernommen') && (await bodyText()).includes('Rechenhilfe SIA 390/1 importiert'));
 
   // 6. Tasks pages, favorites, sections

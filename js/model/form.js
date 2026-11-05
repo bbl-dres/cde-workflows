@@ -254,7 +254,7 @@ function thgPart(P, f, data, T, M, ref, locked, bd, docs) {
     const miss = [n, a].filter(v => v == null).length + (etaOk ? 0 : 1); fieldsB += 3; missB += miss;
     const end = n != null && a != null && etaOk ? n * a / 100 / eta : 0, kRow = kf === 'strom' ? kE : kf, thg = end * kRow;
     endSum += end; thgSum += thg;
-    return { isRow: true, key, name, carrier, std: !!B[key + '_std'], nStr: disp01(B[key + '_n']), aStr: disp01(B[key + '_a']), etaStr: disp01(B[key + '_eta']),
+    return { isRow: true, key, name, carrier, proj: !!B[key + '_proj'], nStr: disp01(B[key + '_n']), aStr: disp01(B[key + '_a']), etaStr: disp01(B[key + '_eta']),
       nBd: bd(n == null), aBd: bd(a == null), etaBd: bd(!etaOk), end: miss ? '–' : FMT1(end), kE: kRow.toFixed(3), thg: miss ? '–' : FMT2(thg), tv: miss ? 0 : thg, miss: miss > 0 };
   });
   const pvSrc = S.find(s => s.id === TH.pv.kWpId), kWp = pvSrc ? num(pvSrc.q) || 0 : 0;

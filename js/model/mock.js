@@ -23,10 +23,10 @@ const roundQ = v => (v >= 20000 ? roundTo(v, 100) : v >= 500 ? roundTo(v, 10) : 
 const sum = o => Object.values(o).reduce((a, b) => a + (b || 0), 0);
 /** THGE Erstellung of a list of Emissionsquellen (kg CO₂-eq/m² EBF·a): Σ kw; over 60 years incl. replacement = Σ kw × EBF × 60. */
 export const thgErst = srcs => srcs.reduce((a, s) => a + (Number(s.kw) || 0), 0);
-/** Betrieb values of the Rechenhilfe SIA 390/1: Nutzenergie, Anteil, Nutzungsgrad and Standardwert flag per Energiedienstleistung, Photovoltaik yield scaled with the building. */
+/** Betrieb values of the Rechenhilfe SIA 390/1: Nutzenergie, Anteil, Nutzungsgrad and the Projektwert flag (project value instead of the Standardwert) per Energiedienstleistung, Photovoltaik yield scaled with the building. */
 export function betrDefaults(TH, f = 1) {
   const B = {};
-  TH.betrieb.forEach(([, , n, a, eta, , std], i) => { B[`b${i}_n`] = n; B[`b${i}_a`] = a; B[`b${i}_eta`] = eta; B[`b${i}_std`] = !!std; });
+  TH.betrieb.forEach(([, , n, a, eta, , proj], i) => { B[`b${i}_n`] = n; B[`b${i}_a`] = a; B[`b${i}_eta`] = eta; B[`b${i}_proj`] = !!proj; });
   B.pv_y = roundTo(TH.pv.y * f, 100); B.pv_ev = TH.pv.ev;
   return B;
 }

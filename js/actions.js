@@ -8,7 +8,7 @@
 import { searchModel } from './model/search.js';
 // group / code / field = Hauptgruppe, position code and field of a value.
 // The Datenformulare act on the project of the current route (nav.currentPid()); the THG-32 keeps its Emissionsquellen
-// in state.projects[pid].thgSrc (thgVal, thgAdd, thgRemove …) and its Betrieb in thgBetr (thgBetr, thgBetrStd), the cost forms
+// in state.projects[pid].thgSrc (thgVal, thgAdd, thgRemove …) and its Betrieb in thgBetr (thgBetr, thgBetrFlag), the cost forms
 // their positions in kvQ/kvV and ksQ/ksV.
 import { LEGACY, link } from './links.js';
 import { TASK_COLUMNS } from './model/columns.js';
@@ -225,7 +225,7 @@ export function makeActions(store, data, nav) {
       setSrc(ds.id, patch);
     },
     thgBetr: (ds, el) => { if (editable('thg')) setP(p => ({ thgBetr: { ...(p.thgBetr || {}), [ds.key]: normNum(el.value, 2) } })); },
-    thgBetrStd: ds => { if (editable('thg')) setP(p => ({ thgBetr: { ...(p.thgBetr || {}), [ds.key]: !(p.thgBetr || {})[ds.key] } })); },
+    thgBetrFlag: ds => { if (editable('thg')) setP(p => ({ thgBetr: { ...(p.thgBetr || {}), [ds.key]: !(p.thgBetr || {})[ds.key] } })); },
     thgToggleHs: ds => { const x = ((P() || {}).thgSrc || []).find(y => y.id === ds.id); if (x && editable('thg')) setSrc(ds.id, { hs: !x.hs }); },
     thgAdd: ds => {
       if (!editable('thg')) return;

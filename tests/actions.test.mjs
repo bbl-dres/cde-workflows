@@ -134,15 +134,15 @@ test('actions: Emissionsquellen (THG-32) add, edit, flag, remove, Grundlagen; lo
   assert.equal(P().thgSrc.find(s => s.id === 'n1').hs, true);
   actions.thgRemove({ id: 'C02.02-2' });
   assert.ok(!P().thgSrc.some(s => s.id === 'C02.02-2')); assert.ok(eventTitles(P().forms.thg).includes('Emissionsquelle entfernt'));
-  actions.thgBetr({ key: 'b0_n' }, { value: '24,5' }); actions.thgBetrStd({ key: 'b0_std' });
-  assert.equal(P().thgBetr.b0_n, 24.5); assert.equal(P().thgBetr.b0_std, true); assert.equal(F('thg').betr.rows[0].end, '6.1', 'Betrieb values are live: 24.5 / 4');
+  actions.thgBetr({ key: 'b0_n' }, { value: '24,5' }); actions.thgBetrFlag({ key: 'b0_proj' });
+  assert.equal(P().thgBetr.b0_n, 24.5); assert.equal(P().thgBetr.b0_proj, false, 'Raumwärme is a project value by default; the flag toggles'); assert.equal(F('thg').betr.rows[0].end, '6.1', 'Betrieb values are live: 24.5 / 4');
   actions.thgRemove({ id: 'n1' });
   assert.ok(!P().thgSrc.some(s => s.id === 'n1')); assert.equal(eventTitles(P().forms.thg).filter(t => t === 'Emissionsquelle entfernt').length, 1, 'dropping a new row is no event');
   actions.thgHead({ key: 'tool' }, { value: 'Lesosai' });
   assert.equal(P().thgHead.tool, 'Lesosai'); assert.equal(F('thg').erf.head.find(h => h.key === 'tool').val, 'Lesosai');
   store.setIn('projects', { eigerplatz: { ...P(), forms: { ...P().forms, thg: { ...P().forms.thg, step: 4 } } } });
   const before = JSON.stringify(P());
-  actions.thgAdd({ group: 'C' }); actions.thgRemove({ id: 'C01.03-1' }); actions.thgToggleHs({ id: 'C01.03-1' }); actions.thgBetr({ key: 'b0_n' }, { value: '1' }); actions.thgBetrStd({ key: 'b1_std' });
+  actions.thgAdd({ group: 'C' }); actions.thgRemove({ id: 'C01.03-1' }); actions.thgToggleHs({ id: 'C01.03-1' }); actions.thgBetr({ key: 'b0_n' }, { value: '1' }); actions.thgBetrFlag({ key: 'b1_proj' });
   assert.equal(JSON.stringify(P()), before, 'locked: no changes');
 });
 
@@ -261,8 +261,8 @@ test('mock: deterministic, scaled, calibrated; group amounts; Tool-Export merge'
   const m = mergeToolExport(cur, full);
   assert.equal(m.filled, 3); assert.equal(m.added, full.length - 3); assert.equal(m.next.length, full.length);
   assert.deepEqual(mergeToolExport(full, full), { next: full, added: 0, filled: 0 });
-  const mb = mergeBetr({ b0_n: 30, b1_n: '', b0_std: false }, { b0_n: 22, b1_n: 7, b0_std: true, pv_y: 55800 });
-  assert.deepEqual(mb, { next: { b0_n: 30, b1_n: 7, b0_std: false, pv_y: 55800 }, filled: 2 }, 'entered values and flags stay, blanks are filled');
+  const mb = mergeBetr({ b0_n: 30, b1_n: '', b0_proj: false }, { b0_n: 22, b1_n: 7, b0_proj: true, pv_y: 55800 });
+  assert.deepEqual(mb, { next: { b0_n: 30, b1_n: 7, b0_proj: false, pv_y: 55800 }, filled: 2 }, 'entered values and flags stay, blanks are filled');
 });
 
 test('store: version check, transient fields, dotted patches', () => {

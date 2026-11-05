@@ -12,7 +12,7 @@ import { dropZone, resultPanel } from './plan.js';
 const COLS = 'grid-template-columns:96px minmax(0,1fr) 72px 120px 140px 100px 36px';   // code column holds the fixed-width code control
 const SIA_COLS = 'grid-template-columns:52px minmax(0,1fr) 90px 56px';   // Flächen SIA 416: the same grid table as Projektaufgaben
 const COLS_THG = 'grid-template-columns:96px minmax(0,1fr) 72px 110px 64px 104px 72px 36px';   // Erstellung: Code · Emissionsquelle · Hersteller · Referenzgrösse · Einheit · kg/m² EBF·a · Anteil
-const COLS_BETR = 'grid-template-columns:minmax(0,1fr) 72px 104px 88px 88px 100px 112px 112px';   // Betrieb: Energiedienstleistung · Standard · Nutzenergie · Anteil · η · Endenergie · Koeffizient · kg/m² EBF·a
+const COLS_BETR = 'grid-template-columns:minmax(0,1fr) 92px 104px 88px 88px 100px 112px 112px';   // Betrieb: Energiedienstleistung · Projektwert · Nutzenergie · Anteil · η · Endenergie · Koeffizient · kg/m² EBF·a
 const check = c => html`<div class="rv-check">${icon(c.icon, 16, c.color)}<span class="flex-1">${c.label}</span></div>`;
 const devCell = c => html`<span class="right${c.hi ? ' is-over' : ''}" ${c.hi ? raw('title="Abweichung über dem Schwellenwert, Begründung nötig"') : ''}>${c.delta}</span>`;
 const kvRow = (k, v) => html`<div class="rv-kv"><span class="rv-kv-k">${k}</span><span>${v}</span></div>`;
@@ -293,7 +293,7 @@ function betrieb(ctx, F) {
       </div>
       <div class="thg-head pv-strip">${B.pv.map(p => html`<label class="thg-field"><span>${p.label}</span><input class="ent-text${p.key ? ' right' : ''}" aria-label="${p.label}" value="${p.val}" placeholder="fehlt" style="background:${p.bg};border-color:${p.bdc}" ${p.key ? html`data-change="thgBetr" data-key="${p.key}" data-fid="thg-betr-${p.key}"` : ''} ${p.ro ? raw('readonly') : ''}></label>`)}</div>
       <div class="fm-table"><div class="ent ent-betr">
-        <div class="ent-th" style="${COLS_BETR}"><span>Energiedienstleistung · Energieträger</span><span class="center" title="Standardwert der Rechenhilfe SIA 390/1">Standard</span><span class="right" title="kWh/m² EBF·a">Nutzenergie</span><span class="right" title="Anteil des Energieträgers an der Energiedienstleistung">Anteil %</span><span class="right" title="Nutzungsgrad bzw. Jahresarbeitszahl">η / JAZ</span><span class="right" title="kWh/m² EBF·a">Endenergie</span><span class="right" title="Treibhausgaskoeffizient des Energieträgers">kg CO₂-eq/kWh</span><span class="right" title="THG Betrieb pro Jahr und m² EBF">kg/m² EBF·a</span></div>
+        <div class="ent-th" style="${COLS_BETR}"><span>Energiedienstleistung · Energieträger</span><span class="center" title="Projektspezifischer Wert statt Standardwert der Rechenhilfe SIA 390/1">Projektwert</span><span class="right" title="kWh/m² EBF·a">Nutzenergie</span><span class="right" title="Anteil des Energieträgers an der Energiedienstleistung">Anteil %</span><span class="right" title="Nutzungsgrad bzw. Jahresarbeitszahl">η / JAZ</span><span class="right" title="kWh/m² EBF·a">Endenergie</span><span class="right" title="Treibhausgaskoeffizient des Energieträgers">kg CO₂-eq/kWh</span><span class="right" title="THG Betrieb pro Jahr und m² EBF">kg/m² EBF·a</span></div>
         ${B.rows.map(r => (r.isPv ? pvRow(r) : betrRow(F, r, ro)))}
         ${B.rows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine fehlenden Werte.</div>` : ''}
         <div class="ent-total" style="${COLS_BETR}"><span>Total Betrieb</span><span></span><span></span><span></span><span></span><span class="right">${B.end}</span><span></span><span class="right">${B.thg}</span></div>
@@ -306,12 +306,12 @@ function betrieb(ctx, F) {
   </div>`;
 }
 
-const stdBox = (F, r) => html`<span class="center"><button type="button" class="hs-box${r.std ? ' is-on' : ''}" role="checkbox" aria-checked="${r.std ? 'true' : 'false'}" aria-label="Standardwert ${r.name}" title="Standardwert der Rechenhilfe SIA 390/1" data-action="thgBetrStd" data-key="${r.key}_std" ${DIS(F)}>${r.std ? '✓' : ''}</button></span>`;
+const projBox = (F, r) => html`<span class="center"><button type="button" class="hs-box${r.proj ? ' is-on' : ''}" role="checkbox" aria-checked="${r.proj ? 'true' : 'false'}" aria-label="Projektwert ${r.name}" title="Projektspezifischer Wert statt Standardwert der Rechenhilfe SIA 390/1" data-action="thgBetrFlag" data-key="${r.key}_proj" ${DIS(F)}>${r.proj ? '✓' : ''}</button></span>`;
 const betrCell = (F, r, field, label, str, bdc, ro) => html`<span class="ent-cell-input"><input class="ent-input" aria-label="${label} ${r.name} ${r.carrier}" value="${str}" placeholder="fehlt" style="border-color:${bdc};background:${F.erf.inputBg}" data-change="thgBetr" data-key="${r.key}_${field}" data-fid="thg-betr-${r.key}-${field}" ${ro}></span>`;
-/** An Energiedienstleistung with its Energieträger: Standardwert flag, three inputs, the derived Endenergie and THG. */
+/** An Energiedienstleistung with its Energieträger: Projektwert flag (ticked = exception to the default, like «Hersteller»), three inputs, the derived Endenergie and THG. */
 const betrRow = (F, r, ro) => html`<div class="ent-pos ent-src" style="${COLS_BETR}">
   <span class="ent-two"><span class="ellipsis">${r.name}</span><span class="fs-12 muted ellipsis">${r.carrier}</span></span>
-  ${stdBox(F, r)}
+  ${projBox(F, r)}
   ${betrCell(F, r, 'n', 'Nutzenergie', r.nStr, r.nBd, ro)}
   ${betrCell(F, r, 'a', 'Anteil', r.aStr, r.aBd, ro)}
   ${betrCell(F, r, 'eta', 'Nutzungsgrad', r.etaStr, r.etaBd, ro)}

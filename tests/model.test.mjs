@@ -195,10 +195,10 @@ test('THG-32: Emissionsquellen (Erstellung), Betrieb, Zielwerte SIA 390/1 and th
   assert.equal(E.head.length, 5); assert.ok(E.head.every(h => !h.ro) && E.head.find(h => h.key === 'gw1').isText, 'Erstellung: Systemgrenze, Ökobilanzdaten, Tool, Minergie-ECO GW1 (text), Datenqualität');
   assert.equal(thg.headShared.length, 5); assert.equal(thg.headShared.find(h => h.key === 'EBF').val, "5'600 m²"); assert.ok(thg.headShared.filter(h => h.ro).length === 2 && thg.headShared.find(h => h.key === 'stand').isText, 'only EBF and GF read-only');
   assert.equal(E.derived[0].kw, '8.7'); assert.equal(E.derived[0].v, '48.6'); assert.equal(E.tot.kw, '8.7'); assert.equal(E.tot.share, '100 %');
-  // Erfassung Betrieb: Energiedienstleistungen with Standardwert flag, PV rows, totals
+  // Erfassung Betrieb: Energiedienstleistungen with the Projektwert flag (ticked = exception, like «Hersteller»), PV rows, totals
   const Bt = thg.betr;
   assert.equal(Bt.head.length, 3); assert.equal(Bt.rows.filter(r => r.isRow).length, 9); assert.equal(Bt.rows.filter(r => r.isPv).length, 2);
-  assert.equal(Bt.rows[0].end, '5.5'); assert.equal(Bt.rows[0].kE, '0.012'); assert.equal(Bt.rows[2].kE, '0.049'); assert.equal(Bt.rows[1].std, true);
+  assert.equal(Bt.rows[0].end, '5.5'); assert.equal(Bt.rows[0].kE, '0.012'); assert.equal(Bt.rows[2].kE, '0.049'); assert.equal(Bt.rows[0].proj, true); assert.equal(Bt.rows[1].proj, false, 'Warmwasser uses the Standardwert of the Rechenhilfe');
   assert.equal(Bt.end, '34.5'); assert.equal(Bt.thg, '0.52'); assert.equal(Bt.subs[1].v, '9.2'); assert.ok(Bt.pv[0].val.startsWith('62 kWp'));
   assert.equal(vm.ilpRows.find(r => r.code === 'THG-32').status, 'In Bearbeitung');
   assert.equal(vm.auRows.find(t => t.delivery === 'THG-32').status, 'In Bearbeitung');

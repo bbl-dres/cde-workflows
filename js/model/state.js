@@ -5,7 +5,7 @@ import { DEFAULT_TASK_COLS } from './columns.js';
 import { initialPlans } from './plan.js';
 import { mockProject, groupAmounts, KEYS } from './mock.js';
 
-export const STATE_VERSION = 15;   // bump whenever the shape of the persisted state changes (sessions with an older version start fresh)
+export const STATE_VERSION = 16;   // bump whenever the shape of the persisted state changes (sessions with an older version start fresh)
 
 /** Values and workflow state of the Datenformulare of one project (see model/form.js and model/mock.js). */
 export function initProject(data, project) {
