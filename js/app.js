@@ -16,6 +16,11 @@ const appRoot = document.getElementById('app');
 const studyRoot = document.getElementById('study');
 let data, store, actions, screens;
 let deferred = false;       // a render postponed because a text field had uncommitted input (it follows the field's change)
+let pointerDown = false;    // between mousedown and mouseup no render: replacing the pressed element makes the browser drop the click
+let held = false;           // a render asked for while the pointer was down (it follows the pointerup, after the click)
+let renderedPid = null;     // project of the page on screen (a field typed into belongs to it, also when the hash has already changed)
+let pidOverride = null;     // set while such a field is committed on navigation
+let focusRequest = null;    // data-fid an action wants focused after the next render (a row it has just created)
 let mountedView = null;      // view whose mount() ran last (for unmount)
 let overlayKey = '';         // which overlay is open, to move focus only when it opens
 let overlayInvoker = null;   // focus signature of the control that opened the overlay (focus returns there on close)
@@ -25,7 +30,7 @@ const PROJECT_ROUTES = new Set(PROJECT_PAGES);
 const OLD_PATHS = { 'info-management/delivery-plan': 'delivery-plan', 'info-management/documents': 'documents', 'info-management/loin': 'loin', activities: 'timeline' };
 
 // «Zustand zurücksetzen und neu laden» must work before the data is loaded (the error page of loadData), so it does not go through bindEvents()
-document.addEventListener('click', e => { if (e.target.closest('[data-action="hardReset"]')) { e.preventDefault(); clearPersisted(); location.reload(); } });
+document.addEventListener('click', e => { if (e.target.closest('[data-action="hardReset"]')) { e.preventDefault(); clearPersisted(); if (location.hash.includes('?')) history.replaceState(null, '', location.pathname + location.search + location.hash.split('?')[0]); location.reload(); } });   // without the query of the hash: a deep link with state overrides would break the fresh state again
 
 /** Error page: shown when the data cannot be loaded or the persisted state breaks the render (with a way out). */
 const errorPage = (title, detail, hint = '') => `<div class="boot-error"><h1>${esc(title)}</h1><pre>${esc(detail)}</pre>${hint}
@@ -35,6 +40,7 @@ async function main() {
   try {
     data = await loadData();
   } catch (e) {
+    showSpinner(null);   // the loading indicator covers the page, the button below could not be clicked
     appRoot.innerHTML = errorPage('Daten konnten nicht geladen werden', e.message, `<p>Der Prototyp lädt seine Mock-Daten per <code>fetch()</code> aus <code>data/*.json</code>. Das funktioniert nicht über <code>file://</code>.
       Bitte einen statischen Server im Projektordner starten, z.&nbsp;B. <code>python -m http.server 8080</code> oder <code>npx serve</code>, und dann <code>http://localhost:8080</code> öffnen.</p>`);
     return;
@@ -42,7 +48,7 @@ async function main() {
   screens = data.screens;
   DETAILED_PID = (data.projects.projects.find(p => p.detailed) || data.projects.projects[0]).id;
   store = createStore(initialState(data));
-  actions = makeActions(store, data, { navigate: navTo, studyPid: () => DETAILED_PID, currentPid: () => currentRoute().params.pid || DETAILED_PID });
+  actions = makeActions(store, data, { navigate: navTo, studyPid: () => DETAILED_PID, currentPid: () => pidOverride || currentRoute().params.pid || DETAILED_PID, focus: fid => { focusRequest = fid; } });
   store.subscribe(schedule);
   onRoute(onHashChange);
   bindEvents();
@@ -72,6 +78,7 @@ function onHashChange(initial) {
     actions.studyGo({ study: r.params.id });                              // #s05 → study screen (persona + route)
     return;
   }
+  if (initial !== true) commitActiveField();                              // typed text goes to the project of the page it was typed on, then the new page renders
   const o = routeOverrides(r.query);
   if (o) applyOverrides(o);
   if (canonicalize(r)) return;                                            // hash replaced → hashchange renders
@@ -83,7 +90,7 @@ function onHashChange(initial) {
   render();
 }
 
-/** Deliveries without a tab get the role's default tab in the URL (one canonical address per view). */
+/** Deliveries without a tab get their default tab (Übersicht) in the URL (one canonical address per view). */
 function canonicalize(r) {
   if (r.name === 'section') {
     const old = r.params.sub ? `${r.params.section}/${r.params.sub}` : r.params.section;
@@ -108,11 +115,28 @@ function canonicalize(r) {
  *  Values may only replace values of the same kind, so a bad link cannot break the persisted state. */
 function applyOverrides(o) {
   const safe = Object.fromEntries(Object.entries(o).filter(([k]) => !k.startsWith('__')));
+  if ('user' in safe && !data.users.users.some(u => u.key === safe.user)) delete safe.user;   // an unknown person would count as internal and sign the Verlauf
   store.set(patchDotted(store.get(), safe, { typed: true }));
 }
 
 let pending = null;
-function schedule() { if (pending) return; pending = setTimeout(() => { pending = null; render(); }, 0); }
+function schedule() {
+  if (pointerDown) { if (!held) setTimeout(releasePointer, 1000); held = true; return; }   // safety net: a pointerup that never reaches the page (native popup, another window)
+  if (pending) return;
+  pending = setTimeout(() => { pending = null; if (pointerDown) { held = true; return; } render(); }, 0);
+}
+/** The pointer is up again: a render that was held back follows now, after the click the browser sends next. */
+function releasePointer() { if (!pointerDown) return; pointerDown = false; if (held) { held = false; schedule(); } }
+
+/** A field with typed, not yet committed text: commit it for the project of the page on screen (used when the route changes,
+ *  e.g. browser Back; the hash already names the next page, so the action would otherwise write into that project). */
+function commitActiveField() {
+  const el = document.activeElement;
+  if (!(el && el.dataset && el.dataset.change && 'defaultValue' in el && el.value !== el.defaultValue && appRoot.contains(el))) return;
+  el.defaultValue = el.value;
+  pidOverride = renderedPid;
+  try { run(el.dataset.change, el.dataset, el, null); } finally { pidOverride = null; }
+}
 
 function render() {
   if (pending) { clearTimeout(pending); pending = null; }                // a navigation renders at once, no second render afterwards
@@ -121,6 +145,7 @@ function render() {
   deferred = false;
   try { renderPage(); } catch (e) {
     console.error(e);
+    showSpinner(null);
     appRoot.innerHTML = errorPage('Fehler beim Rendern', String(e.stack || e));
   }
 }
@@ -173,7 +198,9 @@ function renderPage() {
   document.body.classList.toggle('side-open', !!state.ui.sideOpen);
   if (view.mount) { try { view.mount(appRoot, ctx); } catch (e) { console.error(e); } }
   mountedView = view;
+  renderedPid = pid || null;
   restoreFocus(focus);
+  if (focusRequest) { const want = appRoot.querySelector(`[data-fid="${CSS.escape(focusRequest)}"]`); focusRequest = null; if (want) want.focus({ preventScroll: true }); }
   focusOverlay(state, focus);
   document.title = `${view.title ? view.title(ctx) : 'CDE Bund'} · CDE Bund`;
   showSpinner(state.ui.busy || (Object.values(state.plans || {}).find(p => p && p.busy) || {}).busy);
@@ -202,14 +229,15 @@ function overlays(ctx) {
  *  While a modal overlay is open, the page behind it is inert. */
 function focusOverlay(state, focusBefore) {
   const dialogShown = !!appRoot.querySelector('.dialog[role="dialog"], .drawer-wide[role="dialog"]');   // the page is inert only while a dialog is really on it
-  const key = state.ui.dialog && dialogShown ? 'dialog:' + state.ui.dialog : state.ui.notif ? 'notif' : state.ui.userMenu ? 'menu' : '';
+  const imp = state.imp || {};
+  const key = state.ui.dialog && dialogShown ? 'dialog:' + state.ui.dialog + (state.ui.dialog === 'import' ? `:${imp.step}:${imp.done ? 1 : 0}` : '') : state.ui.notif ? 'notif' : state.ui.userMenu ? 'menu' : '';   // every step of the import dialog replaces its content: focus moves into the new step
   const modal = !!key && key !== 'menu';
-  appRoot.querySelectorAll('.proto-banner, .topbar, .app-body, .app-footer').forEach(el => { el.inert = modal; });
+  appRoot.querySelectorAll('.skip-link, .proto-banner, .topbar, .app-body, .app-footer').forEach(el => { el.inert = modal; });
   if (key === overlayKey) return;
   const wasOpen = !!overlayKey;
   overlayKey = key;
   if (key) {
-    overlayInvoker = focusBefore;
+    if (!wasOpen) overlayInvoker = focusBefore;   // a next step of the same dialog keeps the control that opened it
     const box = appRoot.querySelector('.overlay [role="dialog"], .drawer[role="dialog"], .user-menu');
     const target = box && (box.querySelector('[autofocus], .dialog-close, button, [tabindex="0"], a[href], input, select') || box);
     if (target) target.focus({ preventScroll: true });
@@ -217,6 +245,8 @@ function focusOverlay(state, focusBefore) {
     const back = overlayInvoker && findFocus(overlayInvoker);
     overlayInvoker = null;
     if (back) { back.focus({ preventScroll: true }); return; }
+    const menu = appRoot.querySelector('[data-action="toggleImportMenu"]:not([disabled])');   // the dialog was opened from a menu item that is gone: back to the menu button
+    if (menu) { menu.focus({ preventScroll: true }); return; }
     const main = appRoot.querySelector('.app-main');
     if (main) { main.tabIndex = -1; main.focus({ preventScroll: true }); }
   }
@@ -251,6 +281,9 @@ function run(name, ds, el, ev) {
 }
 
 function bindEvents() {
+  document.addEventListener('pointerdown', () => { pointerDown = true; }, true);
+  for (const t of ['pointerup', 'pointercancel', 'dragend']) document.addEventListener(t, releasePointer, true);
+  window.addEventListener('blur', releasePointer);
   document.body.addEventListener('click', e => {
     if (store.get().ui.searchOpen && !e.target.closest('.topbar-search')) actions.searchClose();   // click outside closes the suggestions
     const a = e.target.closest('[data-action],[data-nav],[data-study],[data-screen-link]');
@@ -270,13 +303,16 @@ function bindEvents() {
     if (!el) return;
     if ('defaultValue' in el) el.defaultValue = el.value;                 // committed: the next render may replace the field
     run(el.dataset.change, el.dataset, el, e);
+    if (el.tagName === 'SELECT') releasePointer();                        // the pointerup of a choice in the native list does not reach the page
   });
   // Drop zones (data-drop="action"): a dropped file goes to the action like a chosen one (el.files)
   const zoneOf = e => (e.target.closest ? e.target.closest('[data-drop]') : null);
   document.body.addEventListener('dragover', e => { const z = zoneOf(e); if (z) { e.preventDefault(); z.classList.add('is-over'); } });
   document.body.addEventListener('dragleave', e => { const z = zoneOf(e); if (z && !z.contains(e.relatedTarget)) z.classList.remove('is-over'); });
   document.body.addEventListener('drop', e => { const z = zoneOf(e); if (!z) return; e.preventDefault(); z.classList.remove('is-over'); run(z.dataset.drop, z.dataset, { files: e.dataTransfer ? e.dataTransfer.files : [] }, e); });
-  document.body.addEventListener('focusout', () => { if (deferred) setTimeout(() => { if (deferred) render(); }, 0); });   // a postponed render catches up when the field loses focus
+  // a file dropped beside a drop zone must not make the browser open it instead of the prototype
+  for (const t of ['dragover', 'drop']) document.addEventListener(t, e => { if (!zoneOf(e) && document.querySelector('[data-drop]')) e.preventDefault(); });
+  document.body.addEventListener('focusout', () => { if (deferred) setTimeout(() => { if (deferred) schedule(); }, 0); });   // a postponed render catches up when the field loses focus
   document.body.addEventListener('input', e => {                      // live fields (search), focus survives the re-render by data-fid
     const el = e.target.closest('[data-input]');
     if (el) run(el.dataset.input, el.dataset, el, e);
@@ -304,4 +340,4 @@ function bindEvents() {
   });
 }
 
-main().catch(e => { console.error(e); appRoot.innerHTML = errorPage('Fehler beim Start', String(e.stack || e)); });
+main().catch(e => { console.error(e); showSpinner(null); appRoot.innerHTML = errorPage('Fehler beim Start', String(e.stack || e)); });

@@ -60,20 +60,22 @@ export function canvasImage(canvas) {
 
 /**
  * The rows of the report from a check result (js/plancheck/index.js toResult) and the delivery:
- * { project, code, name, floor, status, reviewer, due, guideline, uploadedAt } — pure, testable without a browser.
+ * { project, code, name, floor, status, reviewer, due, guideline, uploadedAt, fileName } — pure, testable without a browser.
+ * `fileName` is the name of the delivered file (a floor that shows a sample result carries its own file name).
  */
 export function buildReportModel(result, delivery = {}) {
   const k = result.kpi || {}, hasRooms = result.rooms.length > 0;
-  const ebf = k.gf != null && result.areas.length > 0 ? (delivery.heated === false ? 0 : k.gf) : null;   // EBF (SIA 416/1): GF of a heated floor
+  const ebf = k.ebf !== undefined ? k.ebf : k.gf != null && result.areas.length > 0 ? (delivery.heated === false ? 0 : k.gf) : null;   // EBF (SIA 380/1): the figure of the application (from the Flächenart of the rooms); without it the GF of a heated floor
   const kpi = buildKpiSections({ ...k, ebf, hasRooms, hasAreaPolys: result.areas.length > 0 });
+  const fileName = delivery.fileName || result.file.name;
   return {
-    fileName: result.file.name,
-    baseName: String(result.file.name || 'Plan').replace(/\.[^.]+$/, ''),
+    fileName,
+    baseName: String(fileName || 'Plan').replace(/\.[^.]+$/, ''),
     info: [
       ['Projekt', delivery.project || DASH], ['Lieferung', [delivery.code, delivery.name].filter(Boolean).join(' · ') || DASH], ['Geschoss', delivery.floor || DASH],
       ['Status', delivery.status || DASH], ['Prüfend', delivery.reviewer || DASH], ['Frist', delivery.due || DASH],
       ['Prüfgrundlage', delivery.guideline || 'CAD-Richtlinie BBL V1.0'],
-      ['Dateiname', result.file.name || DASH], ['Dateigrösse', result.file.size ? fmtSize(result.file.size) : DASH], ['DWG-Version', result.version || DASH],
+      ['Dateiname', fileName || DASH], ['Dateigrösse', result.file.size ? fmtSize(result.file.size) : DASH], ['DWG-Version', result.version || DASH],
       ['Layer', result.layerCount ?? DASH], ['Objekte', result.entityCount ?? DASH], ['Hochgeladen', delivery.uploadedAt || DASH],
       ['Verarbeitungszeit', result.elapsed ? result.elapsed + ' s' : DASH],
     ],
@@ -93,7 +95,7 @@ export function buildReportModel(result, delivery = {}) {
 /** Builds the PDF; `capture(overlay)` returns { data, aspect } of the drawing with an overlay ('base', 'rooms', 'areas') or null. */
 export async function buildPlanReport(model, { capture = () => null } = {}) {
   const jsPDF = await loadJsPdf();
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });   // without compression the three plan images make 6–12 MB
   const theme = THEME;
   const { marginX, height, contentTop, bottomMargin } = PAGE;
   const right = PAGE.width - marginX, contentWidth = right - marginX;
@@ -224,7 +226,7 @@ export async function buildPlanReport(model, { capture = () => null } = {}) {
   };
   const k = model.kpiRaw;
   y = drawCards([
-    { label: `Score (${summary.passedRules}/${summary.totalRules})`, value: summary.score + '%', color: scoreColor },
+    { label: `Score (${summary.passedRules}/${summary.totalRules})`, value: summary.score + ' %', color: scoreColor },
     { label: 'Räume', value: String(model.rooms.length), color: theme.primary },
     { label: 'Flächen', value: String(model.areas.length), color: theme.primary },
     { label: 'Layer', value: String(model.layers.length), color: theme.primary },

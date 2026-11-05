@@ -64,7 +64,7 @@ export function compute(state, data, project, user) {
 
   const base = {
     mk, gl: 'eBKP-H', glLabel: 'eBKP-H', ak, akStr,
-    ...importModel(s, data, (s.projects || {})[project.id], 'eBKP-H'), ...templatesModel(s, data), ...plan,
+    ...importModel(s, data, (s.projects || {})[project.id], project.id, 'eBKP-H'), ...templatesModel(s, data), ...plan,
 
     // Datenformulare
     forms, formByCode, formStatusOf,

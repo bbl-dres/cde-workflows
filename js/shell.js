@@ -5,15 +5,15 @@ import { SECTIONS, link, sectionKeyFor } from './links.js';
 import { searchModel } from './model/search.js';
 
 export const PROJECT_PAGES = ['overview', 'projectTasks', 'ilp', 'delivery', 'settings', 'section', 'documents', 'loin', 'timeline'];
-export const BANNER_TEXT = 'Prototyp, fiktive oder öffentlich verfügbare Inhalte – nur zur Demonstration';
+export const BANNER_TEXT = 'Prototyp mit fiktiven oder öffentlich verfügbaren Inhalten, nur zur Demonstration';
 
 /** Red prototype banner above the topbar (white on red). */
-export const banner = () => html`<div class="proto-banner" role="note"><span class="proto-banner-long">${BANNER_TEXT}</span><span class="proto-banner-short" aria-hidden="true">Prototyp – nur zur Demonstration</span></div>`;
+export const banner = () => html`<div class="proto-banner" role="note"><span class="proto-banner-long">${BANNER_TEXT}</span><span class="proto-banner-short">Prototyp, nur zur Demonstration</span></div>`;   // one of the two is display:none, so each is read where it shows
 
 /** Footer: source link at the right. */
 export const REPO_URL = 'https://github.com/bbl-dres/cde-workflows';
 const CDE_URL = 'https://www.astra.admin.ch/de/cde-bund';   // the real CDE Bund this prototype mimics
-export const footer = () => html`<footer class="app-footer"><span class="app-footer-note">Prototyp – nur zur Demonstration</span><span class="app-footer-links"><span>Quellcode: <a href="${REPO_URL}" target="_blank" rel="noopener">${REPO_URL.replace('https://', '')}</a></span><span>CDE Bund: <a href="${CDE_URL}" target="_blank" rel="noopener">${CDE_URL.replace('https://www.', '')}</a></span></span></footer>`;
+export const footer = () => html`<footer class="app-footer"><span class="app-footer-note">Prototyp, nur zur Demonstration</span><span class="app-footer-links"><span>Quellcode: <a href="${REPO_URL}" target="_blank" rel="noopener">${REPO_URL.replace('https://', '')}</a></span><span>CDE Bund: <a href="${CDE_URL}" target="_blank" rel="noopener">${CDE_URL.replace('https://www.', '')}</a></span></span></footer>`;
 
 // ---- Topbar ----
 export function topbar(ctx, hasSidebar) {

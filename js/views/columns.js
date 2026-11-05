@@ -23,7 +23,7 @@ export default {
             const on = c.fixed || draft.has(c.key);
             const disabled = c.fixed || c.unavailable;
             return html`<div class="cols-row">
-              ${checkbox({ checked: on && !c.unavailable, label: '', action: disabled ? undefined : 'colToggle', key: c.key, disabled })}
+              ${checkbox({ checked: on && !c.unavailable, label: '', ariaLabel: `Spalte ${c.label}`, action: disabled ? undefined : 'colToggle', key: c.key, disabled })}
               <span class="${c.unavailable ? 'muted' : ''}" title="${c.unavailable ? 'Im Prototyp ohne Daten' : ''}">${c.label}</span>
               <span class="field cols-pin">Kein${icon('chevron-down', 12, '#8a939e')}</span>
               <span class="cols-drag" title="Sortieren">${icon('grip-vertical', 14, '#8c8c8c')}</span>

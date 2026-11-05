@@ -46,7 +46,8 @@ export function clearPersisted() { try { sessionStorage.removeItem(KEY); } catch
 /**
  * Apply a patch with dotted keys ({ 'ui.dialog': 'order', 'projects.musterhausen.forms.thg.step': 5 }) to a copy of the state.
  * Intermediate objects are created when missing; prototype segments are rejected. With `typed`, a value may only replace a
- * value of the same kind (null/undefined, same typeof, array ↔ array), so a deep link cannot turn an array into a number.
+ * value of the same kind (same typeof, array ↔ array; never null for a value, never a whole object), so a deep link cannot
+ * turn an array into a number or wipe a slice of the state.
  */
 export function patchDotted(state, patch, { typed = false } = {}) {
   const st = structuredClone(state);
@@ -63,7 +64,8 @@ export function patchDotted(state, patch, { typed = false } = {}) {
     }
     if (!t) continue;
     const last = path[path.length - 1], cur = t[last];
-    if (typed && cur != null && (typeof cur !== typeof v || Array.isArray(cur) !== Array.isArray(v))) continue;
+    if (typed && cur != null && (v === null || typeof cur !== typeof v || Array.isArray(cur) !== Array.isArray(v))) continue;
+    if (typed && cur != null && typeof cur === 'object' && !Array.isArray(cur)) continue;   // an object slice (ui, projects, a form) is patched by its leaves, never replaced as a whole
     t[last] = v;
   }
   return st;

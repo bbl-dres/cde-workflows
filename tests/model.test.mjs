@@ -18,7 +18,9 @@ const { compute } = await mod('js/model/index.js');
 const { matchRoute, parseHash, routeOverrides } = await mod('js/router.js');
 const { LEGACY, screenIdFor, defaultDeliveryTab, FORM_TABS, link } = await mod('js/links.js');
 const { TASK_COLUMNS, DEFAULT_TASK_COLS } = await mod('js/model/columns.js');
-const { planLists, withUsage, donutOf } = await mod('js/model/plan.js');
+const { planLists, withUsage, donutOf, planModel, ebfOf } = await mod('js/model/plan.js');
+const { wholeShares } = await mod('js/format.js');
+const { planForm } = await mod('js/model/form.js');
 const { searchModel } = await mod('js/model/search.js');
 const { needsQty } = await mod('js/model/mock.js');
 
@@ -227,7 +229,7 @@ test('THG-32: Emissionsquellen (Erstellung), Betrieb, Zielwerte SIA 390/1 and th
   assert.equal(vm.auRows.find(t => t.delivery === 'THG-32').status, 'In Bearbeitung');
   const st = structuredClone(base);
   st.projects.musterhausen.forms.thg.step = 4; st.projects.musterhausen.forms.thg.dates = ['12.03.2027', '15.03.2027', null, '03.05.2027', '04.05.2027'];
-  let v0 = vmFor(st); assert.equal(v0.forms.thg.status, 'In Prüfung'); assert.equal(v0.forms.thg.locked, true); assert.equal(v0.forms.thg.rv.canReview, true); assert.equal(v0.forms.thg.erf.rows.filter(r => r.isAdd).length, 0, 'locked: no add rows'); assert.ok(v0.forms.thg.erf.rows.filter(r => r.isGroupRow).every(r => !r.canToggle), 'locked: the table lies under the veil'); assert.ok(/^Eingereicht( heute| am \d\d\.\d\d\.\d{4})?\. Änderungen erst nach Rückweisung\.$/.test(v0.forms.thg.lock), v0.forms.thg.lock); assert.equal(v0.forms.thg.lockTip, 'Gesperrt bis zur Rückweisung'); assert.equal(v0.forms.thg.bar.lockedText, 'Eingereicht. Die Erfassung ist gesperrt, bis Paula Muster freigibt oder zurückweist.');
+  let v0 = vmFor(st); assert.equal(v0.forms.thg.status, 'In Prüfung'); assert.equal(v0.forms.thg.locked, true); assert.equal(v0.forms.thg.rv.canReview, true); assert.equal(v0.forms.thg.erf.rows.filter(r => r.isAdd).length, 0, 'locked: no add rows'); assert.ok(v0.forms.thg.erf.rows.filter(r => r.isGroupRow).every(r => !r.canToggle), 'locked: the table lies under the veil'); assert.ok(/^Eingereicht( heute| am \d\d\.\d\d\.\d{4})?\. Änderungen erst nach Rückweisung\.$/.test(v0.forms.thg.lock), v0.forms.thg.lock); assert.equal(v0.forms.thg.lockTip, 'Gesperrt bis zur Rückweisung'); assert.equal(v0.forms.thg.bar.lockedText, 'Eingereicht. Die Erfassung ist gesperrt, Paula Muster prüft die Lieferung.');
   const ext = vmFor(st, detailed, userOf('AB')); assert.equal(ext.forms.thg.rv.canReview, false); assert.equal(ext.forms.thg.rv.decide, false); assert.ok(ext.forms.thg.manual.every(m => m.disabled), 'an external user cannot review');
   st.projects.musterhausen.forms.thg.checks = { t1: true, t2: true, t3: true, t4: true, t5: true };
   let v = vmFor(st);
@@ -459,7 +461,7 @@ test('thg: Elementgruppen and Elemente B–G complete, each with unit and amorti
     for (const c of codes.filter(c => c.includes('.'))) assert.ok(codes.includes(c.slice(0, 3)), `${c} has its Elementgruppe`);
   }
   assert.equal(data.thg.eg.D.find(x => x[0] === 'D05.01')[1], 'Wärmequelle, -senke, Brennstofflager');
-  assert.equal(data.thg.eg.D.find(x => x[0] === 'D12.01')[2], 'Stk.'); assert.equal(data.thg.eg.C.find(x => x[0] === 'C04.08')[3], 40);
+  assert.equal(data.thg.eg.D.find(x => x[0] === 'D12.01')[2], 'St'); assert.equal(data.thg.eg.C.find(x => x[0] === 'C04.08')[3], 40);
 });
 
 test('plans: data, ILP rows, tasks and statuses per floor', () => {
@@ -491,14 +493,14 @@ test('plans: Datenformular shape (Übersicht, Prüfung) of a floor plan', () => 
   const eg = vm.formByCode('dwg-eg'), ug = vm.formByCode('dwg-ug'), dg = vm.formByCode('dwg-dg');
   assert.equal(eg.kind, 'plan'); assert.equal(eg.status, 'In Bearbeitung'); assert.equal(eg.step, 1);
   assert.equal(eg.steps.length, 6); assert.equal(eg.planOv.cats.length, 10); assert.deepEqual(eg.planOv.sia.map(a => a.ab), ['GF', 'KF', 'NGF', 'VF', 'FF', 'NF', 'HNF', 'NNF'], 'from the whole to its parts');
-  assert.equal(eg.comp.pct, '26 / 40'); assert.deepEqual(eg.summ.map(r => r.key), ['err', 'warn', 'aoid', 'sia']); assert.equal(eg.summ[0].val, '4'); assert.equal(eg.summ[0].res, 'nicht erfüllt'); assert.equal(eg.summ[1].res, 'prüfen');
+  assert.equal(eg.comp.pct, '26 / 40'); assert.deepEqual(eg.summ.map(r => r.key), ['err', 'warn', 'aoid', 'ebf', 'sia']); assert.equal(eg.summ[0].val, '4'); assert.equal(eg.summ[0].res, 'nicht erfüllt'); assert.equal(eg.summ[1].res, 'prüfen');
   assert.equal(eg.planOv.cats[0].ratio, '0 / 8', 'all Layer rules fail for the office layer structure'); assert.equal(eg.planOv.catTot.ratio, '26 / 40'); assert.equal(Number(eg.planOv.catTot.w) + Number(eg.planOv.catTot.e), 14, 'fourteen rules fired');
   assert.equal(dg.planOv.catTot.ratio, '– / 40'); assert.equal(dg.planOv.catTot.e, '–', 'no result: no counts');
   assert.equal(eg.comp.text, '4 Fehler · 44 Warnungen'); assert.equal(vm.formByCode('dwg-eg').lock, ''); assert.ok(vm.formByCode('dwg-ug').lock.startsWith('An SAP RE-FX übertragen'), vm.formByCode('dwg-ug').lock); assert.equal(eg.rv.notSubmitted, true); assert.match(eg.bar.reason, /keine Fehler/);
   assert.equal(ug.status, 'Abgeschlossen'); assert.equal(ug.step, 6); assert.equal(ug.kpis[0].v, '30'); assert.equal(ug.kpis[1].v, '572.3');
   assert.ok(ug.steps.slice(0, 5).every(s => s.sym === '✓')); assert.equal(ug.docs[0].name, '9999.AA.U1_CAFM.dwg'); assert.equal(ug.docs[0].req, 'Pflicht');
   assert.ok(ug.hist.some(h => h.t === 'An SAP RE-FX übertragen') && ug.hist[0].t === 'An SAP RE-FX übertragen', 'newest first');
-  assert.equal(dg.comp.pct, '–'); assert.equal(dg.summ.length, 0); assert.equal(dg.summNote, 'Noch kein Plan geprüft.'); assert.ok(ug.summ.every(r => r.ok || r.key === 'warn') && /^\d+ von \d+$/.test(ug.summ[2].val) && ug.summ[3].tip.startsWith('NGF '), ug.summ.map(r => `${r.key}:${r.val}:${r.st}`).join(' | ')); assert.equal(dg.peopleRows[0].scope, 'Grundriss DG (DWG)');
+  assert.equal(dg.comp.pct, '–'); assert.equal(dg.summ.length, 0); assert.equal(dg.summNote, 'Noch kein Plan geprüft.'); assert.ok(ug.summ.every(r => r.ok || r.key === 'warn') && /^\d+ von \d+$/.test(ug.summ[2].val) && ug.summ[3].key === 'ebf' && ug.summ[4].tip.startsWith('NGF '), ug.summ.map(r => `${r.key}:${r.val}:${r.st}`).join(' | ')); assert.equal(dg.peopleRows[0].scope, 'Grundriss DG (DWG)');
 });
 
 test('plans: status filter and search of the sub-tab lists (planLists, as in plan-check)', () => {
@@ -543,11 +545,24 @@ test('plans: Nutzungsart of the rooms (mock of the Raumtabelle CAD.A01), DIN 277
   assert.equal(withUsage(k0, [{ aoid: 'x', area: 10 }], { a: 'VF 9' }), k0); assert.equal(withUsage(null, [], {}), null);
   // Übersicht: one decimal, share of the GF
   const F = vm.formByCode('dwg-ug');
-  assert.deepEqual(F.planOv.sia.map(a => `${a.ab} ${a.val} ${a.share}`), ['GF 572.3 m² 100 %', 'KF 55.3 m² 10 %', 'NGF 517.1 m² 90 %', 'VF 90.0 m² 16 %', 'FF 17.3 m² 3 %', 'NF 409.8 m² 72 %', 'HNF 368.9 m² 64 %', 'NNF 40.9 m² 7 %']);
+  assert.deepEqual(F.planOv.sia.map(a => `${a.ab} ${a.val} ${a.share}`), ['GF 572.3 m² 100.0 %', 'KF 55.3 m² 9.7 %', 'NGF 517.1 m² 90.3 %', 'VF 90.0 m² 15.7 %', 'FF 17.3 m² 3.0 %', 'NF 409.8 m² 71.6 %', 'HNF 368.9 m² 64.5 %', 'NNF 40.9 m² 7.1 %'], 'one decimal: HNF + NNF = NF, VF + FF + NF = NGF, KF + NGF = GF');
   assert.deepEqual(F.planOv.sia.filter(a => a.fw === 600).map(a => a.ab), ['GF', 'NGF', 'NF']); assert.equal(F.planOv.catTot.ratio, '38 / 40'); assert.equal(F.planOv.catTot.e, '0');
-  // Kennzahlen: parts first, EBF last; DIN 277 groups without rooms read «–»
+  // Kennzahlen: the SIA 416 areas, parts first; the Energiebezugsfläche (SIA 380/1) in its own table; DIN 277 groups without rooms read «–»
   const d = ug.kpiDash;
-  assert.deepEqual(d.areas.map(r => r.abbr), ['HNF', 'NNF', 'NF', 'VF', 'FF', 'NGF', 'KF', 'GF', 'EBF']); assert.equal(d.areas[0].value, '368.9 m²'); assert.equal(d.areas[0].share, '64.5 %');
+  assert.deepEqual(d.areas.map(r => r.abbr), ['HNF', 'NNF', 'NF', 'VF', 'FF', 'NGF', 'KF', 'GF']); assert.deepEqual(d.ebf.map(r => `${r.abbr} ${r.value} ${r.share}`), ['EBF 0.0 m² 0.0 %'], 'the UG lies outside the thermal envelope');
+  // EBF from the Flächenart of the rooms (decision tree of data/plans.json › ebf): FF does not count, the Konstruktionsfläche is added in proportion
+  const og = vm.plans.OG1, kOg = og.kpiRaw;
+  assert.equal(kOg.ebf, Math.round(572.32 * (517.06 - 17.28) / 517.06 * 100) / 100); assert.equal(og.ebf, '553 m²'); assert.equal(og.ebfRow.value, '553.2 m²'); assert.equal(og.ebfRow.share, '96.7 %'); assert.equal(og.ebfKnown, true);
+  assert.equal(ebfOf({ gf: 100 }, [{ id: 1, aoid: 'a', area: 40 }, { id: 2, aoid: 'b', area: 40 }], { a: 'HNF 2', b: 'FF 8' }, data.plans.ebf), 50); assert.equal(ebfOf({ gf: 100 }, [{ id: 1, aoid: 'x', area: 40 }], {}, data.plans.ebf), 100, 'a room without Flächenart counts');
+  assert.equal(ebfOf({ gf: 100 }, [{ id: 1, aoid: 'a', area: 40 }], { a: 'HNF 2' }, data.plans.ebf, false), 0); assert.equal(ebfOf({ gf: null }, [{ id: 1, aoid: 'a', area: 40 }], {}, data.plans.ebf), null); assert.equal(ebfOf({ gf: 100 }, [], {}, data.plans.ebf), null);
+  // a required figure: Prüfpunkt, part of the hand-over, and the plan cannot be submitted without it
+  const fOg = vm.formByCode('dwg-og1'), fEg = vm.formByCode('dwg-eg');
+  assert.deepEqual(fOg.summ.filter(r => r.key === 'ebf').map(r => [r.label, r.val, r.res]), [['Energiebezugsfläche EBF (SIA 380/1)', '553.2 m²', 'erfüllt']]); assert.ok(fOg.handover.value.endsWith('EBF 553 m²')); assert.equal(fOg.kpis[2].k, 'Energiebezugsfläche EBF'); assert.equal(fOg.planOv.ebf.value, '553.2 m²');
+  assert.deepEqual(fEg.summ.filter(r => r.key === 'ebf').map(r => [r.val, r.res]), [['fehlt', 'nicht erfüllt']]); assert.equal(vm.plans.EG.ebfKnown, false);
+  const noGf = structuredClone(base); noGf.plans.DG = { ...noGf.plans.DG, result: { ...data.plans.seeds.cadv01, areas: [], kpi: { ...data.plans.seeds.cadv01.kpi, gf: null, kf: null } } };
+  const dgNo = planModel(noGf, data).plans.DG;
+  assert.equal(dgNo.errors, 0); assert.equal(dgNo.canSubmit, false, 'no errors, but no Energiebezugsfläche'); assert.equal(planForm(dgNo, data).bar.reason, 'Einreichen erst, wenn die Energiebezugsfläche EBF vorliegt (Raumpolygone und Geschosspolygon)');
+  assert.deepEqual(d.areas.map(r => r.abbr).length, 8); assert.equal(d.areas[0].value, '368.9 m²'); assert.equal(d.areas[0].share, '64.5 %');
   assert.deepEqual(d.areas.filter(r => r.sum).map(r => r.abbr), ['NF', 'NGF', 'GF']); assert.equal(d.volume, undefined); assert.equal(d.entities, undefined);
   assert.equal(d.din277.length, 10); assert.equal(d.din277.find(r => r.abbr === 'HNF 2').value, '271.7 m²'); assert.equal(d.din277.find(r => r.abbr === 'HNF 3').value, '–'); assert.equal(d.din277.find(r => r.abbr === 'HNF 3').share, '–');
   assert.deepEqual(d.economy.map(r => `${r.abbr} ${r.value}`), ['NGF / GF 0.90', 'KF / GF 0.10', 'NF / NGF 0.79', 'HNF / NGF 0.71']);
@@ -556,6 +571,19 @@ test('plans: Nutzungsart of the rooms (mock of the Raumtabelle CAD.A01), DIN 277
   assert.deepEqual(c.map(x => x.label), ['HNF', 'NNF', 'VF', 'FF', 'KF']); assert.equal(c[0].pct, '64 %'); assert.ok(d.donut.gradient.startsWith('conic-gradient(#f4b6b6 0.00% ') && d.donut.label.includes('HNF 64 %'));
   for (const side of [true, false]) { const ys = c.filter(x => x.right === side).map(x => x.yPx).sort((p, q) => p - q); assert.ok(ys.every((y, i) => y >= 8 && y <= 192 && (!i || y - ys[i - 1] >= 18 - 1e-9)), `labels ${side ? 'right' : 'left'}: ${ys.join(', ')}`); }
   assert.equal(donutOf([]), null); assert.equal(donutOf([['HNF', 5]]).callouts[0].pct, '100 %');
+  // the labels of the ring are whole percentages that add up to 100 (largest remainder)
+  assert.deepEqual(c.map(x => x.pct), ['64 %', '7 %', '16 %', '3 %', '10 %']); assert.deepEqual(wholeShares([37.5, 62.5]), [38, 62]); assert.deepEqual(wholeShares([1, 1, 1]), [34, 33, 33]);
+  assert.equal(wholeShares([0.4, 0.4, 0.4, 0.4, 98.4]).reduce((x, y) => x + y, 0), 100); assert.deepEqual(wholeShares([0, 0]), [0, 0]);
+  // an AOID text named like a property of Object.prototype must not reach it (the page broke on every route)
+  const odd = withUsage({ hnf: 30, nnf: 0, vf: 0, ff: 0, nf: 30, ngf: 30 }, [{ id: 1, aoid: 'toString', area: 10 }, { id: 2, aoid: 'constructor', area: 10 }, { id: 3, aoid: '9999.AA.U1.001', area: 10 }], data.plans.usage);
+  assert.equal(odd.hnf + odd.nnf + odd.vf + odd.ff, 30);
+  // «Raumpolygone mit eindeutiger AOID»: a room without an AOID text (AOID_001) or with a repeated AOID (AOID_002) does not count
+  const seed = data.plans.seeds.cadv01, res = structuredClone(seed);
+  res.issues.push({ code: 'AOID_001', severity: 'error', category: 'AOID', message: 'Raum R1: kein AOID-Text', roomId: res.rooms[0].id }, { code: 'AOID_002', severity: 'error', category: 'AOID', message: 'AOID nicht eindeutig', roomId: res.rooms[1].id }, { code: 'AOID_002', severity: 'error', category: 'AOID', message: 'AOID nicht eindeutig', roomId: res.rooms[2].id });
+  const st = structuredClone(base); st.plans.EG = { ...st.plans.EG, result: res };
+  const pm = planModel(st, data).plans.EG, row = pm.summary.find(x => x[0] === 'aoid');
+  assert.equal(row[2], '27 von 30'); assert.equal(row[4], 'err'); assert.equal(pm.aoidCount, 27); assert.equal(planModel(base, data).plans.UG.aoidCount, 30);
+  assert.equal(pm.summary.find(x => x[0] === 'sia')[3], 'NGF 517.06 m² + KF 55.26 m² = GF 572.32 m²', 'the hover adds up at two decimals');
   assert.equal(eg.kpiDash.donut, null, 'office seed: no rooms, no ring'); assert.ok(eg.kpiDash.areas.every(r => r.value === '–'));
 });
 
@@ -618,5 +646,23 @@ test('plans: seeds match the plan-check engine (LibreDWG WebAssembly under Node)
     assert.deepEqual(result.issues.map(i => i.code), seed.issues.map(i => i.code), `${id}: fired rules`);
     assert.equal(result.rooms.length, seed.rooms.length, `${id}: rooms`);
     assert.deepEqual(result.kpi, seed.kpi, `${id}: SIA 416 figures`);
+    const plain = r => { const { elapsed, src, checkedAt, ...rest } = JSON.parse(JSON.stringify(r)); return rest; };
+    assert.deepEqual(plain(result), plain(seed), `${id}: the whole result (issues, rooms, areas, layers, entities)`);
   }
+  // engine edge cases (review 06.11.): a polygon without extent in one direction, a floor polygon drawn twice
+  const { visualCenter } = await mod('js/plancheck/geometry.js');
+  const { computeKpis } = await mod('js/plancheck/kpi.js');
+  assert.deepEqual(visualCenter([{ x: 0, y: 5 }, { x: 10, y: 5 }, { x: 0, y: 5 }]), { x: 5, y: 5 }, 'a line drawn there and back: no endless loop');
+  assert.deepEqual(visualCenter([{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 0 }]), { x: 4, y: 0 }); assert.deepEqual(visualCenter([{ x: 2, y: 0 }, { x: 2, y: 6 }, { x: 2, y: 0 }]), { x: 2, y: 3 });
+  const sq = visualCenter([{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 4, y: 4 }, { x: 0, y: 4 }]); assert.ok(Math.abs(sq.x - 2) < 0.1 && Math.abs(sq.y - 2) < 0.1);
+  const kd = computeKpis([{ area: 25, siaCategory: 'HNF' }], [{ area: 200 }, { area: 200, isDuplicate: true }]);
+  assert.equal(kd.gf, 200, 'a duplicated Geschosspolygon counts once'); assert.equal(kd.kf, 175); assert.equal(computeKpis([], [{ area: 120 }, { area: 80 }]).gf, 200, 'two different floor polygons add up');
+  // a failed check of a file with the same name keeps the drawing of the valid result (a corrected file keeps its name)
+  const { planSession } = await mod('js/plansession.js');
+  const good = readFileSync(join(ROOT, data.plans.samples.cadv01.src)), fileOf = (bytes, name) => ({ name, size: bytes.length, arrayBuffer: async () => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) });
+  const first = await planSession.checkFile('T', fileOf(good, 'plan.dwg'));
+  assert.equal(planSession.get(first.key).status, 'ready');
+  await assert.rejects(planSession.checkFile('T', fileOf(Buffer.from('kein DWG, nur Text'.repeat(20)), 'plan.dwg')));
+  assert.equal(planSession.get(first.key), first.entry, 'the readable drawing is still in the session'); assert.equal(planSession.get(first.key).status, 'ready');
+  await assert.rejects(planSession.checkFile('T', fileOf(Buffer.from('kein DWG'.repeat(40)), 'anderer.dwg'))); assert.equal(planSession.get('upload:T:anderer.dwg'), null, 'a failed first check leaves no entry');
 });

@@ -5,7 +5,7 @@ import { DEFAULT_TASK_COLS } from './columns.js';
 import { initialPlans } from './plan.js';
 import { mockProject, groupAmounts, KEYS } from './mock.js';
 
-export const STATE_VERSION = 19;   // bump whenever the shape of the persisted state changes (sessions with an older version start fresh)
+export const STATE_VERSION = 20;   // bump whenever the shape of the persisted state changes (sessions with an older version start fresh)
 
 /** Values and workflow state of the Datenformulare of one project (see model/form.js and model/mock.js). */
 export function initProject(data, project) {
@@ -30,7 +30,7 @@ export function initialState(data) {
     __v: STATE_VERSION,
     // Application shell
     user: data.users.defaultUser,
-    ui: { studyOpen: false, dialog: null, notif: false, notifUnreadOnly: false, userMenu: false, navOpen: {}, toast: null, sideOpen: false, planTab: 'rules', planFilter: 'all', planSearch: '', importMenu: false, ovArea: 'e', busy: null, search: '', searchOpen: false, searchIdx: -1 },
+    ui: { studyOpen: false, dialog: null, notif: false, notifUnreadOnly: false, userMenu: false, navOpen: {}, toast: null, sideOpen: false, planTab: 'rules', planFilter: 'all', planSearch: '', planFor: null, importMenu: false, ovArea: 'e', busy: null, search: '', searchOpen: false, searchIdx: -1 },
     favorites: ['musterhausen'],
     taskCols: [...DEFAULT_TASK_COLS],
     notifRead: [],
@@ -40,7 +40,7 @@ export function initialState(data) {
     projects: initProjects(data),
     // Dialogs / flows
     orderType: 'thg',
-    imp: { form: 'kv', step: 1, filter: 'alle', mode: 'ueber', done: false, applied: 0, file: null, undo: null },   // Excel importieren: form of the dialog, chosen file { name, size, payload }, state before the import (undo)
+    imp: { form: 'kv', pid: null, step: 1, filter: 'alle', mode: 'ueber', done: false, applied: 0, file: null, undo: null },   // Excel importieren: form and project of the dialog, chosen file { name, size, payload }, state before the import (undo); reset when the dialog closes
     plans: initialPlans(data),                          // Planlieferungen DWG für das Flächenmanagement (SAP RE-FX) (DWG-UG … DWG-DG, Musterhausen)
     // Settings
     tplSel: data.templates.initialSelected,

@@ -22,4 +22,6 @@
   .overlay[style] { padding-top: 16px !important; }
   .imp-cols { grid-template-columns: 1fr; }
   .imp-steps { gap: 6px 16px; flex-wrap: wrap; }
+  .imp-modes, .overlay .dialog-foot { flex-wrap: wrap; }
+  .overlay .dialog-foot > .flex-1 { flex-basis: 100%; padding-left: 0 !important; }
 }

@@ -1,6 +1,6 @@
 {
   "rows": [
-    { "project": "musterhausen", "nr": "TN10/1342.004", "name": "Verwaltungszentrum Musterhausen, Erweiterung", "tp": "ALLG", "ak": 24.6, "firm": "Ökobilanz Beispiel AG", "due": "31.05.2027", "dynamic": true },
+    { "project": "musterhausen", "nr": "TN10/1342.004", "name": "Verwaltungszentrum Musterhausen, Erweiterung", "tp": "ALLG", "ak": 24.6, "firm": "Ökobilanz Beispiel AG", "due": "31.05.2027" },
     { "project": "eigerplatz", "nr": "TN20/0871.002", "name": "Bern, Eigerplatz 1, Instandsetzung", "tp": "ALLG", "ak": 38.2, "firm": "Planerteam Nord AG", "due": "15.04.2027", "status": "Überfällig", "ew": "–", "sus": "–" },
     { "project": "zollanlage-brig", "nr": "TN10/1190.001", "name": "Brig-Glis, Zollanlage, Erweiterung", "tp": "ZOLL", "ak": 6.8, "firm": "Ökobilanz Beispiel AG", "due": "30.06.2027", "status": "In Bearbeitung", "ew": "–", "sus": "–" },
     { "project": "agroscope-posieux", "nr": "TN30/0412.003", "name": "Posieux, Campus Agroscope, Verpflegungsgebäude", "tp": "BLW", "ak": 52.0, "firm": "Lab Planung AG", "due": "28.02.2027", "status": "Abgeschlossen", "ew": "11.4", "sus": "übertragen" },

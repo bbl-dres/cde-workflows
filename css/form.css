@@ -43,6 +43,8 @@
 .ar-tr { min-height: 30px; font-size: 13px; font-variant-numeric: tabular-nums; }
 .ar-ab { display: inline-block; width: 44px; font-weight: 600; }
 .ar-share { color: var(--muted); font-size: 12px; }
+.ar-sub { margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--line-4); font-size: 12px; color: var(--muted); }   /* a figure of another norm under the SIA 416 rows */
+.ar-ebf { font-weight: 600; }
 .cat-th, .cat-tr, .cat-total { display: grid; grid-template-columns: minmax(120px, 180px) minmax(0, 1fr) 64px 64px 52px; gap: 10px; align-items: center; font-variant-numeric: tabular-nums; }
 .cat-th { height: 30px; font-size: 12px; color: var(--muted); }
 .cat-axis { display: flex; justify-content: space-between; }
@@ -79,7 +81,6 @@
 .fm-tr { display: grid; gap: 0 10px; min-height: 38px; align-items: center; padding: 0 14px; font-size: 13px; border-bottom: 1px solid var(--line-4); font-variant-numeric: tabular-nums; transition: background-color .3s; }
 .fm-tr > * { min-width: 0; }
 .fm-tr:hover { background: var(--row-hover) !important; }
-.fm-code { color: #374151; }
 .fm-space { height: 14px; }
 .fw-400 { font-weight: 400; }
 
@@ -191,7 +192,7 @@
 .ent-code-cell { grid-column: 1; padding-left: 14px !important; }
 .ent-src { min-height: 48px; }
 .ent-add { display: flex; align-items: center; min-height: 36px; padding: 0 14px 0 34px; border-bottom: 1px solid var(--line-4); }
-.ent-add a { font-size: 12.5px; white-space: nowrap; }
+.ent-add .btn-link { font-size: 12.5px; white-space: nowrap; }
 .ent-del-cell { display: flex; justify-content: center; padding: 0 !important; }
 .ent-del { width: 26px; height: 26px; border: 0; border-radius: 4px; background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
 .ent-del:hover { background: var(--row-alt); }
@@ -219,7 +220,7 @@ a.dd-item { display: block; text-decoration: none; }                /* a link am
 .dd-sep { border-bottom: 1px solid var(--line-4); border-radius: 3px 3px 0 0; }
 
 /* Submit bar at the end of the Erfassung (sticky) */
-.submit-bar { position: sticky; bottom: 0; z-index: 2; background: #fff; border-radius: 6px; box-shadow: 0 -6px 16px -10px rgba(16,24,40,.25), var(--shadow-1); padding: 12px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+.submit-bar { position: sticky; bottom: 0; z-index: 4; background: #fff; border-radius: 6px; box-shadow: 0 -6px 16px -10px rgba(16,24,40,.25), var(--shadow-1); padding: 12px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
 .submit-comp { display: flex; flex-direction: column; gap: 5px; width: 220px; }
 .submit-reason { font-size: 12.5px; color: var(--muted); }
 .submit-bar .checkbox { align-items: center; }
@@ -256,6 +257,8 @@ a.dd-item { display: block; text-decoration: none; }                /* a link am
   .tz-legend { grid-template-columns: 16px minmax(0, 1fr) 64px 64px 96px; font-size: 12px; }
   .submit-comp { width: 100%; }
   .tgt-legend { grid-template-columns: 16px minmax(0, 1fr) 90px 80px; font-size: 12px; }
+  .tz-legend .ellipsis, .tgt-legend .ellipsis { white-space: normal; overflow: visible; text-overflow: clip; }   /* phones: the names of the targets wrap instead of being cut */
+  .tz-legend > span, .tgt-legend > span { overflow-wrap: anywhere; }
 }
 @media (max-width: 639.98px) {
   .kpi-grid { grid-template-columns: 1fr; }

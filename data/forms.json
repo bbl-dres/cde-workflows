@@ -1,5 +1,5 @@
 {
-  "note": "Datenformulare nach dem Design vom 05.11.2026 (docs/wireframes/261105_CDE-Workflows Datenformular Design.zip, Komponente Datenformular.dc.html): eine Struktur für alle Lieferungen mit den Tabs Übersicht · Erfassung · Prüfung · Beteiligte · Dokumente · Verlauf; die Ökobilanz erfasst Erstellung und Betrieb in zwei Tabs. «kinds» beschreibt die drei Formulararten (Kostenvoranschlag KV-32, Kostenschätzung KS-31, Ökobilanz THG-32), «byProject» welche Formulare ein Projekt hat und wo sie im Workflow stehen (step 0 Erstellt/Offen · 1 In Bearbeitung · 3 Eingereicht · 4 In Prüfung · 5 Freigegeben · 6 Übertragen); «missing» blendet einzelne Werte aus (kvQ:D08 = Menge der Position, thg:C04.01-1:kw = Kennwert einer Emissionsquelle, thgB:b0_n = Nutzenergie einer Energiedienstleistung des Betriebs), «endwert» kalibriert die Erstellung der Ökobilanz (kg CO₂-eq/m² EBF·a), «head» überschreibt die Grundlagen der Ökobilanz, «begr» sind die Begründungen des Planers je Hauptgruppe mit markierter Abweichung zur Vorphase. Werte kommen aus ebkp.json, thg.json und sia416.json, für die weiteren Projekte skaliert (js/model/mock.js). FV-32 entfällt: die Flächen kommen aus den Grundrissen (DWG). Personen, Firmen und Werte sind fiktiv.",
+  "note": "Datenformulare nach dem Design vom 05.11.2026 (docs/wireframes/261105_CDE-Workflows Datenformular Design.zip, Komponente Datenformular.dc.html): eine Struktur für alle Lieferungen mit den Tabs Übersicht · Erfassung · Prüfung · Beteiligte · Dokumente · Verlauf; die Ökobilanz erfasst Erstellung und Betrieb in zwei Tabs. «kinds» beschreibt die drei Formulararten (Kostenvoranschlag KV-32, Kostenschätzung KS-31, Ökobilanz THG-32), «byProject» welche Formulare ein Projekt hat und wo sie im Workflow stehen (step 0 Erstellt/Offen · 1 In Bearbeitung · 3 Eingereicht · 4 In Prüfung · 5 Freigegeben · 6 Übertragen); «missing» blendet einzelne Werte aus (kvQ:D08 = Menge der Position, thg:C04.01-1:kw = Kennwert einer Emissionsquelle, thgB:b0_n = Nutzenergie einer Energiedienstleistung des Betriebs), «endwert» kalibriert die Erstellung der Ökobilanz (kg CO₂-eq/m² EBF·a), «head» überschreibt die Grundlagen der Ökobilanz. Werte kommen aus ebkp.json, thg.json und sia416.json, für die weiteren Projekte skaliert (js/model/mock.js). FV-32 entfällt: die Flächen kommen aus den Grundrissen (DWG). Personen, Firmen und Werte sind fiktiv.",
   "steps": ["Erstellt", "In Bearbeitung", "Intern geprüft", "Eingereicht", "In Prüfung", "Freigegeben", "Übertragen"],
   "people": {
     "AB": ["Alex Beispiel", "Muster Architekten AG"],
@@ -26,7 +26,7 @@
       "target": "ePPM",
       "ziel": "ePPM",
       "tableTitle": "Kosten nach Hauptgruppen · eBKP-H",
-      "qtyLabel": "Menge", "valLabel": "Kosten CHF", "kwLabel": "CHF/m² GF", "units": ["pauschal", "m²", "m³", "m", "St", "m³/h", "CHF"], "cmpUnit": "CHF", "cmpPrevLabel": "KS-31", "totalLabel": "Total", "devPct": 10,
+      "qtyLabel": "Menge", "valLabel": "Kosten CHF", "kwLabel": "CHF/m² GF", "units": ["pauschal", "m²", "m³", "m", "St", "m³/h", "CHF"], "cmpPrevLabel": "KS-31", "totalLabel": "Total", "devPct": 10,
       "detailDefault": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "V", "W", "Y", "Z"],
       "groupRef": { "A": ["m² GSF", "GSF"], "B": ["m² GSF", "GSF"], "C": ["m² GF", "GF"], "D": ["m² GF", "GF"], "E": ["m² FAW", "FAW"], "F": ["m² FB", "FB"], "G": ["m² GF", "GF"], "I": ["m² BUF", "BUF"], "H": ["m² NF zu H"], "J": ["m² NF", "NF"], "V": ["CHF"], "W": ["m² GF", "GF"], "Y": ["CHF"], "Z": ["CHF"] },
       "accuracy": 10,
@@ -44,7 +44,7 @@
       "target": "ePPM",
       "ziel": "ePPM",
       "tableTitle": "Kosten nach Hauptgruppen · eBKP-H",
-      "qtyLabel": "Menge", "valLabel": "Kosten CHF", "kwLabel": "CHF/m² GF", "units": ["pauschal", "m²", "m³", "m", "St", "m³/h", "CHF"], "cmpUnit": "CHF", "cmpPrevLabel": "SIA 21", "totalLabel": "Total", "devPct": 15,
+      "qtyLabel": "Menge", "valLabel": "Kosten CHF", "kwLabel": "CHF/m² GF", "units": ["pauschal", "m²", "m³", "m", "St", "m³/h", "CHF"], "cmpPrevLabel": "SIA 21", "totalLabel": "Total", "devPct": 15,
       "detailDefault": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "V", "W", "Y", "Z"],
       "groupRef": { "A": ["m² GSF", "GSF"], "B": ["m² GSF", "GSF"], "C": ["m² GF", "GF"], "D": ["m² GF", "GF"], "E": ["m² FAW", "FAW"], "F": ["m² FB", "FB"], "G": ["m² GF", "GF"], "I": ["m² BUF", "BUF"], "H": ["m² NF zu H"], "J": ["m² NF", "NF"], "V": ["CHF"], "W": ["m² GF", "GF"], "Y": ["CHF"], "Z": ["CHF"] },
       "accuracy": 15,
@@ -63,6 +63,7 @@
       "target": "Wüest Dimensions",
       "ziel": "Wüest Dimensions (Modul Sustainability)",
       "tableTitle": "Erstellung · Emissionsquellen aus dem Tool-Export nach eBKP-H-Elementgruppen",
+      "units": ["m²", "m³", "m", "St", "kg", "t", "tkm", "kW", "kWp", "m² EBF"],
       "betrTitle": "Betrieb · Energiedienstleistungen nach Rechenhilfe SIA 390/1 · kWh/m² EBF·a",
       "cmpUnit": "t CO₂-eq", "cmpPrevLabel": "SIA 31", "totalLabel": "Total B–G", "devPct": 15,
       "detailDefault": ["B", "C", "D", "E", "F", "G"],

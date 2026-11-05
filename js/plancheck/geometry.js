@@ -344,7 +344,9 @@ export function visualCenter(verts) {
     const b = boundsOfPoints(verts);
     const width = b.maxX - b.minX;
     const height = b.maxY - b.minY;
-    if (width < 1e-10 && height < 1e-10) return { x: b.minX, y: b.minY };
+    // No extent in one direction (a line drawn there and back, a rectangle collapsed to a line): there is no interior, the
+    // centre is the middle of the box. Without this the cell size below is 0 and the grid loop never ends.
+    if (width < 1e-10 || height < 1e-10) return { x: b.minX + width / 2, y: b.minY + height / 2 };
 
     // Signed distance to the outline: positive inside, negative outside
     const signedDistance = (px, py) => {
@@ -355,6 +357,7 @@ export function visualCenter(verts) {
     // Slivers would produce millions of initial cells; cap the grid instead
     let cellSize = Math.min(width, height);
     if ((width / cellSize) * (height / cellSize) > MAX_INITIAL_CELLS) cellSize = Math.max(width, height) / 64;
+    if (!(cellSize > 0) || !isFinite(cellSize)) return { x: b.minX + width / 2, y: b.minY + height / 2 };   // NaN or Infinity coordinates
     let h = cellSize / 2;
     const precision = cellSize * 0.01;
 

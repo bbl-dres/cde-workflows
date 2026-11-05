@@ -1,7 +1,7 @@
-import { html, icon, radio } from '../ui.js';
+import { html, icon, radio, raw } from '../ui.js';
 
 // 03d Excel importieren: Vorschau – step 2/3 of the import dialog (preview, mode, apply, done state).
-const COLS = 'grid-template-columns:52px minmax(0,1fr) 100px 120px 110px 170px';
+const COLS = 'grid-template-columns:60px minmax(160px,1fr) 100px 120px 110px 170px';
 
 const step = (s, label) => html`<span class="imp-step" style="font-weight:${s.w};color:${s.t}"><span class="imp-step-dot" style="border-color:${s.bd};background:${s.bg};color:${s.c}">${s.sym}</span>${label}</span>`;
 
@@ -11,7 +11,7 @@ export default {
     return html`<div class="overlay" style="padding-top:70px">
       <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="imp-title" style="width:900px">
         <div class="dialog-head">
-          <div><div class="dialog-title" id="imp-title">Excel importieren</div><div class="dialog-sub">${vm.impFile} · Blatt «${vm.impSheet}»</div></div>
+          <div><div class="dialog-title" id="imp-title">Excel importieren</div><div class="dialog-sub">${vm.impFile} · ${vm.impSheet}</div></div>
           <button type="button" class="dialog-close" data-action="impClose" aria-label="Dialog schliessen">${icon('x', 18, '#5b6573')}</button>
         </div>
         <div class="imp-steps">${step(vm.impStep1, 'Datei wählen')}${step(vm.impStep2, 'Vorschau prüfen')}${step(vm.impStep3, 'Übernehmen')}</div>
@@ -33,9 +33,9 @@ export default {
             </div>`)}
             ${vm.impRows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine Zeilen in dieser Ansicht.</div>` : ''}
           </div>
-          <div class="rel flex items-center fs-13 imp-modes" style="padding:14px 24px 0;gap:22px">
+          <div class="rel flex items-center fs-13 imp-modes" style="padding:14px 24px 0;gap:8px 22px" role="radiogroup" aria-labelledby="imp-modes-label">
             ${ctx.marker(2, 'top:10px;left:2px')}
-            <span class="fw-500" style="padding-left:30px">Bestehende Werte</span>
+            <span class="fw-500" style="padding-left:30px" id="imp-modes-label">Bestehende Werte</span>
             ${vm.impModes.map(m => radio({ checked: m.checked, label: m.label, action: 'impMode', arg: m.key }))}
           </div>`
         : html`
@@ -50,7 +50,7 @@ export default {
           ${ctx.marker(3, 'top:18px;left:24px')}
           <span class="flex-1 fs-125 muted" style="padding-left:30px">${vm.impSummary}</span>
           <button type="button" class="btn btn-secondary" data-action="${vm.impDone ? 'impClose' : 'impBack'}">${vm.impCancel}</button>
-          ${vm.impOpen ? html`<button type="button" class="btn btn-primary" data-action="impApply" style="padding:7px 18px">${vm.impBtn}</button>` : ''}
+          ${vm.impOpen ? html`<button type="button" class="btn btn-primary" data-action="impApply" style="padding:7px 18px" ${vm.impCanApply ? '' : raw('disabled title="Die Datei ändert nichts an der Erfassung"')}>${vm.impBtn}</button>` : ''}
         </div>
       </div>
     </div>`;

@@ -522,8 +522,8 @@ export class PlanViewer {
     // ── Input ──
 
     localPoint(e) {
-        if (!this.wrapRect) this.wrapRect = this.container.getBoundingClientRect();
-        return [e.clientX - this.wrapRect.left, e.clientY - this.wrapRect.top];
+        const rect = this.pointers.size ? (this.wrapRect || (this.wrapRect = this.container.getBoundingClientRect())) : this.container.getBoundingClientRect();   // while dragging the box of the pointerdown; else the current one (the page may have scrolled)
+        return [e.clientX - rect.left, e.clientY - rect.top];
     }
 
     onWheel(e) {

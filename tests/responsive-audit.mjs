@@ -87,5 +87,6 @@ writeFileSync(join(OUT, 'report.json'), JSON.stringify(report, null, 1));
 const over = Object.entries(report).filter(([, v]) => v.hOverflow).map(([k]) => k);
 console.log(`\nScreenshots und report.json: ${OUT}\nSeiten mit horizontalem Überlauf: ${over.length ? over.join(', ') : 'keine'}`);
 if (errors.length) console.log('Browser-Fehler:', errors.join(' | ').slice(0, 500));
+try { await Promise.race([send('Browser.close'), new Promise(r => setTimeout(r, 1500))]); } catch { /* already gone */ }   // proc.kill() alone leaves the browser running on Windows
 ws.close(); proc.kill();
 process.exit(over.length ? 1 : 0);

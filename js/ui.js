@@ -68,9 +68,9 @@ export const iconBtn = o => html`<button type="button" class="btn-icon${o.cls ? 
 
 // ---- Custom checkbox (keyboard: Enter/Space via data-action + role) ----
 // checkbox({ checked, label, sub, action, key, arg, disabled })
-export const checkbox = o => html`<div class="checkbox${o.disabled ? ' is-disabled' : ''}" role="checkbox" aria-checked="${o.checked ? 'true' : 'false'}" ${o.disabled ? raw('aria-disabled="true"') : ''} tabindex="${o.disabled ? -1 : 0}"
+export const checkbox = o => html`<div class="checkbox${o.disabled ? ' is-disabled' : ''}" role="checkbox" aria-checked="${o.checked ? 'true' : 'false'}" ${o.label ? '' : html`aria-label="${o.ariaLabel || ''}"`} ${o.disabled ? raw('aria-disabled="true"') : ''} tabindex="${o.disabled ? -1 : 0}"
     ${o.action ? html`data-action="${o.action}"` : ''} ${o.key != null ? html`data-key="${o.key}"` : ''} ${o.arg != null ? html`data-arg="${o.arg}"` : ''}>
-  <span class="checkbox-box${o.checked ? ' is-checked' : ''}">${o.checked ? '✓' : ''}</span>
+  <span class="checkbox-box${o.checked ? ' is-checked' : ''}" aria-hidden="true">${o.checked ? '✓' : ''}</span>
   <span class="checkbox-text"><span>${o.label}</span>${o.sub ? html`<span class="checkbox-sub">${o.sub}</span>` : ''}</span>
 </div>`;
 
@@ -99,7 +99,7 @@ export const metaRows = rows => rows.map(m => html`<div class="meta-row" style="
 // ---- Filters, search and sortable headers (look-alikes of the CDE Bund toolbars) ----
 export const searchBox = (width = 398, placeholder = 'Suchen…') => html`<div class="search-wrap"><div class="search" style="width:${width}px">${placeholder}</div><div class="search-btn">${icon('search', 14, '#fff')}</div></div>`;
 /** filterBtn(label, { caret, menu }) – a toolbar button; `menu` marks it as the trigger of a hover/focus menu. */
-export const filterBtn = (label, o = {}) => html`<button type="button" class="filter-btn" ${o.menu ? raw('aria-haspopup="menu"') : ''}>${label}${o.caret ? icon('chevron-down', 12, '#3a4350') : ''}</button>`;
+export const filterBtn = (label, o = {}) => html`<button type="button" class="filter-btn" ${o.menu ? raw('aria-haspopup="menu"') : raw('data-action="proto"')}>${label}${o.caret ? icon('chevron-down', 12, '#3a4350') : ''}</button>`;
 export const filterField = (label, w, ic) => html`<span class="filter-field" style="width:${w}px">${label}${icon(ic, 13, '#a3abb4')}</span>`;
 /** Column header with the sort chevrons of the Ant tables. */
 export const thSort = (label, color = 'var(--faint)') => html`<span class="th-sort">${label}${icon('chevrons-up-down', 10, color)}</span>`;

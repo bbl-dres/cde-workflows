@@ -7,8 +7,6 @@
 .s09-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 22px; padding-top: 58px; }
 .s09-head { display: grid; gap: 0 12px; padding: 0 12px; height: 34px; align-items: center; background: var(--head-bg); font-size: 12.5px; font-weight: 500; }
 .s09-row { display: grid; gap: 0 12px; padding: 0 12px; height: 44px; align-items: center; font-size: 13px; border-bottom: 1px solid var(--line-5); cursor: pointer; outline: none; }
-.s09-row:focus-visible { outline: 2px solid var(--navy); outline-offset: -2px; }
-.s09-row a { pointer-events: none; }
 .s09-toggle .toggle-label { color: var(--text); font-size: 13px; }
 .s09-detail { border: 1px solid var(--line-3); border-radius: 3px; position: relative; }
 .s09-detail-head { padding: 14px 18px; border-bottom: 1px solid var(--line-5); display: flex; align-items: center; gap: 12px; }

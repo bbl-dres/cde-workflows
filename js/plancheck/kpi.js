@@ -6,7 +6,7 @@ import { fmtNum } from './util.js';
 
 export const DASH = '—';
 
-/** DIN 277 usage groups (areas per group come from the room stamp, which the prototype does not read yet). */
+/** DIN 277 usage groups (areas per group come from the Nutzungsart of the Raumtabelle CAD.A01; the application supplies it, see js/model/plan.js withUsage). */
 export const DIN277_GROUPS = [
     ['HNF 1', 'Wohnen und Aufenthalt'], ['HNF 2', 'Büroarbeit'], ['HNF 3', 'Produktion'], ['HNF 4', 'Lagern, Verteilen, Verkaufen'], ['HNF 5', 'Bildung, Unterricht, Kultur'],
     ['HNF 6', 'Heilen, Pflegen'], ['NNF 7', 'Sonstige Nutzungen'], ['FF 8', 'Betriebstechnische Anlagen'], ['VF 9', 'Verkehrserschliessung und -sicherung'], ['BUF 10', 'Verschiedene Nutzungen'],
@@ -15,7 +15,7 @@ export const DIN277_GROUPS = [
 export const SIA_LABELS = {
     GF: 'Geschossfläche', KF: 'Konstruktionsfläche', NGF: 'Nettogeschossfläche', NF: 'Nutzfläche',
     HNF: 'Hauptnutzfläche', NNF: 'Nebennutzfläche', VF: 'Verkehrsfläche', FF: 'Funktionsfläche', GV: 'Gebäudevolumen',
-    EBF: 'Energiebezugsfläche (SIA 416/1)',   // GF inside the thermal envelope; the caller sets k.ebf (heated floor → GF, unheated → 0)
+    EBF: 'Energiebezugsfläche (SIA 380/1)',   // not a SIA 416 area: reference of the Ökobilanz; the caller sets k.ebf (js/model/plan.js ebfOf: from the Flächenart of the rooms)
 };
 
 /** SIA 416 totals in m². gf/kf are null without floor polygons; hasRooms guards the room-based figures. */
@@ -31,7 +31,7 @@ export function computeKpis(roomData, areaData) {
     const { HNF: hnf, NNF: nnf, VF: vf, FF: ff } = catSum;
     const nf = hnf + nnf;
     const ngf = nf + vf + ff;
-    const gf = hasAreaPolys ? areaData.reduce((s, a) => s + a.area, 0) : null;
+    const gf = hasAreaPolys ? areaData.reduce((s, a) => s + (a.isDuplicate ? 0 : a.area), 0) : null;   // several floor polygons add up, a duplicate counts once
     const kf = (gf !== null && hasRooms) ? gf - ngf : null;
     const r2 = v => (v == null ? null : Math.round(v * 100) / 100);
     return { hnf: r2(hnf), nnf: r2(nnf), vf: r2(vf), ff: r2(ff), nf: r2(nf), ngf: r2(ngf), gf: r2(gf), kf: r2(kf), hasRooms, hasAreaPolys };

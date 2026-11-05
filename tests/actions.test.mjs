@@ -20,6 +20,9 @@ const { makeActions } = await mod('js/actions.js');
 const { formModel, LOCKED_FROM } = await mod('js/model/form.js');
 const { mockProject, groupAmount, mergeToolExport, mergeBetr, thgErst } = await mod('js/model/mock.js');
 const { FMT, FMT1, FMT2, num, disp, disp1, mio } = await mod('js/format.js');
+const searchMod = await mod('js/model/search.js');
+const { planModel, planLists } = await mod('js/model/plan.js');
+const { planForm } = await mod('js/model/form.js');
 
 /** A fresh store + actions acting on project `pid`; `nav` records navigations. */
 function setup(pid = 'musterhausen') {
@@ -242,6 +245,8 @@ test('actions: plan review follows the plan model gates', () => {
   actions.planApprove({ key: 'OG2' });
   assert.equal(plans().OG2.status, 'pruefung', 'not approvable without the checks');
   actions.planToggleCheck({ arg: 'OG2', key: 'c1' }); actions.planToggleCheck({ arg: 'OG2', key: 'c2' });
+  actions.planComment({ key: 'OG2' }, { value: 'Layer prüfen' });
+  assert.equal(plans().OG2.comment, 'Layer prüfen', 'the reviewer comments while the plan is in review');
   actions.planApprove({ key: 'OG2' });
   assert.equal(plans().OG2.status, 'freigegeben');
   actions.planTransfer({ key: 'OG2' });
@@ -249,7 +254,7 @@ test('actions: plan review follows the plan model gates', () => {
   actions.planSubmit({ key: 'EG' });
   assert.equal(plans().EG.status, 'bearbeitung', 'EG has errors → not submittable');
   actions.planComment({ key: 'EG' }, { value: 'Layer prüfen' });
-  assert.equal(plans().EG.comment, 'Layer prüfen');
+  assert.equal(plans().EG.comment || '', '', 'no comment on a plan that is not in review');
   actions.planResetReview({ key: 'OG2' });
   assert.equal(plans().OG2.status, data.plans.floors.find(f => f.key === 'OG2').status);
 });
@@ -331,9 +336,9 @@ test('review 05.11.: strict numbers, no «-0», persisted slices merge per key, 
     assert.deepEqual(s2.get().projects, { p1: { v: 1 }, p2: { v: 2 } }, 'a project added to the data keeps its defaults'); assert.equal(s2.get().ui.search, '', 'transient keys are dropped, not saved as null');
   } finally { delete globalThis.sessionStorage; }
   const { actions, P, F, store } = setup('musterhausen');
-  actions.setMap({ key: 'kvV', code: 'A' }, { value: '2000000' });
-  const az = F('kv').subtotals.find(u => u.code === 'A–Z'), bw = F('kv').subtotals.find(u => u.code === 'B–W');
-  assert.ok(num(az.cur) > num(bw.cur) + 2000000, 'A–Z includes A Grundstück');
+  const azBefore = num(F('kv').subtotals.find(u => u.code === 'A–Z').cur), bwBefore = num(F('kv').subtotals.find(u => u.code === 'B–W').cur);
+  actions.setMap({ key: 'kvV', code: 'A01' }, { value: '2000000' });
+  assert.equal(num(F('kv').subtotals.find(u => u.code === 'A–Z').cur), azBefore + 2000000, 'A–Z includes A Grundstück'); assert.equal(num(F('kv').subtotals.find(u => u.code === 'B–W').cur), bwBefore, 'B–W does not');
   actions.setMap({ key: 'kvV', code: 'C02' }, { value: '' }); store.setIn('imp', { form: 'kv', mode: 'leer', step: 2 });
   actions.impApply();
   assert.equal(P().kvV.C02, data.ebkp.import.changes.C02, '«Nur leere Felder füllen» fills the empty field'); assert.notEqual(P().kvV.G02, data.ebkp.import.changes.G02, 'filled fields stay'); assert.ok(F('kv').docs.some(d => d.name === data.ebkp.import.file), 'the imported file is a document');
@@ -446,4 +451,213 @@ test('Excel round trip (js/excel.js): export → edit → import of KV-32 and TH
   const locked = JSON.stringify(P());
   store.setIn('imp', { form: 'kv', done: false, file: null }); actions.impApply();
   assert.equal(JSON.stringify(P()), locked);
+});
+
+test('review 06.11. (QS): Übersicht click, roles, first input, filter, search, deep links, Photovoltaik, shares, completeness', () => {
+  const { actions, P, F, store, nav, toast } = setup('musterhausen');
+  const asUser = key => store.set({ user: key });
+  // a row of the Übersicht opens the Erfassung but never breaks a summarised Hauptgruppe open (it replaced the amount, also on a locked form)
+  actions.formMode({ form: 'kv', group: 'C' }); actions.formGroupVal({ form: 'kv', group: 'C' }, { value: '5000000' });
+  const before = F('kv').total;
+  actions.formOpenGroup({ form: 'kv', group: 'C', tab: 'erfassung' });
+  assert.equal(P().forms.kv.modes.C, 'direct'); assert.equal(P().forms.kv.gvals.C, 5000000); assert.equal(F('kv').total, before); assert.ok(nav.last.endsWith('/deliveries/kv-32/erfassung'));
+  actions.formMode({ form: 'thg', group: 'G' }); assert.equal(P().forms.thg.modes.G, 'direct');
+  actions.formOpenGroup({ form: 'thg', group: 'G', tab: 'erfassung' }); assert.equal(P().forms.thg.modes.G, 'detail', 'the Ökobilanz only unfolds the group');
+  // «Nur fehlende Werte anzeigen» does not survive the submission; a locked form shows all rows
+  actions.setMap({ key: 'kvQ', code: 'D08' }, { value: '186' }); actions.formToggleMissing({ key: 'kv' });
+  assert.equal(P().forms.kv.missingOnly, true);
+  actions.formSubmit({ key: 'kv' });
+  assert.equal(P().forms.kv.step, 3); assert.equal(P().forms.kv.missingOnly, false); assert.ok(F('kv').erf.rows.length > 30);
+  store.setIn('projects', { musterhausen: { ...P(), forms: { ...P().forms, kv: { ...P().forms.kv, missingOnly: true } } } });
+  assert.ok(F('kv').erf.rows.length > 30, 'a filter left on by an older state has no effect on a locked form');
+  // comment and transfer belong to the BBL; the Übersicht click still changes nothing on the locked form
+  asUser('GM'); actions.formComment({ key: 'kv' }, { value: 'von aussen' }); assert.equal(P().forms.kv.comment || '', '');
+  asUser('PM'); actions.formComment({ key: 'kv' }, { value: 'Bitte C prüfen' }); assert.equal(P().forms.kv.comment, 'Bitte C prüfen');
+  actions.formToggleCheck({ arg: 'kv', key: P().forms.kv && F('kv').manual[0].key }); actions.formToggleCheck({ arg: 'kv', key: F('kv').manual[1].key }); actions.formApprove({ key: 'kv' });
+  assert.equal(P().forms.kv.step, 5);
+  actions.formComment({ key: 'kv' }, { value: 'nach der Freigabe' }); assert.equal(P().forms.kv.comment, 'Bitte C prüfen', 'no comment after the review');
+  asUser('GM'); assert.equal(F('kv').canTransfer, false); actions.formTransfer({ key: 'kv' }); assert.equal(P().forms.kv.step, 5, 'an external person does not hand over');
+  actions.formOpenGroup({ form: 'kv', group: 'C' }); assert.equal(F('kv').total, before);
+  asUser('PM'); assert.equal(F('kv').canTransfer, true); actions.formTransfer({ key: 'kv' }); assert.equal(P().forms.kv.step, 6);
+  assert.equal(F('kv').peopleRows.length >= 2, true);
+
+  // the first input on an open form starts the Erfassung
+  setup.pid = 'eigerplatz';
+  assert.equal(P().forms.kv.step, 0); assert.equal(F('kv').comp.text, 'Noch keine Werte erfasst'); assert.equal(F('kv').next.text, 'Noch keine Werte erfasst. Die Erfassung ist offen.');
+  assert.ok(F('kv').ovList.rows.every(r => r.code === 'A' || r.d === '–'), 'no «−100 %» against the Vorphase on a form without values'); assert.equal(F('kv').ovList.dTot, '–');
+  actions.setMap({ key: 'kvV', code: 'C01' }, { value: '500000' });
+  assert.equal(P().forms.kv.step, 1); assert.equal(F('kv').status, 'In Bearbeitung'); assert.ok(eventTitles(P().forms.kv).includes('Erfassung begonnen')); assert.equal(P().forms.kv.dates[1], 'heute');
+  assert.match(F('kv').comp.text, /^2 von 55 Werten erfasst · 53 fehlen$/);
+  // «Bezugsmengen aus den Grundrissen übernehmen» fills the missing Mengen whose Bezugsgrösse is a quantity of the floor plans
+  actions.importItem({ arg: 'dwg', form: 'kv' });
+  const sia = P().sia;
+  assert.match(toast(), /^10 Bezugsmengen aus den Grundrissen übernommen\.$/); assert.equal(P().kvQ.A01, sia.GSF); assert.equal(P().kvQ.D01, sia.GF); assert.equal(P().kvQ.D05, sia.EBF); assert.equal(P().kvQ.J02, sia.HNF + sia.NNF); assert.equal(P().kvQ.I01, sia.BUF);
+  assert.equal(P().kvQ.C01, null, 'a Bezugsgrösse of the element itself (Fläche Fundament) does not come from the SIA 416 figures'); assert.equal(P().kvQ.D08, null);
+  actions.importItem({ arg: 'dwg', form: 'kv' }); assert.match(toast(), /Keine fehlende Menge/);
+  // Tool-Export: the message names both what came in and what was filled
+  const gone = P().thgSrc[5];
+  actions.thgRemove({ id: gone.id }); actions.importItem({ arg: 'tool', form: 'thg' });
+  assert.match(toast(), /1 Emissionsquelle übernommen, 3 Werte ergänzt/);
+  assert.equal(F('thg').docs.filter(d => d.name === 'Oekobilanz_Toolexport_SIA32.xlsx').length, 1, 'a file the form already lists is not added twice');
+
+  // search: ArrowUp from «nothing active» goes to the last hit
+  actions.searchType({}, { value: 'kv' }); const hits = store.get().ui;
+  actions.searchMove({ dir: -1 });
+  const { searchModel } = searchMod;
+  assert.equal(store.get().ui.searchIdx, searchModel('kv', data).items.length - 1); assert.equal(hits.searchIdx, -1);
+
+  // deep links never replace a slice of the state
+  const st = store.get();
+  assert.equal(patchDotted(st, { ui: null }, { typed: true }).ui.dialog, st.ui.dialog); assert.ok(Object.keys(patchDotted(st, { projects: {} }, { typed: true }).projects).length > 3);
+  assert.ok(patchDotted(st, { 'projects.musterhausen.forms': null }, { typed: true }).projects.musterhausen.forms.kv); assert.equal(patchDotted(st, { 'ui.dialog': 'order', 'imp.step': 2 }, { typed: true }).imp.step, 2);
+  assert.equal(patchDotted(st, { 'imp.step': null }, { typed: true }).imp.step, st.imp.step);
+
+  // Photovoltaik: Eigenverbrauch 0–100 %, capped at the Endenergie Strom; asked for only with a plant; a missing share is not «100 %»
+  setup.pid = 'musterhausen';
+  const full = F('thg');
+  assert.equal(full.missB, 0); assert.equal(full.betr.pv[0].val, '62 kWp · aus D01.01 Erstellung');
+  actions.thgBetr({ key: 'pv_ev' }, { value: '150' });
+  assert.equal(F('thg').missB, 1, 'an Eigenverbrauch above 100 % is a typo'); assert.ok(!/\d/.test(F('thg').betr.rows.find(r => r.name === 'PV-Export').carrier), 'no negative export');
+  actions.thgBetr({ key: 'pv_ev' }, { value: '85' }); actions.thgBetr({ key: 'pv_y' }, { value: '5000000' });
+  const big = F('thg'), pvRow = big.betr.rows.find(r => r.name === 'PV-Eigenverbrauch');
+  assert.ok(pvRow.carrier.endsWith('begrenzt auf den Strombedarf')); assert.ok(num(big.betr.end.replace('−', '-')) >= 0, 'the Endenergie of the building cannot become negative through its own PV');
+  actions.thgBetr({ key: 'pv_y' }, { value: '55800' });
+  actions.thgBetr({ key: 'b0_a' }, { value: '' });
+  const an = F('thg').summ.find(r => r.key === 'anteile');
+  assert.deepEqual([an.val, an.st], ['fehlt bei Raumwärme', 'warn']);
+  actions.thgBetr({ key: 'b0_a' }, { value: '100' });
+  assert.equal(F('thg').summ.find(r => r.key === 'anteile').val, '100 %');
+  setup.pid = 'botschaft-wien';
+  assert.equal(P().thgSrc.length, 0); assert.equal(F('thg').fields, 27, 'no plant, no Photovoltaik fields: 9 services × 3'); assert.equal(F('thg').comp.pct, '0 %');
+  actions.importItem({ arg: 'rechenhilfe', form: 'thg' });
+  assert.equal(P().forms.thg.step, 1, 'an import starts the Erfassung'); assert.equal(F('thg').missB, 0); assert.notEqual(F('thg').comp.pct, '100 %', 'complete Betrieb, no Emissionsquelle: not 100 %'); assert.match(F('thg').comp.text, /^Noch keine Emissionsquellen erfasst/);
+
+  // shares of the lists add up to 100; the KS-31 of the Musterprojekt adds up to the figures the KV-32 names as Vorphase
+  for (const pid of ['musterhausen', 'agroscope-posieux', 'tenero', 'botschaft-wien']) {
+    setup.pid = pid;
+    for (const kind of ['kv', 'ks']) { const X = F(kind); if (X && X.total > 0) assert.equal(X.ovList.rows.reduce((a, r) => a + num(r.share.replace(' %', '')), 0), 100, `${pid}/${kind}: Anteil A–Z`); }
+    const T = F('thg'); if (T && T.nSrc) assert.equal(T.ovList.rows.reduce((a, r) => a + num(r.share.replace(' %', '')), 0), 100, `${pid}/thg: Anteil B–G`);
+  }
+  setup.pid = 'musterhausen';
+  const M = mockProject(data.projects.projects.find(p => p.id === 'musterhausen'), data);
+  for (const g of data.ebkp.ebkp.filter(x => x.code !== 'Z')) assert.equal(g.kids.reduce((a, k) => a + M.ksV[k.code], 0), data.ebkp.ks31[g.code] || 0, `KS-31 ${g.code}`);
+  assert.equal(M.ksV.Z01, M.prev.kv.Z);
+});
+
+test('review 06.11. (QS): Excel import edge cases and the state of the dialog', async () => {
+  const X = await mod('js/excel.js');
+  const { importSource } = await mod('js/model/import.js');
+  const { actions, P, F, store, toast } = setup('musterhausen');
+  const asFile = sheets => Object.fromEntries(sheets.map(s => [s.name, s.rows.map(r => [...r])]));
+  const plan = (kind, file, mode) => X.planImport(kind, X.readWorkbook(kind, file, data), P(), data, mode);
+  const R = (file, sheet, key) => file[sheet].find(r => r[0] === key);
+  const notes = p => Object.fromEntries(p.rows.map(r => [r.code, `${r.st}: ${r.note}`]));
+  // a column the file does not have is absent; it is not read from another column by position
+  const kv = asFile(X.sheetsOf('kv', P(), data));
+  const narrow = { 'KV-32': kv['KV-32'].map(r => [r[0], r[1], r[4]]) };   // Code, Bezeichnung, Kosten CHF
+  let p = plan('kv', narrow);
+  assert.equal(p.values, 0, 'without the columns Menge and Einheit nothing changes'); assert.equal(X.readWorkbook('kv', narrow, data).rows.find(r => r.code === 'C02').q, null);
+  // duplicate codes: the last row counts, the earlier one is ignored
+  const dup = asFile(X.sheetsOf('kv', P(), data));
+  dup['KV-32'].push(['E01', '', 900, '', 45000, ''], ['E01', '', 100, '', 5000, ''], ['C02', '', 5240, 'm²', 1400000, '']);
+  p = plan('kv', dup);
+  assert.equal(p.patch.fresh.length, 1); assert.deepEqual([p.patch.fresh[0].q, p.patch.fresh[0].v], [100, 5000]); assert.equal(p.patch.V.C02, 1400000); assert.equal(p.values, 3);
+  assert.equal(p.rows.filter(r => r.st === 'Ignoriert' && r.note.startsWith('Code doppelt')).length, 2);
+  // numbers of a file are rounded as typed ones are stored
+  const frac = asFile(X.sheetsOf('kv', P(), data)); R(frac, 'KV-32', 'C02')[4] = 1310000.6; R(frac, 'KV-32', 'C02')[2] = 5240.4;
+  assert.deepEqual([X.readWorkbook('kv', frac, data).rows.find(r => r.code === 'C02').v, X.readWorkbook('kv', frac, data).rows.find(r => r.code === 'C02').q], [1310001, 5240]);
+  // a removed Kostenelement comes back with the unit of its row and without what it carried before
+  actions.formUnit({ form: 'kv', code: 'G03' }, { value: 'pauschal' }); actions.formKw({ form: 'kv', code: 'G03' }, { value: '77' });
+  actions.formRemovePos({ form: 'kv', code: 'J01' }); actions.formRemovePos({ form: 'kv', code: 'G03' });
+  const back = asFile(X.sheetsOf('kv', P(), data));
+  back['KV-32'].push(['J01', '', 420, '', 480000, ''], ['G03', '', 9000, 'm²', 400000, ''], ['W03', '', 500, '', '', '']);
+  p = plan('kv', back);
+  assert.equal(notes(p).J01, 'Geändert: neues Kostenelement'); assert.equal(p.patch.Q.J01, 420, 'J01 is counted in St, as its row was'); assert.deepEqual([p.patch.units.G03, p.patch.Q.G03, p.patch.kws.G03], ['m²', 9000, '']);
+  assert.equal(notes(p).W03, 'Hinweis: Menge ohne Wirkung bei Einheit «pauschal»', 'a row without a usable value is not counted as a change'); assert.equal(p.values, 4);
+  store.setIn('imp', { form: 'kv', pid: 'musterhausen', file: { name: 'zurueck.xlsx', size: 1, payload: X.readWorkbook('kv', back, data) } }); actions.impApply();
+  assert.equal(P().forms.kv.removed.J01, undefined); assert.equal(F('kv').erf.rows.find(r => r.code === 'G03').unit, 'm²'); assert.equal(F('kv').erf.rows.find(r => r.code === 'G03').kwOwn, false);
+  assert.equal(plan('kv', asFile(X.sheetsOf('kv', P(), data))).values, 0, 'the export of the result imports without changes');
+  actions.impReset();
+  // a changed Kostenelement of a summarised Hauptgruppe: the preview says that the group is broken open; its own amount of the file has no effect
+  actions.formMode({ form: 'kv', group: 'C' }); actions.formGroupVal({ form: 'kv', group: 'C' }, { value: '5000000' });
+  const sum = asFile(X.sheetsOf('kv', P(), data)); R(sum, 'KV-32', 'C')[4] = 6000000; sum['KV-32'].push(['C02', '', 5240, 'm²', 1400000, '']);
+  p = plan('kv', sum);
+  assert.equal(notes(p).C, "Hinweis: wird aufgeschlüsselt, Betrag bisher 5'000'000"); assert.deepEqual(p.patch.gvals, {}); assert.equal(p.values, 1);
+  // the dialog: no change → nothing to apply; closing forgets result, undo, file and mode; a file belongs to its project
+  actions.importItem({ arg: 'excel', form: 'kv' });
+  store.setIn('imp', { file: { name: 'gleich.xlsx', size: 1, payload: X.readWorkbook('kv', asFile(X.sheetsOf('kv', P(), data)), data) } });
+  actions.impApply();
+  assert.equal(store.get().imp.done, false); assert.match(toast(), /keine Änderungen/);
+  store.setIn('imp', { file: null }); actions.impApply();
+  assert.equal(store.get().imp.done, true); assert.ok(store.get().imp.undo);
+  actions.impApply(); assert.equal(store.get().imp.applied > 0, true, 'a second click does not overwrite the result');
+  store.setIn('imp', { mode: 'leer' }); actions.impClose();
+  assert.deepEqual([store.get().imp.done, store.get().imp.undo, store.get().imp.file, store.get().imp.mode, store.get().imp.step], [false, null, null, 'ueber', 1]);
+  store.setIn('imp', { form: 'kv', pid: 'musterhausen', file: { name: 'm.xlsx', size: 1, payload: X.readWorkbook('kv', kv, data) } });
+  assert.equal(importSource(store.get(), data, P(), 'musterhausen').name, 'm.xlsx'); assert.equal(importSource(store.get(), data, store.get().projects.tenero, 'tenero').name, 'kv_bauprojekt_v3.xlsx', 'another project gets the sample, not the file');
+  // the sample scales with the project; the KS-31 has its own file name
+  const ten = X.samplePayload('kv', store.get().projects.tenero, data).rows.find(r => r.code === 'C02'), tenV = store.get().projects.tenero.kvV.C02;
+  assert.ok(Math.abs(ten.v - tenV) < tenV * 0.05 && ten.v !== tenV, `Tenero C02 ${tenV} → ${ten.v}`);
+  store.setIn('imp', { form: 'ks', file: null }); assert.equal(importSource(store.get(), data, store.get().projects['botschaft-wien'], 'botschaft-wien').name, 'ks_vorprojekt_v2.xlsx');
+
+  // Ökobilanz: the untouched empty template changes nothing; an empty flag cell says nothing, «-» clears; unit and Elementgruppe
+  const tpl = asFile(X.sheetsOf('thg', P(), data, { empty: true }));
+  assert.equal(plan('thg', tpl).values, 0, 'Leere Vorlage THG-32, unchanged');
+  const tf = asFile(X.sheetsOf('thg', P(), data)), hs = P().thgSrc.find(s => s.hs), first = P().thgSrc[0];
+  R(tf, 'Erstellung', hs.id)[5] = '-'; R(tf, 'Erstellung', first.id)[1] = ''; R(tf, 'Erstellung', first.id)[8] = 0.07;
+  tf.Erstellung.push(['', 'd01.01', '', 'PV-Anlage Dach Süd', 'KBOB 34.022', '', 30, 'kWp', 0.2]);
+  R(tf, 'Betrieb', 1)[3] = '-';
+  p = plan('thg', tf);
+  assert.equal(p.patch.src[hs.id].hs, false); assert.equal(p.patch.src[first.id].kw, 0.07); assert.equal(p.patch.src[first.id].code, undefined, 'a known ID keeps its Elementgruppe when the cell is empty');
+  assert.deepEqual([p.patch.fresh[0].code, p.patch.fresh[0].unit], ['D01.01', 'kWp']); assert.equal(p.patch.betr.b0_proj, false);
+  // the Einheit of an Emissionsquelle is a dropdown (as in the cost forms) and round-trips through the file
+  const src2 = P().thgSrc[1], row2 = () => F('thg').erf.rows.find(r => r.id === src2.id);
+  assert.equal(row2().unit, 'tkm'); assert.deepEqual(row2().unitOpts.map(o => o.v), ['m²', 'm³', 'm', 'St', 'kg', 't', 'tkm', 'kW', 'kWp', 'm² EBF']); assert.equal(row2().unitOpts.find(o => o.sel).v, 'tkm');
+  actions.thgVal({ id: src2.id, field: 'unit' }, { value: 't' });
+  assert.equal(P().thgSrc[1].unit, 't'); assert.equal(R(asFile(X.sheetsOf('thg', P(), data)), 'Erstellung', src2.id)[7], 't');
+  const uf = asFile(X.sheetsOf('thg', P(), data)); R(uf, 'Erstellung', src2.id)[7] = 'tkm'; R(uf, 'Erstellung', first.id)[7] = 'Fuder'; R(uf, 'Erstellung', hs.id)[7] = 'm2';
+  const up = plan('thg', uf);
+  assert.equal(up.patch.src[src2.id].unit, 'tkm'); assert.ok(up.rows.some(r => r.st === 'Geändert' && r.note === 'Einheit bisher t')); assert.ok(up.rows.some(r => r.st === 'Hinweis' && r.note === 'Einheit «Fuder» unbekannt'));
+  assert.equal(up.values, hs.unit === 'm²' ? 1 : 2, '«m2» is read as «m²»');
+  const noCol = { ...tf, Erstellung: tf.Erstellung.map(r => [r[0], r[1], r[3], r[6], r[8]]) };   // without Tool-Code, Ökobilanzdaten, Hersteller, Einheit
+  const q = plan('thg', noCol);
+  assert.equal(q.rows.filter(r => r.note.includes('Tool-Code')).length, 0); assert.equal(q.patch.src[hs.id], undefined, 'no Hersteller column: the flag stays');
+});
+
+test('review 06.11. (QS): Planlieferungen – Verlauf and dates of a second round, Entfernen, roles, filter per plan', () => {
+  const { actions, store, toast } = setup('musterhausen');
+  const plan = key => planModel(store.get(), data).plans[key];
+  const form = key => planForm(plan(key), data, data.users.users.find(u => u.key === store.get().user));
+  // OG2 is in review: reject → own upload → submit again
+  assert.equal(plan('OG2').status, 'pruefung');
+  actions.planToggleCheck({ arg: 'OG2', key: 'c1' });
+  assert.equal(plan('OG2').history.filter(h => h.t === 'Prüfung begonnen').length, 1, 'the review had begun before the session');
+  actions.planReject({ key: 'OG2' });
+  assert.equal(plan('OG2').status, 'zurueck'); assert.equal(plan('OG2').history.at(-1).t, 'Zurückgewiesen'); assert.equal(plan('OG2').dates[2], '', 'the submission is open again');
+  store.setIn('plans', { OG2: { ...store.get().plans.OG2, result: { ...data.plans.seeds.cadv01, file: { name: 'korrigiert.dwg', size: 1 }, checkedAt: '2027-05-05T08:00:00.000Z' } } });
+  actions.planSubmit({ key: 'OG2' });
+  const h = plan('OG2').history.map(x => x.t);
+  assert.deepEqual(h.filter(t => /eingereicht|Zurückgewiesen|Prüfung begonnen/.test(t)), ['Zur Prüfung eingereicht', 'Prüfung begonnen', 'Zurückgewiesen', 'Zur Prüfung eingereicht'], 'the first round stays in the Verlauf');
+  assert.equal(plan('OG2').dates[2], 'heute'); assert.equal(form('OG2').lock, 'Eingereicht heute. Änderungen erst nach Rückweisung.');
+  // transfer and comment belong to the BBL
+  actions.planToggleCheck({ arg: 'OG2', key: 'c1' }); actions.planToggleCheck({ arg: 'OG2', key: 'c2' }); actions.planApprove({ key: 'OG2' });
+  assert.equal(plan('OG2').status, 'freigegeben');
+  store.set({ user: 'AB' });
+  assert.equal(form('OG2').canTransfer, false); actions.planTransfer({ key: 'OG2' }); assert.equal(plan('OG2').status, 'freigegeben');
+  actions.planComment({ key: 'OG2' }, { value: 'x' }); assert.equal(plan('OG2').comment, '');
+  store.set({ user: 'PM' }); actions.planTransfer({ key: 'OG2' });
+  assert.equal(plan('OG2').status, 'uebertragen'); assert.equal(plan('OG2').history.at(-1).t, 'An SAP RE-FX übertragen'); assert.equal(plan('OG2').dates[5], 'heute');
+  actions.planResetReview({ key: 'OG2' }); assert.deepEqual([plan('OG2').status, store.get().plans.OG2.events.length], ['pruefung', 0]);
+  // «Entfernen» only takes an own upload away
+  const eg0 = JSON.stringify(store.get().plans.EG);
+  actions.planRemove({ key: 'EG' }); assert.equal(JSON.stringify(store.get().plans.EG), eg0, 'EG shows its delivered plan: nothing to remove');
+  store.setIn('plans', { EG: { ...store.get().plans.EG, status: 'zurueck', result: { ...data.plans.seeds.cadv01, file: { name: 'eigen.dwg', size: 1 } } } });
+  actions.planRemove({ key: 'EG' });
+  assert.equal(store.get().plans.EG.result, null); assert.equal(plan('EG').status, 'zurueck', 'a rejection stays a rejection'); assert.ok(plan('EG').history.some(h => h.t === 'DWG entfernt'));
+  // filter and search belong to the plan they were set on
+  actions.planSearch({ key: 'EG' }, { value: 'LAYER_00' }); actions.planFilter({ key: 'EG', arg: 'errors' });
+  assert.equal(planLists(plan('EG'), store.get().ui).text, 'LAYER_00'); assert.equal(planLists(plan('EG'), store.get().ui).filter, 'errors');
+  assert.deepEqual([planLists(plan('UG'), store.get().ui).text, planLists(plan('UG'), store.get().ui).filter, planLists(plan('UG'), store.get().ui).rules.passed.length], ['', 'all', 38]);
+  actions.planFilter({ key: 'UG', arg: 'warnings' }); assert.equal(store.get().ui.planSearch, '', 'a filter on another plan starts without the old search');
+  assert.equal(toast().length >= 0, true);
 });

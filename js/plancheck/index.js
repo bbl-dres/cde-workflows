@@ -37,7 +37,7 @@ export function toResult(file, parsed, drawing, validation) {
             ...(i.handles ? { handles: i.handles.slice(0, MAX_HANDLES) } : {}),
         })),
         rooms: rooms.map(r => ({ id: r.id, aoid: r.aoid, area: r.area, status: r.status, handle: r.handle, duplicate: r.isDuplicate || undefined })),
-        areas: areas.map(a => ({ id: a.id, aoid: a.aoid, area: a.area, status: a.status, handle: a.handle })),
+        areas: areas.map(a => ({ id: a.id, aoid: a.aoid, area: a.area, status: a.status, handle: a.handle, duplicate: a.isDuplicate || undefined })),
         layers: drawing.layerInfo.map(l => ({ name: l.name, count: l.count, color: l.colorHex, ok: layerStatus(l.name) === 'ok' })),
         entities: drawing.entitySummary.map(e => ({ type: e.type, count: e.count, layers: (e.layers || []).slice(0, 4) })),
         kpi: { hnf: kpi.hnf, nnf: kpi.nnf, vf: kpi.vf, ff: kpi.ff, nf: kpi.nf, ngf: kpi.ngf, gf: kpi.gf, kf: kpi.kf },

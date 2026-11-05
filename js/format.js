@@ -18,6 +18,16 @@ export const num = x => {
   return /^[-+]?\d+(\.\d+)?$/.test(t) ? parseFloat(t) : null;   // strict: «12abc», «5 %», «0x10» stay text and count as missing
 };
 
+/** Whole percentages of the parts of a total that add up to 100 (largest remainder): «64 %, 7 %, 16 %, 3 %, 10 %» instead of a sum of 99 or 101. */
+export function wholeShares(values) {
+  const total = values.reduce((a, b) => a + b, 0);
+  if (!(total > 0)) return values.map(() => 0);
+  const raw = values.map(v => Math.max(0, v) / total * 100), out = raw.map(Math.floor);
+  let rest = 100 - out.reduce((a, b) => a + b, 0);
+  raw.map((v, i) => [v - out[i], i]).sort((a, b) => b[0] - a[0] || a[1] - b[1]).forEach(([, i]) => { if (rest-- > 0) out[i]++; });
+  return out;
+}
+
 // Display a stored value: numbers formatted, strings as typed.
 export const disp = x => typeof x === 'number' ? FMT(x) : (x ?? '');
 export const disp1 = x => typeof x === 'number' ? FMT1(x) : (x ?? '');

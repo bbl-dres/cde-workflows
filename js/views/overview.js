@@ -14,7 +14,7 @@ export default {
     const tasks = vm.auRows.slice(0, 5);
     const data = [
       ['Name', project.name], ['Beschreibung', project.description], ['Teilprojekt von', ''], ['Projektnummer', project.number],
-      ['Technischer Platz', `${project.technicalPlace} (${project.technicalPlace})`], ['Projektbezeichnung', project.designation],
+      ['Technischer Platz', project.technicalPlace], ['Projektbezeichnung', project.designation],
       ['Teilportfolio', project.teilportfolioLabel], ['Verantwortlicher', project.responsible],
     ];
     const favDeliveries = vm.ilpRows.filter(r => r.isForm).slice(0, 3);

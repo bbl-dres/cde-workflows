@@ -18,7 +18,7 @@
 .btn-secondary { background: #fff; color: var(--navy); border-color: var(--line); }
 .btn-sm { height: 22px; padding: 0 8px; font-size: 12px; }
 .btn-lg { height: 34px; padding: 0 16px; font-size: 14px; }
-.btn[disabled] { background: #f5f5f5; border-color: #d9d9d9; color: #8c8c8c; cursor: not-allowed; pointer-events: none; }
+.btn[disabled] { background: #f5f5f5; border-color: #d9d9d9; color: #8c8c8c; cursor: not-allowed; }   /* no pointer-events:none: the tooltip says why */
 .btn-secondary[disabled] { background: #f5f5f5; color: #8c8c8c; }
 /* link-looking action (keyboard reachable) */
 .btn-link { background: none; border: 0; padding: 0; font: inherit; color: var(--link); cursor: pointer; text-align: left; }
@@ -102,10 +102,6 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 .code { font-family: var(--mono); font-size: 12px; }
 
 /* cell input */
-.cell-input { width: 100%; height: 22px; text-align: right; font-size: 12.5px; font-variant-numeric: tabular-nums; padding: 0 7px; border: 1px solid var(--line-2); border-radius: 4px; outline: none; background: #fff; transition: border-color .3s, box-shadow .3s; }
-.cell-input:hover { border-color: #21485c; }
-.cell-input:focus { border-color: #21485c !important; box-shadow: 0 0 0 2px var(--primary-ring); }
-.cell-input[readonly] { background: var(--field-bg); color: var(--muted); }
 
 /* ---- Cards ---- */
 .card { background: #fff; box-shadow: var(--shadow-1); border-radius: var(--radius-card); position: relative; }
@@ -121,7 +117,6 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 
 /* ---- Notes / callouts ---- */
 .note { border: 1px solid; border-radius: 4px; padding: 7px 10px; font-size: 12.5px; line-height: 1.45; display: flex; gap: 8px; align-items: center; }
-.note-green { background: var(--green-bg-2); border-color: var(--green-line); color: var(--green-dark); }
 .note-rose { background: var(--rose-bg); border-color: var(--rose-line); color: var(--rose-dark); }
 .note-grey { background: var(--field-bg); border-color: var(--line-3); color: var(--text-3); }
 
@@ -139,7 +134,7 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 
 /* checkbox / radio / toggle (custom, keyboard accessible) */
 .checkbox { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; font-size: 13px; outline: none; border-radius: 3px; }
-.checkbox:focus-visible, .radio:focus-visible, .toggle:focus-visible, .choice-card:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+.checkbox:focus-visible, .radio:focus-visible, .toggle:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
 .checkbox.is-disabled { cursor: default; }
 .checkbox-box { flex: none; width: 14px; height: 14px; border: 1px solid var(--line-2); border-radius: 2px; background: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; margin-top: 2px; transition: all .3s; }
 .checkbox:hover .checkbox-box { border-color: var(--navy); }
@@ -166,7 +161,7 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 /* ---- Workflow stepper ---- */
 
 /* ---- Overlay, dialog, popover ---- */
-.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-start; justify-content: center; padding-top: 100px; padding-bottom: 24px; overflow-y: auto; z-index: 10; }   /* a dialog taller than the window scrolls with the overlay */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-start; justify-content: center; padding-top: 100px; padding-bottom: 24px; overflow-y: auto; overscroll-behavior: contain; z-index: 10; }   /* a dialog taller than the window scrolls with the overlay */
 .dialog { background: #fff; border-radius: 4px; box-shadow: var(--shadow-dialog); position: relative; max-width: calc(100vw - 32px); }
 .dialog-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; border-bottom: 1px solid var(--line-4); }
 .dialog-title { font-size: 16px; font-weight: 600; }

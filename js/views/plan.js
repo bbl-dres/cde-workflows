@@ -13,7 +13,7 @@ import { planLists } from '../model/plan.js';
 const SEV_ICON = { pass: ['circle-check', '#2f7d63'], warn: ['triangle-alert', '#8a6100'], fail: ['circle-x', '#9b2c44'] };
 const STATUS_ICON = { ok: ['circle-check', '#2f7d63'], warning: ['triangle-alert', '#8a6100'], error: ['circle-x', '#9b2c44'] };
 const TABS = [['rules', 'Prüfregeln'], ['issues', 'Fehlermeldungen'], ['layers', 'Layer'], ['rooms', 'Räume'], ['areas', 'Flächen'], ['kpi', 'Kennzahlen']];
-const OVERLAY_OF_TAB = { rooms: 'rooms', areas: 'areas', kpi: 'areas' };   // what the viewer highlights per sub tab
+const OVERLAY_OF_TAB = { rooms: 'rooms', areas: 'areas' };   // what the viewer highlights per sub tab (Kennzahlen has no viewer)
 const PLACEHOLDER = { rules: 'Prüfregel suchen…', issues: 'Fehler suchen…', rooms: 'Raum suchen…', areas: 'Fläche suchen…', layers: 'Layer suchen…' };
 const TOGGLE_TABS = new Set(['rooms', 'areas', 'layers']);   // rows with a viewer visibility checkbox → toggle-all in the toolbar
 const FILTERS = [['all', 'Alle', null], ['warnings', 'Warnungen', ['triangle-alert', '#8a6100']], ['errors', 'Fehler', ['circle-x', '#9b2c44']]];
@@ -21,9 +21,9 @@ const fmtArea = v => v.toLocaleString('de-CH', { minimumFractionDigits: 1, maxim
 
 // ---- Pieces ----
 
-export const dropZone = (plan, compact = false) => html`
-  <label class="plan-drop" data-plan-drop="${plan.key}" style="${raw(compact ? 'padding:22px 16px' : '')}">
-    ${icon('upload', compact ? 22 : 30, '#5b6573')}
+export const dropZone = plan => html`
+  <label class="plan-drop" data-plan-drop="${plan.key}">
+    ${icon('upload', 30, '#5b6573')}
     <div class="plan-drop-title">DWG-Datei für ${plan.name} hierher ziehen oder auswählen</div>
     <div class="plan-drop-hint">.dwg, max. 50 MB · Prüfung lokal im Browser nach CAD-Richtlinie BBL V1.0, nichts wird hochgeladen</div>
     <span class="btn btn-primary">Datei auswählen</span>
@@ -34,6 +34,7 @@ export const dropZone = (plan, compact = false) => html`
 const resultStrip = plan => html`<div class="plan-result">
   <div title="Raumpolygone auf R_RAUMPOLYGON"><div class="plan-kpi-label">Räume</div><div class="plan-kpi">${plan.roomCount}</div></div>
   <div title="Nettogeschossfläche: Summe der Raumflächen"><div class="plan-kpi-label">NGF</div><div class="plan-kpi">${plan.ngf}</div></div>
+  <div title="Energiebezugsfläche nach SIA 380/1, hergeleitet aus der Flächenart der Räume. Pflichtangabe für die Ökobilanz"><div class="plan-kpi-label">EBF</div><div class="plan-kpi">${plan.ebf}</div></div>
   <div title="Anteil der bestandenen Prüfregeln (bestanden / geprüft)"><div class="plan-kpi-label">${plan.scoreLabel}</div><div class="plan-kpi" style="color:${plan.scoreC}">${plan.score}</div></div>
   <div title="Verstösse mit Schweregrad Fehler; sie sperren das Einreichen"><div class="plan-kpi-label">Fehler</div><div class="plan-kpi" style="color:${plan.errors ? '#9b2c44' : '#2f7d63'}">${plan.errors}</div></div>
   <div title="Verstösse mit Schweregrad Warnung; zulässig, in der Prüfung sichtbar"><div class="plan-kpi-label">Warnungen</div><div class="plan-kpi" style="color:${plan.warnings ? '#8a6100' : '#2f7d63'}">${plan.warnings}</div></div>
@@ -58,7 +59,8 @@ const ruleRow = (r, plan) => html`<button type="button" class="plan-row${plan &&
   ${sevIcon(SEV_ICON, r.status)}<span class="plan-code">${r.code}</span><span class="plan-row-text">${r.text}</span>${r.count ? html`<span class="plan-row-count">${r.count}×</span>` : ''}</button>`;
 
 /** Empty list: the search or the status filter left nothing, or the plan has no such entries (per-tab text). */
-const emptyNote = (L, text, hint = '') => html`<div class="plan-empty">${L.query ? html`Keine Treffer für «${L.query}».` : L.filter === 'errors' ? 'Keine Einträge mit Fehlern.' : L.filter === 'warnings' ? 'Keine Einträge mit Warnungen.' : html`${text}${hint ? html`<br><small>${hint}</small>` : ''}`}</div>`;
+const FILTER_TEXT = { errors: 'mit Fehlern', warnings: 'mit Warnungen' };
+const emptyNote = (L, text, hint = '') => html`<div class="plan-empty">${L.text ? `Keine Treffer für «${L.text}»${FILTER_TEXT[L.filter] ? ` unter den Einträgen ${FILTER_TEXT[L.filter]}` : ''}.` : FILTER_TEXT[L.filter] ? `Keine Einträge ${FILTER_TEXT[L.filter]}.` : html`${text}${hint ? html`<br><small>${hint}</small>` : ''}`}</div>`;
 
 function listRules(plan, L) {
   const { failed, passed, total } = L.rules;
@@ -97,7 +99,7 @@ function listRooms(plan, L) {
 function listAreas(plan, L) {
   if (!L.areas.length) return emptyNote(L, 'Kein Geschosspolygon erkannt.', 'Erwartet: geschlossene Polylinie auf Layer R_GESCHOSSPOLYGON (Bruttogeschossfläche des Geschosses).');
   return html`<div class="plan-group"><span>Geschossflächen</span><span>${L.areas.length}</span></div>
-    ${L.areas.map(a => polyRow('areas', a, a.aoid || 'Bruttogeschossfläche', a.aoid ? 'Bruttogeschossfläche' : ''))}`;
+    ${L.areas.map(a => polyRow('areas', a, a.aoid || 'Bruttogeschossfläche', [a.aoid ? 'Bruttogeschossfläche' : '', a.duplicate ? '(Duplikat)' : ''].filter(Boolean).join(' ')))}`;
 }
 
 function listLayers(plan, L) {
@@ -126,14 +128,14 @@ function listKpi(plan) {
   const d = plan.kpiDash;
   if (!d) return html`<div class="plan-empty">Keine Kennzahlen ohne Prüfergebnis.</div>`;
   return html`<div class="plan-kpi-dash">
-    <div class="kd-col">${areaTable('Flächen SIA 416', d.areas)}${areaTable('Flächen DIN 277', d.din277)}</div>
+    <div class="kd-col">${areaTable('Flächen SIA 416', d.areas)}${areaTable('Energiebezugsfläche SIA 380/1', d.ebf)}${areaTable('Flächen DIN 277', d.din277)}</div>
     <div class="kd-col">${ratioTable(d.economy)}${donut(d.donut)}</div>
   </div>
-  <div class="card-foot">Nutzungsart je Raum aus der Raumtabelle CAD.A01 (ohne Angabe: HNF) · GF aus R_GESCHOSSPOLYGON, KF = GF − NGF · EBF = GF eines beheizten Geschosses</div>`;
+  <div class="card-foot">Nutzungsart je Raum aus der Raumtabelle CAD.A01 (ohne Angabe: HNF) · GF aus R_GESCHOSSPOLYGON, KF = GF − NGF · EBF aus der Flächenart je Raum: HNF, NNF und VF zählen, FF nicht, zuzüglich Anteil KF</div>`;
 }
 
 /** Result strip, sub tabs and the split view (list | viewer) of a checked plan. */
-export function resultPanel(ctx, plan, { height = '' } = {}) {
+export function resultPanel(ctx, plan) {
   const ui = ctx.state.ui;
   const tab = TABS.some(t => t[0] === ui.planTab) ? ui.planTab : 'rules';
   const L = planLists(plan, ui);
@@ -142,15 +144,15 @@ export function resultPanel(ctx, plan, { height = '' } = {}) {
     ${resultStrip(plan)}
     <div class="plan-tabbar">
       <div class="plan-tabs" role="tablist">${TABS.map(([key, label]) => html`<button type="button" class="plan-tab${key === tab ? ' is-active' : ''}" role="tab" aria-selected="${key === tab ? 'true' : 'false'}" aria-controls="plan-list" data-action="planTab" data-arg="${key}">${label}</button>`)}</div>
-      <div class="plan-filter" role="group" aria-label="Statusfilter">${FILTERS.map(([key, label, ic]) => { const on = key === L.filter; return html`<button type="button" data-action="planFilter" data-arg="${key}" aria-pressed="${on ? 'true' : 'false'}">${ic ? icon(ic[0], 13, on ? '#fff' : ic[1]) : ''}${label}</button>`; })}</div>
+      ${tab === 'kpi' ? '' : html`<div class="plan-filter" role="group" aria-label="Statusfilter">${FILTERS.map(([key, label, ic]) => { const on = key === L.filter; return html`<button type="button" data-action="planFilter" data-arg="${key}" data-key="${plan.key}" aria-pressed="${on ? 'true' : 'false'}">${ic ? icon(ic[0], 13, on ? '#fff' : ic[1]) : ''}${label}</button>`; })}</div>`}
     </div>
     ${tab === 'kpi'
       ? html`<div id="plan-list" role="tabpanel" data-plan-tab="kpi">${body}</div>`
-      : html`<div class="plan-split" style="${raw(height ? `height:${height}` : '')}">
+      : html`<div class="plan-split">
       <div class="plan-list" id="plan-list" role="tabpanel" data-plan-tab="${tab}">
         <div class="plan-toolbar">
           ${TOGGLE_TABS.has(tab) ? html`<input type="checkbox" class="plan-toggle-all" data-plan-toggle-all="${tab}" title="Alle im Viewer ein-/ausblenden" aria-label="Alle im Viewer ein-/ausblenden" checked>` : ''}
-          <input type="search" class="plan-search" placeholder="${PLACEHOLDER[tab]}" aria-label="${PLACEHOLDER[tab]}" value="${ui.planSearch || ''}" data-input="planSearch" data-fid="plan-search" autocomplete="off" spellcheck="false">
+          <input type="search" class="plan-search" placeholder="${PLACEHOLDER[tab]}" aria-label="${PLACEHOLDER[tab]}" value="${L.text}" data-input="planSearch" data-key="${plan.key}" data-fid="plan-search" autocomplete="off" spellcheck="false">
         </div>
         <div class="plan-rows">${body}</div>
       </div>
@@ -309,7 +311,7 @@ export function mountPlan(root, ctx, plan) {
   document.addEventListener('dragover', blockDrop);
   document.addEventListener('drop', blockDrop);
   const box = root.querySelector('.plan-viewer');
-  if (!box) { viewer.detach(); attachedKey = null; return; }
+  if (!box) { viewer.detach(); return; }   // no viewer on this tab (Kennzahlen, drop zone): the viewer keeps drawing, zoom and hidden layers for the way back
   const key = box.dataset.planViewer, src = box.dataset.planSrc;
   const tab = ctx.state.ui.planTab || 'rules';
   wireList(root, plan);
@@ -318,12 +320,14 @@ export function mountPlan(root, ctx, plan) {
   if (attachedKey !== key) { viewer.setData(null); attachedKey = key; lastTab = null; }
   if (tab !== lastTab) { viewer.setOverlay(OVERLAY_OF_TAB[tab] || 'base'); lastTab = tab; }
 
+  const list = root.querySelector('.plan-list');
   const show = entry => {
     if (viewer.drawing !== entry.drawing) viewer.setData(entry);
     setViewerState(box, 'ready', '');
+    if (list && list.isConnected) syncRows(list);   // a new drawing brings its own hidden layers (off or frozen in the DWG)
   };
   const entry = planSession.get(key);
-  syncRows(root.querySelector('.plan-list'));
+  if (list) syncRows(list);
   if (entry && entry.status === 'ready') show(entry);
   else if (entry && entry.status === 'error') setViewerState(box, 'error', 'Plan konnte nicht geladen werden', entry.error);
   else if (src) {

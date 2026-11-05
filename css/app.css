@@ -251,3 +251,7 @@ a.filter-btn { color: var(--navy); }
 @media (max-width: 639.98px) {
   .project-cards { grid-template-columns: minmax(0, 1fr); }
 }
+/* Verlauf of a classic delivery (date, event) */
+.act-row { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 12px; padding: 9px 16px; border-bottom: 1px solid var(--line-4); font-size: 13px; }
+.act-row:last-child { border-bottom: 0; }
+.act-date { color: var(--muted); font-variant-numeric: tabular-nums; }

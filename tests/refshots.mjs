@@ -61,6 +61,7 @@ for (const [name, route, w, h, persona, ref] of SHOTS) {
   written.push([name, ours, ref ? join(REF, ref) : null]);
   console.log('shot', name, `${w}x${h}`);
 }
+try { await Promise.race([send('Browser.close'), new Promise(r => setTimeout(r, 1500))]); } catch { /* already gone */ }   // proc.kill() alone leaves the browser running on Windows
 ws.close(); proc.kill();
 
 // Composite (reference | prototype) with Pillow; the reference may include the browser chrome, which is cropped at the topbar.

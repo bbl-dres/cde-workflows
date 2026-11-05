@@ -132,7 +132,7 @@ export function extractPolygons(index, unitScale) {
     const eps = BOUNDARY_TOLERANCE_MM / unitScale;
     const rooms = closedPolylinesOn(index, ROOM_LAYER).map((item, i) =>
         ({ ...polygonEntry(item, i + 1, unitScale), aoid: '', aoidText: '', aoidMatches: [], siaCategory: 'HNF', deductionArea: 0, isDuplicate: false }));
-    const areas = closedPolylinesOn(index, AREA_LAYER).map((item, i) => ({ ...polygonEntry(item, i + 1, unitScale), aoid: '' }));
+    const areas = closedPolylinesOn(index, AREA_LAYER).map((item, i) => ({ ...polygonEntry(item, i + 1, unitScale), aoid: '', isDuplicate: false }));
     const deductions = closedPolylinesOn(index, DEDUCTION_LAYER).map((item, i) => polygonEntry(item, i + 1, unitScale));
 
     // Identical room polygons count once towards the areas
@@ -141,6 +141,12 @@ export function extractPolygons(index, unitScale) {
         const hash = canonicalPolygonHash(room.vertices);
         if (seen.has(hash)) { room.isDuplicate = true; room.duplicateOf = seen.get(hash).handle; }
         else seen.set(hash, room);
+    }
+    // … and so do identical floor polygons: a Geschosspolygon drawn twice must not double GF, KF and EBF (GPOLY_005 reports it)
+    const seenAreas = new Set();
+    for (const area of areas) {
+        const hash = canonicalPolygonHash(area.vertices);
+        if (seenAreas.has(hash)) area.isDuplicate = true; else seenAreas.add(hash);
     }
 
     // Deduction polygons reduce the area of the room they lie in
@@ -173,8 +179,9 @@ export function extractPolygons(index, unitScale) {
         room.aoid = room.aoidText || `R${room.id}`;
     }
 
-    // Floor polygons are labelled with the shortest text of any layer inside them
-    const allTexts = index.ofKind('text');
+    // Floor polygons are labelled with the shortest text on their own layer inside them, else with the layer name
+    // (a text of any other layer, such as a room label of the electrical plan, is not the name of the floor)
+    const allTexts = index.onLayer(AREA_LAYER).filter(i => i.kind === 'text');
     for (const area of areas) {
         let label = '';
         for (const txt of allTexts) {

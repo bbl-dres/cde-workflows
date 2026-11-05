@@ -26,7 +26,7 @@ export default {
           </label>
           ${vm.impHasFile ? html`<div class="imp-file">
             ${icon('file-spreadsheet', 18, '#2f7d63')}
-            <div class="flex-1"><strong>${vm.impFile}</strong> <span class="muted">· ${vm.impFileSize}</span><div class="fs-12" style="color:#1f4a3b">${vm.impIsSample ? 'Beispieldatei des Prototyps · ' : ''}Blatt «${vm.impSheet}» erkannt · ${vm.impAll} Zeilen</div></div>
+            <div class="flex-1"><strong>${vm.impFile}</strong> <span class="muted">· ${vm.impFileSize}</span><div class="fs-12" style="color:#1f4a3b">${vm.impIsSample ? 'Beispieldatei des Prototyps · ' : ''}${vm.impSheet} erkannt · ${vm.impRowsText}</div></div>
             ${vm.impIsSample ? '' : html`<button type="button" class="btn-link fs-125" data-action="impFileClear">Entfernen</button>`}
           </div>` : ''}
           <div class="imp-cols">

@@ -14,16 +14,18 @@ const THG_FORMAT = [['1', `Blatt «${SHEET.head}»`, 'Schlüssel in Spalte A'], 
 const size = n => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
 /** Form of the import dialog and what it reads: the chosen file, else the sample file (cost forms only). */
-export function importSource(s, data, P) {
+export function importSource(s, data, P, pid) {
   const I = s.imp || {}, kind = I.form && data.forms.kinds[I.form] ? I.form : 'kv';
-  const file = I.file && I.file.payload && I.file.payload.kind === kind ? I.file : null;
+  const file = I.file && I.file.payload && I.file.payload.kind === kind && (I.pid == null || I.pid === pid) ? I.file : null;   // a file belongs to the form and the project it was read for
   const payload = file ? file.payload : P && P.forms[kind] && KEYS[kind] ? samplePayload(kind, P, data) : null;
-  return { kind, file, payload, name: file ? file.name : payload ? data.ebkp.import.file : '' };
+  return { kind, file, payload, name: file ? file.name : payload ? (data.ebkp.import.files || {})[kind] || data.ebkp.import.file : '' };
 }
 
-export function importModel(s, data, P, gl = 'eBKP-H') {
+const n1 = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+export function importModel(s, data, P, pid, gl = 'eBKP-H') {
   if (!s.ui || s.ui.dialog !== 'import' || !P) return {};   // the dialog is the only reader
-  const I = s.imp || {}, { kind, file, payload, name } = importSource(s, data, P), T = data.forms.kinds[kind], isTHG = kind === 'thg';
+  const I = s.imp || {}, { kind, file, payload, name } = importSource(s, data, P, pid), T = data.forms.kinds[kind], isTHG = kind === 'thg';
   const plan = payload && P.forms[kind] ? planImport(kind, payload, P, data, I.mode) : { rows: [], changed: 0, values: 0, hints: 0, colQ: 'Menge', colV: isTHG ? 'Wert' : 'Kosten CHF' };
   const all = plan.rows, f = I.filter, done = !!I.done;
   const impRows = all
@@ -33,15 +35,16 @@ export function importModel(s, data, P, gl = 'eBKP-H') {
   const step = (n, on, ok) => ({ sym: ok ? '✓' : String(n), bg: ok ? '#4c8c75' : '#fff', bd: ok ? '#4c8c75' : on ? 'var(--navy)' : '#c9cfd6', c: ok ? '#fff' : on ? 'var(--navy)' : '#6b7480', w: on && !ok ? 600 : 400, t: (on || ok) ? '#1f2937' : '#6b7480' });
   return {
     impRows, impAll: all.length, impChanged: plan.changed, impKind: kind, impCode: T.code, impTitle: T.title, impColQ: plan.colQ, impColV: plan.colV,
-    impHasFile: !!payload, impIsSample: !!payload && !file, impFile: name, impFileSize: file ? size(file.size) : '48 KB', impSheet: payload ? payload.sheet : '',
+    impHasFile: !!payload, impIsSample: !!payload && !file, impFile: name, impFileSize: file ? size(file.size) : '48 KB',
+    impSheet: !payload ? '' : `${payload.sheets.length === 1 ? 'Blatt' : 'Blätter'} ${payload.sheets.map(x => `«${x}»`).join(', ')}`, impRowsText: n1(all.length, 'Zeile', 'Zeilen'),
     impFormat: isTHG ? THG_FORMAT : COST_FORMAT(gl),
     impFormatNote: isTHG ? 'Die Kopfzeilen bleiben stehen. Eine Zeile ohne ID ist eine neue Emissionsquelle. Leere Zellen ändern nichts.' : 'Der Code ist der Schlüssel. Zeilen mit unbekanntem Code werden ignoriert. Leere Zellen ändern nichts.',
     impTplText: isTHG ? 'Enthält die Blätter Grundlagen, Erstellung und Betrieb mit ihren Spaltenköpfen.' : `Enthält alle Kostenelemente der Erfassung in der Gliederung ${gl}, mit Einheiten und Spaltenköpfen.`,
     impTabs: [tab('alle', 'Alle', all.length), tab('geaendert', 'Geändert', plan.changed), tab('hinweise', 'Hinweise', plan.hints)],
     impModes: [['ueber', 'Mit Werten aus Datei überschreiben'], ['leer', 'Nur leere Felder füllen']].map(([k, label]) => ({ key: k, label, checked: I.mode === k })),
     impOpen: !done, impDone: done,
-    impSummary: done ? '' : `${all.length} Zeilen gelesen · ${all.length - plan.hints - plan.changed} unverändert · ${plan.changed} geändert · ${plan.hints} Hinweise`,
-    impBtn: plan.values ? `Übernehmen (${plan.values} ${plan.values === 1 ? 'Änderung' : 'Änderungen'})` : 'Übernehmen', impCancel: done ? 'Schliessen' : 'Zurück',
+    impSummary: done ? '' : `${n1(all.length, 'Zeile', 'Zeilen')} gelesen · ${all.length - plan.hints - plan.changed} unverändert · ${plan.changed} geändert · ${n1(plan.hints, 'Hinweis', 'Hinweise')}`,
+    impBtn: plan.values ? `Übernehmen (${n1(plan.values, 'Änderung', 'Änderungen')})` : 'Keine Änderungen', impCanApply: plan.values > 0, impCancel: done ? 'Schliessen' : 'Zurück',
     impDoneText: `${I.applied} ${I.applied === 1 ? 'Wert' : 'Werte'} übernommen`, impCanUndo: !!I.undo,
     impStep1: step(1, false, true), impStep2: step(2, true, done), impStep3: step(3, done, false),
   };

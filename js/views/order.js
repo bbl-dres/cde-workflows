@@ -73,7 +73,7 @@ export default {
             <div>${fieldLabel('Ablageort', true)}${selectField('', { style: 'color:#a3abb4' })}</div>
             <div class="o-grid"><div>${fieldLabel('Info', true)}${input('', { placeholder: 'Info' })}</div><div>${fieldLabel('Prüfende', true)}${input('', { placeholder: 'Prüfende' })}</div></div>`}
         </div>
-        <button type="button" class="o-add">+ Eintrag hinzufügen</button>
+        <button type="button" class="o-add" data-action="proto">+ Eintrag hinzufügen</button>
 
         <hr class="o-hr">
         <div class="fs-14 fw-500" style="margin-bottom:8px">Workflow</div>

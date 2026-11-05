@@ -91,3 +91,7 @@ body.study-open #app { padding-right: 360px; }
   .varb-reco { grid-column: auto; }
   .study-h1 { font-size: 30px; }
 }
+@media (max-width: 767.98px) {   /* phones: the study panel covers the page instead of squeezing it to nothing */
+  .study-panel { width: 100%; border-left: 0; }
+  body.study-open #app { padding-right: 0; }
+}

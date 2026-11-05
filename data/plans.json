@@ -2,8 +2,6 @@
  "note": "Planlieferungen DWG für das Flächenmanagement (SAP RE-FX) (Projekt Verwaltungszentrum Musterhausen): ein Grundriss = eine Lieferung. «seeds» sind die unveränderten Prüfergebnisse der plan-check-Engine (js/plancheck) für die mitgelieferten Musterdateien (assets/plans), erzeugt unter Node; tests/model.test.mjs prüft, dass sie mit der Engine übereinstimmen. Siehe docs/reviews/2026-11-03-planlieferungen-dwg.md. «beheizt»: false markiert ein Geschoss ausserhalb der thermischen Gebäudehülle (EBF nach SIA 416/1 = 0, z. B. UG); sonst gilt EBF = GF. «usage» ersetzt im Prototyp die Raumtabelle (Anhang CAD.A01 der CAD-Richtlinie, Kap. 5.11), die zur Lieferung gehört, aber noch nicht eingelesen wird: Nutzungsart je AOID als DIN-277-Gruppe für den Musterplan; Räume ohne Eintrag zählen zur HNF.",
  "guideline": "CAD-Richtlinie BBL V1.0",
  "ruleCount": 40,
- "gate": "no-errors",
- "orderedBy": "Paula Muster",
  "orderedAt": "12.03.2027",
  "supplier": {
   "name": "Alex Beispiel",
@@ -11,7 +9,6 @@
   "initials": "AB"
  },
  "target": "ERP SAP RE-FX (Flächenmanagement BBL)",
- "desc": "DWG nach CAD-Richtlinie BBL V1.0, Ziel SAP RE-FX",
  "steps": [
   "Bestellt",
   "In Bearbeitung",
@@ -41,6 +38,11 @@
    "src": "assets/plans/2011-DM-0-A04-6A1.dwg",
    "label": "Plan mit Büro-Layerstruktur (Testdatei plan-check)"
   }
+ },
+ "ebf": {
+  "norm": "SIA 380/1",
+  "counts": ["HNF 1", "HNF 2", "HNF 3", "HNF 4", "HNF 5", "HNF 6", "NNF 7", "VF 9"],
+  "note": "Entscheidungsbaum des Prototyps für die Energiebezugsfläche: 1. Geschoss ausserhalb der thermischen Gebäudehülle (floors › beheizt: false; in der CAD-Richtlinie je Raum in der Raumtabelle CAD.A01) zählt nicht. 2. Flächenart des Raums: die Gruppen in «counts» zählen, die übrigen (FF 8 Betriebstechnische Anlagen, BUF 10) nicht; ein Raum ohne Flächenart zählt. 3. Die Raumflächen sind Nettoflächen, die EBF ist eine Geschossfläche: EBF = GF × Anteil der zählenden Raumflächen an der NGF. Die Zuordnung der Flächenarten steht für den Flächenbaum BBL; EBF-Polygone im Plan sind noch nicht vorgesehen."
  },
  "usage": {
   "9999.AA.05.001": "NNF 7",
@@ -439,7 +441,7 @@
    "areas": [
     {
      "id": 1,
-     "aoid": "UV",
+     "aoid": "R_GESCHOSSPOLYGON",
      "area": 572.32,
      "status": "ok",
      "handle": "93"

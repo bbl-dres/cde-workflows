@@ -1,4 +1,4 @@
-import { html, icon, btn, linkBtn, checkbox, avatar, metaRows, progress, raw, card, headLink, hint } from '../ui.js';
+import { html, icon, btn, linkBtn, checkbox, avatar, metaRows, progress, raw, card, headLink, hint, srOnly } from '../ui.js';
 import { emptyState } from '../shell.js';
 import { dropZone, resultPanel } from './plan.js';
 
@@ -10,7 +10,7 @@ import { dropZone, resultPanel } from './plan.js';
 // result, Prüfung BBL, Übergabe. Beteiligte, Dokumente, Verlauf: tables.
 
 const COLS = 'grid-template-columns:96px minmax(0,1fr) 96px 120px 140px 100px 36px';   // code column holds the fixed-width code control
-const COLS_THG = 'grid-template-columns:96px minmax(0,1fr) 72px 110px 64px 104px 72px 36px';   // Erstellung: Code · Emissionsquelle · Hersteller · Referenzgrösse · Einheit · kg/m² EBF·a · Anteil
+const COLS_THG = 'grid-template-columns:96px minmax(0,1fr) 72px 110px 96px 104px 72px 36px';   // Erstellung: Code · Emissionsquelle · Hersteller · Referenzgrösse · Einheit · kg/m² EBF·a · Anteil
 const COLS_BETR = 'grid-template-columns:minmax(0,1fr) 92px 104px 88px 88px 100px 112px 112px';   // Betrieb: Energiedienstleistung · Projektwert · Nutzenergie · Anteil · η · Endenergie · Koeffizient · kg/m² EBF·a
 const kvRow = (k, v) => html`<div class="rv-kv"><span class="rv-kv-k">${k}</span><span>${v}</span></div>`;
 const RO = F => (F.locked ? raw('readonly') : '');
@@ -123,12 +123,14 @@ const zielwerte = F => {
 function planOverview(F, L) {
   const P = F.planOv;
   return html`
-    ${card(html`<span class="flex-1">Flächen SIA 416</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div class="ar-tbl">
+    ${card(html`<span class="flex-1">Flächen SIA 416 · EBF SIA 380/1</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div class="ar-tbl">
       <div class="ar-th"><span>Flächenart</span><span class="right">m²</span><span class="right" title="Anteil an der Geschossfläche GF">% GF</span></div>
       ${P.sia.map(a => html`<div class="ar-tr" style="font-weight:${a.fw};background:${a.bg}" title="${a.tip}"><span class="ellipsis"><span class="ar-ab">${a.ab}</span>${a.name}</span><span class="right">${a.val}</span><span class="right ar-share">${a.share}</span></div>`)}
-    </div><div class="card-foot">m² aus Geschoss- und Raumpolygonen · Anteil an GF</div>`)}
+      <div class="ar-sub">Energiebezugsfläche SIA 380/1</div>
+      <div class="ar-tr ar-ebf" title="${P.ebf.tip}"><span class="ellipsis"><span class="ar-ab">${P.ebf.abbr}</span>${P.ebf.label}${P.ebf.note ? html` <span class="muted">· ${P.ebf.note}</span>` : ''}</span><span class="right">${P.ebf.value}</span><span class="right ar-share">${P.ebf.share}</span></div>
+    </div><div class="card-foot">m² aus Geschoss- und Raumpolygonen · Anteil an GF · EBF: Pflichtangabe für die Ökobilanz</div>`)}
     ${card(html`<span class="flex-1">Prüfregeln nach Kategorie</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div class="cat-tbl">
-      <div class="cat-th"><span>Kategorie</span><div class="cat-axis"><span>0</span><span>100 % bestanden</span></div><span class="right">Bestanden</span><span class="right">Warnungen</span><span class="right">Fehler</span></div>
+      <div class="cat-th"><span>Kategorie</span><div class="cat-axis"><span>0</span><span>100 % bestanden</span></div><span class="right" title="Bestandene von allen Prüfregeln der Kategorie">Bestanden</span><span class="right" title="Prüfregeln mit Warnungen (nicht die Zahl der Meldungen)">Warnungen</span><span class="right" title="Prüfregeln mit Fehlern (nicht die Zahl der Meldungen)">Fehler</span></div>
       ${P.cats.map(c => html`<div class="cat-tr"><span class="ellipsis">${c.name}</span><div class="ov-bar" role="img" aria-label="${c.name}: ${c.ratio} bestanden"><div class="ov-track"></div><div class="ov-fill" style="width:${c.wOk}"></div></div><span class="right fw-600">${c.ratio}</span><span class="right">${c.w}</span><span class="right">${c.e}</span></div>`)}
       <div class="cat-total"><span>Total</span><span></span><span class="right fw-600">${P.catTot.ratio}</span><span class="right">${P.catTot.w}</span><span class="right">${P.catTot.e}</span></div>
     </div><div class="card-foot">CAD-Richtlinie BBL V1.0 · Regeln je Kategorie</div>`)}`;
@@ -174,7 +176,6 @@ function dataEntry(ctx, F) {
   return html`<div class="card${lockCls(F)}">
     ${entryHead(ctx, F)}
     <div class="lock-wrap"><div class="fm-table" ${INERT(F)}>${E.isTHG ? thgTable(F) : costTable(F)}</div>${lockVeil(F)}</div>
-    ${E.foot ? html`<div class="card-foot">${E.foot}</div>` : ''}
   </div>`;
 }
 
@@ -236,8 +237,8 @@ const posRow = (F, r, ro) => html`<div class="ent-pos" style="${COLS}">
 const newPosRow = (F, r, ro) => html`<div class="ent-pos ent-new" style="${COLS}">
   ${codeSelect(F, r, html`data-change="formNewVal" data-id="${r.id}" data-field="code"`, `${F.id}-new-${r.id}-code`)}
   ${unitCell(F, r, html`data-change="formUnit" data-form="${F.id}" data-code="${r.uKey}" data-fid="${F.id}-unit-${r.uKey}"`)}
-  ${r.hasQty ? html`<span class="ent-cell-input"><input class="ent-input" aria-label="Menge" value="${r.qStr}" placeholder="fehlt" style="border-color:${r.qBd};background:${F.erf.inputBg}" data-change="formNewVal" data-form="${F.id}" data-id="${r.id}" data-field="q" data-fid="${F.id}-new-${r.id}-q" ${ro}></span>` : html`<span class="right muted fs-12">–</span>`}
-  <span class="ent-cell-input"><input class="ent-input" aria-label="${F.erf.valLabel}" value="${r.vStr}" placeholder="fehlt" style="border-color:${r.vBd};background:${F.erf.inputBg}" data-change="formNewVal" data-form="${F.id}" data-id="${r.id}" data-field="v" data-fid="${F.id}-new-${r.id}-v" ${ro}></span>
+  ${r.hasQty ? html`<span class="ent-cell-input"><input class="ent-input" aria-label="Menge neues Kostenelement ${r.code || r.id}" value="${r.qStr}" placeholder="fehlt" style="border-color:${r.qBd};background:${F.erf.inputBg}" data-change="formNewVal" data-form="${F.id}" data-id="${r.id}" data-field="q" data-fid="${F.id}-new-${r.id}-q" ${ro}></span>` : html`<span class="right muted fs-12">–</span>`}
+  <span class="ent-cell-input"><input class="ent-input" aria-label="${F.erf.valLabel} neues Kostenelement ${r.code || r.id}" value="${r.vStr}" placeholder="fehlt" style="border-color:${r.vBd};background:${F.erf.inputBg}" data-change="formNewVal" data-form="${F.id}" data-id="${r.id}" data-field="v" data-fid="${F.id}-new-${r.id}-v" ${ro}></span>
   ${kwCell(F, r, ro)}
   ${!F.locked ? delBtn('formDropNew', html`data-form="${F.id}" data-id="${r.id}"`, 'Neue Zeile verwerfen') : html`<span></span>`}
 </div>`;
@@ -289,7 +290,7 @@ const thgSrcRow = (F, r, ro) => html`<div class="ent-pos ent-src${r.isNew ? ' en
       <span class="ellipsis" title="${r.quelle}">${r.name}</span>`}
   ${hsBox(F, r)}
   ${numCell(F, r, 'q', 'Referenzgrösse', r.qStr, r.qBd, ro)}
-  <span class="muted fs-12">${r.unit}</span>
+  ${unitCell(F, r, html`data-change="thgVal" data-id="${r.id}" data-field="unit" data-fid="thg-${r.id}-unit"`)}
   ${numCell(F, r, 'kw', 'kg CO₂-eq/m² EBF·a', r.kwStr, r.kwBd, ro)}
   <span class="right muted fs-125">${r.share}</span>
   ${!F.locked ? delBtn('thgRemove', html`data-id="${r.id}"`, r.isNew ? 'Neue Zeile verwerfen' : 'Emissionsquelle entfernen') : html`<span></span>`}
@@ -300,7 +301,7 @@ function betrieb(ctx, F) {
   if (F.kind !== 'data' || !F.erf.isTHG) return erfassung(ctx, F);
   const B = F.betr, ro = RO(F), open = !!ctx.state.ui.importMenu;
   return html`<div class="fm-stack">
-    ${thgHeadCard(ctx, F, 'Betrieb', B.head, B.pv.map(p => html`<label class="thg-field pv-field"><span>${p.label}</span><input class="ent-text${p.key ? ' right' : ''}" aria-label="${p.label}" value="${p.val}" placeholder="fehlt" style="background:${p.bg};border-color:${p.bdc}" ${p.key ? html`data-change="thgBetr" data-key="${p.key}" data-fid="thg-betr-${p.key}"` : ''} ${p.ro ? raw('readonly') : ''}></label>`))}
+    ${thgHeadCard(ctx, F, 'Betrieb', B.head, B.pv.map(p => html`<label class="thg-field pv-field"><span>${p.label}</span><input class="ent-text${p.key ? ' right' : ''}" aria-label="${p.label}" title="${p.tip || ''}" value="${p.val}" placeholder="fehlt" style="background:${p.bg};border-color:${p.bdc}" ${p.key ? html`data-change="thgBetr" data-key="${p.key}" data-fid="thg-betr-${p.key}"` : ''} ${p.ro ? raw('readonly') : ''}></label>`))}
     <div class="card${lockCls(F)}">
       <div class="card-head" style="flex-wrap:wrap">
         <span class="flex-1" style="flex-basis:220px">${B.title}</span>
@@ -364,7 +365,7 @@ function planEntry(ctx, F) {
       ${p.result ? btn({ label: 'Prüfbericht herunterladen', icon: 'download', action: 'planReport', key: p.key }) : ''}
       ${p.result && !F.locked ? html`<label class="btn btn-secondary btn-file">${icon('upload', 13, 'currentColor')}Neu hochladen<input type="file" accept=".dwg" class="vh" data-change="planFile" data-key="${p.key}" aria-label="DWG-Datei neu hochladen"></label>` : ''}
       ${cadMenu(open)}
-      ${p.result && !F.locked ? linkBtn({ label: 'Entfernen', cls: 'fs-12', action: 'planRemove', key: p.key }) : ''}
+      ${p.own && !F.locked ? linkBtn({ label: 'Entfernen', cls: 'fs-12', action: 'planRemove', key: p.key }) : ''}
     </div>
     ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}
     ${p.busy ? html`<div class="note note-grey" style="margin:10px 12px 6px"><span class="plan-spin">${icon('loader-circle', 14, '#5b6573')}</span>${p.busy}</div>` : ''}
@@ -414,7 +415,7 @@ function summaryCard(F, L) {
     ? html`<div class="muted fs-125" style="padding:28px 16px">${F.summNote}</div>`
     : html`<div class="fm-table"><div class="sm-body">
       <div class="sm-th"><span>Prüfpunkt</span><span>Lieferung</span><span>Ergebnis</span></div>
-      ${F.summ.map((r, i) => html`<div class="sm-tr" style="background:${i % 2 ? '#fafbfc' : '#fff'}" title="${r.tip}"><span>${r.label}</span><span>${r.val}</span><span>${r.res}</span></div>`)}
+      ${F.summ.map((r, i) => html`<div class="sm-tr" style="background:${i % 2 ? '#fafbfc' : '#fff'}" title="${r.tip}"><span>${r.label}${srOnly(`. Anforderung: ${r.tip}`)}</span><span>${r.val}</span><span>${r.res}</span></div>`)}
     </div></div>`);
 }
 

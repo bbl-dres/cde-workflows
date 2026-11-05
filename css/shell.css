@@ -101,7 +101,7 @@ a.tab:hover { color: #21485c; text-decoration: none; }
   .topbar-link { margin-right: 16px; }
   .topbar-search { margin: 0 16px 0 4px; }
   .topbar-icons { gap: 20px; margin-right: 16px; }
-  .topbar-search-input { font-size: 0; }
+  .topbar-search-input::placeholder { color: transparent; }   /* no room for the long placeholder; typed text stays visible */
   .tabs { font-size: 14px; }
 }
 @media (max-width: 639.98px) {

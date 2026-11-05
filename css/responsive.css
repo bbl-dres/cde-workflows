@@ -22,5 +22,11 @@
 }
 /* Phones: 16 px in text fields, otherwise iOS zooms into the page on focus */
 @media (max-width: 767.98px) and (pointer: coarse) {
-  .ent-input, .ent-select, .ent-text, .thg-field .ent-select, .thg-field .ent-text, .plan-search, .field input, textarea, select, input[type="text"], input[type="search"], input[type="number"] { font-size: 16px; }
+  .ent-input, .ent-select, .ent-text, .thg-field .ent-select, .thg-field .ent-text, .plan-search, .field input, .rv-textarea, .o-select, textarea, select, input[type="text"], input[type="search"], input[type="number"] { font-size: 16px; }
+}
+/* Small controls of the Erfassung get a 40 px touch area around them without growing the row */
+@media (pointer: coarse) {
+  .hs-box, .ent-toggle, .ent-del { position: relative; }
+  .hs-box::after, .ent-toggle::after, .ent-del::after { content: ''; position: absolute; inset: 50% auto auto 50%; width: 40px; height: 40px; transform: translate(-50%, -50%); }
+  .app-footer a { display: inline-block; padding: 8px 0; }
 }

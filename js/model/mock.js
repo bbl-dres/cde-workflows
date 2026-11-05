@@ -55,6 +55,10 @@ export function mockProject(project, data, opts = {}) {
     kvV[k.code] = k.cost ? chf(k.cost) : 0;                  // A Grundstück is 0 in the sample projects
     ksV[k.code] = k.cost ? chf(k.cost * ksFactor[g.code]) : 0;
   }));
+  if (base) E.ebkp.forEach(g => {                             // per Hauptgruppe the rounding of the elements goes to the largest one: the KS-31 form shows the sum the KV-32 names as Vorphase
+    const kids = g.kids.filter(k => k.cost), diff = (E.ks31[g.code] || 0) - kids.reduce((a, k) => a + ksV[k.code], 0);
+    if (kids.length && diff && g.code !== 'Z') { const top = kids.reduce((a, k) => (ksV[k.code] > ksV[a.code] ? k : a)); ksV[top.code] += diff; }
+  });
   // Z Mehrwertsteuer is an amount the delivery team enters; the sample projects carry the rate of data/project.json on B–Y (A Grundstück is not taxed)
   const MWST = data.project.mwstRate || 0.081, taxable = V => Object.entries(V).reduce((a, [c, v]) => a + (/^[AZ]/.test(c) ? 0 : (v || 0)), 0);
   kvV.Z01 = roundTo(taxable(kvV) * MWST, 100); ksV.Z01 = roundTo(taxable(ksV) * MWST, 100);

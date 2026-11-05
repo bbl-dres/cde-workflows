@@ -7,7 +7,6 @@
 .rv-textarea:focus { border-color: var(--navy); }
 .rv-note { font-size: 12.5px; border: 1px solid; border-radius: 3px; padding: 7px 10px; line-height: 1.5; }
 .rv-note-green { color: var(--green-dark); background: var(--green-bg); border-color: var(--green-line-2); }
-.rv-note a { cursor: pointer; }
 
 /* Übergabe / key-value card rows */
 .rv-kv { display: grid; grid-template-columns: 120px 1fr; gap: 8px; padding: 5px 12px; font-size: 12.5px; }

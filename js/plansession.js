@@ -4,7 +4,7 @@
 import { checkDwg, MAX_FILE_SIZE } from './plancheck/index.js';
 
 const cache = new Map();   // drawingKey → { status: 'loading' | 'ready' | 'error', drawing, rooms, areas, result, error, promise }
-const log = [];            // last processing messages (shown under the viewer)
+const log = [];            // last processing messages (for debugging: planSession.log() in the console)
 const MAX_LOG = 60;
 
 function note(msg, type = 'info') {
@@ -19,11 +19,13 @@ function evictFloor(floorKey, keep) {
 
 async function run(key, buffer, file) {
     const entry = { status: 'loading', drawing: null, rooms: [], areas: [], result: null, error: null };
-    cache.set(key, entry);
+    const prev = cache.get(key);
+    if (!prev || prev.status !== 'ready') cache.set(key, entry);   // a readable drawing under the same key (a corrected file keeps its name) stays until the new check succeeds
     entry.promise = (async () => {
         try {
             const { drawing, validation, result } = await checkDwg(buffer, file, note);
             Object.assign(entry, { status: 'ready', drawing, rooms: validation.rooms, areas: validation.areas, result });
+            cache.set(key, entry);
         } catch (err) {
             note(err.message, 'error');
             Object.assign(entry, { status: 'error', error: err.message });
@@ -69,7 +71,7 @@ export const planSession = {
         return { key, entry };
     },
 
-    /** Loads a shipped sample as if the user had uploaded it for the floor (demo path «Musterplan laden»). */
+    /** Loads a shipped sample as if the user had uploaded it for the floor (demo path «Musterplan prüfen (Prototyp)» of the drop zone). */
     async checkAsset(floorKey, src) {
         const entry = await planSession.loadAsset(src);
         const key = `upload:${floorKey}:${entry.result.file.name}`;
