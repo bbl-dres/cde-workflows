@@ -1,5 +1,5 @@
 {
- "note": "Planlieferungen DWG für das Flächenmanagement (SAP RE-FX) (Projekt Verwaltungszentrum Musterhausen): ein Grundriss = eine Lieferung. «seeds» sind die unveränderten Prüfergebnisse der plan-check-Engine (js/plancheck) für die mitgelieferten Musterdateien (assets/plans), erzeugt unter Node; tests/model.test.mjs prüft, dass sie mit der Engine übereinstimmen. Siehe docs/reviews/2026-11-03-planlieferungen-dwg.md. «beheizt»: false markiert ein Geschoss ausserhalb der thermischen Gebäudehülle (EBF nach SIA 416/1 = 0, z. B. UG); sonst gilt EBF = GF.",
+ "note": "Planlieferungen DWG für das Flächenmanagement (SAP RE-FX) (Projekt Verwaltungszentrum Musterhausen): ein Grundriss = eine Lieferung. «seeds» sind die unveränderten Prüfergebnisse der plan-check-Engine (js/plancheck) für die mitgelieferten Musterdateien (assets/plans), erzeugt unter Node; tests/model.test.mjs prüft, dass sie mit der Engine übereinstimmen. Siehe docs/reviews/2026-11-03-planlieferungen-dwg.md. «beheizt»: false markiert ein Geschoss ausserhalb der thermischen Gebäudehülle (EBF nach SIA 416/1 = 0, z. B. UG); sonst gilt EBF = GF. «stamps» ersetzt im Prototyp den Raumstempel (R_RAUMSTEMPEL), den die Planprüfung noch nicht liest: Nutzungsart je AOID als DIN-277-Gruppe für den Musterplan; Räume ohne Eintrag zählen zur HNF.",
  "guideline": "CAD-Richtlinie BBL V1.0",
  "ruleCount": 40,
  "gate": "no-errors",
@@ -41,6 +41,38 @@
    "src": "assets/plans/2011-DM-0-A04-6A1.dwg",
    "label": "Plan mit Büro-Layerstruktur (Testdatei plan-check)"
   }
+ },
+ "stamps": {
+  "9999.AA.05.001": "NNF 7",
+  "9999.AA.05.002": "FF 8",
+  "9999.AA.05.003": "FF 8",
+  "9999.AA.05.004": "FF 8",
+  "9999.AA.05.005": "HNF 2",
+  "9999.AA.05.006": "HNF 2",
+  "9999.AA.05.007": "HNF 2",
+  "9999.AA.05.008": "HNF 2",
+  "9999.AA.05.009": "HNF 2",
+  "9999.AA.05.010": "VF 9",
+  "9999.AA.05.011": "HNF 2",
+  "9999.AA.05.012": "HNF 2",
+  "9999.AA.05.013": "HNF 2",
+  "9999.AA.05.014": "HNF 2",
+  "9999.AA.05.015": "HNF 2",
+  "9999.AA.05.016": "NNF 7",
+  "9999.AA.05.017": "FF 8",
+  "9999.AA.05.018": "HNF 4",
+  "9999.AA.05.019": "HNF 2",
+  "9999.AA.05.020": "HNF 5",
+  "9999.AA.05.021": "HNF 1",
+  "9999.AA.05.022": "HNF 2",
+  "9999.AA.05.023": "HNF 2",
+  "9999.AA.05.024": "HNF 2",
+  "9999.AA.05.025": "HNF 2",
+  "9999.AA.05.026": "HNF 5",
+  "9999.AA.05.027": "HNF 4",
+  "9999.AA.05.028": "NNF 7",
+  "9999.AA.05.029": "FF 8",
+  "9999.AA.05.030": "FF 8"
  },
  "floors": [
   {

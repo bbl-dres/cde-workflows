@@ -20,7 +20,7 @@ import { patchDotted } from './store.js';
 import { num } from './format.js';
 import { planSession } from './plansession.js';
 import { buildReportModel, downloadPlanReport } from './plancheck/report.js';
-import { captureViewerImage } from './views/plan.js';
+import { captureViewerImage, offscreenCapture, viewerReady } from './views/plan.js';
 
 export function makeActions(store, data, nav) {
   const s = () => store.get();
@@ -351,12 +351,24 @@ export function makeActions(store, data, nav) {
       if (!pv || !pv.result || !f) { toast('Noch kein Prüfergebnis für den Prüfbericht.'); return null; }
       const model = buildReportModel(pv.result, { project: project ? project.name : '', code: pv.code, name: pv.name, heated: f.beheizt !== false, floor: `${pv.floor} (Ebene ${pv.ee})`, status: pv.statusLabel, reviewer: `${planReviewer}, BBL`, due: pv.due, guideline: data.plans.guideline, uploadedAt: pv.uploadedAt || '' });
       ui({ busy: 'Prüfbericht wird erstellt…' });
+      let capture = captureViewerImage, dispose = null;
       try {
-        const blob = await downloadPlanReport(model, { capture: captureViewerImage, save: opts.save !== false });
+        if (!viewerReady()) {   // Übersicht or Kennzahlen: no viewer on screen, the drawing is rendered off-screen
+          const entry = planSession.get(pv.drawingKey) || (pv.src ? await planSession.loadAsset(pv.src).catch(() => null) : null);
+          if (entry && entry.status === 'ready') ({ capture, dispose } = offscreenCapture(entry));
+        }
+        const blob = await downloadPlanReport(model, { capture, save: opts.save !== false });
         if (opts.save !== false) toast(`Prüfbericht ${model.baseName}_Pruefbericht.pdf erstellt.`);
         return blob;
       } catch (err) { console.error(err); toast(`Prüfbericht konnte nicht erstellt werden: ${err.message}`); return null; }
-      finally { ui({ busy: null }); }
+      finally { if (dispose) dispose(); ui({ busy: null }); }
+    },
+    /** «CAD-Richtlinie ▾» of a plan: the Musterplan downloads (it is not loaded into the delivery), the guideline PDF is not part of the prototype. */
+    cadItem: ds => {
+      ui({ importMenu: false });
+      if (ds.arg !== 'sample') { toast('Im Prototyp ohne Funktion.'); return; }
+      const s = data.plans.samples.cadv01, a = document.createElement('a');
+      a.href = s.src; a.download = s.name; document.body.appendChild(a); a.click(); a.remove();
     },
 
     // ---- Study panel ----

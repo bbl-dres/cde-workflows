@@ -10,7 +10,6 @@ import { dropZone, resultPanel } from './plan.js';
 // result, Prüfung BBL, Übergabe. Beteiligte, Dokumente, Verlauf: tables.
 
 const COLS = 'grid-template-columns:96px minmax(0,1fr) 72px 120px 140px 100px 36px';   // code column holds the fixed-width code control
-const SIA_COLS = 'grid-template-columns:52px minmax(0,1fr) 90px 56px';   // Flächen SIA 416: the same grid table as Projektaufgaben
 const COLS_THG = 'grid-template-columns:96px minmax(0,1fr) 72px 110px 64px 104px 72px 36px';   // Erstellung: Code · Emissionsquelle · Hersteller · Referenzgrösse · Einheit · kg/m² EBF·a · Anteil
 const COLS_BETR = 'grid-template-columns:minmax(0,1fr) 92px 104px 88px 88px 100px 112px 112px';   // Betrieb: Energiedienstleistung · Projektwert · Nutzenergie · Anteil · η · Endenergie · Koeffizient · kg/m² EBF·a
 const kvRow = (k, v) => html`<div class="rv-kv"><span class="rv-kv-k">${k}</span><span>${v}</span></div>`;
@@ -46,6 +45,7 @@ function uebersicht(ctx, F) {
     </div>
     <div class="fm-side">
       ${card('Lieferung', html`<div style="padding:4px 0 6px">${metaRows(F.meta)}</div>`)}
+      ${F.kind === 'plan' && F.plan.result ? card('Prüfbericht', html`<div class="rep-box">${btn({ label: 'Prüfbericht herunterladen', icon: 'download', kind: 'primary', action: 'planReport', key: F.plan.key })}</div>`) : ''}
       ${card(html`<span class="flex-1">Verlauf</span>${headLink('Alle Ereignisse', L('verlauf'))}`, stepsList(F, L))}
       ${card(html`<span class="flex-1">Beteiligte</span>${headLink('Verwalten', L('beteiligte'))}`, html`<div class="pp-list">${F.people.map(p => html`<div class="pp-row">${avatar(p.ini, 28, '#e5e7eb', '#374151')}<div class="flex-1 min-w-0 flex-col"><span class="pp-name">${p.name}</span><span class="pp-firm">${p.firm}</span></div><span class="pp-role">${p.role}</span></div>`)}</div>`)}
     </div>
@@ -118,12 +118,20 @@ const zielwerte = F => {
   </div>`;
 };
 
+/** Übersicht of a plan (design 06.11.2026): the areas after SIA 416 as a plain banded table from the whole to its parts, and the
+ *  rules per category as a bar list (share passed) with the counts of passed rules, warnings and errors. */
 function planOverview(F, L) {
   const P = F.planOv;
   return html`
-    ${card(html`<span class="flex-1">Flächen SIA 416 · EBF SIA 416/1</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div class="sia-tbl"><div class="grid-head" style="${SIA_COLS};background:#f4f5f7;height:34px;font-size:12.5px"><span style="grid-column:1/3">Flächenart</span><span class="right">Fläche</span><span class="right" title="Anteil an der Geschossfläche GF">% GF</span></div>${P.sia.map((a, i) => html`<div class="grid-row" style="${SIA_COLS};height:30px;background:${i % 2 ? '#f6f7f9' : '#fff'};border:0;font-weight:${a.fw}" title="${a.tip}"><span class="fw-600">${a.ab}</span><span class="ellipsis">${a.name}</span><span class="right">${a.val}</span><span class="right muted">${a.share}</span></div>`)}</div>`)}
-    ${card(html`<span class="flex-1">Prüfregeln nach Kategorie</span>${hint('CAD-Richtlinie BBL V1.0')}`, html`<div class="cat-list">${P.cats.map(c => html`<div class="cat-row"><span>${c.name}</span><div class="cat-bar"><div style="width:${c.wOk};background:#7fb69a"></div><div style="width:${c.wWarn};background:#e0b54a"></div><div style="width:${c.wErr};background:#cf1322"></div></div><span class="right muted">${c.ratio}</span></div>`)}
-      <div class="cat-legend"><span><span class="cat-sw" style="background:#7fb69a"></span>Bestanden</span><span><span class="cat-sw" style="background:#e0b54a"></span>Warnung</span><span><span class="cat-sw" style="background:#cf1322"></span>Fehler</span></div></div>`)}`;
+    ${card(html`<span class="flex-1">Flächen SIA 416</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div class="ar-tbl">
+      <div class="ar-th"><span>Flächenart</span><span class="right">m²</span><span class="right" title="Anteil an der Geschossfläche GF">% GF</span></div>
+      ${P.sia.map(a => html`<div class="ar-tr" style="font-weight:${a.fw};background:${a.bg}" title="${a.tip}"><span class="ellipsis"><span class="ar-ab">${a.ab}</span>${a.name}</span><span class="right">${a.val}</span><span class="right ar-share">${a.share}</span></div>`)}
+    </div><div class="card-foot">m² aus Geschoss- und Raumpolygonen · Anteil an GF</div>`)}
+    ${card(html`<span class="flex-1">Prüfregeln nach Kategorie</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div class="cat-tbl">
+      <div class="cat-th"><span>Kategorie</span><div class="cat-axis"><span>0</span><span>100 % bestanden</span></div><span class="right">Bestanden</span><span class="right">Warnungen</span><span class="right">Fehler</span></div>
+      ${P.cats.map(c => html`<div class="cat-tr"><span class="ellipsis">${c.name}</span><div class="ov-bar" role="img" aria-label="${c.name}: ${c.ratio} bestanden"><div class="ov-track"></div><div class="ov-fill" style="width:${c.wOk}"></div></div><span class="right fw-600">${c.ratio}</span><span class="right">${c.w}</span><span class="right">${c.e}</span></div>`)}
+      <div class="cat-total"><span>Total</span><span></span><span class="right fw-600">${P.catTot.ratio}</span><span class="right">${P.catTot.w}</span><span class="right">${P.catTot.e}</span></div>
+    </div><div class="card-foot">CAD-Richtlinie BBL V1.0 · Regeln je Kategorie</div>`)}`;
 }
 
 // ---- Erfassung ----
@@ -138,17 +146,19 @@ function erfassung(ctx, F) {
 }
 
 /** Importieren menu: the Excel template first (separated), then the imports of the tab. */
-const importMenu = (F, items, open) => html`<div class="dd">
+const importMenu = (F, items, open) => (F.locked
+  ? html`<button type="button" class="btn btn-secondary" disabled title="${F.lock}">Importieren ${icon('chevron-down', 12, 'currentColor')}</button>`
+  : html`<div class="dd">
   <button type="button" class="btn btn-secondary" data-action="toggleImportMenu" aria-haspopup="menu" aria-expanded="${open ? 'true' : 'false'}">Importieren ${icon('chevron-down', 12, 'currentColor')}</button>
   ${open ? html`<div class="dd-menu" role="menu">${items.map(([key, label], i) => html`<button type="button" role="menuitem" class="dd-item${i === 0 && items.length > 1 ? ' dd-sep' : ''}" data-action="importItem" data-arg="${key}" data-form="${F.id}">${label}</button>`)}</div>` : ''}
-</div>`;
+</div>`);
 
 /** Card head with title, Importieren menu and Excel export, shared by the cost forms and the Ökobilanz. */
 function entryHead(ctx, F) {
   const E = F.erf, open = !!ctx.state.ui.importMenu;
   return html`<div class="card-head" style="flex-wrap:wrap">
       <span class="flex-1" style="flex-basis:220px">${E.tableTitle}</span>
-      ${F.locked ? '' : importMenu(F, E.importItems, open)}
+      ${importMenu(F, E.importItems, open)}
       <button type="button" class="btn btn-secondary" data-action="proto">Excel herunterladen</button>
     </div>
     ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}`;
@@ -284,7 +294,7 @@ function betrieb(ctx, F) {
     <div class="card${lockCls(F)}">
       <div class="card-head" style="flex-wrap:wrap">
         <span class="flex-1" style="flex-basis:220px">${B.title}</span>
-        ${F.locked ? '' : importMenu(F, B.importItems, open)}
+        ${importMenu(F, B.importItems, open)}
         <button type="button" class="btn btn-secondary" data-action="proto">Excel herunterladen</button>
       </div>
       ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}
@@ -327,16 +337,26 @@ const pvRow = r => html`<div class="ent-pos ent-src" style="${COLS_BETR}">
   <span class="right fs-125" title="THG in kg CO₂-eq/m² EBF·a: Endenergie × Koeffizient">${r.thg}</span>
 </div>`;
 
+/** «CAD-Richtlinie ▾» of a plan: the guideline and the Musterplan to download (reference material, also on a locked form). */
+const cadMenu = open => html`<div class="dd">
+  <button type="button" class="btn btn-secondary" data-action="toggleImportMenu" aria-haspopup="menu" aria-expanded="${open ? 'true' : 'false'}">CAD-Richtlinie ${icon('chevron-down', 12, 'currentColor')}</button>
+  ${open ? html`<div class="dd-menu" role="menu">
+    <button type="button" role="menuitem" class="dd-item" data-action="cadItem" data-arg="guideline">CAD-Richtlinie BBL V1.0 (PDF)</button>
+    <button type="button" role="menuitem" class="dd-item" data-action="cadItem" data-arg="sample">Musterplan herunterladen (DWG)</button>
+  </div>` : ''}
+</div>`;
+
 function planEntry(ctx, F) {
-  const p = F.plan;
+  const p = F.plan, open = !!ctx.state.ui.importMenu;
   return html`<div class="card">
     <div class="card-head" style="flex-wrap:wrap">
       <span class="flex-1 min-w-0" style="flex-basis:220px">${F.erf.tableTitle}${p.fileName ? html` <span class="card-hint">· ${p.fileName}${F.erf.fileMeta ? ' · ' + F.erf.fileMeta : ''}</span>` : ''}</span>
-      ${p.result ? btn({ label: 'Prüfbericht', icon: 'download', action: 'planReport', key: p.key, title: 'Prüfbericht als PDF herunterladen' }) : ''}
-      ${p.result && !F.locked ? html`<label class="btn btn-secondary btn-file">${icon('upload', 13, 'currentColor')}Neu hochladen<input type="file" accept=".dwg" class="vh" data-change="planFile" data-key="${p.key}" aria-label="DWG-Datei neu hochladen"></label>
-        <button type="button" class="btn btn-secondary" data-action="planLoadSample" data-key="${p.key}">Musterplan laden</button>
-        ${linkBtn({ label: 'Entfernen', cls: 'fs-12', action: 'planRemove', key: p.key })}` : ''}
+      ${p.result ? btn({ label: 'Prüfbericht herunterladen', icon: 'download', action: 'planReport', key: p.key }) : ''}
+      ${p.result && !F.locked ? html`<label class="btn btn-secondary btn-file">${icon('upload', 13, 'currentColor')}Neu hochladen<input type="file" accept=".dwg" class="vh" data-change="planFile" data-key="${p.key}" aria-label="DWG-Datei neu hochladen"></label>` : ''}
+      ${cadMenu(open)}
+      ${p.result && !F.locked ? linkBtn({ label: 'Entfernen', cls: 'fs-12', action: 'planRemove', key: p.key }) : ''}
     </div>
+    ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}
     ${lockBand(F)}
     ${p.busy ? html`<div class="note note-grey" style="margin:10px 12px 6px"><span class="plan-spin">${icon('loader-circle', 14, '#5b6573')}</span>${p.busy}</div>` : ''}
     ${p.error ? html`<div class="note note-rose" style="margin:10px 12px 6px">${icon('circle-alert', 14, '#9b2c44')}${p.error}</div>` : ''}

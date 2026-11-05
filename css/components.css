@@ -112,7 +112,7 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 .card-narrow { max-width: var(--narrow-max); }
 .card-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; min-height: 36px; font-size: 13px; font-weight: 500; border-bottom: 1px solid var(--line-4); }
 .card-body { padding: 12px; }
-.card-foot { padding: 8px 12px 10px; font-size: 12px; color: var(--muted); }
+.card-foot { padding: 8px 14px 10px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line-4); text-wrap: pretty; }   /* notes and units of a card */
 .meta-row { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 8px; padding: 5px 12px; font-size: 12.5px; }   /* flush with the card like the other tables, 12 px cell padding */
 .meta-row > * { min-width: 0; }
 .meta-row > :last-child { overflow-wrap: anywhere; }   /* long values (codes, e-mail) wrap; labels keep their words */

@@ -417,9 +417,11 @@ export function planForm(plan, data, user) {
     const rs = RULES.filter(x => x.code.startsWith(pre + '_')), n = rs.length;
     const st = rs.map(x => (byCode.get(x.code) || {}).status);
     const w = st.filter(x => x === 'warn').length, e = st.filter(x => x === 'fail').length, ok = r ? n - w - e : 0;
-    return { name, ratio: r ? `${ok}/${n}` : `–/${n}`, wOk: (ok / n * 100) + '%', wWarn: (w / n * 100) + '%', wErr: (e / n * 100) + '%' };
+    return { name, ok, n, nw: w, ne: e, ratio: r ? `${ok} / ${n}` : `– / ${n}`, w: r ? String(w) : '–', e: r ? String(e) : '–', wOk: (ok / n * 100) + '%' };
   });
-  const sia = plan.siaRows.map((x, i) => ({ ab: x.abbr, name: x.label, val: x.value, share: x.share, tip: x.tip, bg: alt(i), fw: x.sum ? 600 : 400 }));
+  const tot = key => cats.reduce((a, c) => a + c[key], 0);
+  const catTot = { ratio: `${r ? tot('ok') : '–'} / ${tot('n')}`, w: r ? String(tot('nw')) : '–', e: r ? String(tot('ne')) : '–' };
+  const sia = plan.siaRows.map((x, i) => ({ ab: x.abbr, name: x.label, val: x.value, share: x.share, tip: x.tip, bg: i % 2 ? '#fafbfc' : '#fff', fw: x.sum ? 600 : 400 }));
   const compW = r ? passed / total * 100 : 0;
   const comp = { label: 'Prüfregeln', tip: 'Bestandene Prüfregeln der CAD-Richtlinie BBL V1.0; Fehler sperren das Einreichen, Warnungen nicht', pct: r ? `${passed} / ${total}` : '–', w: compW + '%', bar: errors ? '#cf1322' : '#2f7d63', text: r ? `${errors} Fehler · ${warnings} Warnungen` : 'Noch keine DWG-Datei geprüft' };
   const kpis = [{ k: 'Räume mit AOID', v: r ? String(plan.roomCount) : '–', u: 'Raumpolygone', tip: 'Geschlossene Polylinien auf R_RAUMPOLYGON mit AOID-Text auf R_AOID' },
@@ -441,7 +443,7 @@ export function planForm(plan, data, user) {
     step, locked, lock: locked ? lockText(step, dates, reviewer, 'SAP RE-FX') : '', rejected, status, pill: plan.pill, act: ACT_PLAN,
     steps: stepRows(D.steps, step, dates, rejected), next: nextStep(step, 'SAP RE-FX', reviewer, open),
     kpis, comp, meta, people: peopleShort(people, peopleList), peopleRows: peopleRows(people, peopleList, sc => sc.replace('{floor}', plan.name)), docs, hist,
-    planOv: { sia, cats },
+    planOv: { sia, cats, catTot },
     erf: { tableTitle: `${plan.name} · ${plan.floor}`, fileMeta, isTHG: false },
     bar, summ: plan.summary.map(x => sr(...x)), summNote: 'Noch kein Plan geprüft.', manual: plan.manualChecks.map(m => ({ ...m, disabled: m.disabled || !internal })), rv,
     handover: { ziel: P.target, value: r ? `${plan.roomCount} Raumpolygone mit AOID, NGF ${plan.ngf}, GF ${plan.gf}` : '–', status: plan.transferStatus },

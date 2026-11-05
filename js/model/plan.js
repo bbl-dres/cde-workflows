@@ -3,7 +3,7 @@
 // A floor without an own result shows the precomputed seed of data/plans.json (engine result of a sample plan).
 import { pillSpec } from './pill.js';
 import { mkSteps } from './steps.js';
-import { ruleRows, fmtNum, buildKpiSections, buildEntityRows, formatArea, formatShare, formatRatio } from '../plancheck/index.js';
+import { ruleRows, fmtNum, buildKpiSections, formatRatio } from '../plancheck/index.js';
 
 // idx: step of the plan stepper (data/plans.json steps); formStep: step of the Datenformular (0 Erstellt … 6 Übertragen)
 export const PLAN_STATUS = {
@@ -19,11 +19,54 @@ export const LOCKED = new Set(['eingereicht', 'pruefung', 'freigegeben', 'uebert
 export const REVIEWABLE = new Set(['eingereicht', 'pruefung']);
 const pl = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 /** Hover text of the SIA 416 rows: where the figure comes from. */
-const SIA_TIP = { GF: 'Fläche des Geschosspolygons (R_GESCHOSSPOLYGON)', EBF: 'GF eines beheizten Geschosses, sonst 0 (SIA 416/1)', KF: 'GF − NGF', NGF: 'Summe der Raumflächen: NF + VF + FF', NF: 'HNF + NNF', HNF: 'Raumpolygone ohne Nutzungsart zählen zur HNF', NNF: 'Nach Nutzungsart des Raumstempels', VF: 'Nach Nutzungsart des Raumstempels', FF: 'Nach Nutzungsart des Raumstempels' };
-const SIA_ROWS = [['GF', 'Geschossfläche', 'gf'], ['EBF', 'Energiebezugsfläche (SIA 416/1)', 'ebf'], ['KF', 'Konstruktionsfläche', 'kf'], ['NGF', 'Nettogeschossfläche', 'ngf'], ['NF', 'Nutzfläche', 'nf'], ['HNF', 'Hauptnutzfläche', 'hnf'], ['NNF', 'Nebennutzfläche', 'nnf'], ['VF', 'Verkehrsfläche', 'vf'], ['FF', 'Funktionsfläche', 'ff']];
+const SIA_TIP = { GF: 'Fläche des Geschosspolygons (R_GESCHOSSPOLYGON)', EBF: 'GF eines beheizten Geschosses, sonst 0 (SIA 416/1)', KF: 'GF − NGF', NGF: 'Summe der Raumflächen: NF + VF + FF', NF: 'HNF + NNF', HNF: 'Nach Nutzungsart des Raumstempels; Räume ohne Stempel zählen zur HNF', NNF: 'Nach Nutzungsart des Raumstempels', VF: 'Nach Nutzungsart des Raumstempels', FF: 'Nach Nutzungsart des Raumstempels' };
+// Übersicht «Flächen SIA 416»: from the whole (GF) down to its parts; the Kennzahlen list the parts first and add the EBF
+const SIA_ROWS = [['GF', 'Geschossfläche', 'gf'], ['KF', 'Konstruktionsfläche', 'kf'], ['NGF', 'Nettogeschossfläche', 'ngf'], ['VF', 'Verkehrsfläche', 'vf'], ['FF', 'Funktionsfläche', 'ff'], ['NF', 'Nutzfläche', 'nf'], ['HNF', 'Hauptnutzfläche', 'hnf'], ['NNF', 'Nebennutzfläche', 'nnf']];
+const KPI_AREAS = ['HNF', 'NNF', 'NF', 'VF', 'FF', 'NGF', 'KF', 'GF', 'EBF'];
 const SIA_COLORS = { HNF: '#f4b6b6', NNF: '#ffd59b', VF: '#fff3a3', FF: '#b5d8f7', KF: '#d9d9d9' };
 
 const area = v => (v == null ? '–' : fmtNum(v, Math.abs(v) >= 100 ? 0 : 1) + ' m²');
+const area1 = v => (v == null ? '–' : fmtNum(v, 1) + ' m²');           // area tables: one decimal
+const r2 = v => Math.round(v * 100) / 100;
+
+/** Nutzungsart per room: the room stamp (R_RAUMSTEMPEL) is not read by the plan check yet, data/plans.json › stamps stands in
+ *  for it (AOID → DIN 277 group such as «HNF 2», «VF 9»). Rooms without a stamp count as HNF; without any match the figures stay. */
+export function withUsage(k, rooms, stamps) {
+  if (!k || !stamps || !rooms.some(r => stamps[r.aoid])) return k;
+  const cat = { HNF: 0, NNF: 0, VF: 0, FF: 0 }, din = {};
+  for (const r of rooms) {
+    if (r.duplicate) continue;
+    const g = stamps[r.aoid], c = g ? g.split(' ')[0] : 'HNF';
+    cat[c in cat ? c : 'HNF'] += r.area;
+    if (g) din[g] = (din[g] || 0) + r.area;
+  }
+  return { ...k, hnf: r2(cat.HNF), nnf: r2(cat.NNF), vf: r2(cat.VF), ff: r2(cat.FF), nf: r2(cat.HNF + cat.NNF), din277: Object.fromEntries(Object.entries(din).map(([g, v]) => [g, r2(v)])) };
+}
+
+/** Ring «Anteile SIA 416» (360 × 200 px box, ring 140 px around 180/100): conic-gradient stops, and per segment a leader line
+ *  with its label; the labels of one side keep 18 px distance. `segs` is [[abbr, m²], …] without empty segments. */
+export function donutOf(segs) {
+  const total = segs.reduce((a, [, v]) => a + v, 0);
+  if (!total) return null;
+  const cx = 180, cy = 100, r0 = 72, r1 = 86;
+  let acc = 0, from = 0;
+  const stops = segs.map(([k, v]) => { const a = from; from += v / total * 100; return `${SIA_COLORS[k]} ${a.toFixed(2)}% ${from.toFixed(2)}%`; });
+  const L = segs.map(([k, v]) => {
+    const f = v / total, mid = (acc + f / 2) * 2 * Math.PI; acc += f;
+    const sx = Math.sin(mid), sy = -Math.cos(mid);
+    return { k, f, right: sx >= 0, p0: [cx + r0 * sx, cy + r0 * sy], p1: [cx + r1 * sx, cy + r1 * sy], y: cy + r1 * sy };
+  });
+  for (const side of [true, false]) {
+    const S = L.filter(l => l.right === side).sort((p, q) => p.y - q.y);
+    S.forEach((l, i) => { l.y = Math.min(192, Math.max(8, l.y)); if (i && l.y - S[i - 1].y < 18) l.y = S[i - 1].y + 18; });
+    for (let i = S.length - 1; i >= 0; i--) { if (S[i].y > 192) S[i].y = 192; if (i < S.length - 1 && S[i + 1].y - S[i].y < 18) S[i].y = S[i + 1].y - 18; }
+  }
+  const callouts = L.map(l => {
+    const p1 = [l.p1[0], l.y], p2 = [p1[0] + (l.right ? 14 : -14), l.y];
+    return { label: l.k, pct: Math.round(l.f * 100) + ' %', right: l.right, yPx: l.y, pts: [l.p0, p1, p2].map(p => p.map(n => n.toFixed(1)).join(',')).join(' '), x: (p2[0] + (l.right ? 4 : -4)).toFixed(1) + 'px', y: l.y.toFixed(1) + 'px' };
+  });
+  return { gradient: `conic-gradient(${stops.join(', ')})`, label: segs.map(([k, v]) => `${k} ${Math.round(v / total * 100)} %`).join(', '), callouts };
+}
 const share = (v, t) => (v == null || !t ? '' : Math.round(v / t * 100) + ' %');
 
 /** Initial per-floor state from data/plans.json. */
@@ -55,7 +98,6 @@ export function planLists(plan, { planFilter: filter = 'all', planSearch: search
   const ruleText = r => `${r.code} ${r.text} ${r.category}`;
   return {
     filter, query: q,
-    counts: { rules: failed.length ? `${failed.length} offen` : 'alle', issues: String(issues.length), rooms: String(roomsF.length), areas: String(areasF.length), layers: String(layersF.length), kpi: '' },
     rules: { failed: failed.filter(r => hit(ruleText(r))), passed: passed.filter(r => hit(ruleText(r))), total },
     issues: issues.filter(x => hit(`${x.it.code} ${x.it.message} ${x.ref}`)),
     rooms: roomsF.filter(r => hit(r.aoid + (r.duplicate ? ' Duplikat' : ''))),
@@ -86,9 +128,9 @@ export function planModel(s, data) {
     const gateOk = !!result && errors === 0;
     const locked = LOCKED.has(status);
     const rules = ruleRows(result);
-    const k0 = result ? result.kpi : null;
-    const k = k0 ? { ...k0, ebf: k0.gf != null && result.areas.length > 0 ? (f.beheizt === false ? 0 : k0.gf) : null } : null;   // EBF (SIA 416/1): GF of a heated floor
     const rooms = result ? result.rooms : [], areas = result ? result.areas : [];
+    const k0 = result ? withUsage(result.kpi, rooms, P.stamps) : null;
+    const k = k0 ? { ...k0, ebf: k0.gf != null && result.areas.length > 0 ? (f.beheizt === false ? 0 : k0.gf) : null } : null;   // EBF (SIA 416/1): GF of a heated floor
     const hasRooms = rooms.length > 0, hasAreas = areas.length > 0;
     const passed = sum ? `${sum.passedRules}/${sum.totalRules}` : `–/${P.ruleCount}`;
     const scoreC = !sum ? '#6b7480' : sum.score >= 90 ? '#2f7d63' : sum.score >= 60 ? '#8a6100' : '#9b2c44';
@@ -119,22 +161,17 @@ export function planModel(s, data) {
     const siaRows = SIA_ROWS.map(([abbr, label, prop]) => {
       const v = k ? k[prop] : null;
       const avail = v != null && (['GF', 'EBF', 'KF'].includes(abbr) ? hasAreas : hasRooms);
-      return { abbr, label, tip: SIA_TIP[abbr] || '', value: avail ? area(v) : '–', share: avail && k.gf ? share(v, k.gf) : '', sum: ['GF', 'NGF', 'NF'].includes(abbr) };
+      return { abbr, label, tip: SIA_TIP[abbr] || '', value: avail ? area1(v) : '–', share: avail && k.gf ? share(v, k.gf) : '', sum: ['GF', 'NGF', 'NF'].includes(abbr) };
     });
     const segs = k ? [['HNF', k.hnf], ['NNF', k.nnf], ['VF', k.vf], ['FF', k.ff], ['KF', k.kf]].filter(([, v]) => v != null && v > 0) : [];
-    const segTotal = segs.reduce((a, [, v]) => a + v, 0) || 1;
-    const siaSegs = segs.map(([label, v]) => ({ label, pct: (v / segTotal * 100).toFixed(1) + '%', text: `${label} ${Math.round(v / segTotal * 100)} %`, bg: SIA_COLORS[label] }));
     const sections = k ? buildKpiSections({ ...k, hasRooms, hasAreaPolys: hasAreas }) : null;
-    const kpiRow = r => ({ abbr: r.abbr, label: r.label, value: formatArea(r.value), share: formatShare(r.value, r.total), sum: ['GF', 'NGF', 'NF'].includes(r.abbr) });
+    const kpiRow = (r, i) => ({ abbr: r.abbr, label: r.label, value: area1(r.value), share: r.value == null || !r.total ? '–' : (r.value / r.total * 100).toFixed(1) + ' %', sum: ['GF', 'NGF', 'NF'].includes(r.abbr), bg: i % 2 ? '#fff' : '#f6f7f9' });
+    // Kennzahlen sub-tab (design 06.11.2026): Flächen SIA 416 and DIN 277, Flächenkennzahlen, ring with callouts
     const kpiDash = sections ? {
-      volume: sections.volume.map(kpiRow), areas: sections.areas.map(kpiRow), din277: sections.din277.map(kpiRow),
-      economy: sections.economy.map(r => ({ abbr: r.abbr, label: r.label, value: formatRatio(r.ratio) })),
-      entities: buildEntityRows(result.entities),
+      areas: KPI_AREAS.map(a => sections.areas.find(r => r.abbr === a)).filter(Boolean).map(kpiRow), din277: sections.din277.map(kpiRow),
+      economy: sections.economy.map((r, i) => ({ abbr: r.abbr, label: r.label, value: formatRatio(r.ratio), bg: i % 2 ? '#fff' : '#f6f7f9' })),
+      donut: donutOf(segs),
     } : null;
-    const ratios = k ? [
-      ['NGF / GF', k.gf && hasRooms ? (k.ngf / k.gf).toFixed(2) : '–'], ['KF / GF', k.gf && k.kf != null ? (k.kf / k.gf).toFixed(2) : '–'],
-      ['NF / NGF', hasRooms && k.ngf > 0 ? (k.nf / k.ngf).toFixed(2) : '–'], ['HNF / NGF', hasRooms && k.ngf > 0 ? (k.hnf / k.ngf).toFixed(2) : '–'],
-    ] : [];
 
     // History
     // History: { d, who (person key of data/forms.json), t, detail }
@@ -164,7 +201,7 @@ export function planModel(s, data) {
       isReviewable: REVIEWABLE.has(status), isFrei: status === 'freigegeben', isUeber: status === 'uebertragen', isZurueck: status === 'zurueck', notSubmitted: idx < 2 && status !== 'zurueck',
       approveDisabled: !manualChecks.every(m => m.checked),
       transferStatus: status === 'uebertragen' ? 'Übertragen, ' + (f.transferredAt || 'heute') : status === 'freigegeben' ? 'Bereit zur Übertragung' : 'Nach Freigabe',
-      steps, dates, siaRows, siaSegs, ratios, kpiDash, history, comment: p.comment || '',
+      steps, dates, kpiRaw: k, siaRows, kpiDash, history, comment: p.comment || '',
     };
   });
 

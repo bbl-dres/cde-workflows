@@ -35,6 +35,25 @@
   .sm-tr > span:nth-child(3) { grid-row: 1 / span 2; grid-column: 2; }
 }
 
+/* Plan Übersicht (design 06.11.2026): areas after SIA 416 as a banded table, rules per category as a bar list; the area
+   table is reused by the Kennzahlen of the Erfassung */
+.ar-tbl, .cat-tbl { padding: 10px 16px 14px; }
+.ar-th, .ar-tr { display: grid; grid-template-columns: minmax(0, 1fr) 90px 52px; gap: 10px; align-items: center; }
+.ar-th { height: 30px; font-size: 12px; color: var(--muted); }
+.ar-tr { min-height: 30px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.ar-ab { display: inline-block; width: 44px; font-weight: 600; }
+.ar-share { color: var(--muted); font-size: 12px; }
+.cat-th, .cat-tr, .cat-total { display: grid; grid-template-columns: minmax(120px, 180px) minmax(0, 1fr) 64px 64px 52px; gap: 10px; align-items: center; font-variant-numeric: tabular-nums; }
+.cat-th { height: 30px; font-size: 12px; color: var(--muted); }
+.cat-axis { display: flex; justify-content: space-between; }
+.cat-tr { min-height: 36px; font-size: 13px; }
+.cat-total { height: 38px; font-size: 13px; border-top: 1px solid #1f2d3f; margin-top: 4px; }
+.rep-box { padding: 16px 12px; display: flex; justify-content: center; }
+@media (max-width: 639.98px) {                                          /* phones: the counts stay, the bar goes */
+  .cat-th, .cat-tr, .cat-total { grid-template-columns: minmax(0, 1fr) 64px 60px 44px; gap: 6px; }
+  .cat-th > :nth-child(2), .cat-tr > :nth-child(2), .cat-total > :nth-child(2) { display: none; }
+}
+
 /* Locked Erfassung (from «Eingereicht»): a grey band with a lock under the card head says why, the table is tinted and its
    values read as text instead of fields. Nothing lies over the values: the reviewer still reads, selects and hovers them. */
 .lock-band { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 8px; min-height: 38px; padding: 7px 14px; background: #e3e7ec; border-bottom: 1px solid var(--line-3); font-size: 12.5px; font-weight: 500; color: #374151; text-align: center; }
@@ -117,12 +136,6 @@
 .pp-role { font-size: 12px; color: #374151; text-align: right; white-space: nowrap; }
 
 /* Übersicht (DWG): Flächen SIA 416 and Prüfregeln nach Kategorie */
-.cat-list { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 7px; }
-.cat-row { display: grid; grid-template-columns: 120px minmax(0, 1fr) 44px; gap: 10px; align-items: center; font-size: 12.5px; }
-.cat-bar { display: flex; height: 8px; overflow: hidden; background: #eef0f3; }
-.cat-legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 4px; flex-wrap: wrap; }
-.cat-legend > span { display: inline-flex; align-items: center; gap: 6px; }
-.cat-sw { width: 10px; height: 8px; display: inline-block; }
 
 /* Erfassung: Hauptgruppen with direct amount or detailed positions */
 .ent { min-width: 720px; }
@@ -236,7 +249,6 @@
   .tz-legend { grid-template-columns: 16px minmax(0, 1fr) 64px 64px 96px; font-size: 12px; }
   .submit-comp { width: 100%; }
   .tgt-legend { grid-template-columns: 16px minmax(0, 1fr) 90px 80px; font-size: 12px; }
-  .cat-row { grid-template-columns: 90px minmax(0, 1fr) 40px; }
 }
 @media (max-width: 639.98px) {
   .kpi-grid { grid-template-columns: 1fr; }

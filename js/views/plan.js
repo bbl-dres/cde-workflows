@@ -5,14 +5,14 @@ import { canvasImage } from '../plancheck/report.js';
 import { planLists } from '../model/plan.js';
 
 // Planlieferungen DWG für das Flächenmanagement (SAP RE-FX): the pieces of the Erfassung tab of a floor plan delivery (DWG-UG … DWG-DG):
-// upload zone, result strip, sub tabs (40 Prüfregeln, Fehlermeldungen, Räume, Layer, Kennzahlen SIA 416) with the
+// upload zone, result strip, sub tabs (Prüfregeln, Fehlermeldungen, Layer, Räume, Flächen, Kennzahlen) with the
 // plan viewer, the list toolbar (search, toggle-all) and the status filter, and the mount logic (viewer, drag & drop,
 // list interactions). The page itself is views/form.js.
 // The plan is parsed and checked locally in the browser by js/plancheck (plan-check engine, LibreDWG WebAssembly).
 
 const SEV_ICON = { pass: ['circle-check', '#2f7d63'], warn: ['triangle-alert', '#8a6100'], fail: ['circle-x', '#9b2c44'] };
 const STATUS_ICON = { ok: ['circle-check', '#2f7d63'], warning: ['triangle-alert', '#8a6100'], error: ['circle-x', '#9b2c44'] };
-const TABS = [['rules', 'Prüfregeln'], ['issues', 'Fehlermeldungen'], ['rooms', 'Räume'], ['areas', 'Geschossflächen'], ['layers', 'Layer'], ['kpi', 'Kennzahlen']];
+const TABS = [['rules', 'Prüfregeln'], ['issues', 'Fehlermeldungen'], ['layers', 'Layer'], ['rooms', 'Räume'], ['areas', 'Flächen'], ['kpi', 'Kennzahlen']];
 const OVERLAY_OF_TAB = { rooms: 'rooms', areas: 'areas', kpi: 'areas' };   // what the viewer highlights per sub tab
 const PLACEHOLDER = { rules: 'Prüfregel suchen…', issues: 'Fehler suchen…', rooms: 'Raum suchen…', areas: 'Fläche suchen…', layers: 'Layer suchen…' };
 const TOGGLE_TABS = new Set(['rooms', 'areas', 'layers']);   // rows with a viewer visibility checkbox → toggle-all in the toolbar
@@ -28,7 +28,7 @@ export const dropZone = (plan, compact = false) => html`
     <div class="plan-drop-hint">.dwg, max. 50 MB · Prüfung lokal im Browser nach CAD-Richtlinie BBL V1.0, nichts wird hochgeladen</div>
     <span class="btn btn-primary">Datei auswählen</span>
     <input type="file" accept=".dwg" data-change="planFile" data-key="${plan.key}" aria-label="DWG-Datei für ${plan.name} auswählen">
-    <div class="plan-drop-hint">Keine Datei? <button type="button" class="btn-link" data-action="planLoadSample" data-key="${plan.key}">${plan.sampleLabel} laden</button></div>
+    <div class="plan-drop-hint">Keine Datei? <button type="button" class="btn-link" data-action="planLoadSample" data-key="${plan.key}">Musterplan prüfen (Prototyp)</button></div>
   </label>`;
 
 const resultStrip = plan => html`<div class="plan-result">
@@ -45,7 +45,7 @@ const viewerBox = plan => html`<div class="plan-viewer" data-plan-viewer="${plan
   <div class="plan-tools" role="toolbar" aria-label="Viewer">
     <button type="button" data-plan-zoom="in" title="Vergrössern">${icon('zoom-in', 14, '#1f2937')}</button>
     <button type="button" data-plan-zoom="out" title="Verkleinern">${icon('zoom-out', 14, '#1f2937')}</button>
-    <button type="button" data-plan-zoom="fit" title="Gesamtansicht">${icon('maximize', 14, '#1f2937')}</button>
+    <button type="button" data-plan-zoom="fit" title="Gesamtansicht">${icon('house', 14, '#1f2937')}</button>
   </div>
   <div class="plan-coords" aria-hidden="true"></div>
   <div class="plan-popup" role="tooltip" aria-live="polite"></div>
@@ -89,14 +89,14 @@ const polyRow = (kind, e, label, sub) => {
 
 function listRooms(plan, L) {
   if (!L.rooms.length) return emptyNote(L, 'Keine Räume erkannt.', 'Erwartet: geschlossene Polylinien auf Layer R_RAUMPOLYGON mit AOID-Text auf R_AOID.');
-  return html`<div class="plan-group"><span>Räume · AOID</span><span>${L.rooms.length}</span></div>
+  return html`<div class="plan-group"><span>Räume</span><span>${L.rooms.length}</span></div>
     ${L.rooms.map(r => polyRow('rooms', r, r.aoid, r.duplicate ? '(Duplikat)' : ''))}`;
 }
 
 /** Geschossflächen: the floor-area polygons on R_GESCHOSSPOLYGON (Bruttogeschossfläche GF), shown as polygons in the viewer. */
 function listAreas(plan, L) {
   if (!L.areas.length) return emptyNote(L, 'Kein Geschosspolygon erkannt.', 'Erwartet: geschlossene Polylinie auf Layer R_GESCHOSSPOLYGON (Bruttogeschossfläche des Geschosses).');
-  return html`<div class="plan-group"><span>Geschossflächen · GF</span><span>${L.areas.length}</span></div>
+  return html`<div class="plan-group"><span>Geschossflächen</span><span>${L.areas.length}</span></div>
     ${L.areas.map(a => polyRow('areas', a, a.aoid || 'Bruttogeschossfläche', a.aoid ? 'Bruttogeschossfläche' : ''))}`;
 }
 
@@ -109,37 +109,27 @@ function listLayers(plan, L) {
       <span class="plan-row-text" title="${l.ok ? 'Zulässiger CAFM-Layer' : 'Unbekannter Layer, nicht in der CAFM-Layerliste'}">${l.name}</span><span class="plan-row-count">${l.count} Objekte</span></label>`; })}`;
 }
 
-/** Kennzahlen: two columns like the Prüfplattform — Gebäudevolumen, Gebäudeflächen SIA 416, Flächen DIN 277 | Wirtschaftlichkeit, Donut, Objektübersicht. */
-const kpiTable = (title, rows, kind, unit = 'Fläche') => html`<div class="plan-kpi-title">${title}</div><div class="plan-kpi-card"><table class="plan-kpi-table">${!kind ? html`<thead><tr><th colspan="2">${unit === 'Volumen' ? 'Kennzahl' : 'Flächenart'}</th><th class="right">${unit}</th><th class="right" title="Anteil an der Geschossfläche GF">% GF</th></tr></thead>` : ''}<tbody>${rows.map(r => (kind === 'ratio'
-  ? html`<tr><td class="abbr">${r.abbr}</td><td>${r.label}</td><td class="right">${r.value}</td></tr>`
-  : kind === 'entity'
-    ? html`<tr><td class="abbr">${r.type}</td><td class="right" style="width:60px">${r.count}</td><td class="muted ellipsis" title="${r.layers}">${r.layers}</td></tr>`
-    : html`<tr class="${r.sum ? 'is-sum' : ''}"><td class="abbr">${r.abbr}</td><td>${r.label}</td><td class="right">${r.value}</td><td class="right muted" style="width:48px">${r.share}</td></tr>`))}</tbody></table></div>`;
-const donut = segs => {
-  if (!segs.length) return html`<div class="plan-empty" style="padding:14px 0">Keine Flächen für das Diagramm.</div>`;
-  const r = 60, c = 2 * Math.PI * r;
-  let offset = 0;
-  const circles = segs.map(s => { const dash = s.share * c, o = offset; offset += dash; return html`<circle cx="80" cy="80" r="${r}" fill="none" stroke="${s.bg}" stroke-width="24" stroke-dasharray="${dash.toFixed(2)} ${(c - dash).toFixed(2)}" stroke-dashoffset="${(-o + c * 0.25).toFixed(2)}"><title>${s.text}</title></circle>`; });
-  return html`<div class="plan-kpi-donut"><svg viewBox="0 0 160 160" role="img" aria-label="${segs.map(s => s.text).join(', ')}"><circle cx="80" cy="80" r="${r}" fill="none" stroke="#eef0f3" stroke-width="24"></circle>${circles}</svg>
-    <div class="plan-kpi-legend">${segs.map(s => html`<span><i style="background:${s.bg}"></i>${s.label}<b>${s.pct}</b></span>`)}</div></div>`;
-};
+/** Kennzahlen (design 06.11.2026): replaces list and viewer. Left the areas after SIA 416 and DIN 277 (m², % GF), right the
+ *  Flächenkennzahlen and the ring «Anteile SIA 416» with a label per segment (no legend table). */
+const areaTable = (title, rows) => html`<div><div class="kd-title">${title}</div>
+  <div class="ar-th kd-line"><span>Flächenart</span><span class="right">m²</span><span class="right" title="Anteil an der Geschossfläche GF">% GF</span></div>
+  ${rows.map(r => html`<div class="ar-tr" style="font-weight:${r.sum ? 600 : 400};background:${r.bg}"><span class="ellipsis"><span class="ar-ab kd-ab">${r.abbr}</span>${r.label}</span><span class="right">${r.value}</span><span class="right ar-share">${r.share}</span></div>`)}</div>`;
+const ratioTable = rows => html`<div><div class="kd-title">Flächenkennzahlen</div>
+  <div class="kd-ratio kd-ratio-th kd-line"><span>Kennzahl</span><span class="right">Wert</span></div>
+  ${rows.map(r => html`<div class="kd-ratio" style="background:${r.bg}" title="${r.label}"><span class="ellipsis"><span class="kd-ratio-ab">${r.abbr}</span>${r.label}</span><span class="right">${r.value}</span></div>`)}</div>`;
+const donut = d => html`<div><div class="kd-title">Anteile SIA 416</div>${!d ? html`<div class="plan-empty" style="padding:14px 0">Keine Flächen für das Diagramm.</div>` : html`<div class="kd-donut-wrap"><div class="kd-donut" role="img" aria-label="${d.label}">
+  <div class="kd-ring" style="background:${d.gradient}"></div>
+  <svg width="360" height="200" viewBox="0 0 360 200" aria-hidden="true">${d.callouts.map(c => html`<polyline points="${c.pts}" fill="none" stroke="#9ca3af" stroke-width="1"></polyline>`)}</svg>
+  ${d.callouts.map(c => html`<span class="kd-callout${c.right ? '' : ' is-left'}" style="top:${c.y};left:${c.x}"><b>${c.label}</b> ${c.pct}</span>`)}
+</div></div>`}</div>`;
 function listKpi(plan) {
   const d = plan.kpiDash;
   if (!d) return html`<div class="plan-empty">Keine Kennzahlen ohne Prüfergebnis.</div>`;
-  const segs = plan.siaSegs.map(s => ({ ...s, share: parseFloat(s.pct) / 100 }));
   return html`<div class="plan-kpi-dash">
-    <div>
-      ${kpiTable('Gebäudevolumen', d.volume, undefined, 'Volumen')}
-      ${kpiTable('Gebäudeflächen', d.areas)}
-      ${kpiTable('Flächen DIN 277', d.din277)}
-    </div>
-    <div>
-      ${kpiTable('Wirtschaftlichkeitskennzahlen', d.economy, 'ratio')}
-      ${donut(segs)}
-      ${d.entities.length ? kpiTable('Objektübersicht', d.entities, 'entity') : ''}
-      <div class="muted fs-12" style="margin-top:12px;line-height:1.5">Raumpolygone zählen zur HNF, bis die Prüfstelle die Nutzungsart ergänzt (R_RAUMSTEMPEL). GF aus R_GESCHOSSPOLYGON, KF = GF − NGF. EBF (SIA 416/1) = GF eines beheizten Geschosses, sonst 0.</div>
-    </div>
-  </div>`;
+    <div class="kd-col">${areaTable('Flächen SIA 416', d.areas)}${areaTable('Flächen DIN 277', d.din277)}</div>
+    <div class="kd-col">${ratioTable(d.economy)}${donut(d.donut)}</div>
+  </div>
+  <div class="card-foot">Nutzungsart je Raum aus R_RAUMSTEMPEL (ohne Stempel: HNF) · GF aus R_GESCHOSSPOLYGON, KF = GF − NGF · EBF = GF eines beheizten Geschosses</div>`;
 }
 
 /** Result strip, sub tabs and the split view (list | viewer) of a checked plan. */
@@ -151,7 +141,7 @@ export function resultPanel(ctx, plan, { height = '' } = {}) {
   return html`
     ${resultStrip(plan)}
     <div class="plan-tabbar">
-      <div class="plan-tabs" role="tablist">${TABS.map(([key, label]) => html`<button type="button" class="plan-tab${key === tab ? ' is-active' : ''}" role="tab" aria-selected="${key === tab ? 'true' : 'false'}" aria-controls="plan-list" data-action="planTab" data-arg="${key}">${label}${L.counts[key] ? html`<span class="plan-tab-count">${L.counts[key]}</span>` : ''}</button>`)}</div>
+      <div class="plan-tabs" role="tablist">${TABS.map(([key, label]) => html`<button type="button" class="plan-tab${key === tab ? ' is-active' : ''}" role="tab" aria-selected="${key === tab ? 'true' : 'false'}" aria-controls="plan-list" data-action="planTab" data-arg="${key}">${label}</button>`)}</div>
       <div class="plan-filter" role="group" aria-label="Statusfilter">${FILTERS.map(([key, label, ic]) => { const on = key === L.filter; return html`<button type="button" data-action="planFilter" data-arg="${key}" aria-pressed="${on ? 'true' : 'false'}">${ic ? icon(ic[0], 13, on ? '#fff' : ic[1]) : ''}${label}</button>`; })}</div>
     </div>
     ${tab === 'kpi'
@@ -184,6 +174,18 @@ function setViewerState(box, status, text, sub = '') {
   const spin = el.querySelector('.plan-spin');
   if (spin) spin.style.display = status === 'loading' ? '' : 'none';
 }
+
+/** Report images without the viewer on screen (Übersicht, Kennzahlen): a temporary viewer renders the cached drawing off-screen. */
+export function offscreenCapture(entry) {
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;left:-10000px;top:0;width:1200px;height:800px;pointer-events:none';
+  const canvas = document.createElement('canvas');
+  box.appendChild(canvas); document.body.appendChild(box);
+  const v = new PlanViewer();
+  v.attach(box, canvas); v.setData(entry);
+  return { capture: overlay => { v.setOverlay(overlay); v.zoomExtents(); v.render(); return canvasImage(v.canvas); }, dispose: () => { v.detach(); box.remove(); } };
+}
+export const viewerReady = () => !!(viewer.canvas && viewer.drawing);
 
 /** Image of the attached drawing at full extent with an overlay ('base', 'rooms', 'areas') for the Prüfbericht; the view is restored. */
 export function captureViewerImage(overlay) {

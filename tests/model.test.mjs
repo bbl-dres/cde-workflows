@@ -18,7 +18,7 @@ const { compute } = await mod('js/model/index.js');
 const { matchRoute, parseHash, routeOverrides } = await mod('js/router.js');
 const { LEGACY, screenIdFor, defaultDeliveryTab, FORM_TABS, link } = await mod('js/links.js');
 const { TASK_COLUMNS, DEFAULT_TASK_COLS } = await mod('js/model/columns.js');
-const { planLists } = await mod('js/model/plan.js');
+const { planLists, withUsage, donutOf } = await mod('js/model/plan.js');
 const { searchModel } = await mod('js/model/search.js');
 
 const detailed = data.projects.projects.find(p => p.detailed);
@@ -459,9 +459,10 @@ test('plans: data, ILP rows, tasks and statuses per floor', () => {
 test('plans: Datenformular shape (Übersicht, Prüfung) of a floor plan', () => {
   const eg = vm.formByCode('dwg-eg'), ug = vm.formByCode('dwg-ug'), dg = vm.formByCode('dwg-dg');
   assert.equal(eg.kind, 'plan'); assert.equal(eg.status, 'In Bearbeitung'); assert.equal(eg.step, 1);
-  assert.equal(eg.steps.length, 6); assert.equal(eg.planOv.cats.length, 10); assert.equal(eg.planOv.sia.length, 9, 'SIA 416 areas plus EBF (SIA 416/1)');
+  assert.equal(eg.steps.length, 6); assert.equal(eg.planOv.cats.length, 10); assert.deepEqual(eg.planOv.sia.map(a => a.ab), ['GF', 'KF', 'NGF', 'VF', 'FF', 'NF', 'HNF', 'NNF'], 'from the whole to its parts');
   assert.equal(eg.comp.pct, '26 / 40'); assert.deepEqual(eg.summ.map(r => r.key), ['err', 'warn', 'aoid', 'sia']); assert.equal(eg.summ[0].val, '4'); assert.equal(eg.summ[0].res, 'nicht erfüllt'); assert.equal(eg.summ[1].res, 'prüfen');
-  assert.equal(eg.planOv.cats[0].ratio, '0/8', 'all Layer rules fail for the office layer structure');
+  assert.equal(eg.planOv.cats[0].ratio, '0 / 8', 'all Layer rules fail for the office layer structure'); assert.equal(eg.planOv.catTot.ratio, '26 / 40'); assert.equal(Number(eg.planOv.catTot.w) + Number(eg.planOv.catTot.e), 14, 'fourteen rules fired');
+  assert.equal(dg.planOv.catTot.ratio, '– / 40'); assert.equal(dg.planOv.catTot.e, '–', 'no result: no counts');
   assert.equal(eg.comp.text, '4 Fehler · 44 Warnungen'); assert.equal(eg.lock, ''); assert.ok(ug.lock.startsWith('Gesperrt: an SAP RE-FX übertragen'), ug.lock); assert.equal(eg.rv.notSubmitted, true); assert.match(eg.bar.reason, /keine Fehler/);
   assert.equal(ug.status, 'Abgeschlossen'); assert.equal(ug.step, 6); assert.equal(ug.kpis[0].v, '30'); assert.equal(ug.kpis[1].v, '572.3');
   assert.ok(ug.steps.slice(0, 5).every(s => s.sym === '✓')); assert.equal(ug.docs[0].name, '9999.AA.U1_CAFM.dwg'); assert.equal(ug.docs[0].req, 'Pflicht');
@@ -473,29 +474,58 @@ test('plans: status filter and search of the sub-tab lists (planLists, as in pla
   const eg = vm.plans.EG;   // office seed: 4 errors + 44 warnings in 14 rules (GEOM_003 counts the splines inside blocks), 32 layers (30 unknown), no rooms
   const all = planLists(eg, { planFilter: 'all', planSearch: '' });
   assert.equal(all.rules.failed.length + all.rules.passed.length, 40); assert.equal(all.issues.length, 48); assert.equal(all.layers.length, 32);
-  assert.deepEqual([all.counts.rules, all.counts.issues, all.counts.layers, all.counts.rooms], ['14 offen', '48', '32', '0']);
+  assert.equal(all.counts, undefined, 'the sub-tabs carry no counts');
   assert.equal(all.issues[0].it.severity, 'error', 'errors first');
   const errRules = [...eg.rules.failed, ...eg.rules.passed].filter(r => r.severity === 'error').length;
   const err = planLists(eg, { planFilter: 'errors' });
   assert.ok(err.rules.failed.length >= 1 && err.rules.failed.every(r => r.severity === 'error')); assert.equal(err.rules.passed.length, 0, 'passed rules only without filter');
   assert.equal(err.rules.total, errRules); assert.equal(err.issues.length, 4); assert.ok(err.issues.every(x => x.it.severity === 'error'));
-  assert.equal(err.layers.length, 0, 'layers never carry errors'); assert.equal(err.counts.issues, '4');
+  assert.equal(err.layers.length, 0, 'layers never carry errors');
   const warn = planLists(eg, { planFilter: 'warnings' });
   assert.equal(warn.layers.length, 30, 'unknown layers are the warnings of the Layer tab'); assert.equal(warn.issues.length, 44); assert.ok(warn.rules.failed.every(r => r.severity === 'warning'));
   const q = planLists(eg, { planFilter: 'all', planSearch: 'layer_00' });
   const qRules = [...q.rules.failed, ...q.rules.passed];
   assert.equal(qRules.length, 8); assert.ok(qRules.every(r => r.code.startsWith('LAYER_00')));
-  assert.equal(q.counts.rules, all.counts.rules, 'tab counts follow the filter, not the search');
   assert.ok(planLists(eg, { planSearch: 'Pflicht-Layer' }).rules.failed.length >= 1, 'search matches the rule text');
   const ln = eg.result.layers[3].name; assert.ok(planLists(eg, { planSearch: ln.toLowerCase() }).layers.some(l => l.name === ln), 'layer search is case-insensitive');
   const ug = vm.plans.UG;   // Musterplan: 30 rooms (ok), 1 floor area «UV», 3 warnings
   const rooms = planLists(ug, { planSearch: '05.00' });
   assert.ok(rooms.rooms.length > 0 && rooms.rooms.length < 30 && rooms.rooms.every(r => r.aoid.includes('05.00')));
-  assert.equal(planLists(ug, { planFilter: 'errors' }).rooms.length, 0); assert.equal(planLists(ug, { planFilter: 'errors' }).counts.rooms, '0');
+  assert.equal(planLists(ug, { planFilter: 'errors' }).rooms.length, 0);
   assert.equal(planLists(ug, { planFilter: 'all' }).areas.length, 1); assert.equal(planLists(ug, { planSearch: 'brutto' }).areas.length, 1, 'the floor area matches «Bruttogeschossfläche» too');
   assert.equal(planLists(ug, { planFilter: 'warnings' }).rules.failed.length, 2); assert.equal(planLists(ug, { planFilter: 'warnings' }).rules.total, 40 - errRules);
   const dg = vm.plans.DG;   // no result yet
-  assert.deepEqual(planLists(dg, {}).counts, { rules: 'alle', issues: '0', rooms: '0', areas: '0', layers: '0', kpi: '' });
+  assert.equal(planLists(dg, {}).issues.length, 0); assert.equal(planLists(dg, {}).rules.failed.length, 0);
+});
+
+test('plans: Nutzungsart of the rooms (mock of R_RAUMSTEMPEL), DIN 277, Flächenkennzahlen and the ring', () => {
+  const ug = vm.plans.UG, eg = vm.plans.EG, k = ug.kpiRaw;
+  // the stamps of data/plans.json split the 30 rooms of the Musterplan; the parts add up to the NGF, GF and KF stay
+  assert.deepEqual([k.hnf, k.nnf, k.vf, k.ff, k.nf, k.ngf, k.kf, k.gf], [368.89, 40.87, 90.02, 17.28, 409.76, 517.06, 55.26, 572.32]);
+  assert.ok(Math.abs(k.hnf + k.nnf + k.vf + k.ff - k.ngf) < 0.011 && Math.abs(k.ngf + k.kf - k.gf) < 0.011);
+  assert.deepEqual(k.din277, { 'HNF 1': 22.48, 'HNF 2': 271.66, 'HNF 4': 39.08, 'HNF 5': 35.67, 'NNF 7': 40.87, 'FF 8': 17.28, 'VF 9': 90.02 });
+  assert.equal(Object.keys(data.plans.stamps).length, 30); assert.ok(Object.values(data.plans.stamps).every(g => /^(HNF [1-6]|NNF 7|FF 8|VF 9)$/.test(g)));
+  // withUsage: a room without a stamp counts as HNF, duplicates do not count, no match leaves the figures as they are
+  const k0 = { hnf: 10, nnf: 0, vf: 0, ff: 0, nf: 10, ngf: 10 };
+  const mixed = withUsage(k0, [{ aoid: 'a', area: 6 }, { aoid: 'b', area: 4 }, { aoid: 'a', area: 6, duplicate: true }], { a: 'VF 9' });
+  assert.deepEqual([mixed.hnf, mixed.vf, mixed.nf, mixed.ngf], [4, 6, 4, 10]); assert.deepEqual(mixed.din277, { 'VF 9': 6 });
+  assert.equal(withUsage(k0, [{ aoid: 'x', area: 10 }], { a: 'VF 9' }), k0); assert.equal(withUsage(null, [], {}), null);
+  // Übersicht: one decimal, share of the GF
+  const F = vm.formByCode('dwg-ug');
+  assert.deepEqual(F.planOv.sia.map(a => `${a.ab} ${a.val} ${a.share}`), ['GF 572.3 m² 100 %', 'KF 55.3 m² 10 %', 'NGF 517.1 m² 90 %', 'VF 90.0 m² 16 %', 'FF 17.3 m² 3 %', 'NF 409.8 m² 72 %', 'HNF 368.9 m² 64 %', 'NNF 40.9 m² 7 %']);
+  assert.deepEqual(F.planOv.sia.filter(a => a.fw === 600).map(a => a.ab), ['GF', 'NGF', 'NF']); assert.equal(F.planOv.catTot.ratio, '38 / 40'); assert.equal(F.planOv.catTot.e, '0');
+  // Kennzahlen: parts first, EBF last; DIN 277 groups without rooms read «–»
+  const d = ug.kpiDash;
+  assert.deepEqual(d.areas.map(r => r.abbr), ['HNF', 'NNF', 'NF', 'VF', 'FF', 'NGF', 'KF', 'GF', 'EBF']); assert.equal(d.areas[0].value, '368.9 m²'); assert.equal(d.areas[0].share, '64.5 %');
+  assert.deepEqual(d.areas.filter(r => r.sum).map(r => r.abbr), ['NF', 'NGF', 'GF']); assert.equal(d.volume, undefined); assert.equal(d.entities, undefined);
+  assert.equal(d.din277.length, 10); assert.equal(d.din277.find(r => r.abbr === 'HNF 2').value, '271.7 m²'); assert.equal(d.din277.find(r => r.abbr === 'HNF 3').value, '–'); assert.equal(d.din277.find(r => r.abbr === 'HNF 3').share, '–');
+  assert.deepEqual(d.economy.map(r => `${r.abbr} ${r.value}`), ['NGF / GF 0.90', 'KF / GF 0.10', 'NF / NGF 0.79', 'HNF / NGF 0.71']);
+  // ring: one label per segment, the labels of one side keep 18 px distance and stay inside the box
+  const c = d.donut.callouts;
+  assert.deepEqual(c.map(x => x.label), ['HNF', 'NNF', 'VF', 'FF', 'KF']); assert.equal(c[0].pct, '64 %'); assert.ok(d.donut.gradient.startsWith('conic-gradient(#f4b6b6 0.00% ') && d.donut.label.includes('HNF 64 %'));
+  for (const side of [true, false]) { const ys = c.filter(x => x.right === side).map(x => x.yPx).sort((p, q) => p - q); assert.ok(ys.every((y, i) => y >= 8 && y <= 192 && (!i || y - ys[i - 1] >= 18 - 1e-9)), `labels ${side ? 'right' : 'left'}: ${ys.join(', ')}`); }
+  assert.equal(donutOf([]), null); assert.equal(donutOf([['HNF', 5]]).callouts[0].pct, '100 %');
+  assert.equal(eg.kpiDash.donut, null, 'office seed: no rooms, no ring'); assert.ok(eg.kpiDash.areas.every(r => r.value === '–'));
 });
 
 test('plans: submit gate (no errors), locking and review flow', () => {

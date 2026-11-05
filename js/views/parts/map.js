@@ -12,10 +12,13 @@ const LOCALE = {
 let suppressUntil = 0;     // removing a map whose style is still loading makes MapLibre reject its fetch with an AbortError
 
 window.addEventListener('unhandledrejection', e => { if (e.reason && e.reason.name === 'AbortError' && Date.now() < suppressUntil) e.preventDefault(); });
+// The removed map has no listeners left, so MapLibre reports the same aborted request with console.error: not an error of the app.
+const consoleError = console.error;
+console.error = (...args) => { if (args[0] && args[0].name === 'AbortError' && Date.now() < suppressUntil) return; consoleError.apply(console, args); };
 
 export function unmountMap() {
   if (!live) return;
-  suppressUntil = Date.now() + 3000;
+  suppressUntil = Date.now() + 15000;   // the aborted style or tile request can reject seconds later on a slow connection
   if (live.ro) live.ro.disconnect();
   try { live.map.remove(); } catch { /* already gone */ }
   live = null;

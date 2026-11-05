@@ -23,8 +23,6 @@
 .plan-tab { background: none; border: 0; border-bottom: 2px solid transparent; padding: 9px 8px; font-size: 12.5px; font-weight: 500; color: var(--text-3); cursor: pointer; }
 .plan-tab:hover { color: var(--navy); }
 .plan-tab.is-active { border-bottom-color: var(--navy); color: var(--navy); font-weight: 600; }
-.plan-tab-count { display: inline-block; margin-left: 5px; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--row-alt); color: var(--muted); font-size: 11px; line-height: 18px; text-align: center; font-weight: 500; }
-.plan-tab.is-active .plan-tab-count { background: var(--navy); color: #fff; }
 /* Status filter «Alle | Warnungen | Fehler» at the right of the sub tabs (segmented control, as in plan-check) */
 .plan-filter { align-self: center; display: inline-flex; flex: none; margin: 0 0 4px auto; border: 1px solid var(--line-2); border-radius: 4px; overflow: hidden; background: #fff; }
 .plan-filter button { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border: 0; background: #fff; font: inherit; font-size: 12px; color: var(--text-3); cursor: pointer; white-space: nowrap; }
@@ -65,7 +63,7 @@
 .plan-viewer-state { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--text-3); background: repeating-linear-gradient(135deg, #f7f8fa 0 12px, #eef0f3 12px 24px); text-align: center; padding: 20px; }
 .plan-viewer-state.is-hidden { display: none; }
 .plan-viewer-state .plan-state-sub { font-size: 12px; color: var(--muted); max-width: 360px; line-height: 1.5; }
-.plan-tools { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; background: rgba(255,255,255,.92); border: 1px solid var(--line-3); border-radius: 4px; padding: 3px; z-index: 2; }
+.plan-tools { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 2px; background: rgba(255,255,255,.92); border: 1px solid var(--line-3); border-radius: 4px; padding: 3px; z-index: 2; }
 .plan-tools button { width: 26px; height: 26px; border: 0; background: none; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
 .plan-tools button:hover { background: var(--row-alt); }
 .plan-tools .is-on { background: var(--navy); }
@@ -78,24 +76,23 @@
 .plan-popup-row span:last-child { font-family: var(--mono); font-size: 11.5px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Kennzahlen (SIA 416 / DIN 277): two columns, no viewer */
-.plan-kpi-dash { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; padding: 12px 14px 16px; align-items: start; }
-.plan-kpi-card { border: 1px solid var(--line-3); border-radius: 4px; background: #fff; margin-bottom: 14px; overflow: hidden; }
-.plan-kpi-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-.plan-kpi-table td { padding: 7px 10px; border-bottom: 1px solid var(--line-5); }
-.plan-kpi-table th { padding: 5px 10px; font-size: 11.5px; font-weight: 500; color: var(--muted); text-align: left; border-bottom: 1px solid var(--line-4); background: #fafafa; }
-.plan-kpi-table th.right { text-align: right; }
-.plan-kpi-table tr:last-child td { border-bottom: 0; }
-.plan-kpi-table td.right { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.plan-kpi-table td.abbr { font-weight: 600; width: 64px; white-space: nowrap; }
-.plan-kpi-table td.ellipsis { max-width: 0; }
-.plan-kpi-table tr.is-sum td { font-weight: 600; }
-.plan-kpi-title { font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); margin: 6px 0 6px; }
-.plan-kpi-donut { display: flex; align-items: center; gap: 24px; margin: 6px 0 18px; }
-.plan-kpi-donut svg { width: 150px; height: 150px; flex: none; }
-.plan-kpi-legend { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; }
-.plan-kpi-legend span { display: flex; align-items: center; gap: 8px; }
-.plan-kpi-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
-.plan-kpi-legend b { font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; margin-left: 6px; }
+.plan-kpi-dash { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 20px 32px; padding: 14px 16px 16px; align-items: start; }
+.kd-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.kd-title { font-size: 13px; font-weight: 500; padding: 4px 0 6px; }
+.kd-line { border-bottom: 1px solid var(--line-4); }
+.kd-ab { width: 62px; }
+.kd-ratio { display: grid; grid-template-columns: minmax(0, 1fr) 90px; gap: 10px; align-items: center; min-height: 30px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.kd-ratio-th { height: 30px; font-size: 12px; color: var(--muted); }
+.kd-ratio-ab { display: inline-block; width: 92px; font-weight: 600; }
+/* ring «Anteile SIA 416»: 360 × 200 px box, ring 140 px around 180/100, leader lines and labels from the model (donutOf) */
+.kd-donut-wrap { overflow-x: auto; }
+.kd-donut { position: relative; width: 360px; height: 200px; margin: 4px auto 0; }
+.kd-ring { position: absolute; left: 110px; top: 30px; width: 140px; height: 140px; border-radius: 50%; -webkit-mask: radial-gradient(circle, transparent 44px, #000 45px); mask: radial-gradient(circle, transparent 44px, #000 45px); }
+.kd-donut svg { position: absolute; left: 0; top: 0; overflow: visible; }
+.kd-callout { position: absolute; transform: translateY(-50%); font-size: 12.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.kd-callout.is-left { transform: translate(-100%, -50%); }
+.kd-callout b { font-weight: 600; }
+@media (max-width: 479.98px) { .kd-donut { transform: scale(.86); transform-origin: left top; margin: 4px 0 -28px; } }   /* phones: the ring with its labels fits the card */
 
 /* Right column: Prüfung card checks */
 
@@ -115,5 +112,4 @@
   .plan-result > div { border-bottom: 1px solid var(--line-4); }
 }
 @media (max-width: 1023.98px) {
-  .plan-kpi-dash { grid-template-columns: minmax(0, 1fr); }
 }

@@ -69,15 +69,24 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   `docs/research/2026-11-05-oekobilanz-eingabemaske-erstellung-betrieb.md`. Von den Darstellungsvarianten der Design-Studie
   ist die Balkenliste der Übersicht umgesetzt; Matrix, Rangliste, Einfluss, Hantel, Brücke und Zusammensetzung sind es nicht.
 - **Planlieferungen DWG**: ein Grundriss pro Lieferung. Die DWG-Datei wird per Drag & Drop hochgeladen und lokal im Browser gegen
-  die 40 Prüfregeln der CAD-Richtlinie BBL V1.0 geprüft (LibreDWG WebAssembly, nichts wird hochgeladen), mit Plan-Viewer,
-  Fehlermeldungen, Räumen, Geschossflächen (Bruttogeschossfläche als Polygon), Layern und Kennzahlen SIA 416 samt
-  Energiebezugsfläche EBF nach SIA 416/1 (EBF = GF eines beheizten Geschosses; ein als unbeheizt markiertes Geschoss,
-  z. B. das UG, zählt 0). Wie in
+  die 40 Prüfregeln der CAD-Richtlinie BBL V1.0 geprüft (LibreDWG WebAssembly, nichts wird hochgeladen), mit Plan-Viewer
+  (Werkzeugleiste senkrecht oben rechts: Vergrössern, Verkleinern, Gesamtansicht) und den Unter-Tabs Prüfregeln,
+  Fehlermeldungen, Layer, Räume, Flächen (Geschossflächen als Polygon) und Kennzahlen, ohne Zahlen in den Tabs.
+  **Kennzahlen** (Design 06.11.2026) ersetzt Liste und Viewer: links «Flächen SIA 416» (samt Energiebezugsfläche EBF nach
+  SIA 416/1: GF eines beheizten Geschosses, ein unbeheiztes wie das UG zählt 0) und «Flächen DIN 277» (m², % GF), rechts
+  «Flächenkennzahlen» und der Ring «Anteile SIA 416» mit Beschriftung je Segment. Die Nutzungsart je Raum käme aus dem
+  Raumstempel (R_RAUMSTEMPEL); die Planprüfung liest ihn noch nicht, darum hinterlegt `data/plans.json` › `stamps` für den
+  Musterplan je AOID eine DIN-277-Gruppe (Räume ohne Eintrag zählen zur HNF). Die **Übersicht** zeigt «Flächen SIA 416» als
+  Tabelle vom Ganzen zu den Teilen (GF, KF, NGF, VF, FF, NF, HNF, NNF) und «Prüfregeln nach Kategorie» als Balkenliste
+  (bestanden, Warnungen, Fehler, Total), rechts nach «Lieferung» die Karte «Prüfbericht». Wie in
   plan-check hat jede Liste eine Suche, die Viewer-Listen (Layer, Räume, Geschossflächen) ein «Alle ein-/ausblenden»,
   und rechts der Sub-Tabs filtert «Alle | Warnungen | Fehler» alle Listen (Prüfregeln und Fehlermeldungen nach
   Schweregrad, Räume und Flächen nach Status, Layer nur bei Warnungen). Referenz: `docs/reference/plan-check/`. Einreichen ist erst ohne Regel mit Schweregrad Fehler möglich;
-  «Musterplan laden» prüft den offiziellen BBL-Musterplan CAD.V01 (38/40, 0 Fehler). «Prüfbericht» lädt das Prüfergebnis als
-  PDF herunter (Deckblatt mit Lieferung und Zusammenfassung, Prüfregeln, Fehlermeldungen, Layer, Räume und Flächen mit
+  im Kartenkopf stehen «Prüfbericht herunterladen», «Neu hochladen», das Menü «CAD-Richtlinie» (Richtlinie als PDF: im
+  Prototyp ohne Funktion; «Musterplan herunterladen (DWG)» lädt den offiziellen BBL-Musterplan CAD.V01 herunter, 38/40,
+  0 Fehler) und «Entfernen». Nur die leere Ablagefläche bietet noch «Musterplan prüfen (Prototyp)». «Prüfbericht
+  herunterladen» (auch aus der Übersicht und aus den Kennzahlen: die Planbilder entstehen dann ausserhalb des Bildschirms)
+  lädt das Prüfergebnis als PDF herunter (Deckblatt mit Lieferung und Zusammenfassung, Prüfregeln, Fehlermeldungen, Layer, Räume und Flächen mit
   Bildern aus dem Viewer, Kennzahlen SIA 416; jsPDF von jsDelivr, erst beim ersten Klick geladen). Flächen und Volumen
   SIA 416 kommen aus den Grundrissen; ein eigenes Formular FV-32 gibt es nicht mehr.
 - **Projektseiten** wie in der CDE Bund: Überblick, Aktivitäten (Feed und Logs), Dateien, Modell, Aufgaben, Info-Management
@@ -131,13 +140,13 @@ Code-Reviews mit Befunden und Status: `docs/reviews/` (zuletzt `2026-11-05-code-
   Vorlagen, Benachrichtigungen, veraltete Begriffe), den Router, die Zuordnung der Studien-Screens und die DWG-Prüf-Engine
   gegen die vorberechneten Ergebnisse (`tests/model.test.mjs`) sowie die Benutzeraktionen gegen den echten Store
   (Aufschlüsseln, Kostenelemente, Emissionsquellen, Importe, Workflow, Planprüfung), den Mock, den Store und die
-  Formatierung (`tests/actions.test.mjs`), Rollen der Prüfung, Statusfilter und Suche der Planprüfung; 34 Tests, Node 22+.
+  Formatierung (`tests/actions.test.mjs`), Rollen der Prüfung, Statusfilter und Suche der Planprüfung, Nutzungsarten, DIN 277 und Ring der Kennzahlen; 35 Tests, Node 22+.
 - `node tests/e2e.mjs` fährt bei laufendem Server einen Headless-Browser (Edge/Chrome/Brave) durch die Anwendung: Startseite mit
   Karte, Bestellen-Drawer, Rollenwechsel, Benachrichtigungen, KV-32 (Übersicht, Erfassung mit Aufschlüsseln, Kostenelemente,
   Filter, Excel-Import, Einreichen), THG-32 (Übersicht mit Zielwerten, Emissionsquellen, Betrieb, Tool-Export, Rechenhilfe, neue Quelle, Hersteller-Flag, Einreichen),
   THG-32 einreichen und prüfen (freigeben, übertragen), KV-32 zurückweisen, Planlieferungen DWG (Parsen, Hochladen, Einreichen,
   Prüfung mit Suche, Alle ein-/ausblenden und Statusfilter), die Datenformulare der weiteren Projekte, Aufgabenliste,
-  Projektseiten, Hover-Zustände, Studien-Panel und bei 375 px Überlauf, Sidebar, Filter, Footer und Karte (Standort-Karte zoomt nur mit Ctrl + Mausrad oder den Knöpfen, die Karte der Startseite auch mit dem Mausrad; ≈275 Checks).
+  Projektseiten, Hover-Zustände, Studien-Panel und bei 375 px Überlauf, Sidebar, Filter, Footer und Karte (Standort-Karte zoomt nur mit Ctrl + Mausrad oder den Knöpfen, die Karte der Startseite auch mit dem Mausrad; ≈279 Checks).
 - `node tests/responsive-audit.mjs [ordner] [m375,t768,l1024]` macht bei laufendem Server Screenshots der Hauptseiten auf
   375 / 768 / 1024 px und misst Überlauf, zu kleine Bedienelemente und Felder unter 16 px (`report.json`).
 - `node tests/refshots.mjs` erzeugt Screenshots in den Fenstergrössen der Referenz-Screenshots der CDE Bund und legt
