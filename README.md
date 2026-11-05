@@ -6,7 +6,7 @@
 > [!CAUTION]
 > Unofficial prototype for demonstration only. People, companies, projects and values are fictional or taken from public sources; nothing is connected to the productive CDE Bund.
 
-A clickable prototype of structured data deliveries (Datenformulare) in the CDE Bund, the common data environment of the Swiss Federal Office for Buildings and Logistics (BBL): cost estimate KV-32 (eBKP-H), life-cycle emissions THG-32 and DWG floor plans for the CAFM, each with the same six tabs (Übersicht · Erfassung · Prüfung · Beteiligte · Dokumente · Verlauf) inside a mock of the real application.
+A clickable prototype of structured data deliveries (Datenformulare) in the CDE Bund, the common data environment of the Swiss Federal Office for Buildings and Logistics (BBL): cost estimate KV-32 (eBKP-H), life-cycle emissions THG-32 (Erstellung and Betrieb after SIA 390/1) and DWG floor plans for the CAFM, each with the same tabs (Übersicht · Erfassung · Prüfung · Beteiligte · Dokumente · Verlauf; the Ökobilanz records Erstellung and Betrieb in two Erfassung tabs) inside a mock of the real application.
 
 ## Demo
 
@@ -23,7 +23,7 @@ Sign in as one of seven sample personas (name at the top right) to follow a deli
 
 - Order a data delivery in the Informationslieferplan with a template (Kosten eBKP-H, Ökobilanz Bauemissionen nach SIA 2032) and the rule «mandatory from CHF 1 Mio».
 - Enter costs per eBKP-H Hauptgruppe or per Kostenelement (open the group, add or remove positions), import an Excel file, see completeness and missing values live.
-- Enter the Ökobilanz as emission sources per eBKP-H element group (KBOB dataset, quantity, production and disposal, amortisation after SIA 2032) with the Grundlagen of the calculation; the Endwert for SUS is derived, a Tool-Export import brings the sources in. All eight projects carry complete, plausible mock data (KV-32, KS-31, THG-32) in different workflow states.
+- Enter the Ökobilanz in two parts after SIA 390/1: the Erstellung as emission sources from the tool export per eBKP-H element group (reference quantity, kg CO₂-eq/m² EBF·a, manufacturer flag) and the Betrieb as energy services after the Rechenhilfe SIA 390/1 with photovoltaics and electricity product; the Übersicht compares both and their sum with the SIA 390/1 reference values of the building category, the Tool-Export and Rechenhilfe imports bring the values in. All eight projects carry complete, plausible mock data (KV-32, KS-31, THG-32) in different workflow states.
 - Upload DWG floor plans (one delivery per floor) and check them locally in the browser against the 40 rules of the CAD-Richtlinie BBL, with plan viewer, rooms, floor-area polygons, layers, SIA 416 figures and a downloadable Prüfbericht (PDF).
 - Submit, review (automatic checks, checklist, approve or reject) and hand over to ePPM, SUS or SAP RE-FX; statuses flow into the Informationslieferplan, tasks and notifications.
 - Übersicht per delivery with KPIs, comparison with the previous phase, Kostenziel or Zielwert chart, workflow steps and participants; project overview with photo and location map.

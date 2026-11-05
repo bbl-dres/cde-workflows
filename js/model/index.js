@@ -77,7 +77,7 @@ export function compute(state, data, project, user) {
     orderCards: data.templates.orderOptions.map(o => ({ ...o, on: o.key === ot, bd: o.key === ot ? '2px solid var(--navy)' : '1px solid #d3d8de', bg: o.key === ot ? '#f4f6f8' : '#fff' })),
     glText: 'eBKP-H (vorgegeben)', glBg: '#f4f6f8', glReadonly: true,
     supplier: isTHG ? 'Olivia Beispiel, Ökobilanz Beispiel AG' : 'Gian Muster, Generalplaner Beispiel AG', supplierInitials: isTHG ? 'OB' : 'GM',
-    target: isTHG ? 'SUS (Endwert THG)' : 'ePPM (Leitsystem Baukosten)',
+    target: isTHG ? 'SUS (THG Erstellung und Betrieb)' : 'ePPM (Leitsystem Baukosten)',
     ruleOrder: isTHG ? (big ? 'Muss' : 'Kann') : 'Muss', ruleCheck: isTHG ? (big ? 'Pflicht' : 'Keine') : 'Pflicht',
     ruleColor: (isTHG && !big) ? '#5b6573' : '#1f2937',
     ruleText: isTHG

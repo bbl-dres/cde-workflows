@@ -4,7 +4,7 @@ import { taskTable, tableIconbar } from './parts/taskTable.js';
 
 // Aufgaben (#/tasks/all | assigned | everything): cross-project task list of the logged-in user.
 // ?type=thg shows the cross-project control of the Fachstelle (screen 06 of the study).
-const TYPES = [['all', 'Typ'], ['Aufgabe', 'Aufgabe'], ['Datenformular', 'Datenformular'], ['Modell-Issue', 'Modell-Issue'], ['thg', 'Ökobilanz Bauemissionen']];
+const TYPES = [['all', 'Typ'], ['Aufgabe', 'Aufgabe'], ['Datenformular', 'Datenformular'], ['Modell-Issue', 'Modell-Issue'], ['thg', 'Ökobilanz']];
 const FILTERS = ['all', 'assigned', 'everything'];
 
 export default {

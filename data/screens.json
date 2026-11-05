@@ -223,7 +223,7 @@
     "id": "s04",
     "code": "04",
     "label": "04 Erfassung Ökobilanz",
-    "title": "Erfassung Ökobilanz Bauemissionen",
+    "title": "Erfassung Ökobilanz Erstellung und Betrieb",
     "subtitle": "Ökobilanz-Ersteller · über Aufgabe",
     "user": {
       "name": "Olivia Beispiel",
@@ -236,7 +236,7 @@
     },
     "annotations": [
       "Gleiche Maske wie beim KV, mit THG-Emissionen statt Kosten. Die CDE Bund verwaltet nur den Data Drop und rechnet nichts.",
-      "Erfasst werden die Emissionsquellen je eBKP-H-Elementgruppe mit KBOB-Datensatz, Menge, THG Herstellung und Entsorgung und Amortisationszeit (SIA 2032); der Endwert für das SUS (Erstellung pro Jahr je m² EBF) wird daraus berechnet. Bericht (PDF) und Tool-Export sind Pflicht; «Tool-Export importieren» übernimmt die Quellen aus dem Ökobilanztool."
+      "Erfassung Erstellung: die Emissionsquellen aus dem Tool-Export je eBKP-H-Elementgruppe mit Referenzgrösse und Kennwert in kg CO₂-eq/m² EBF·a (SIA 2032); Erfassung Betrieb: die Energiedienstleistungen nach Rechenhilfe SIA 390/1 mit Photovoltaik und Stromprodukt. THGE Erstellung und Betrieb pro Jahr werden daraus berechnet und mit den Richtwerten SIA 390/1 der Gebäudekategorie verglichen. Bericht (PDF), Tool-Export und Rechenhilfe sind Pflicht; «Tool-Export importieren» und «Rechenhilfe importieren» übernehmen die Werte aus den Tools."
     ],
     "group": "screens",
     "fullPage": false
@@ -259,7 +259,7 @@
     "annotations": [
       "Der Workflow-Status zeigt, wo die Lieferung steht. Im Informationslieferplan erscheint er über die bestehenden Status-Pills.",
       "Automatische Prüfungen plus manuelle Bestätigung durch die PM. Alle vier Prüfpunkte setzen, dann Freigeben und Übertragen durchklicken.",
-      "Übergabe per Schnittstelle: KV an ePPM, THG-Endwert an SUS. Offen ist, wer die Übertragung auslöst."
+      "Übergabe per Schnittstelle: KV an ePPM, THG Erstellung und Betrieb an SUS. Offen ist, wer die Übertragung auslöst."
     ],
     "group": "screens",
     "fullPage": false

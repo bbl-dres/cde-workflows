@@ -163,9 +163,36 @@
 .res-code { font-size: 12px; color: var(--muted); font-family: var(--mono); white-space: nowrap; }
 .rv-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
 
+/* Ökobilanz: Betrieb (Energiedienstleistungen nach Rechenhilfe SIA 390/1) */
+.ent-betr { min-width: 900px; }
+.ent-betr .ent-two { padding: 5px 10px 5px 14px !important; }
+.ent-betr .ent-pos-ro { color: var(--muted); }
+.thg-field .ent-text.right { text-align: right; font-variant-numeric: tabular-nums; }
+.thg-field .ent-text::placeholder { color: #b4242f; }
+.thg-head.pv-strip { border-bottom: 1px solid var(--line-4); }
+
+/* Übersicht (THG-32): Zielwerte SIA 390/1, three rows (Erstellung, Betrieb, Zusatzanforderung) with the Richtwerte as marks */
+.tz-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; }
+.tz-row, .tz-axis { display: grid; grid-template-columns: 150px minmax(0, 1fr) 56px; gap: 0 14px; align-items: center; }
+.tz-label { display: flex; flex-direction: column; gap: 2px; font-size: 13px; font-weight: 500; }
+.tz-sub { font-size: 11.5px; font-weight: 400; color: var(--muted); }
+.tz-track-wrap { position: relative; height: 62px; }
+.tz-track { position: absolute; left: 0; right: 0; top: 25px; height: 14px; background: #f3f4f6; border-radius: 3px; }
+.tz-bar { position: absolute; top: 28px; height: 8px; left: 0; background: #1f2d3f; border-radius: 0 2px 2px 0; }
+.tz-mark { position: absolute; top: 19px; height: 26px; width: 2px; margin-left: -1px; }
+.tz-dot { position: absolute; top: 0; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.tz-dot.is-below { top: 46px; }
+.tz-ist { font-size: 15px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.tz-axis { font-size: 11.5px; color: var(--muted); margin-top: -6px; font-variant-numeric: tabular-nums; }
+.tz-axis > span:nth-child(2) { display: flex; justify-content: space-between; }
+.tz-legend { display: grid; grid-template-columns: 16px minmax(0, 1fr) 80px 80px 120px; gap: 8px 12px; align-items: center; font-size: 13px; border-top: 1px solid var(--line-4); margin-top: 6px; padding-top: 10px; font-variant-numeric: tabular-nums; }
+.tz-legend > * { min-width: 0; }
+.tz-sw { width: 16px; height: 8px; background: #1f2d3f; border-radius: 2px; }
 
 @media (max-width: 767.98px) {
   .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .tz-row, .tz-axis { grid-template-columns: 110px minmax(0, 1fr) 48px; }
+  .tz-legend { grid-template-columns: 16px minmax(0, 1fr) 64px 64px 96px; font-size: 12px; }
   .submit-comp { width: 100%; }
   .tgt-legend { grid-template-columns: 16px minmax(0, 1fr) 90px 80px; font-size: 12px; }
   .cat-row { grid-template-columns: 90px minmax(0, 1fr) 40px; }

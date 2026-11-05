@@ -8,12 +8,13 @@
 import { searchModel } from './model/search.js';
 // group / code / field = Hauptgruppe, position code and field of a value.
 // The Datenformulare act on the project of the current route (nav.currentPid()); the THG-32 keeps its Emissionsquellen
-// in state.projects[pid].thgSrc (thgVal, thgAdd, thgRemove …), the cost forms their positions in kvQ/kvV and ksQ/ksV.
+// in state.projects[pid].thgSrc (thgVal, thgAdd, thgRemove …) and its Betrieb in thgBetr (thgBetr, thgBetrStd), the cost forms
+// their positions in kvQ/kvV and ksQ/ksV.
 import { LEGACY } from './links.js';
 import { TASK_COLUMNS } from './model/columns.js';
 import { formModel, LOCKED_FROM } from './model/form.js';
 import { initProject } from './model/state.js';
-import { KEYS, mockProject, groupAmount, egOf, mergeToolExport } from './model/mock.js';
+import { KEYS, mockProject, groupAmount, egOf, mergeToolExport, mergeBetr } from './model/mock.js';
 import { planModel } from './model/plan.js';
 import { patchDotted } from './store.js';
 import { num } from './format.js';
@@ -169,42 +170,56 @@ export function makeActions(store, data, nav) {
         const p = P(), project = projectOf(pid()); if (!p || !project) return;
         const { next, added, filled } = mergeToolExport(p.thgSrc || [], mockProject(project, data, { complete: true }).thgSrc);
         if (!added && !filled) { toast('Tool-Export enthält keine neuen Werte.'); return; }
-        const doc = (data.forms.kinds.thg.docs.find(d => d[1] === 'Excel') || [])[0] || 'Tool-Export';
+        const doc = (data.forms.kinds.thg.docs.find(d => /toolexport/i.test(d[0])) || [])[0] || 'Tool-Export';
+        const tool = (p.thgHead || {}).tool || data.thg.head.find(h => h[0] === 'tool')[2];
         const what = added ? `${added} Emissionsquellen übernommen` : `${filled} Werte ergänzt`;
         setP({ thgSrc: next });
-        logEv('thg', me(), 'Tool-Export importiert', `${doc} · Modell ecCo · ${what}`);
+        logEv('thg', me(), 'Tool-Export importiert', `${doc} · ${tool} · ${what}`);
         toast(`Tool-Export importiert: ${what}.`);
+        return;
+      }
+      if (ds.arg === 'rechenhilfe' && ds.form === 'thg') {
+        // Rechenhilfe SIA 390/1 (Betrieb): Energiedienstleistungen and Photovoltaik of the project come in, blanks are filled
+        const p = P(), project = projectOf(pid()); if (!p || !project) return;
+        const { next, filled } = mergeBetr(p.thgBetr || {}, mockProject(project, data, { complete: true }).thgBetr);
+        if (!filled) { toast('Rechenhilfe enthält keine neuen Werte.'); return; }
+        const doc = (data.forms.kinds.thg.docs.find(d => /rechenhilfe/i.test(d[0])) || [])[0] || 'Rechenhilfe';
+        setP({ thgBetr: next });
+        logEv('thg', me(), 'Rechenhilfe SIA 390/1 importiert', `${doc} · ${filled} Werte übernommen`);
+        toast(`Rechenhilfe importiert: ${filled} Werte übernommen.`);
         return;
       }
       toast('Im Prototyp ohne Funktion.');
     },
 
-    // ---- Datenformulare: Erfassung (THG-32, Emissionsquellen je eBKP-H-Elementgruppe) ----
+    // ---- Datenformulare: Erfassung Erstellung (THG-32, Emissionsquellen je eBKP-H-Elementgruppe) and Erfassung Betrieb ----
     thgHead: (ds, el) => setP(p => ({ thgHead: { ...(p.thgHead || {}), [ds.key]: el.value } })),
     thgVal: (ds, el) => {
       const src = ((P() || {}).thgSrc || []).find(x => x.id === ds.id) || {};
       let patch;
-      if (ds.field === 'dataset') {                               // «Name · KBOB 01.002», only an id, or only a name
-        const text = String(el.value || '').trim(), m = text.match(/KBOB\s*[\d.]+[a-z]?/i);
-        const rest = text.replace(m ? m[0] : '', '').replace(/^[\s·,;–-]+|[\s·,;–-]+$/g, '').trim();
-        patch = { kbob: m ? m[0].replace(/\s+/g, ' ') : (src.isNew ? text : src.kbob || ''), name: rest || (m ? (src.name || '') : text) };
-      } else patch = { [ds.field]: ds.field === 'q' ? normNum(el.value) : ds.field === 'h' || ds.field === 'e' ? normNum(el.value, 1) : el.value };
-      if (ds.field === 'code') { const eg = egOf(data, el.value); Object.assign(patch, { unit: eg ? eg[2] : '', a: eg ? eg[3] : null }); if (src.isNew || !src.name) patch.name = eg ? eg[1] : ''; }   // an existing row keeps its material
+      if (ds.field === 'dataset') {                               // «Wa01 Aussenwand Beton 25 cm · Bauteil Lesosai»: tool code, Bezeichnung, Ökobilanzdaten
+        const parts = String(el.value || '').trim().split(/\s*·\s*/), first = (parts.shift() || '').trim(), quelle = parts.filter(Boolean).join(' · ');
+        const m = first.match(/^([A-Z][a-z]\d{2})\s+(.*)$/);
+        patch = { tcode: m ? m[1] : '', name: (m ? m[2] : first).trim(), quelle: quelle || (src.isNew ? '' : src.quelle || '') };   // without Ökobilanzdaten the existing ones stay
+      } else patch = { [ds.field]: ds.field === 'q' ? normNum(el.value) : ds.field === 'kw' ? normNum(el.value, 2) : el.value };
+      if (ds.field === 'code') { const eg = egOf(data, el.value); patch.unit = eg ? eg[2] : ''; if (src.isNew || !src.name) patch.name = eg ? eg[1] : ''; }   // an existing row keeps its Bauteil
       setSrc(ds.id, patch);
     },
+    thgBetr: (ds, el) => { if (editable('thg')) setP(p => ({ thgBetr: { ...(p.thgBetr || {}), [ds.key]: normNum(el.value, 2) } })); },
+    thgBetrStd: ds => { if (editable('thg')) setP(p => ({ thgBetr: { ...(p.thgBetr || {}), [ds.key]: !(p.thgBetr || {})[ds.key] } })); },
     thgToggleHs: ds => { const x = ((P() || {}).thgSrc || []).find(y => y.id === ds.id); if (x && editable('thg')) setSrc(ds.id, { hs: !x.hs }); },
     thgAdd: ds => {
       if (!editable('thg')) return;
       setP(p => {
         const f = p.forms.thg, n = (f.nNew || 0) + 1;
-        return { thgSrc: [...(p.thgSrc || []), { id: `n${n}`, grp: ds.group, isNew: true, code: '', kbob: '', name: '', unit: '', a: null, q: '', h: '', e: '', hs: false }], forms: { ...p.forms, thg: { ...f, nNew: n } } };
+        return { thgSrc: [...(p.thgSrc || []), { id: `n${n}`, grp: ds.group, isNew: true, code: '', tcode: '', name: '', quelle: '', unit: '', q: '', kw: '', hs: false }], forms: { ...p.forms, thg: { ...f, nNew: n } } };
       });
     },
     thgRemove: ds => {
       const p = P(), x = p && (p.thgSrc || []).find(y => y.id === ds.id);
       if (!x || !editable('thg')) return;
       setP({ thgSrc: p.thgSrc.filter(y => y.id !== ds.id) });
-      if (!x.isNew) logEv('thg', me(), 'Emissionsquelle entfernt', `${x.code} ${x.name} (${x.kbob})`);
+      if (!x.isNew) logEv('thg', me(), 'Emissionsquelle entfernt', `${x.code} ${[x.tcode, x.name].filter(Boolean).join(' ')}${x.quelle ? ` (${x.quelle})` : ''}`);
     },
 
     // ---- Datenformulare: Einreichen, Prüfung BBL, Übergabe ----
@@ -245,7 +260,7 @@ export function makeActions(store, data, nav) {
     formResetReview: ds => {
       const kind = ds.key, project = projectOf(pid()); if (!project) return;
       const init = initProject(data, project);
-      const values = kind === 'thg' ? { thgSrc: init.thgSrc, thgHead: init.thgHead } : { [KEYS[kind][0]]: init[KEYS[kind][0]], [KEYS[kind][1]]: init[KEYS[kind][1]] };
+      const values = kind === 'thg' ? { thgSrc: init.thgSrc, thgHead: init.thgHead, thgBetr: init.thgBetr } : { [KEYS[kind][0]]: init[KEYS[kind][0]], [KEYS[kind][1]]: init[KEYS[kind][1]] };
       setP(p => ({ forms: { ...p.forms, [kind]: init.forms[kind] }, ...values }));
     },
 

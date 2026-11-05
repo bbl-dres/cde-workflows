@@ -1,13 +1,15 @@
 import { html, pill } from '../ui.js';
 import { pageHead, tabs, emptyState } from '../shell.js';
-import { FORM_TABS } from '../links.js';
+import { tabsOfCode } from '../links.js';
 import { renderForm, tabBadge } from './form.js';
 import { mountPlan, unmountPlan } from './plan.js';
 
-// Datenlieferung: #/projects/:pid/deliveries/:code/:tab — head with status pill, the six tabs of every Datenformular
-// (Übersicht · Erfassung · Prüfung · Beteiligte · Dokumente · Verlauf, design 04.11.2026) and the tab body from views/form.js.
+// Datenlieferung: #/projects/:pid/deliveries/:code/:tab — head with status pill, the tabs of every Datenformular
+// (Übersicht · Erfassung · Prüfung · Beteiligte · Dokumente · Verlauf, design 05.11.2026; the Ökobilanz THG-32 has
+// Erfassung Erstellung and Erfassung Betrieb) and the tab body from views/form.js.
 // KV-32, THG-32 and the floor plans DWG-UG … DWG-DG are Datenformulare; other deliveries show a generic page.
 const TAB_LABEL = { uebersicht: 'Übersicht', erfassung: 'Erfassung', pruefung: 'Prüfung', beteiligte: 'Beteiligte', dokumente: 'Dokumente', verlauf: 'Verlauf' };
+const THG_LABEL = { erfassung: 'Erfassung Erstellung', betrieb: 'Erfassung Betrieb' };
 
 const verlauf = ev => html`<div class="card"><div class="card-head">Verlauf</div>${ev.map(([d, t]) => html`<div class="act-row"><span class="act-date">${d}</span><span>${t}</span></div>`)}</div>`;
 const dokumente = () => html`<div class="card"><div class="card-head"><span class="flex-1">Dokumente</span><span class="btn btn-secondary btn-sm">Hochladen</span></div><div style="padding:28px 0">${emptyState('Keine Dokumente')}</div></div>`;
@@ -30,7 +32,7 @@ function generic(ctx, code) {
 }
 
 const formOf = ctx => (ctx.project ? ctx.vm.formByCode(ctx.route.params.code) : null);
-const tabOf = ctx => (FORM_TABS.includes(ctx.route.params.tab) ? ctx.route.params.tab : 'uebersicht');
+const tabOf = ctx => (tabsOfCode(ctx.route.params.code).includes(ctx.route.params.tab) ? ctx.route.params.tab : 'uebersicht');
 
 export default {
   title: ctx => `${ctx.route.params.code.toUpperCase()} · ${ctx.project.name}`,
@@ -39,7 +41,8 @@ export default {
     const F = formOf(ctx);
     if (!F) return generic(ctx, code);
     const tab = tabOf(ctx);
-    const items = FORM_TABS.map(key => ({ key, label: TAB_LABEL[key], href: ctx.link.delivery(code, key), extra: tabBadge(F.badges[key]) }));
+    const isTHG = F.kind === 'data' && !!F.erf.isTHG;
+    const items = tabsOfCode(code).map(key => ({ key, label: (isTHG && THG_LABEL[key]) || TAB_LABEL[key], href: ctx.link.delivery(code, key), extra: tabBadge(F.badges[key]) }));
     return html`
       ${pageHead(F.title, ctx.crumbs(ctx.user.internal ? 'Informationslieferplan' : 'Aufgaben', F.code), { extra: pill(F.pill), style: 'margin-bottom:6px' })}
       ${tabs(items, tab)}

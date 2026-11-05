@@ -1,15 +1,15 @@
 // Deterministic mock values for the Datenformulare of every project: the Musterhausen base data (data/ebkp.json,
 // data/thg.json, data/sia416.json) scaled by the project's Anlagekosten and jittered per project, so that all projects
-// open with plausible, complete and consistent positions, Emissionsquellen, Bezugsmengen, Vorphasenwerte and Zielwerte.
+// open with plausible, complete and consistent positions, Emissionsquellen, Betriebswerte, Bezugsmengen, Vorphasenwerte and Zielwerte.
 // Musterhausen keeps its base values unchanged. Which forms a project has (kv, ks, thg) and their workflow state come
 // from data/forms.json (byProject); a form at step 0 («Offen») has no values yet, `missing` blanks single fields of
-// forms in progress («kvQ:D08» for the cost maps, «thg:C01-1:h» for a field of an Emissionsquelle).
+// forms in progress («kvQ:D08» for the cost maps, «thg:C04.01-1:kw» for a field of an Emissionsquelle, «thgB:b0_n» for a Betrieb value).
 import { num } from '../format.js';
 
 export const BASE_AK = 24.6;
 export const BASE_EBF = 5600;
 export const KIND_OF = { 'KV-32': 'kv', 'KS-31': 'ks', 'THG-32': 'thg' };
-/** Value maps of the cost forms (quantities, values per position); the THG keeps its Emissionsquellen in thgSrc + thgHead. */
+/** Value maps of the cost forms (quantities, values per position); the THG keeps its Emissionsquellen in thgSrc, the Grundlagen in thgHead and the Betrieb in thgBetr. */
 export const KEYS = { kv: ['kvQ', 'kvV'], ks: ['ksQ', 'ksV'] };
 
 function rng(seed) {
@@ -18,11 +18,18 @@ function rng(seed) {
   return () => { h = (h + 0x6D2B79F5) >>> 0; let t = h; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
 const roundTo = (v, step) => Math.round(v / step) * step;
-const round1 = v => Math.round(v * 10) / 10;
+const round2 = v => Math.round(v * 100) / 100;
 const roundQ = v => (v >= 20000 ? roundTo(v, 100) : v >= 500 ? roundTo(v, 10) : Math.max(1, Math.round(v)));
 const sum = o => Object.values(o).reduce((a, b) => a + (b || 0), 0);
-/** THG over 60 years incl. replacement of a list of Emissionsquellen (kg CO₂-eq): Σ (h + e) × 1000 / Amortisation × 60. */
-export const thgTotal60 = srcs => srcs.reduce((a, s) => a + ((Number(s.h) || 0) + (Number(s.e) || 0)) * 1000 / (Number(s.a) || 60) * 60, 0);
+/** THGE Erstellung of a list of Emissionsquellen (kg CO₂-eq/m² EBF·a): Σ kw; over 60 years incl. replacement = Σ kw × EBF × 60. */
+export const thgErst = srcs => srcs.reduce((a, s) => a + (Number(s.kw) || 0), 0);
+/** Betrieb values of the Rechenhilfe SIA 390/1: Nutzenergie, Anteil, Nutzungsgrad and Standardwert flag per Energiedienstleistung, Photovoltaik yield scaled with the building. */
+export function betrDefaults(TH, f = 1) {
+  const B = {};
+  TH.betrieb.forEach(([, , n, a, eta, , std], i) => { B[`b${i}_n`] = n; B[`b${i}_a`] = a; B[`b${i}_eta`] = eta; B[`b${i}_std`] = !!std; });
+  B.pv_y = roundTo(TH.pv.y * f, 100); B.pv_ev = TH.pv.ev;
+  return B;
+}
 /** Element group of the SIA 2032 list by code: [code, name, unit, amortisation] or null. */
 export const egOf = (data, code) => { for (const list of Object.values(data.thg.eg)) { const x = list.find(y => y[0] === code); if (x) return x; } return null; };
 
@@ -50,15 +57,17 @@ export function mockProject(project, data, opts = {}) {
     kvV[k.code] = k.cost ? chf(k.cost) : 0;                  // A Grundstück and H Nutzungsspezifische Anlage are 0 in the sample projects
     ksV[k.code] = k.cost ? Math.max(1000, roundTo(kvV[k.code] * (E.ks31[k.code] ? E.ks31[k.code] / k.cost : 0.93), 1000)) : 0;
   });
-  // THG: the Emissionsquellen of the design, scaled with the quantities of the project (per m² EBF for the Gebäudetechnik),
-  // then calibrated to the Endwert of the instance (kg CO₂-eq/m² EBF·a over 60 years) when one is given
+  // THG: the Emissionsquellen of the design (Tool-Export) with the reference quantities scaled to the project (per m² EBF for the
+  // Gebäudetechnik) and jittered Kennwerte, calibrated to the Endwert of the instance (THGE Erstellung, kg CO₂-eq/m² EBF·a) when
+  // one is given; the Betrieb starts with the Standardwerte of the Rechenhilfe SIA 390/1
   const thgInst = inst.thg || {}, EBF = sia.EBF || 1;
   let thgSrc = TH.sources.map(s => {
     if (base) return { ...s };
-    const fq = s.unit === 'm² EBF' ? EBF / BASE_EBF : scale * jit(0.95, 1.05), fe = fq * jit(0.97, 1.03);
-    return { ...s, q: s.unit === 'm² EBF' ? EBF : roundQ(s.q * fq), h: round1(s.h * fe), e: round1(s.e * fe) };
+    const fq = s.unit === 'm² EBF' ? EBF / BASE_EBF : scale * jit(0.95, 1.05);
+    return { ...s, q: s.unit === 'm² EBF' ? EBF : roundQ(s.q * fq), kw: round2(s.kw * jit(0.95, 1.05)) };
   });
-  if (thgInst.endwert != null && thgTotal60(thgSrc)) { const f = thgInst.endwert * 60 * EBF / thgTotal60(thgSrc); thgSrc.forEach(s => { s.h = round1(s.h * f); s.e = round1(s.e * f); }); }
+  if (thgInst.endwert != null && thgErst(thgSrc)) { const f = thgInst.endwert / thgErst(thgSrc); thgSrc.forEach(s => { s.kw = round2(s.kw * f); }); }
+  let thgBetr = betrDefaults(TH, base ? 1 : EBF / BASE_EBF);
   const thgHead = { ...Object.fromEntries(TH.head.filter(h => h[2] != null).map(h => [h[0], h[2]])), ...(thgInst.head || {}) };
   // Previous phases: KS-31 for the KV, Kostengrobschätzung SIA 21 for the KS, SIA 31 for the THG
   const prev = { kv: {}, ks: {}, thg: {} };
@@ -70,15 +79,16 @@ export function mockProject(project, data, opts = {}) {
   missing.forEach(spec => {
     const [k, c, field] = spec.split(':');
     if (k === 'thg') { const s = thgSrc.find(x => x.id === c); if (s && field in s) s[field] = null; }
+    else if (k === 'thgB') { if (c in thgBetr) thgBetr[c] = null; }
     else if (values[k] && c in values[k]) values[k][c] = null;
   });
   if (!opts.complete) {
     Object.entries(inst).forEach(([kind, i]) => { if (i.step === 0) (KEYS[kind] || []).forEach(k => Object.keys(values[k]).forEach(c => { values[k][c] = null; })); });
-    if (thgInst.step === 0) thgSrc = [];                     // an open THG-32 has no Emissionsquellen yet (Tool-Export or manual entry)
+    if (thgInst.step === 0) { thgSrc = []; thgBetr = {}; }   // an open THG-32 has no Emissionsquellen and no Betrieb yet (Tool-Export, Rechenhilfe or manual entry)
   }
   const kostenziel = project.kostenzielBW || roundTo(sum(prev.kv) * 1.03, 1e5);
   const kostendach = (inst.kv && inst.kv.kostendach) || roundTo(kostenziel * 1.1, 1e5);
-  return { sia, ...values, thgSrc, thgHead, prev, kostenziel, kostendach };
+  return { sia, ...values, thgSrc, thgHead, thgBetr, prev, kostenziel, kostendach };
 }
 
 /** Amount of a Hauptgruppe from its positions (base positions not removed + Kostenelemente added); null when nothing is entered. */
@@ -96,9 +106,19 @@ export function mergeToolExport(current, complete) {
     const b = complete.find(y => y.id === x.id);
     if (!b || x.isNew) return x;
     const o = { ...x };
-    ['q', 'h', 'e'].forEach(k => { if (num(o[k]) == null && b[k] != null) { o[k] = b[k]; filled++; } });
+    ['q', 'kw'].forEach(k => { if (num(o[k]) == null && b[k] != null) { o[k] = b[k]; filled++; } });
     return o;
   });
   complete.forEach(b => { if (!current.some(x => x.id === b.id)) { next.push({ ...b }); added++; } });
   return { next, added, filled };
+}
+
+/** Rechenhilfe import (Betrieb): the complete values of the project come in; values already entered stay, blanks are filled. */
+export function mergeBetr(current, complete) {
+  let filled = 0; const next = { ...current };
+  Object.entries(complete).forEach(([k, v]) => {
+    if (typeof v === 'boolean') { if (next[k] == null) next[k] = v; return; }
+    if (num(next[k]) == null) { next[k] = v; filled++; }
+  });
+  return { next, filled };
 }

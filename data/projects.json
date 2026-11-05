@@ -112,7 +112,7 @@
         },
         {
           "code": "THG-32",
-          "name": "Ökobilanz Bauemissionen",
+          "name": "Ökobilanz Erstellung und Betrieb",
           "firm": "Planerteam Nord AG",
           "gewerk": "Nachhaltigkeit",
           "desc": "Datenformular · Emissionsquellen nach SIA 2032, Ziel SUS",
@@ -130,8 +130,8 @@
       ],
       "tasks": [
         {
-          "name": "Ökobilanz Bauemissionen",
-          "desc": "THG-32 · Emissionsquellen je Elementgruppe",
+          "name": "Ökobilanz Erstellung und Betrieb",
+          "desc": "THG-32 · Erstellung und Betrieb nach SIA 390/1",
           "status": "Überfällig",
           "typ": "Datenformular",
           "zug": "Planerteam Nord AG",
@@ -202,7 +202,7 @@
       "deliveries": [
         {
           "code": "THG-32",
-          "name": "Ökobilanz Bauemissionen",
+          "name": "Ökobilanz Erstellung und Betrieb",
           "firm": "Ökobilanz Beispiel AG",
           "gewerk": "Nachhaltigkeit",
           "desc": "Datenformular · Emissionsquellen nach SIA 2032, Ziel SUS",
@@ -221,8 +221,8 @@
       ],
       "tasks": [
         {
-          "name": "Ökobilanz Bauemissionen",
-          "desc": "THG-32 · Emissionsquellen je Elementgruppe",
+          "name": "Ökobilanz Erstellung und Betrieb",
+          "desc": "THG-32 · Erstellung und Betrieb nach SIA 390/1",
           "status": "In Bearbeitung",
           "typ": "Datenformular",
           "zug": "Olivia Beispiel",
@@ -279,7 +279,7 @@
       "deliveries": [
         {
           "code": "THG-32",
-          "name": "Ökobilanz Bauemissionen",
+          "name": "Ökobilanz Erstellung und Betrieb",
           "firm": "Lab Planung AG",
           "gewerk": "Nachhaltigkeit",
           "desc": "Datenformular · Emissionsquellen nach SIA 2032, an SUS übertragen",
@@ -363,7 +363,7 @@
       "deliveries": [
         {
           "code": "THG-32",
-          "name": "Ökobilanz Bauemissionen",
+          "name": "Ökobilanz Erstellung und Betrieb",
           "firm": "Atelier Süd GmbH",
           "gewerk": "Nachhaltigkeit",
           "desc": "Datenformular · Emissionsquellen nach SIA 2032, Ziel SUS",
@@ -429,7 +429,7 @@
       "deliveries": [
         {
           "code": "THG-32",
-          "name": "Ökobilanz Bauemissionen",
+          "name": "Ökobilanz Erstellung und Betrieb",
           "firm": "Muster Architekten AG",
           "gewerk": "Nachhaltigkeit",
           "desc": "Datenformular · Emissionsquellen nach SIA 2032, an SUS übertragen",
@@ -504,7 +504,7 @@
       "deliveries": [
         {
           "code": "THG-32",
-          "name": "Ökobilanz Bauemissionen",
+          "name": "Ökobilanz Erstellung und Betrieb",
           "firm": "Holzbau Beispiel AG",
           "gewerk": "Nachhaltigkeit",
           "desc": "Datenformular · Kann, nur Ablage",

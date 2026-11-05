@@ -2,7 +2,7 @@ import { html, icon, pill } from '../ui.js';
 import { pageHead } from '../shell.js';
 
 // 06 Kontrolle über alle Projekte (Fachstelle Nachhaltigkeit): the existing cross-project task list,
-// filtered by type «Ökobilanz Bauemissionen». No project sidebar.
+// filtered by type «Ökobilanz». No project sidebar.
 const TILES = [
   ['total', 'Gesamt', 'file-text', '#6b3fa0'],
   ['bearb', 'In Bearbeitung', 'pencil', '#2c3b4d'],
@@ -19,7 +19,7 @@ export default {
     return html`<div class="pf-page">
 
       <div class="pf-filters rel">
-        <a class="filter-btn" style="border-color:var(--navy);gap:6px" href="#/tasks/all" data-nav="/tasks/all" title="Filter aufheben">Typ: Ökobilanz Bauemissionen${icon('chevron-down', 12, 'var(--navy)')}</a>
+        <a class="filter-btn" style="border-color:var(--navy);gap:6px" href="#/tasks/all" data-nav="/tasks/all" title="Filter aufheben">Typ: Ökobilanz${icon('chevron-down', 12, 'var(--navy)')}</a>
         <span class="filter-btn">Status</span>
         <span class="filter-btn">Pflicht</span>
         <span class="filter-btn">Teilportfolio</span>
@@ -39,7 +39,7 @@ export default {
         <div class="pf-head" style="${COLS}">
           <span>Projekt</span><span>Teilportfolio</span><span class="right">Anlagekosten</span>
           <span class="rel">Pflicht${ctx.marker(2, 'top:-4px;left:50px')}</span>
-          <span>Lieferverantwortlicher</span><span>Fällig</span><span>Status</span><span class="right">Endwert</span><span>SUS</span>
+          <span>Lieferverantwortlicher</span><span>Fällig</span><span>Status</span><span class="right">Erstellung</span><span>SUS</span>
         </div>
         ${vm.pfRows.map(r => html`
           <div class="pf-row" style="${COLS};background:${r.bg}">
@@ -58,7 +58,7 @@ export default {
           </div>`)}
         <div class="pf-pager"><span class="pf-page-active">1</span><span>2</span><span>3</span></div>
       </div></div>
-      <div class="pf-foot">Endwert in kg CO₂-eq/m² EBF·a. Projekte, Firmen und Werte sind fiktiv.</div>
+      <div class="pf-foot">THGE Erstellung in kg CO₂-eq/m² EBF·a (THG-32). Projekte, Firmen und Werte sind fiktiv.</div>
     </div>`;
   },
 };

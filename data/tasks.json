@@ -15,8 +15,8 @@
       "delivery": "KV-32"
     },
     {
-      "name": "Ökobilanz Bauemissionen",
-      "desc": "THG-32 · Emissionsquellen je Elementgruppe, Endwert",
+      "name": "Ökobilanz Erstellung und Betrieb",
+      "desc": "THG-32 · Erstellung und Betrieb nach SIA 390/1",
       "typ": "Datenformular",
       "zug": "Olivia Beispiel",
       "fuer": "Paula Muster",

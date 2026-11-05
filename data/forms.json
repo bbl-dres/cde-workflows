@@ -1,5 +1,5 @@
 {
-  "note": "Datenformulare nach dem Design vom 04.11.2026 (docs/wireframes/261104_CDE-Workflows Datenformular Design.zip, Komponente Datenformular.dc.html): eine Struktur für alle Lieferungen mit den Tabs Übersicht · Erfassung · Prüfung · Beteiligte · Dokumente · Verlauf. «kinds» beschreibt die drei Formulararten (Kostenvoranschlag KV-32, Kostenschätzung KS-31, Ökobilanz THG-32), «byProject» welche Formulare ein Projekt hat und wo sie im Workflow stehen (step 0 Erstellt/Offen · 1 In Bearbeitung · 3 Eingereicht · 4 In Prüfung · 5 Freigegeben · 6 Übertragen); «missing» blendet einzelne Werte aus (kvQ:D08 = Menge der Position, thg:C01-1:h = Herstellung einer Emissionsquelle), «endwert» kalibriert die Ökobilanz, «head» überschreibt die Grundlagen der Ökobilanz. Werte kommen aus ebkp.json, thg.json und sia416.json, für die weiteren Projekte skaliert (js/model/mock.js). FV-32 entfällt: die Flächen kommen aus den Grundrissen (DWG). Personen, Firmen und Werte sind fiktiv.",
+  "note": "Datenformulare nach dem Design vom 05.11.2026 (docs/wireframes/261105_CDE-Workflows Datenformular Design.zip, Komponente Datenformular.dc.html): eine Struktur für alle Lieferungen mit den Tabs Übersicht · Erfassung · Prüfung · Beteiligte · Dokumente · Verlauf; die Ökobilanz erfasst Erstellung und Betrieb in zwei Tabs. «kinds» beschreibt die drei Formulararten (Kostenvoranschlag KV-32, Kostenschätzung KS-31, Ökobilanz THG-32), «byProject» welche Formulare ein Projekt hat und wo sie im Workflow stehen (step 0 Erstellt/Offen · 1 In Bearbeitung · 3 Eingereicht · 4 In Prüfung · 5 Freigegeben · 6 Übertragen); «missing» blendet einzelne Werte aus (kvQ:D08 = Menge der Position, thg:C04.01-1:kw = Kennwert einer Emissionsquelle, thgB:b0_n = Nutzenergie einer Energiedienstleistung des Betriebs), «endwert» kalibriert die Erstellung der Ökobilanz (kg CO₂-eq/m² EBF·a), «head» überschreibt die Grundlagen der Ökobilanz. Werte kommen aus ebkp.json, thg.json und sia416.json, für die weiteren Projekte skaliert (js/model/mock.js). FV-32 entfällt: die Flächen kommen aus den Grundrissen (DWG). Personen, Firmen und Werte sind fiktiv.",
   "steps": ["Erstellt", "In Bearbeitung", "Intern geprüft", "Eingereicht", "In Prüfung", "Freigegeben", "Übertragen"],
   "people": {
     "AB": ["Alex Beispiel", "Muster Architekten AG"],
@@ -56,19 +56,19 @@
     },
     "thg": {
       "code": "THG-32",
-      "title": "Ökobilanz Bauemissionen (SIA 32)",
+      "title": "Ökobilanz Erstellung und Betrieb (SIA 390/1)",
       "short": "Ökobilanz",
-      "vorlage": "Ökobilanz SIA 2032 · Version 1.0",
-      "reporting": "Modell ecCo · Netto-Null Bundesverwaltung 2040 (GHG Protocol, Scope 3): THG Erstellung pro Jahr und absolut",
+      "vorlage": "Ökobilanz SIA 390/1 · Version 2",
+      "reporting": "Modell ecCo · Netto-Null Bundesverwaltung 2040 (GHG Protocol, Scope 3): THG Erstellung und Betrieb pro Jahr",
       "target": "SUS",
       "ziel": "SUS",
-      "tableTitle": "Emissionsquellen nach eBKP-H-Elementgruppen · t CO₂-eq",
+      "tableTitle": "Erstellung · Emissionsquellen aus dem Tool-Export nach eBKP-H-Elementgruppen",
+      "betrTitle": "Betrieb · Energiedienstleistungen nach Rechenhilfe SIA 390/1 · kWh/m² EBF·a",
       "cmpUnit": "t CO₂-eq", "cmpPrevLabel": "SIA 31", "totalLabel": "Total B–G", "devPct": 15,
       "detailDefault": ["C", "E"],
-      "targets": [["SIA 390/1 Richtwert Basis", 9.0, "#b07a00"], ["SIA 390/1 Richtwert ambitioniert", 6.0, "#2f7d63"], ["Minergie-ECO Grenzwert GW1", 8.0, "#5a7184"], ["Projektziel BBL", 8.5, "#9b2c44"], ["SIA 31 Vorphase", "prev", "#6b7280"]],
-      "manual": [["t1", "Systemgrenze SIA 2032 eingehalten (A1–A3, A4–A5, B4, C1–C4)"], ["t2", "KBOB/ecobau-Liste 2022, Version 9.0 verwendet"], ["t3", "Biogener Kohlenstoff separat ausgewiesen, nicht verrechnet"], ["t4", "Wiederverwendete Bauteile mit null bilanziert und gelistet"]],
-      "docs": [["Oekobilanz_Bericht_SIA32.pdf", "PDF", "Pflicht"], ["Oekobilanz_Toolexport_SIA32.xlsx", "Excel", "Pflicht"]],
-      "ov": { "tableTitle": "THG-Emissionen nach Hauptgruppen · Vergleich mit Vorphase", "colCur": "THG-32 t CO₂-eq", "colPrev": "SIA 31 t CO₂-eq", "colKw": "kg/m² EBF·a", "chartTitle": "Zielwert", "chartHint": "Zielwerte nach SIA 390/1, Minergie-ECO und Projektvorgabe", "istLabel": "Ist · Endwert THG-Emissionen Erstellung" },
+      "manual": [["t1", "Systemgrenze SIA 2032 eingehalten (A1–A3, A4–A5, B4, C1–C4)"], ["t2", "KBOB/ecobau-Liste 2022, Version 9.0 verwendet"], ["t3", "Biogener Kohlenstoff separat ausgewiesen, nicht verrechnet"], ["t4", "Wiederverwendete Bauteile mit null bilanziert und gelistet"], ["t5", "Pflichtenheft BBL eingehalten (Erstellung, Betrieb, Stromprodukt)"]],
+      "docs": [["Oekobilanz_Bericht_SIA32.pdf", "PDF", "Pflicht"], ["Oekobilanz_Toolexport_SIA32.xlsx", "Excel", "Pflicht"], ["Rechenhilfe_SIA390-1_Betrieb.xlsx", "Excel", "Pflicht"]],
+      "ov": { "tableTitle": "THG-Emissionen nach Hauptgruppen · Vergleich mit Vorphase", "colCur": "THG-32 t CO₂-eq", "colPrev": "SIA 31 t CO₂-eq", "colKw": "kg/m² EBF·a", "chartTitle": "Zielwerte SIA 390/1", "chartHint": "Richtwerte Erstellung und Betrieb, Zusatzanforderung", "istLabel": "Ist" },
       "importItems": [["excel", "Excel importieren"], ["ifc", "IFC importieren"], ["tool", "Tool-Export importieren (XLSX, JSON)"], ["kvqty", "Mengen aus KV-32 übernehmen"]]
     }
   },
@@ -107,7 +107,7 @@
           "15.03.2027"
         ],
         "frist": "31.05.2027",
-        "head": { "art": "Erweiterung, Aufstockung (als Neubau bilanziert)" },
+        "head": { "art": "Erweiterung, Aufstockung (als Neubau bilanziert)", "tool": "Lesosai" },
         "lead": "OB",
         "people": [
           [
@@ -143,6 +143,13 @@
             "Pflicht",
             "Olivia Beispiel",
             "03.05.2027"
+          ],
+          [
+            "Rechenhilfe_SIA390-1_Betrieb.xlsx",
+            "Excel",
+            "Pflicht",
+            "Olivia Beispiel",
+            "03.05.2027"
           ]
         ],
         "history": [
@@ -151,7 +158,7 @@
             "09:25",
             "PM",
             "Lieferung erstellt",
-            "Vorlage Ökobilanz SIA 2032 · Version 1.0, Frist 31.05.2027, Zielsystem SUS"
+            "Vorlage Ökobilanz SIA 390/1 · Version 2, Frist 31.05.2027, Zielsystem SUS"
           ],
           [
             "15.03.2027",
@@ -165,7 +172,14 @@
             "17:30",
             "OB",
             "Tool-Export importiert",
-            "Oekobilanz_Toolexport_SIA32.xlsx · Modell ecCo · 25 Emissionsquellen übernommen"
+            "Oekobilanz_Toolexport_SIA32.xlsx · Lesosai · 22 Emissionsquellen übernommen"
+          ],
+          [
+            "03.05.2027",
+            "17:38",
+            "OB",
+            "Rechenhilfe SIA 390/1 importiert",
+            "Rechenhilfe_SIA390-1_Betrieb.xlsx · 9 Energiedienstleistungen, Photovoltaik 62 kWp"
           ],
           [
             "03.05.2027",
@@ -179,14 +193,14 @@
     },
     "eigerplatz": {
       "kv": { "step": 0, "dates": ["01.04.2027"], "frist": "30.06.2027", "lead": "NB" },
-      "thg": { "head": { "art": "Erneuerung (Modernisierung, Bestandsbau)" }, "step": 1, "dates": ["01.02.2027", "20.02.2027"], "frist": "15.04.2027", "lead": "NB", "overdue": true, "missing": ["thg:C04.01-1:h", "thg:G02-2:q", "thg:E03.01-1:e"] }
+      "thg": { "head": { "art": "Erneuerung (Modernisierung, Bestandsbau)" }, "step": 1, "dates": ["01.02.2027", "20.02.2027"], "frist": "15.04.2027", "lead": "NB", "overdue": true, "missing": ["thg:C04.01-1:kw", "thg:G02.02-1:q", "thg:E03.01-1:kw"] }
     },
     "zollanlage-brig": {
-      "thg": { "step": 1, "dates": ["01.03.2027", "15.03.2027"], "frist": "30.06.2027", "lead": "OB", "missing": ["thg:D07-1:h"], "head": { "art": "Erweiterung, Aufstockung (als Neubau bilanziert)", "kat": "Sonstige" } },
+      "thg": { "step": 1, "dates": ["01.03.2027", "15.03.2027"], "frist": "30.06.2027", "lead": "OB", "missing": ["thg:D07-1:kw", "thgB:b0_n"], "head": { "art": "Erweiterung, Aufstockung (als Neubau bilanziert)", "kat": "Sonstige" } },
       "ks": { "step": 6, "dates": ["22.05.2026", "01.06.2026", null, "30.09.2026", "05.10.2026", "20.10.2026", "20.10.2026"], "frist": "30.09.2026", "lead": "SB" }
     },
     "agroscope-posieux": {
-      "thg": { "step": 6, "dates": ["08.09.2025", "01.10.2025", null, "20.02.2027", "23.02.2027", "28.02.2027", "28.02.2027"], "frist": "28.02.2027", "lead": "LB", "endwert": 11.4, "head": { "art": "Neubau (inkl. Ersatzneubau)", "kat": "Sonstige", "tool": "Lesosai" } },
+      "thg": { "step": 6, "dates": ["08.09.2025", "01.10.2025", null, "20.02.2027", "23.02.2027", "28.02.2027", "28.02.2027"], "frist": "28.02.2027", "lead": "LB", "endwert": 11.4, "head": { "art": "Neubau (inkl. Ersatzneubau)", "kat": "Restaurant", "tool": "Lesosai" } },
       "kv": { "step": 6, "dates": ["08.09.2025", "01.10.2025", null, "15.12.2026", "18.12.2026", "22.12.2026", "22.12.2026"], "frist": "15.12.2026", "lead": "LB" }
     },
     "botschaft-wien": {

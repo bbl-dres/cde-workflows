@@ -2,12 +2,13 @@
 // The Intl.NumberFormat instances are created once: toLocaleString() per cell made the view model ~10× slower.
 
 const nf = (min, max) => new Intl.NumberFormat('de-CH', { minimumFractionDigits: min, maximumFractionDigits: max });
-const NF0 = nf(0, 0), NF1 = nf(1, 1), NF2 = nf(2, 2);
+const NF0 = nf(0, 0), NF1 = nf(1, 1), NF2 = nf(2, 2), NF01 = nf(0, 1);
 const bad = n => n == null || typeof n !== 'number' || !isFinite(n);
 
 export const FMT = n => (bad(n) ? '' : NF0.format(Math.round(n)));
 export const FMT1 = n => (bad(n) ? '' : NF1.format(n));
 export const FMT2 = n => (bad(n) ? '' : NF2.format(n));
+export const FMT01 = n => (bad(n) ? '' : NF01.format(n));   // up to one decimal: 22, 1.5, 4
 
 // Parse user input ("1’234", "1'234", "1 234", "1234,5") into a number or null.
 export const num = x => {
@@ -20,6 +21,8 @@ export const num = x => {
 // Display a stored value: numbers formatted, strings as typed.
 export const disp = x => typeof x === 'number' ? FMT(x) : (x ?? '');
 export const disp1 = x => typeof x === 'number' ? FMT1(x) : (x ?? '');
+export const disp2 = x => typeof x === 'number' ? FMT2(x) : (x ?? '');
+export const disp01 = x => typeof x === 'number' ? FMT01(x) : (x ?? '');
 
 
 // CHF 24.60 Mio

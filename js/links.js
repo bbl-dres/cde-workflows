@@ -75,10 +75,13 @@ export const LEGACY = {
   s11: { path: D('dwg-eg', 'erfassung') },
 };
 
-/** Tabs of every Datenformular (same order for all, design 04.11.2026); Übersicht is the landing tab. */
+/** Tabs of every Datenformular (same order for all, design 05.11.2026); Übersicht is the landing tab. The Ökobilanz THG-32
+ *  records Erstellung and Betrieb in two tabs («erfassung» = Erfassung Erstellung, «betrieb» = Erfassung Betrieb). */
 export const FORM_TABS = ['uebersicht', 'erfassung', 'pruefung', 'beteiligte', 'dokumente', 'verlauf'];
+export const THG_TABS = ['uebersicht', 'erfassung', 'betrieb', 'pruefung', 'beteiligte', 'dokumente', 'verlauf'];
 export const PLAN_CODES = ['dwg-ug', 'dwg-eg', 'dwg-og1', 'dwg-og2', 'dwg-dg'];
-export const DELIVERY_TABS = Object.fromEntries(['kv-32', 'ks-31', 'thg-32', ...PLAN_CODES].map(c => [c, FORM_TABS]));
+export const DELIVERY_TABS = Object.fromEntries(['kv-32', 'ks-31', 'thg-32', ...PLAN_CODES].map(c => [c, c === 'thg-32' ? THG_TABS : FORM_TABS]));
+export const tabsOfCode = code => DELIVERY_TABS[String(code).toLowerCase()] || FORM_TABS;
 export function defaultDeliveryTab(code) {
   return DELIVERY_TABS[String(code).toLowerCase()] ? 'uebersicht' : null;
 }

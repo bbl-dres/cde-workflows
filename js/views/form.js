@@ -2,15 +2,17 @@ import { html, icon, btn, linkBtn, checkbox, avatar, metaRows, progress, raw, ca
 import { emptyState } from '../shell.js';
 import { dropZone, resultPanel } from './plan.js';
 
-// Datenformular (design 04.11.2026): the tab bodies of KV-32, KS-31, THG-32 and the floor plans DWG, rendered from the
-// view model of model/form.js (F). Übersicht: KPIs, table/chart or plan figures, Lieferung, Verlauf, Beteiligte.
-// Erfassung: Hauptgruppen (direct amount or positions, Kostenelemente added/removed) or the Emissionsquellen of the
-// Ökobilanz with the Grundlagen card, sticky submit bar. Prüfung: comparison or plan result, Prüfung BBL, Übergabe.
-// Beteiligte, Dokumente, Verlauf: tables.
+// Datenformular (design 05.11.2026): the tab bodies of KV-32, KS-31, THG-32 and the floor plans DWG, rendered from the
+// view model of model/form.js (F). Übersicht: KPIs, table/chart or plan figures, Lieferung, Verlauf, Beteiligte; the
+// Ökobilanz adds the shared Grundlagen and the Zielwerte SIA 390/1. Erfassung: Hauptgruppen (direct amount or positions,
+// Kostenelemente added/removed) or the Emissionsquellen of the Erstellung with their Grundlagen; Erfassung Betrieb (THG-32
+// only): Energiedienstleistungen nach Rechenhilfe SIA 390/1 with Photovoltaik; sticky submit bar. Prüfung: comparison or plan
+// result, Prüfung BBL, Übergabe. Beteiligte, Dokumente, Verlauf: tables.
 
 const COLS = 'grid-template-columns:96px minmax(0,1fr) 72px 120px 140px 100px 36px';   // code column holds the fixed-width code control
 const SIA_COLS = 'grid-template-columns:52px minmax(0,1fr) 90px 56px';   // Flächen SIA 416: the same grid table as Projektaufgaben
-const COLS_THG = 'grid-template-columns:96px minmax(0,1fr) 72px 88px 60px 96px 96px 56px 92px 36px';
+const COLS_THG = 'grid-template-columns:96px minmax(0,1fr) 72px 110px 64px 104px 72px 36px';   // Erstellung: Code · Emissionsquelle · Hersteller · Referenzgrösse · Einheit · kg/m² EBF·a · Anteil
+const COLS_BETR = 'grid-template-columns:minmax(0,1fr) 72px 104px 88px 88px 100px 112px 112px';   // Betrieb: Energiedienstleistung · Standard · Nutzenergie · Anteil · η · Endenergie · Koeffizient · kg/m² EBF·a
 const check = c => html`<div class="rv-check">${icon(c.icon, 16, c.color)}<span class="flex-1">${c.label}</span></div>`;
 const devCell = c => html`<span class="right${c.hi ? ' is-over' : ''}" ${c.hi ? raw('title="Abweichung über dem Schwellenwert, Begründung nötig"') : ''}>${c.delta}</span>`;
 const kvRow = (k, v) => html`<div class="rv-kv"><span class="rv-kv-k">${k}</span><span>${v}</span></div>`;
@@ -22,6 +24,7 @@ export const tabBadge = b => (b ? html`<span class="tab-badge" style="background
 export function renderForm(ctx, F, tab) {
   switch (tab) {
     case 'erfassung': return erfassung(ctx, F);
+    case 'betrieb': return betrieb(ctx, F);
     case 'pruefung': return pruefung(ctx, F);
     case 'beteiligte': return beteiligte(F);
     case 'dokumente': return dokumente(F);
@@ -39,7 +42,7 @@ function uebersicht(ctx, F) {
         ${F.kpis.map(k => html`<div class="card kpi"><span class="kpi-k">${k.k}</span><span class="kpi-row"><span class="kpi-v">${k.v}</span><span class="kpi-u">${k.u}</span></span></div>`)}
         <div class="card kpi"><span class="kpi-k">${F.comp.label}</span><span class="kpi-v">${F.comp.pct}</span>${progress(F.comp.w, F.comp.bar)}<span class="fs-12" style="color:${F.comp.fg}">${F.comp.text}</span></div>
       </div>
-      ${F.kind === 'plan' ? planOverview(F, L) : costOverview(F, L)}
+      ${F.kind === 'plan' ? planOverview(F, L) : F.erf.isTHG ? thgOverview(F, L) : costOverview(F, L)}
     </div>
     <div class="fm-side">
       ${card('Lieferung', html`<div style="padding:4px 0 6px">${metaRows(F.meta)}</div>`)}
@@ -56,16 +59,26 @@ const stepsList = (F, L) => html`<div class="st-list">${F.steps.map(s => html`<d
   ${s.isCur ? html`<div class="st-next"><span class="st-next-text">${F.next.text}</span>${F.next.btn ? html`<div>${btn({ label: F.next.btn, kind: 'primary', nav: L(F.next.tab) })}</div>` : ''}</div>` : ''}
 </div>`)}</div>`;
 
-function costOverview(F, L) {
+/** Hauptgruppen im Vergleich mit der Vorphase (Kosten and Ökobilanz), with the subtotals of the form. */
+const ovTable = (F, L) => {
   const C = 'grid-template-columns:52px minmax(0,1fr) 130px 130px 110px';
-  return html`
-    ${card(html`<span class="flex-1">${F.ov.tableTitle}</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div class="fm-table"><div style="min-width:520px">
+  return card(html`<span class="flex-1">${F.ov.tableTitle}</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div class="fm-table"><div style="min-width:520px">
       <div class="fm-th" style="${C}"><span>Code</span><span>Hauptgruppe</span><span class="right">${F.ov.colCur}</span><span class="right">${F.ov.colPrev}</span><span class="right">${F.ov.colKw}</span></div>
       ${F.costRows.map(c => html`<div class="fm-tr" style="${C};background:${c.bg}"><span class="fm-code">${c.code}</span><span class="ellipsis">${c.name}</span><span class="right">${c.cur}</span><span class="right muted">${c.prev}</span><span class="right muted">${c.kw}</span></div>`)}
       <div class="fm-total" style="${C}"><span></span><span>Total</span><span class="right">${F.totalRow.cur}</span><span class="right muted">${F.totalRow.prev}</span><span class="right muted">${F.totalRow.kw}</span></div>
       ${F.subtotals.length ? html`<div class="fm-space"></div>${F.subtotals.map(u => html`<div class="fm-sub" style="${C}"><span>${u.code}</span><span>${u.name}</span><span class="right">${u.cur}</span><span class="right muted fw-400">${u.prev}</span><span class="right">${u.kw}</span></div>`)}` : ''}
-    </div></div>`)}
-    ${card(html`<span class="flex-1">${F.ov.chartTitle}</span>${hint(F.ov.chartHint)}`, targetChart(F))}`;
+    </div></div>`);
+};
+
+function costOverview(F, L) {
+  return html`${ovTable(F, L)}${card(html`<span class="flex-1">${F.ov.chartTitle}</span>${hint(F.ov.chartHint)}`, targetChart(F))}`;
+}
+
+/** Ökobilanz: the Grundlagen shared by Erstellung and Betrieb, the Hauptgruppen with the Betrieb rows, the Zielwerte SIA 390/1. */
+function thgOverview(F, L) {
+  return html`${card(html`<span class="flex-1">Grundlagen</span>${hint('gilt für Erstellung und Betrieb')}`, headFields(F, F.headShared))}
+    ${ovTable(F, L)}
+    ${card(html`<span class="flex-1">${F.tz.title}</span>${hint(F.tz.hint)}`, zielwerte(F))}`;
 }
 
 const targetChart = F => {
@@ -82,6 +95,23 @@ const targetChart = F => {
   </div>`;
 };
 
+/** Zielwerte SIA 390/1: Erstellung and Betrieb against their Richtwerte, the sum against the Zusatzanforderung; the marks are
+ *  Basis (B), ambitioniert (A), Minergie-ECO GW1 (M) and the Vorphase (V), the legend lists the values per column. */
+const zielwerte = F => {
+  const Z = F.tz;
+  return html`<div class="tz-body">
+    ${Z.rows.map(r => html`<div class="tz-row"><div class="tz-label"><span>${r.label}</span><span class="tz-sub">${r.sub}</span></div>
+      <div class="tz-track-wrap" role="img" aria-label="${r.label} ${r.ist}${r.marks.length ? ', ' + r.marks.map(m => m.title).join(', ') : ''}"><div class="tz-track"></div><div class="tz-bar" style="width:${r.istW}"></div>
+        ${r.marks.map(m => html`<div class="tz-mark" style="left:${m.x};background:${m.c}"></div><span class="tz-dot${m.below ? ' is-below' : ''}" style="left:${m.x};background:${m.c}" title="${m.title}">${m.n}</span>`)}</div>
+      <span class="tz-ist">${r.ist}</span></div>`)}
+    <div class="tz-axis"><span></span><span><span>0</span><span>${Z.max}</span></span><span></span></div>
+    <div class="tz-legend"><span></span><span class="muted fs-12">Ziel</span><span class="muted fs-12 right">Erstellung</span><span class="muted fs-12 right">Betrieb</span><span class="muted fs-12 right">Zusatzanforderung</span>
+      <span class="tz-sw"></span><span class="fw-600">Ist</span>${Z.ist.map(v => html`<span class="right fw-600">${v}</span>`)}
+      ${Z.legend.map(m => html`<span class="tgt-n" style="background:${m.c}">${m.n}</span><span class="ellipsis">${m.label}</span>${m.cells.map(c => html`<span class="right${c.over ? ' is-over' : ''}">${c.v}</span>`)}`)}
+    </div>
+  </div>`;
+};
+
 function planOverview(F, L) {
   const P = F.planOv;
   return html`
@@ -92,7 +122,7 @@ function planOverview(F, L) {
 
 // ---- Erfassung ----
 function erfassung(ctx, F) {
-  const body = F.kind === 'plan' ? planEntry(ctx, F) : F.erf.isTHG ? html`${thgHeadCard(F)}${dataEntry(ctx, F)}` : dataEntry(ctx, F);
+  const body = F.kind === 'plan' ? planEntry(ctx, F) : F.erf.isTHG ? html`${thgHeadCard(ctx, F, 'Erstellung', F.erf.head)}${dataEntry(ctx, F)}` : dataEntry(ctx, F);
   return html`<div class="fm-stack">${body}${submitBar(F)}</div>`;
 }
 
@@ -177,22 +207,27 @@ const newPosRow = (F, r, ro) => html`<div class="ent-pos ent-new" style="${COLS}
   ${!F.locked ? delBtn('formDropNew', html`data-form="${F.id}" data-id="${r.id}"`, 'Neue Zeile verwerfen') : html`<span></span>`}
 </div>`;
 
-// ---- Erfassung: Ökobilanz (Emissionsquellen je eBKP-H-Elementgruppe) ----
-const thgHeadCard = F => card('Grundlagen der Ökobilanz', html`<div class="thg-head">${F.erf.head.map(h => html`<label class="thg-field"><span>${h.label}</span>
+// ---- Erfassung: Ökobilanz (Grundlagen, Emissionsquellen der Erstellung je eBKP-H-Elementgruppe, Betrieb) ----
+/** Grundlagen fields: selects, text inputs (Datenstand, Minergie-ECO GW1) and the read-only areas from the floor plans. */
+const headFields = (F, list) => html`<div class="thg-head">${list.map(h => html`<label class="thg-field"><span>${h.label}</span>
   ${h.isSelect
     ? html`<select class="ent-select" aria-label="${h.label}" style="background:${h.bg}" data-change="thgHead" data-key="${h.key}" data-fid="thg-head-${h.key}" ${h.ro ? raw('disabled') : ''}>${h.opts.map(o => html`<option value="${o.v}" ${o.sel ? raw('selected') : ''}>${o.v}</option>`)}</select>`
-    : html`<input class="ent-text" aria-label="${h.label}" value="${h.val}" style="background:${h.bg}" readonly>`}
-</label>`)}</div>`);
+    : h.isText
+      ? html`<input class="ent-text" aria-label="${h.label}" value="${h.val}" style="background:${h.bg}" data-change="thgHead" data-key="${h.key}" data-fid="thg-head-${h.key}" ${h.ro ? raw('readonly') : ''}>`
+      : html`<input class="ent-text" aria-label="${h.label}" value="${h.val}" style="background:${h.bg}" readonly>`}
+</label>`)}</div>`;
+/** Grundlagen card of an Erfassung tab; the shared fields (Gebäudekategorie, Bauvorhaben, EBF, GF, Datenstand) sit in the Übersicht. */
+const thgHeadCard = (ctx, F, part, list) => card(html`<span class="flex-1">Grundlagen</span>${headLink(`${part} · gemeinsame Angaben in der Übersicht`, ctx.link.delivery(F.codeLc, 'uebersicht'))}`, headFields(F, list));
 
 const thgTable = F => {
   const E = F.erf, ro = RO(F);
   return html`<div class="ent ent-thg">
-    <div class="ent-th" style="${COLS_THG}"><span>Code</span><span title="Position der gewählten Ökobilanzdaten (Bezeichnung · ID), z. B. KBOB/ecobau-Liste 2022">Ökobilanzdaten</span><span class="center" title="Herstellerspezifischer Datensatz oder EPD statt KBOB-Durchschnitt">Hersteller</span><span class="right">Menge</span><span>Einheit</span><span class="right">Herstellung</span><span class="right">Entsorgung</span><span class="right">Amort.</span><span class="right">kg/m² EBF·a</span><span></span></div>
+    <div class="ent-th" style="${COLS_THG}"><span>Code</span><span title="Bauteil oder Anlage aus dem Tool-Export: Code, Bezeichnung · Ökobilanzdaten (Bauteil des Tools oder KBOB-Datensatz)">Emissionsquelle · Tool-Export</span><span class="center" title="Herstellerspezifischer Datensatz oder EPD statt KBOB-Durchschnitt">Hersteller</span><span class="right" title="Menge in der Einheit des Datensatzes (m², m, kWp, kW, m² EBF)">Referenzgrösse</span><span>Einheit</span><span class="right" title="THGE Erstellung pro Jahr und m² EBF (SIA 2032, 60 Jahre inkl. Ersatz)">kg/m² EBF·a</span><span class="right" title="Anteil an der Erstellung">Anteil</span><span></span></div>
     ${E.rows.map(r => (r.isGroupRow ? thgGroupRow(F, r) : r.isAdd ? addRow(F, r, 'thgAdd') : thgSrcRow(F, r, ro)))}
     ${E.rows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine fehlenden Werte.</div>` : ''}
-    <div class="ent-total" style="${COLS_THG}"><span></span><span>${E.totalLabel}</span><span></span><span></span><span></span><span class="right pr18">${E.tot.h}</span><span class="right pr18">${E.tot.e}</span><span></span><span class="right muted">${E.tot.kw}</span><span></span></div>
+    <div class="ent-total" style="${COLS_THG}"><span></span><span>${E.totalLabel}</span><span></span><span></span><span></span><span class="right pr18">${E.tot.kw}</span><span class="right muted">${E.tot.share}</span><span></span></div>
     <div class="fm-space"></div>
-    ${E.derived.map(u => html`<div class="ent-subtotal" style="${COLS_THG}"><span></span><span>${u.name}</span><span class="right pr18" style="grid-column:4 / span 4" title="${u.u}">${u.v}</span><span class="right" style="grid-column:8 / span 2" title="${u.ku}">${u.kw}</span><span></span></div>`)}
+    ${E.derived.map(u => html`<div class="ent-subtotal" style="${COLS_THG}"><span></span><span>${u.name}</span><span class="right pr18" style="grid-column:3 / span 3" title="${u.u}">${u.v}</span><span class="right pr18" title="${u.ku}">${u.kw}</span><span></span><span></span></div>`)}
     <div style="height:8px"></div>
   </div>`;
 };
@@ -201,31 +236,75 @@ const thgGroupRow = (F, r) => html`<div class="ent-group${r.canToggle ? ' is-tog
   <span class="ent-code">${chevron(F, r)}${r.code}</span>
   <span class="ent-name"><span class="fw-600">${r.name}</span><span class="ent-sub">${r.sub}</span></span>
   <span></span><span></span><span></span>
-  <span class="right fw-600 pr18">${r.h}</span>
-  <span class="right fw-600 pr18">${r.e}</span>
-  <span></span>
-  <span class="right muted fs-125">${r.kw}</span>
+  <span class="right fw-600 pr18">${r.kw}</span>
+  <span class="right muted fs-125">${r.share}</span>
   <span></span>
 </div>`;
 
 const hsBox = (F, r) => html`<span class="center"><button type="button" class="hs-box${r.hs ? ' is-on' : ''}" role="checkbox" aria-checked="${r.hs ? 'true' : 'false'}" aria-label="Herstellerspezifisch ${r.code || ''}" title="Herstellerspezifischer Datensatz oder EPD statt KBOB-Durchschnitt" data-action="thgToggleHs" data-id="${r.id}" ${DIS(F)}>${r.hs ? '✓' : ''}</button></span>`;
 const numCell = (F, r, field, label, str, bdc, ro) => html`<span class="ent-cell-input"><input class="ent-input" aria-label="${label} ${r.code || ''}" value="${str}" placeholder="fehlt" style="border-color:${bdc};background:${F.erf.inputBg}" data-change="thgVal" data-id="${r.id}" data-field="${field}" data-fid="thg-${r.id}-${field}" ${ro}></span>`;
 
-/** An Emissionsquelle: existing (code, KBOB dataset) or new (element group from the list, KBOB dataset to search). */
+/** An Emissionsquelle: existing (code, Bauteil · Ökobilanzdaten) or new (element group from the list, Bauteil from the Tool-Export). */
 const thgSrcRow = (F, r, ro) => html`<div class="ent-pos ent-src${r.isNew ? ' ent-new' : ''}" style="${COLS_THG}">
   ${!F.locked
     ? html`<span class="ent-cell-input ent-code-cell">${codeControl(r.code, html`<select class="ent-select" aria-label="Elementgruppe${r.code ? ' ' + r.code : ''}" data-change="thgVal" data-id="${r.id}" data-field="code" data-fid="thg-${r.id}-code" ${DIS(F)}>${optionList(r, 'wählen…')}</select>`)}</span>
-      <span class="ent-cell-input pl6"><input class="ent-text" aria-label="Ökobilanzdaten-Position" value="${r.dataset}" placeholder="Position der Ökobilanzdaten (Bezeichnung oder ID)…" style="border-color:${r.kbobBd};background:${F.erf.inputBg}" data-change="thgVal" data-id="${r.id}" data-field="dataset" data-fid="thg-${r.id}-kbob" ${ro}></span>`
+      <span class="ent-cell-input pl6"><input class="ent-text" aria-label="Emissionsquelle aus dem Tool-Export" value="${r.dataset}" placeholder="${r.isNew ? 'Bauteil oder Anlage aus dem Tool-Export (Code, Bezeichnung · Ökobilanzdaten)…' : 'Bauteil oder Anlage aus dem Tool-Export…'}" style="border-color:${r.dsBd};background:${F.erf.inputBg}" data-change="thgVal" data-id="${r.id}" data-field="dataset" data-fid="thg-${r.id}-kbob" ${ro}></span>`
     : html`<span class="ent-pos-code">${r.code}</span>
-      <span class="ent-two"><span class="ellipsis">${r.name}</span><span class="fs-12 muted ellipsis" title="${r.kbob}">${r.kbob}</span></span>`}
+      <span class="ent-two"><span class="ellipsis">${r.name}</span><span class="fs-12 muted ellipsis" title="${r.quelle}">${r.quelle}</span></span>`}
   ${hsBox(F, r)}
-  ${numCell(F, r, 'q', 'Menge', r.qStr, r.qBd, ro)}
+  ${numCell(F, r, 'q', 'Referenzgrösse', r.qStr, r.qBd, ro)}
   <span class="muted fs-12">${r.unit}</span>
-  ${numCell(F, r, 'h', 'Herstellung', r.hStr, r.hBd, ro)}
-  ${numCell(F, r, 'e', 'Entsorgung', r.eStr, r.eBd, ro)}
-  <span class="right muted fs-125">${r.amort}</span>
-  <span class="right muted fs-125">${r.kw}</span>
+  ${numCell(F, r, 'kw', 'kg CO₂-eq/m² EBF·a', r.kwStr, r.kwBd, ro)}
+  <span class="right muted fs-125">${r.share}</span>
   ${!F.locked ? delBtn('thgRemove', html`data-id="${r.id}"`, r.isNew ? 'Neue Zeile verwerfen' : 'Emissionsquelle entfernen') : html`<span></span>`}
+</div>`;
+
+/** Erfassung Betrieb (THG-32): Grundlagen des Betriebs, Photovoltaik, Energiedienstleistungen nach Rechenhilfe SIA 390/1. */
+function betrieb(ctx, F) {
+  if (F.kind !== 'data' || !F.erf.isTHG) return erfassung(ctx, F);
+  const B = F.betr, ro = RO(F);
+  return html`<div class="fm-stack">
+    ${thgHeadCard(ctx, F, 'Betrieb', B.head)}
+    <div class="card">
+      <div class="card-head" style="flex-wrap:wrap">
+        <span class="flex-1" style="flex-basis:220px">${B.title}</span>
+        ${F.locked ? '' : html`<button type="button" class="btn btn-secondary" data-action="importItem" data-arg="rechenhilfe" data-form="${F.id}" title="Energiedienstleistungen und Photovoltaik aus der Rechenhilfe SIA 390/1 übernehmen">Rechenhilfe importieren</button>`}
+      </div>
+      <div class="thg-head pv-strip">${B.pv.map(p => html`<label class="thg-field"><span>${p.label}</span><input class="ent-text${p.key ? ' right' : ''}" aria-label="${p.label}" value="${p.val}" placeholder="fehlt" style="background:${p.bg};border-color:${p.bdc}" ${p.key ? html`data-change="thgBetr" data-key="${p.key}" data-fid="thg-betr-${p.key}"` : ''} ${p.ro ? raw('readonly') : ''}></label>`)}</div>
+      <div class="fm-table"><div class="ent ent-betr">
+        <div class="ent-th" style="${COLS_BETR}"><span>Energiedienstleistung · Energieträger</span><span class="center" title="Standardwert der Rechenhilfe SIA 390/1">Standard</span><span class="right" title="kWh/m² EBF·a">Nutzenergie</span><span class="right" title="Anteil des Energieträgers an der Energiedienstleistung">Anteil %</span><span class="right" title="Nutzungsgrad bzw. Jahresarbeitszahl">η / JAZ</span><span class="right" title="kWh/m² EBF·a">Endenergie</span><span class="right" title="Treibhausgaskoeffizient des Energieträgers">kg CO₂-eq/kWh</span><span class="right" title="THG Betrieb pro Jahr und m² EBF">kg/m² EBF·a</span></div>
+        ${B.rows.map(r => (r.isPv ? pvRow(r) : betrRow(F, r, ro)))}
+        ${B.rows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine fehlenden Werte.</div>` : ''}
+        <div class="ent-total" style="${COLS_BETR}"><span>Total Betrieb</span><span></span><span></span><span></span><span></span><span class="right">${B.end}</span><span></span><span class="right">${B.thg}</span></div>
+        <div class="fm-space"></div>
+        ${B.subs.map(u => html`<div class="ent-subtotal" style="${COLS_BETR}"><span style="grid-column:1 / span 7">${u.name}</span><span class="right">${u.v}</span></div>`)}
+        <div style="height:8px"></div>
+      </div></div>
+    </div>
+    ${submitBar(F)}
+  </div>`;
+}
+
+const stdBox = (F, r) => html`<span class="center"><button type="button" class="hs-box${r.std ? ' is-on' : ''}" role="checkbox" aria-checked="${r.std ? 'true' : 'false'}" aria-label="Standardwert ${r.name}" title="Standardwert der Rechenhilfe SIA 390/1" data-action="thgBetrStd" data-key="${r.key}_std" ${DIS(F)}>${r.std ? '✓' : ''}</button></span>`;
+const betrCell = (F, r, field, label, str, bdc, ro) => html`<span class="ent-cell-input"><input class="ent-input" aria-label="${label} ${r.name} ${r.carrier}" value="${str}" placeholder="fehlt" style="border-color:${bdc};background:${F.erf.inputBg}" data-change="thgBetr" data-key="${r.key}_${field}" data-fid="thg-betr-${r.key}-${field}" ${ro}></span>`;
+/** An Energiedienstleistung with its Energieträger: Standardwert flag, three inputs, the derived Endenergie and THG. */
+const betrRow = (F, r, ro) => html`<div class="ent-pos ent-src" style="${COLS_BETR}">
+  <span class="ent-two"><span class="ellipsis">${r.name}</span><span class="fs-12 muted ellipsis">${r.carrier}</span></span>
+  ${stdBox(F, r)}
+  ${betrCell(F, r, 'n', 'Nutzenergie', r.nStr, r.nBd, ro)}
+  ${betrCell(F, r, 'a', 'Anteil', r.aStr, r.aBd, ro)}
+  ${betrCell(F, r, 'eta', 'Nutzungsgrad', r.etaStr, r.etaBd, ro)}
+  <span class="right muted fs-125">${r.end}</span>
+  <span class="right muted fs-125">${r.kE}</span>
+  <span class="right fs-125">${r.thg}</span>
+</div>`;
+/** Photovoltaik rows (Eigenverbrauch reduces the Endenergie Strom, the surplus follows the rule «PV-Überschuss»). */
+const pvRow = r => html`<div class="ent-pos ent-src" style="${COLS_BETR}">
+  <span class="ent-two"><span class="ellipsis">${r.name}</span><span class="fs-12 muted" style="white-space:normal">${r.carrier}</span></span>
+  <span></span><span></span><span></span><span></span>
+  <span class="right muted fs-125">${r.end}</span>
+  <span class="right muted fs-125">${r.kE}</span>
+  <span class="right fs-125">${r.thg}</span>
 </div>`;
 
 function planEntry(ctx, F) {
@@ -281,12 +360,13 @@ function pruefung(ctx, F) {
 
 function compareCard(F) {
   const C = 'grid-template-columns:64px minmax(0,1fr) 130px 130px 100px';
+  const subs = F.cmpSubs || [];
   return card(`Vergleich mit Vorphase ${F.cmpPrevLabel}`, html`<div class="fm-table"><div style="min-width:540px">
     <div class="fm-th" style="${C}"><span>Code</span><span>Bezeichnung</span><span class="right">${F.code} ${F.cmpUnit}</span><span class="right">${F.cmpPrevLabel} ${F.cmpUnit}</span><span class="right">Abweichung</span></div>
     ${F.cmp.map(c => html`<div class="fm-tr" style="${C}"><span class="fw-600">${c.code}</span><span class="ellipsis">${c.name}</span><span class="right">${c.cur}</span><span class="right muted">${c.prev}</span>${devCell(c)}</div>`)}
     <div class="fm-total" style="${C}"><span></span><span>Total</span><span class="right">${F.cmpT.cur}</span><span class="right muted">${F.cmpT.prev}</span>${devCell(F.cmpT)}</div>
-    ${F.subtotals.length ? html`<div class="fm-space"></div>${F.subtotals.map(u => html`<div class="fm-sub" style="${C}"><span>${u.code}</span><span>${u.name}</span><span class="right">${u.cur}</span><span class="right muted fw-400">${u.prev}</span>${devCell(u)}</div>`)}<div style="height:8px"></div>` : ''}
-  </div></div><div class="card-foot">Abweichungen ab ${F.devPct} % sind rot markiert und brauchen eine Begründung.</div>`);
+    ${subs.length ? html`<div class="fm-space"></div>${subs.map(u => html`<div class="fm-sub" style="${C}"><span>${u.code}</span><span>${u.name}</span><span class="right">${u.cur}</span><span class="right muted fw-400">${u.prev}</span>${devCell(u)}</div>`)}<div style="height:8px"></div>` : ''}
+  </div></div><div class="card-foot">Abweichungen ab ${F.devPct} % sind rot markiert und brauchen eine Begründung.</div>`);
 }
 
 function planResult(F, L) {

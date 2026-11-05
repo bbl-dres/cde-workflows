@@ -103,10 +103,10 @@
     },
     {
       "code": "THG-32",
-      "name": "Ökobilanz Bauemissionen",
+      "name": "Ökobilanz Erstellung und Betrieb",
       "firm": "Ökobilanz Beispiel AG",
       "gewerk": "Nachhaltigkeit",
-      "desc": "Datenformular · Emissionsquellen je eBKP-H-Elementgruppe nach SIA 2032, Endwert an SUS",
+      "desc": "Datenformular · Erstellung (Emissionsquellen je eBKP-H-Elementgruppe, SIA 2032) und Betrieb (Rechenhilfe SIA 390/1), THG an SUS",
       "statusKey": "thg",
       "isForm": true
     },

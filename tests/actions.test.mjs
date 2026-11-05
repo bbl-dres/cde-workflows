@@ -18,7 +18,7 @@ const { initialState, STATE_VERSION } = await mod('js/model/state.js');
 const { createStore, patchDotted } = await mod('js/store.js');
 const { makeActions } = await mod('js/actions.js');
 const { formModel, LOCKED_FROM } = await mod('js/model/form.js');
-const { mockProject, groupAmount, mergeToolExport, thgTotal60 } = await mod('js/model/mock.js');
+const { mockProject, groupAmount, mergeToolExport, mergeBetr, thgErst } = await mod('js/model/mock.js');
 const { FMT, FMT1, FMT2, num, disp, disp1, mio } = await mod('js/format.js');
 
 /** A fresh store + actions acting on project `pid`; `nav` records navigations. */
@@ -46,17 +46,17 @@ test('actions: topbar search (type, move, open, clear)', () => {
   actions.searchType({}, el('kv')); actions.closeMenus(); assert.equal(ui().searchOpen, false, 'closeMenus closes the suggestions');
 });
 
-test('actions: THG dataset input splits name and KBOB id; a code change keeps the material of an existing row', () => {
+test('actions: THG Emissionsquelle input splits tool code, Bezeichnung and Ökobilanzdaten; a code change keeps the Bauteil of an existing row', () => {
   const { actions, P, el } = setup('eigerplatz');
   const id = P().thgSrc[0].id;
-  actions.thgVal({ id, field: 'dataset' }, el('Magerbeton · KBOB 01.001'));
-  assert.equal(P().thgSrc[0].kbob, 'KBOB 01.001'); assert.equal(P().thgSrc[0].name, 'Magerbeton');
+  actions.thgVal({ id, field: 'dataset' }, el('Ba02 Bodenplatte neu · Bauteil Lesosai'));
+  assert.deepEqual([P().thgSrc[0].tcode, P().thgSrc[0].name, P().thgSrc[0].quelle], ['Ba02', 'Bodenplatte neu', 'Bauteil Lesosai']);
   actions.thgVal({ id, field: 'dataset' }, el('Recyclingbeton'));
-  assert.equal(P().thgSrc[0].name, 'Recyclingbeton'); assert.equal(P().thgSrc[0].kbob, 'KBOB 01.001', 'without an id the id stays');
-  actions.thgVal({ id, field: 'dataset' }, el('KBOB 01.004'));
-  assert.equal(P().thgSrc[0].kbob, 'KBOB 01.004'); assert.equal(P().thgSrc[0].name, 'Recyclingbeton', 'only an id keeps the name');
+  assert.deepEqual([P().thgSrc[0].tcode, P().thgSrc[0].name, P().thgSrc[0].quelle], ['', 'Recyclingbeton', 'Bauteil Lesosai'], 'without Ökobilanzdaten the existing ones stay');
+  actions.thgVal({ id, field: 'dataset' }, el('Recyclingbeton · KBOB 01.004'));
+  assert.equal(P().thgSrc[0].quelle, 'KBOB 01.004');
   actions.thgVal({ id, field: 'code' }, el('C02.02'));
-  assert.equal(P().thgSrc[0].code, 'C02.02'); assert.equal(P().thgSrc[0].name, 'Recyclingbeton', 'existing row keeps its material'); assert.equal(P().thgSrc[0].a, 60); assert.equal(P().thgSrc[0].unit, 'm²');
+  assert.equal(P().thgSrc[0].code, 'C02.02'); assert.equal(P().thgSrc[0].name, 'Recyclingbeton', 'existing row keeps its Bauteil'); assert.equal(P().thgSrc[0].unit, 'm²');
 });
 
 test('actions: Hauptgruppen toggle and sums (KV-32)', () => {
@@ -123,24 +123,26 @@ test('actions: Emissionsquellen (THG-32) add, edit, flag, remove, Grundlagen; lo
   const n1 = P().thgSrc.find(s => s.isNew);
   assert.ok(n1 && n1.id === 'n1' && n1.grp === 'C'); assert.equal(P().forms.thg.nNew, 1);
   actions.thgVal({ id: 'n1', field: 'code' }, { value: 'C03' });
-  assert.deepEqual([n1.code, P().thgSrc.find(s => s.id === 'n1').name, P().thgSrc.find(s => s.id === 'n1').unit, P().thgSrc.find(s => s.id === 'n1').a], ['', 'Stützenkonstruktion', 'm', 60]);
-  actions.thgVal({ id: 'n1', field: 'h' }, { value: '13,27' });
-  assert.equal(P().thgSrc.find(s => s.id === 'n1').h, 13.3, 'typed numbers are stored as numbers, one decimal for t CO₂-eq');
+  assert.deepEqual([n1.code, P().thgSrc.find(s => s.id === 'n1').name, P().thgSrc.find(s => s.id === 'n1').unit], ['', 'Stützenkonstruktion', 'm']);
+  actions.thgVal({ id: 'n1', field: 'kw' }, { value: '0,127' });
+  assert.equal(P().thgSrc.find(s => s.id === 'n1').kw, 0.13, 'typed numbers are stored as numbers, two decimals for the Kennwert');
   actions.thgVal({ id: 'n1', field: 'q' }, { value: "1'234.6" });
   assert.equal(P().thgSrc.find(s => s.id === 'n1').q, 1235);
   actions.thgVal({ id: 'n1', field: 'q' }, { value: 'abc' });
   assert.equal(P().thgSrc.find(s => s.id === 'n1').q, 'abc', 'unparsable text stays as typed (and counts as missing)');
   actions.thgToggleHs({ id: 'n1' });
   assert.equal(P().thgSrc.find(s => s.id === 'n1').hs, true);
-  actions.thgRemove({ id: 'C01-3' });
-  assert.ok(!P().thgSrc.some(s => s.id === 'C01-3')); assert.ok(eventTitles(P().forms.thg).includes('Emissionsquelle entfernt'));
+  actions.thgRemove({ id: 'C02.02-2' });
+  assert.ok(!P().thgSrc.some(s => s.id === 'C02.02-2')); assert.ok(eventTitles(P().forms.thg).includes('Emissionsquelle entfernt'));
+  actions.thgBetr({ key: 'b0_n' }, { value: '24,5' }); actions.thgBetrStd({ key: 'b0_std' });
+  assert.equal(P().thgBetr.b0_n, 24.5); assert.equal(P().thgBetr.b0_std, true); assert.equal(F('thg').betr.rows[0].end, '6.1', 'Betrieb values are live: 24.5 / 4');
   actions.thgRemove({ id: 'n1' });
   assert.ok(!P().thgSrc.some(s => s.id === 'n1')); assert.equal(eventTitles(P().forms.thg).filter(t => t === 'Emissionsquelle entfernt').length, 1, 'dropping a new row is no event');
   actions.thgHead({ key: 'tool' }, { value: 'Lesosai' });
   assert.equal(P().thgHead.tool, 'Lesosai'); assert.equal(F('thg').erf.head.find(h => h.key === 'tool').val, 'Lesosai');
   store.setIn('projects', { eigerplatz: { ...P(), forms: { ...P().forms, thg: { ...P().forms.thg, step: 4 } } } });
   const before = JSON.stringify(P());
-  actions.thgAdd({ group: 'C' }); actions.thgRemove({ id: 'C01-1' }); actions.thgToggleHs({ id: 'C01-1' });
+  actions.thgAdd({ group: 'C' }); actions.thgRemove({ id: 'C01.03-1' }); actions.thgToggleHs({ id: 'C01.03-1' }); actions.thgBetr({ key: 'b0_n' }, { value: '1' }); actions.thgBetrStd({ key: 'b1_std' });
   assert.equal(JSON.stringify(P()), before, 'locked: no changes');
 });
 
@@ -157,8 +159,12 @@ test('actions: Importieren (Tool-Export, Excel, others)', () => {
   setup.pid = 'botschaft-wien';
   assert.equal(P().thgSrc.length, 0);
   actions.importItem({ arg: 'tool', form: 'thg' });
-  assert.equal(P().thgSrc.length, data.thg.sources.length); assert.match(toast(), /25 Emissionsquellen übernommen/);
-  assert.equal(F('thg').missing, 0); assert.equal(F('thg').bar.canSubmit, true);
+  assert.equal(P().thgSrc.length, data.thg.sources.length); assert.match(toast(), /22 Emissionsquellen übernommen/);
+  assert.equal(F('thg').missing, 29, 'the Betrieb of an open form is still empty'); assert.equal(F('thg').next.tab, 'betrieb');
+  actions.importItem({ arg: 'rechenhilfe', form: 'thg' });
+  assert.equal(F('thg').missing, 0); assert.match(toast(), /29 Werte übernommen/); assert.ok(eventTitles(P().forms.thg).includes('Rechenhilfe SIA 390/1 importiert')); assert.equal(F('thg').bar.canSubmit, true);
+  actions.importItem({ arg: 'rechenhilfe', form: 'thg' });
+  assert.match(toast(), /keine neuen Werte/);
   // Excel: form-aware dialog; locked forms refuse every import
   setup.pid = 'musterhausen';
   actions.importItem({ arg: 'excel', form: 'ks' });
@@ -206,9 +212,9 @@ test('actions: workflow transitions (submit, review, reject, approve, transfer, 
   // THG reset restores the mock sources and head
   setup.pid = 'musterhausen';
   actions.thgHead({ key: 'tool' }, { value: 'GREG' }); store.setIn('projects', { musterhausen: { ...P(), forms: { ...P().forms, thg: { ...P().forms.thg, step: 1 } } } });
-  actions.thgRemove({ id: 'C01-1' });
+  actions.thgRemove({ id: 'C01.03-1' }); actions.thgBetr({ key: 'pv_y' }, { value: '1' });
   actions.formResetReview({ key: 'thg' });
-  assert.equal(P().thgSrc.length, data.thg.sources.length); assert.equal(P().thgHead.tool, data.thg.head.find(h => h[0] === 'tool')[2]); assert.equal(P().forms.thg.step, 1, 'reset restores the instance step of the data (In Bearbeitung for the demo project)');
+  assert.equal(P().thgSrc.length, data.thg.sources.length); assert.equal(P().thgHead.tool, data.forms.byProject.musterhausen.thg.head.tool); assert.equal(P().thgBetr.pv_y, data.thg.pv.y); assert.equal(P().forms.thg.step, 1, 'reset restores the instance step of the data (In Bearbeitung for the demo project)');
   // study screen: persona + patch + navigation
   actions.studyGo({ study: 's05' });
   assert.equal(store.get().user, 'PM'); assert.equal(nav.last, '/projects/musterhausen/deliveries/thg-32/pruefung');
@@ -238,21 +244,24 @@ test('mock: deterministic, scaled, calibrated; group amounts; Tool-Export merge'
   const projects = data.projects.projects;
   for (const p of projects) assert.deepEqual(mockProject(p, data), mockProject(p, data), `${p.id}: deterministic`);
   const agro = mockProject(projects.find(p => p.id === 'agroscope-posieux'), data);
-  assert.ok(Math.abs(thgTotal60(agro.thgSrc) / 60 / agro.sia.EBF - 11.4) < 0.05, 'calibrated to the Endwert of the instance');
+  assert.ok(Math.abs(thgErst(agro.thgSrc) - 11.4) < 0.05, 'calibrated to the Endwert of the instance');
   for (const p of projects) {
     const M = mockProject(p, data, { complete: true });
     const zero = new Set(data.ebkp.extra.filter(g => !g.cost).map(g => g.code));   // A Grundstück, H Nutzungsspezifische Anlage
     assert.ok(Object.entries(M.kvV).every(([c, v]) => (zero.has(c) ? v === 0 : v >= 1000)) && Object.values(M.kvQ).every(q => q >= 10), `${p.id}: scaled values`);
-    assert.ok(M.thgSrc.length === data.thg.sources.length && M.thgSrc.every(s => s.q != null && s.h != null && s.e != null), `${p.id}: complete sources`);
+    assert.ok(M.thgSrc.length === data.thg.sources.length && M.thgSrc.every(s => s.q != null && s.kw != null), `${p.id}: complete sources`);
+    assert.ok(Object.keys(M.thgBetr).length === data.thg.betrieb.length * 4 + 2 && M.thgBetr.pv_y > 0, `${p.id}: complete Betrieb`);
   }
   const g = data.ebkp.ebkp.find(x => x.code === 'C');
   assert.equal(groupAmount(g, { C01: '', C02: null }), null); assert.equal(groupAmount(g, { C01: 10, C02: '20' }), 30);
   assert.equal(groupAmount(g, { C01: 10, C02: 20 }, { C02: true }, [{ v: '5' }]), 15);
   const full = data.thg.sources.map(s => ({ ...s }));
-  const cur = full.slice(0, 3).map(s => ({ ...s, h: null }));
+  const cur = full.slice(0, 3).map(s => ({ ...s, kw: null }));
   const m = mergeToolExport(cur, full);
   assert.equal(m.filled, 3); assert.equal(m.added, full.length - 3); assert.equal(m.next.length, full.length);
   assert.deepEqual(mergeToolExport(full, full), { next: full, added: 0, filled: 0 });
+  const mb = mergeBetr({ b0_n: 30, b1_n: '', b0_std: false }, { b0_n: 22, b1_n: 7, b0_std: true, pv_y: 55800 });
+  assert.deepEqual(mb, { next: { b0_n: 30, b1_n: 7, b0_std: false, pv_y: 55800 }, filled: 2 }, 'entered values and flags stay, blanks are filled');
 });
 
 test('store: version check, transient fields, dotted patches', () => {

@@ -45,19 +45,19 @@ test('data files are consistent', () => {
   for (const g of data.ebkp.ebkp) for (const k of g.kids) assert.ok(/^[A-Z]\d{2}$/.test(k.code) && (data.ebkp.elements[g.code] || []).some(e => e[0] === k.code), `${k.code} is an eBKP-H element group of ${g.code}`);
   const ids = data.thg.sources.map(s => s.id);
   assert.equal(new Set(ids).size, ids.length, 'source ids are unique');
-  for (const s of data.thg.sources) assert.ok(data.thg.eg[s.grp] && s.q > 0 && s.h >= 0 && s.e >= 0 && s.a > 0 && /^KBOB /.test(s.kbob), `source ${s.id} is complete`);
+  for (const s of data.thg.sources) assert.ok(data.thg.eg[s.grp] && s.q > 0 && s.kw >= 0 && s.unit && s.quelle && /^(Bauteil |KBOB )/.test(s.quelle), `source ${s.id} is complete`);
+  assert.ok(data.thg.sources.some(s => s.id === data.thg.pv.kWpId && s.unit === 'kWp'), 'the PV source of the Betrieb exists in the Erstellung');
+  for (const [kat, rw] of Object.entries(data.thg.richtwerte)) assert.ok(data.thg.head.find(h => h[0] === 'kat')[3].includes(kat) && rw.erst.length === 2 && (!rw.zus || (rw.betr.length === 2 && rw.zus.length === 2)), `Richtwerte ${kat}`);
   for (const [pid, inst] of Object.entries(data.forms.byProject)) for (const [kind, I] of Object.entries(inst)) {
     for (const spec of (I.missing || [])) {
       const [k, c, field] = spec.split(':');
-      if (k === 'thg') assert.ok(ids.includes(c) && ['q', 'h', 'e'].includes(field), `${pid}: missing spec ${spec}`);
+      if (k === 'thg') assert.ok(ids.includes(c) && ['q', 'kw'].includes(field), `${pid}: missing spec ${spec}`);
+      else if (k === 'thgB') assert.ok(/^(b\d_(n|a|eta)|pv_y|pv_ev)$/.test(c), `${pid}: missing spec ${spec}`);
       else assert.ok(['kvQ', 'kvV', 'ksQ', 'ksV'].includes(k) && [...data.ebkp.ebkp.flatMap(g => g.kids), ...data.ebkp.extra].some(x => x.code === c), `${pid}: missing spec ${spec}`);
     }
     assert.equal(I.dates.length, I.step + 1, `${pid}/${kind}: one date per step reached`);
   }
-  for (const s of data.thg.sources) {
-    const eg = data.thg.eg[s.grp].find(x => x[0] === s.code);
-    assert.ok(eg && eg[3] === s.a, `${s.id}: element group ${s.code} of ${s.grp} with the same amortisation`);
-  }
+  for (const s of data.thg.sources) assert.ok(data.thg.eg[s.grp].some(x => x[0] === s.code), `${s.id}: element group ${s.code} of ${s.grp}`);
   for (const [kind, T] of Object.entries(data.forms.kinds)) {
     const tpl = data.templates.templates[kind === 'ks' ? 'kv' : kind];
     assert.ok(tpl && T.vorlage.endsWith('Version ' + tpl.ver), `${kind}: Vorlage «${T.vorlage}» carries the template version ${tpl.ver}`);
@@ -156,33 +156,50 @@ test('KV-32: Übersicht and Prüfung figures', () => {
   assert.equal(kv.meta.find(m => m.k === 'Lieferverantwortlich').v, 'Gian Muster, Generalplaner Beispiel AG');
 });
 
-test('THG-32: Emissionsquellen, Endwert, Zielwerte and the review flow', () => {
-  const thg = vm.forms.thg, S = data.thg.sources, EBF = data.sia416.initial.EBF;
-  const total60 = S.reduce((a, s) => a + (s.h + s.e) * 1000 / s.a * 60, 0);
+test('THG-32: Emissionsquellen (Erstellung), Betrieb, Zielwerte SIA 390/1 and the review flow', () => {
+  const thg = vm.forms.thg, S = data.thg.sources, EBF = data.sia416.initial.EBF, TH = data.thg;
+  const erst = S.reduce((a, s) => a + s.kw, 0);
   assert.equal(thg.status, 'In Bearbeitung'); assert.equal(thg.step, 1); assert.equal(thg.locked, false, 'the demo project keeps its Ökobilanz open');
-  assert.equal(thg.nSrc, 25); assert.equal(thg.fields, 75); assert.equal(thg.missing, 0);
-  assert.ok(Math.abs(thg.total - total60) < 1, 'Erstellung über 60 Jahre = Σ (h + e) × 1000 / a × 60');
-  assert.equal(thg.endwertStr, (Math.round(total60 / 60 / EBF * 10) / 10).toFixed(1)); assert.equal(thg.endwertStr, '7.6', 'Endwert for SUS = Erstellung pro Jahr / EBF');
-  assert.equal(thg.kpis[0].v, '7.6'); assert.equal(thg.kpis[1].k, 'THGE Erstellung, 60 Jahre'); assert.equal(thg.kpis[1].v, "2'553");
-  assert.equal(thg.chart.targets.length, 5); assert.equal(thg.chart.targets[0].label, 'SIA 390/1 Richtwert Basis'); assert.equal(thg.chart.hasBand, false);
-  assert.equal(thg.autoChecks.find(c => /390\/1/.test(c.label)).ok, true, '7.6 is below the SIA 390/1 Basis 9.0');
-  assert.ok(thg.autoChecks.every(c => c.ok) && thg.autoChecks[0].label === 'Alle 25 Emissionsquellen mit Elementgruppe und Ökobilanzdaten-Position');
-  assert.equal(thg.autoChecks.length, 5); assert.equal(thg.devPct, 15);
-  assert.equal(thg.cmp.find(c => c.code === 'D').hi, false, 'Technik deviates 11 % from SIA 31, below the 15 % threshold of the Ökobilanz');
+  assert.equal(thg.nSrc, 22); assert.equal(thg.fields, 44 + TH.betrieb.length * 3 + 2, 'two values per Emissionsquelle, three per Energiedienstleistung, PV yield and self-consumption'); assert.equal(thg.missing, 0);
+  assert.ok(Math.abs(thg.total - erst * EBF * 60) < 1, 'Erstellung über 60 Jahre = Σ kw × EBF × 60');
+  assert.equal(thg.endwertStr, '8.7', 'THGE Erstellung = Σ kw (kg CO₂-eq/m² EBF·a)');
+  assert.equal(thg.kpis[0].k, 'Erstellung'); assert.equal(thg.kpis[0].v, '8.7'); assert.equal(thg.kpis[1].k, 'Betrieb'); assert.equal(thg.kpis[1].v, '0.5', 'Betrieb with Wasserkraft and PV self-consumption');
+  assert.equal(thg.subtotals.length, 2); assert.equal(thg.subtotals[1].kw, '9.2'); assert.equal(thg.cmpSubs.length, 0, 'the Prüfung compares the Hauptgruppen only');
+  // Zielwerte SIA 390/1: three rows, marks Basis/ambitioniert (Verwaltung: assumed Betrieb values), Minergie-ECO GW1, Vorphase
+  assert.equal(thg.chart, null); assert.equal(thg.tz.rows.length, 3); assert.deepEqual(thg.tz.ist, ['8.7', '0.5', '9.2']);
+  assert.deepEqual(thg.tz.rows.map(r => r.marks.map(m => m.n).join('')), ['AMVB', 'AB', 'AB']);
+  assert.equal(thg.tz.legend.length, 4); assert.deepEqual(thg.tz.legend[0].cells.map(c => c.v), ['9.0', '2.0', '11.0']); assert.equal(thg.tz.legend[0].cells[2].over, false);
+  assert.ok(thg.tz.hint.includes('Richtwerte Verwaltung') && thg.tz.hint.includes('Annahme'), 'Betrieb and Zusatzanforderung of Verwaltung are assumptions');
+  assert.equal(thg.autoChecks.length, 9); assert.equal(thg.devPct, 15);
+  assert.ok(thg.autoChecks.filter(c => !c.info).every(c => c.ok), thg.autoChecks.filter(c => !c.ok).map(c => c.label).join(' | '));
+  assert.equal(thg.autoChecks[0].label, 'Alle 22 Emissionsquellen mit Elementgruppe, Referenzgrösse und Kennwert');
+  assert.ok(thg.autoChecks[4].label.startsWith('Zusatzanforderung B eingehalten: Erstellung + Betrieb 9.2, Grenze 11.0'));
+  assert.ok(thg.autoChecks[5].info && thg.autoChecks[5].label.includes('Erstellung 8.7 zu 9.0, Betrieb 0.5 zu 2.0'));
+  assert.ok(thg.autoChecks[7].label.includes('62 kWp') && thg.autoChecks[7].label.includes("55'800 kWh/a"));
+  assert.equal(thg.cmp.find(c => c.code === 'D').hi, false, 'Technik deviates 9 % from SIA 31, below the 15 % threshold of the Ökobilanz');
   assert.equal(thg.rv.notSubmitted, true);
-  assert.equal(thg.manual.length, 4); assert.equal(thg.docs.length, 2);
+  assert.equal(thg.manual.length, 5); assert.equal(thg.docs.length, 3);
   assert.equal(thg.rv.canReview, false); assert.equal(thg.rv.canApprove, false); assert.equal(thg.bar.canSubmit, true, 'complete → Einreichen possible');
-  // Erfassung rows: C and E opened, derived rows, head fields with EBF/GF read-only
+  assert.equal(thg.handover.value, 'Erstellung 8.7, Betrieb 0.5 kg CO₂-eq/m² EBF·a');
+  // Erfassung Erstellung rows: C and E opened, derived rows, Grundlagen split between Übersicht, Erstellung and Betrieb
   const E = thg.erf;
-  assert.ok(E.isTHG && E.rows.filter(r => r.isGroupRow).length === 6 && E.rows.filter(r => r.isSrc).length === 14 && E.rows.filter(r => r.isAdd).length === 2, 'open groups C and E get «Emissionsquelle hinzufügen»');
-  assert.equal(E.head.length, 8); assert.equal(E.head.find(h => h.key === 'EBF').val, "5'600 m²"); assert.ok(E.head.filter(h => h.ro).length === 2 && E.head.filter(h => h.isSelect).every(h => !h.ro), 'only EBF and GF read-only');
-  assert.equal(E.derived[0].kw, '7.6'); assert.equal(E.tot.h, S.reduce((a, s) => a + s.h, 0).toLocaleString('de-CH', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
+  assert.ok(E.isTHG && E.rows.filter(r => r.isGroupRow).length === 6 && E.rows.filter(r => r.isSrc).length === 9 && E.rows.filter(r => r.isAdd).length === 2, 'open groups C and E get «Emissionsquelle hinzufügen»');
+  assert.equal(E.rows.find(r => r.isGroupRow && r.code === 'C').kw, '3.5'); assert.equal(E.rows.find(r => r.isGroupRow && r.code === 'C').share, '41 %');
+  assert.equal(E.rows.find(r => r.id === 'C04.01-1').dataset, 'Gd01 Geschossdecke Beton 28 cm, zirkulit® NPK A · Bauteil Lesosai · herstellerspezifisch'); assert.equal(E.rows.find(r => r.id === 'C04.01-1').share, '16 %');
+  assert.equal(E.head.length, 5); assert.ok(E.head.every(h => !h.ro) && E.head.find(h => h.key === 'gw1').isText, 'Erstellung: Systemgrenze, Ökobilanzdaten, Tool, Minergie-ECO GW1 (text), Datenqualität');
+  assert.equal(thg.headShared.length, 5); assert.equal(thg.headShared.find(h => h.key === 'EBF').val, "5'600 m²"); assert.ok(thg.headShared.filter(h => h.ro).length === 2 && thg.headShared.find(h => h.key === 'stand').isText, 'only EBF and GF read-only');
+  assert.equal(E.derived[0].kw, '8.7'); assert.equal(E.derived[0].v, '48.6'); assert.equal(E.tot.kw, '8.7'); assert.equal(E.tot.share, '100 %');
+  // Erfassung Betrieb: Energiedienstleistungen with Standardwert flag, PV rows, totals
+  const Bt = thg.betr;
+  assert.equal(Bt.head.length, 3); assert.equal(Bt.rows.filter(r => r.isRow).length, 9); assert.equal(Bt.rows.filter(r => r.isPv).length, 2);
+  assert.equal(Bt.rows[0].end, '5.5'); assert.equal(Bt.rows[0].kE, '0.012'); assert.equal(Bt.rows[2].kE, '0.049'); assert.equal(Bt.rows[1].std, true);
+  assert.equal(Bt.end, '34.5'); assert.equal(Bt.thg, '0.52'); assert.equal(Bt.subs[1].v, '9.2'); assert.ok(Bt.pv[0].val.startsWith('62 kWp'));
   assert.equal(vm.ilpRows.find(r => r.code === 'THG-32').status, 'In Bearbeitung');
   assert.equal(vm.auRows.find(t => t.delivery === 'THG-32').status, 'In Bearbeitung');
   const st = structuredClone(base);
   st.projects.musterhausen.forms.thg.step = 4; st.projects.musterhausen.forms.thg.dates = ['12.03.2027', '15.03.2027', null, '03.05.2027', '04.05.2027'];
   let v0 = vmFor(st); assert.equal(v0.forms.thg.status, 'In Prüfung'); assert.equal(v0.forms.thg.locked, true); assert.equal(v0.forms.thg.rv.canReview, true); assert.equal(v0.forms.thg.erf.rows.filter(r => r.isAdd).length, 0, 'locked: no add rows');
-  st.projects.musterhausen.forms.thg.checks = { t1: true, t2: true, t3: true, t4: true };
+  st.projects.musterhausen.forms.thg.checks = { t1: true, t2: true, t3: true, t4: true, t5: true };
   let v = vmFor(st);
   assert.equal(v.forms.thg.rv.canApprove, true);
   st.projects.musterhausen.forms.thg.step = 5;
@@ -190,37 +207,44 @@ test('THG-32: Emissionsquellen, Endwert, Zielwerte and the review flow', () => {
   assert.equal(v.forms.thg.status, 'Freigegeben'); assert.equal(v.forms.thg.canTransfer, true); assert.equal(v.forms.thg.handover.status, 'Bereit zur Übertragung');
   st.projects.musterhausen.forms.thg.step = 6;
   v = vmFor(st);
-  assert.equal(v.forms.thg.status, 'Abgeschlossen'); assert.equal(v.pfRows[0].sus, 'übertragen'); assert.equal(v.pfRows[0].ew, '7.6');
+  assert.equal(v.forms.thg.status, 'Abgeschlossen'); assert.equal(v.pfRows[0].sus, 'übertragen'); assert.equal(v.pfRows[0].ew, '8.7');
   assert.ok(v.forms.thg.steps.slice(0, 5).every(s => s.sym === '✓'));
   st.projects.musterhausen.forms.thg.step = 1; st.projects.musterhausen.forms.thg.rejected = true;
   v = vmFor(st);
   assert.equal(v.forms.thg.status, 'Zurückgewiesen'); assert.equal(v.forms.thg.pill.label, 'Zurückgewiesen'); assert.equal(v.forms.thg.locked, false);
   assert.equal(v.ilpRows.find(r => r.code === 'THG-32').status, 'Zurückgewiesen');
   assert.equal(v.forms.thg.erf.rows.filter(r => r.isAdd).length, 2, 'open groups get «Emissionsquelle hinzufügen»');
-  assert.ok(v.forms.thg.erf.head.filter(h => !h.ro).length === 6, 'editable head fields');
-  // A missing value blocks the submission; without any Emissionsquelle the form cannot be submitted.
-  st.projects.musterhausen.forms.thg.rejected = false; st.projects.musterhausen.thgSrc[0].h = '';
+  // A missing value blocks the submission (badge per tab); without any Emissionsquelle the form cannot be submitted.
+  st.projects.musterhausen.forms.thg.rejected = false; st.projects.musterhausen.thgSrc[0].kw = ''; st.projects.musterhausen.thgBetr.b3_eta = '';
   v = vmFor(st);
-  assert.equal(v.forms.thg.missing, 1); assert.equal(v.forms.thg.bar.canSubmit, false); assert.equal(v.forms.thg.badges.erfassung.n, 1);
+  assert.equal(v.forms.thg.missing, 2); assert.equal(v.forms.thg.bar.canSubmit, false); assert.equal(v.forms.thg.badges.erfassung.n, 1); assert.equal(v.forms.thg.badges.betrieb.n, 1);
+  assert.equal(v.forms.thg.betr.rows[3].end, '–');
   st.projects.musterhausen.forms.thg.missingOnly = true;
   v = vmFor(st);
   assert.deepEqual(v.forms.thg.erf.rows.map(r => r.code), ['B', 'B06.01'], 'filter shows the group and the row with the missing value');
-  st.projects.musterhausen.forms.thg.missingOnly = false; st.projects.musterhausen.thgSrc = [];
+  assert.deepEqual(v.forms.thg.betr.rows.map(r => r.name), ['Raumkälte'], 'Betrieb filter shows the row with the missing value');
+  st.projects.musterhausen.forms.thg.missingOnly = false; st.projects.musterhausen.thgBetr.b3_eta = 5; st.projects.musterhausen.thgSrc = [];
   v = vmFor(st);
-  assert.equal(v.forms.thg.fields, 0); assert.equal(v.forms.thg.bar.canSubmit, false); assert.equal(v.forms.thg.bar.reason, 'Einreichen erst, wenn Emissionsquellen erfasst sind');
-  assert.equal(v.forms.thg.kpis[0].v, '–'); assert.equal(v.forms.thg.next.btn, 'Erfassung öffnen');
-  // A new Emissionsquelle needs element group, KBOB dataset, Menge, Herstellung and Entsorgung; the amortisation comes from the element group.
-  st.projects.musterhausen.thgSrc = [{ id: 'n1', grp: 'D', isNew: true, code: '', kbob: '', q: '', h: '', e: '', hs: false }];
+  assert.equal(v.forms.thg.nSrc, 0); assert.equal(v.forms.thg.missE, 0); assert.equal(v.forms.thg.bar.canSubmit, false); assert.equal(v.forms.thg.bar.reason, 'Einreichen erst, wenn Emissionsquellen erfasst sind');
+  assert.equal(v.forms.thg.kpis[0].v, '–'); assert.equal(v.forms.thg.next.btn, 'Erfassung öffnen'); assert.equal(v.forms.thg.tz.rows[0].ist, '–'); assert.equal(v.forms.thg.autoChecks[7].ok, false, 'no PV source in the Erstellung');
+  // A new Emissionsquelle needs element group, Bauteil, Referenzgrösse and Kennwert; the unit comes from the element group.
+  st.projects.musterhausen.thgSrc = [{ id: 'n1', grp: 'D', isNew: true, code: '', tcode: '', name: '', quelle: '', unit: '', q: '', kw: '', hs: false }];
   v = vmFor(st);
-  assert.equal(v.forms.thg.fields, 5); assert.equal(v.forms.thg.missing, 5);
-  st.projects.musterhausen.thgSrc = [{ id: 'n1', grp: 'D', isNew: true, code: 'D01', name: 'Elektroanlage', unit: 'm² EBF', a: 30, kbob: 'KBOB 34.002', q: '5600', h: '126.6', e: '8.2', hs: false }];   // as thgVal stores it
+  assert.equal(v.forms.thg.missE, 4); assert.equal(v.forms.thg.badges.erfassung.n, 4);
+  st.projects.musterhausen.thgSrc = [{ id: 'n1', grp: 'D', isNew: true, code: 'D01', tcode: '', name: 'Elektroanlage', quelle: 'KBOB 34.002', unit: 'm² EBF', q: 5600, kw: 1.2, hs: false }];   // as thgVal stores it
   st.projects.musterhausen.forms.thg.modes.D = 'detail';
   v = vmFor(st);
-  assert.equal(v.forms.thg.missing, 0); assert.equal(v.forms.thg.erf.rows.find(r => r.isNew).amort, '30 a');
-  assert.equal(v.forms.thg.endwertStr, (Math.round((126.6 + 8.2) * 1000 / 30 / EBF * 10) / 10).toFixed(1));
+  assert.equal(v.forms.thg.missing, 0); assert.equal(v.forms.thg.endwertStr, '1.2'); assert.equal(v.forms.thg.erf.rows.find(r => r.isNew).share, '100 %');
   st.projects.musterhausen.thgHead.kbob = 'KBOB/ecobau-Liste 2022, Version 8.02';
   v = vmFor(st);
   assert.equal(v.forms.thg.autoChecks[2].ok, false, 'other KBOB list version is flagged');
+  // Betrieb: the Stromprodukt changes the coefficient, the surplus rule credits the export; a category without Richtwerte asks for a Vergleichskategorie
+  st.projects.musterhausen.thgSrc = structuredClone(base.projects.musterhausen.thgSrc); st.projects.musterhausen.thgHead = { ...base.projects.musterhausen.thgHead, strom: 'CH-Verbrauchermix', pvRule: 'Gutschrift CH-Verbrauchermix' };
+  v = vmFor(st);
+  assert.equal(v.forms.thg.betr.rows[0].kE, '0.125'); assert.equal(v.forms.thg.betr.rows[10].kE, '0.125'); assert.ok(v.forms.thg.betr.rows[10].thg.startsWith('−'), 'PV export credited');
+  st.projects.musterhausen.thgHead = { ...base.projects.musterhausen.thgHead, kat: 'Sonstige' };
+  v = vmFor(st);
+  assert.equal(v.forms.thg.autoChecks[4].ok, false); assert.ok(v.forms.thg.autoChecks[4].label.includes('Vergleichskategorie')); assert.deepEqual(v.forms.thg.tz.rows[1].marks, []); assert.equal(v.forms.thg.tz.legend[0].cells[1].v, '–');
 });
 
 test('every project: complete, plausible Datenformulare', () => {
@@ -237,7 +261,7 @@ test('every project: complete, plausible Datenformulare', () => {
       if (F.step === 0) assert.equal(F.missing, F.fields, `${p.id}/${kind}: Offen has no values`);
       if (F.step === 1 && !inst[kind].missing && !p.detailed) assert.equal(F.missing, 0, `${p.id}/${kind}: complete unless values are marked missing`);
       if (F.step >= 1) assert.ok(F.docs.length >= 1, `${p.id}/${kind}: documents`);
-      assert.ok(F.chart.targets.length === (kind === 'thg' ? 5 : 3) && F.costRows.length >= 6, `${p.id}/${kind}: Übersicht`);
+      assert.ok((kind === 'thg' ? F.tz.rows.length === 3 && F.tz.legend.length === 4 : F.chart.targets.length === 3) && F.costRows.length >= 6, `${p.id}/${kind}: Übersicht`);
       if (kind === 'thg' && F.step >= 1) assert.ok(F.nSrc === data.thg.sources.length && F.endwert > 4 && F.endwert < 14, `${p.id}/thg: plausible Endwert ${F.endwertStr}`);
       if (kind === 'thg' && F.step === 0) assert.equal(F.nSrc, 0, `${p.id}/thg: open form without Emissionsquellen`);
       assert.ok(!/undefined|NaN/.test(JSON.stringify([F.kpis, F.meta, F.hist, F.handover, F.next])), `${p.id}/${kind}: no undefined/NaN`);
@@ -254,7 +278,7 @@ test('every project: complete, plausible Datenformulare', () => {
   assert.equal(eiger.forms.thg.status, 'Überfällig'); assert.equal(eiger.forms.thg.missing, 3, 'three fields of three Emissionsquellen'); assert.equal(eiger.forms.kv.status, 'Offen'); assert.equal(eiger.forms.kv.kpis[0].v, '–');
   const agro = vmFor(base, data.projects.projects.find(p => p.id === 'agroscope-posieux'));
   assert.equal(agro.forms.thg.status, 'Abgeschlossen'); assert.equal(agro.forms.thg.endwertStr, '11.4', 'calibrated to the Endwert of the instance'); assert.equal(agro.forms.kv.locked, true); assert.equal(agro.forms.thg.reviewer, 'Reto Muster');
-  assert.equal(agro.forms.thg.erf.head.find(h => h.key === 'tool').val, 'Lesosai'); assert.equal(agro.forms.thg.autoChecks[3].ok, false, '11.4 is above SIA 390/1 Basis');
+  assert.equal(agro.forms.thg.erf.head.find(h => h.key === 'tool').val, 'Lesosai'); assert.equal(agro.forms.thg.autoChecks[4].ok, true, 'Restaurant: 11.4 + Betrieb is below the Zusatzanforderung 16'); assert.ok(agro.forms.thg.autoChecks[5].label.includes('Erstellung 11.4 zu 9.0') && agro.forms.thg.tz.hint.includes('Richtwerte Restaurant') && !agro.forms.thg.tz.hint.includes('Annahme'));
   assert.equal(vm.pfRows.find(r => r.project === 'agroscope-posieux').ew, '11.4'); assert.equal(vm.pfRows.find(r => r.project === 'eigerplatz').status, 'Überfällig'); assert.equal(vm.pfRows.find(r => r.project === 'zollikofen').status, 'Nicht bestellt');
   assert.equal(vmFor(base, data.projects.projects.find(p => p.id === 'prangins')).formByCode('kv-32'), null, 'no KV-32 in Prangins');
   assert.equal(vm.forms.ks.status, 'Abgeschlossen'); assert.equal(vm.forms.ks.cmpPrevLabel, 'SIA 21');
