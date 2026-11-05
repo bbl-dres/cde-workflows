@@ -6,7 +6,6 @@
 .fm-side { flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
 .fm-stack { display: flex; flex-direction: column; gap: 14px; }
 .pr18 { padding-right: 18px !important; }
-.is-over { color: #9b2c44; font-weight: 600; }
 
 .fm-rejected { margin-bottom: 14px; }
 
@@ -22,22 +21,28 @@
 .kpi-v { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
 .kpi-u { font-size: 12.5px; color: var(--muted); }
 
-/* Prüfung: Zusammenfassung (Prüfpunkt · Lieferung · Ergebnis); the Begründung des Planers sits under its row */
+/* Prüfung: Zusammenfassung (Prüfpunkt · Lieferung · Ergebnis) */
 .sm-body { min-width: 560px; }
 .sm-th, .sm-tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 220px) 100px; gap: 0 16px; align-items: center; padding: 0 14px; }
 .sm-th { height: 34px; background: #fafafa; font-size: 12px; font-weight: 500; color: var(--text); border-bottom: 1px solid var(--line-4); }
 .sm-tr { min-height: 40px; padding-top: 6px; padding-bottom: 6px; font-size: 13px; border-bottom: 1px solid var(--line-4); text-wrap: pretty; cursor: help; }
 .sm-tr > span { min-width: 0; }
-.sm-begr { display: grid; grid-template-columns: minmax(120px, 200px) minmax(0, 1fr); gap: 0 12px; align-items: center; padding: 2px 14px 8px 28px; font-size: 12.5px; color: var(--muted); border-bottom: 1px solid var(--line-4); margin-top: -1px; }
-.sm-begr-text { color: var(--text); text-wrap: pretty; }                /* locked: the Begründung reads as text, not as a clipped field */
 @media (max-width: 639.98px) {                                          /* phones: the value moves under its Prüfpunkt, the result stays visible */
   .sm-body { min-width: 0; }
   .sm-th, .sm-tr { grid-template-columns: minmax(0, 1fr) auto; }
   .sm-th > span:nth-child(2) { display: none; }
   .sm-tr > span:nth-child(2) { grid-row: 2; grid-column: 1; color: var(--muted); font-size: 12.5px; }
   .sm-tr > span:nth-child(3) { grid-row: 1 / span 2; grid-column: 2; }
-  .sm-begr { grid-template-columns: minmax(0, 1fr); gap: 4px 0; padding-left: 14px; }
 }
+
+/* Locked Erfassung (from «Eingereicht»): a grey band with a lock under the card head says why, the table is tinted and its
+   values read as text instead of fields. Nothing lies over the values: the reviewer still reads, selects and hovers them. */
+.lock-band { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 8px; min-height: 38px; padding: 7px 14px; background: #e3e7ec; border-bottom: 1px solid var(--line-3); font-size: 12.5px; font-weight: 500; color: #374151; text-align: center; }
+.lock-band .btn-link { font-weight: 400; margin-left: 8px; }
+.is-locked .fm-table { background: #f1f3f6; }
+.is-locked .ent-input, .is-locked .ent-input[readonly], .is-locked .ent-text, .is-locked .ent-text[readonly] { border-color: transparent !important; background: transparent !important; box-shadow: none !important; color: var(--text); cursor: default; }
+.is-locked .ent-pos:hover, .is-locked .ent-group:hover { background-color: transparent; }
+.is-locked .ent:not(.ent-betr) .ent-input { padding-right: 13px; }   /* without the box the value lines up with the sums and totals of its column */
 
 /* Numbers with an explanation on hover */
 .kpi[title], .tgt-ist[title], .tz-ist[title], .plan-result > [title] { cursor: help; }
@@ -53,22 +58,27 @@
 .fm-space { height: 14px; }
 .fw-400 { font-weight: 400; }
 
+/* Bar charts of the Übersicht (Kostenziele, Zielwerte SIA 390/1, bar lists) share one geometry: track and bar 8px high without
+   rounded corners (track #eef0f3, bar navy), marks and ticks 2px × 18px in --mark, 5px above and below the bar */
 /* Übersicht: target chart (Kostenziel / Zielwert) */
 .tgt-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
 .tgt-ist { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .tgt { position: relative; height: 64px; }
-.tgt-track { position: absolute; left: 0; right: 0; top: 24px; height: 16px; background: #f3f4f6; border-radius: 3px; }
-.tgt-band { position: absolute; top: 24px; height: 16px; background: #e2efe6; }
-.tgt-bar { position: absolute; top: 28px; height: 8px; left: 0; background: #1f2d3f; border-radius: 0 2px 2px 0; }
-.tgt-mark { position: absolute; top: 18px; height: 28px; width: 2px; margin-left: -1px; }
-.tgt-dot, .tgt-n { width: 16px; height: 16px; border-radius: 50%; color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.tgt-track { position: absolute; left: 0; right: 0; top: 28px; height: 8px; background: #eef0f3; }
+.tgt-band { position: absolute; top: 23px; height: 18px; background: #d9dfe7; }   /* accuracy band: as high as the marks, a neutral tone (green would read as «good») */
+.tgt-bar { position: absolute; top: 28px; height: 8px; left: 0; background: var(--navy); }
+/* marks of the target charts: one neutral dark colour (amber, green and red would read as warning, success and error) and one
+   line width; --x is the position in %, snapped to whole pixels so that every line is exactly 2px (a fractional position smears it) */
+.tgt-mark, .tgt-dot, .tz-mark, .tz-dot, .ov-tick { left: var(--x); left: round(var(--x), 1px); }
+.tgt-mark { position: absolute; top: 23px; height: 18px; width: 2px; margin-left: -1px; background: var(--mark); }
+.tgt-dot, .tgt-n { width: 16px; height: 16px; border-radius: 50%; background: var(--mark); color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
 .tgt-dot { position: absolute; transform: translateX(-50%); }
 .tgt-axis { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; margin-top: -6px; }
 .tgt-legend { display: grid; grid-template-columns: 16px minmax(0, 1fr) 120px 100px; gap: 8px 12px; align-items: center; font-size: 13px; border-top: 1px solid var(--line-4); padding-top: 10px; font-variant-numeric: tabular-nums; }
 .tgt-legend > * { min-width: 0; }
-.tgt-bandsw { width: 16px; height: 10px; background: #e2efe6; border-radius: 2px; }
+.tgt-bandsw { width: 16px; height: 8px; background: #d9dfe7; }
 
-/* Übersicht (design 05.11.2026): bar lists with the previous phase as a tick; Prüfung THG-32: dumbbell rows with Begründung */
+/* Übersicht (design 05.11.2026): bar lists with the previous phase as a tick */
 .ov-body { padding: 8px 16px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 460px; }
 .ov-head, .ov-row, .ov-total, .ov-sub { display: grid; gap: 0 10px; align-items: center; font-variant-numeric: tabular-nums; }
 .ov-head > *, .ov-row > *, .ov-total > *, .ov-sub > * { min-width: 0; }
@@ -80,9 +90,9 @@
 .ov-row.is-link:focus-visible { box-shadow: 0 0 0 2px var(--primary-ring); }
 .ov-ic { width: 28px; height: 28px; border-radius: 6px; background: #e2e8ee; color: var(--navy); display: flex; align-items: center; justify-content: center; }
 .ov-bar { position: relative; height: 18px; }
-.ov-track { position: absolute; left: 0; right: 0; top: 5px; height: 8px; background: #eef0f3; border-radius: 4px; }
-.ov-fill { position: absolute; left: 0; top: 5px; height: 8px; border-radius: 4px; background: var(--navy); }
-.ov-tick { position: absolute; top: 0; height: 18px; width: 2px; margin-left: -1px; background: #374151; }
+.ov-track { position: absolute; left: 0; right: 0; top: 5px; height: 8px; background: #eef0f3; }
+.ov-fill { position: absolute; left: 0; top: 5px; height: 8px; background: var(--navy); }
+.ov-tick { position: absolute; top: 0; height: 18px; width: 2px; margin-left: -1px; background: var(--mark); }   /* Vorphase; position snapped like the target marks */
 .ov-total { height: 38px; font-size: 13px; border-top: 1px solid #1f2d3f; margin-top: 4px; }
 .ov-sub { min-height: 36px; font-size: 13.5px; font-weight: 700; }
 .seg { display: inline-flex; border: 1px solid #d1d5db; border-radius: 4px; overflow: hidden; margin: 12px 16px 0; }
@@ -109,13 +119,13 @@
 /* Übersicht (DWG): Flächen SIA 416 and Prüfregeln nach Kategorie */
 .cat-list { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 7px; }
 .cat-row { display: grid; grid-template-columns: 120px minmax(0, 1fr) 44px; gap: 10px; align-items: center; font-size: 12.5px; }
-.cat-bar { display: flex; height: 10px; border-radius: 2px; overflow: hidden; background: #f3f4f6; }
+.cat-bar { display: flex; height: 8px; overflow: hidden; background: #eef0f3; }
 .cat-legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 4px; flex-wrap: wrap; }
 .cat-legend > span { display: inline-flex; align-items: center; gap: 6px; }
-.cat-sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.cat-sw { width: 10px; height: 8px; display: inline-block; }
 
 /* Erfassung: Hauptgruppen with direct amount or detailed positions */
-.ent { min-width: 660px; }
+.ent { min-width: 720px; }
 .ent-th { display: grid; height: 34px; align-items: center; background: #fafafa; font-size: 12px; font-weight: 500; color: var(--text); border-bottom: 1px solid var(--line-4); }
 .ent-th > span, .ent-group > span, .ent-pos > span, .ent-total > span, .ent-subtotal > span { min-width: 0; padding: 0 10px; }
 .ent-th > span:first-child, .ent-total > span:first-child, .ent-subtotal > span:first-child, .ent-pos > span:first-child { padding-left: 14px; }
@@ -127,7 +137,7 @@
 .ent-toggle { width: 22px; height: 22px; flex: none; border: 0; border-radius: 4px; background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
 .ent-toggle:hover { background: var(--line-3); }
 .ent-name { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-.ent-name .fw-600 { white-space: nowrap; }
+.ent-name .fw-600 { min-width: 0; }                          /* a long group name wraps instead of running over the unit column (phones) */
 .ent-sub { font-size: 12px; color: var(--muted); }
 .ent-pos { display: grid; min-height: 40px; align-items: center; font-size: 13px; border-bottom: 1px solid var(--line-4); transition: background-color .3s; }
 .ent-pos:hover { background: var(--row-hover); }
@@ -202,24 +212,23 @@
 .ent-betr { min-width: 900px; }
 .thg-field .ent-text.right { text-align: right; font-variant-numeric: tabular-nums; }
 .thg-field .ent-text::placeholder { color: #b4242f; }
-.thg-head.pv-strip { border-bottom: 1px solid var(--line-4); }
 
 /* Übersicht (THG-32): Zielwerte SIA 390/1, three rows (Erstellung, Betrieb, Zusatzanforderung) with the Richtwerte as marks */
 .tz-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; }
 .tz-row, .tz-axis { display: grid; grid-template-columns: 150px minmax(0, 1fr) 56px; gap: 0 14px; align-items: center; }
 .tz-label { font-size: 13px; font-weight: 500; }
 .tz-track-wrap { position: relative; height: 62px; }
-.tz-track { position: absolute; left: 0; right: 0; top: 25px; height: 14px; background: #f3f4f6; border-radius: 3px; }
-.tz-bar { position: absolute; top: 28px; height: 8px; left: 0; background: #1f2d3f; border-radius: 0 2px 2px 0; }
-.tz-mark { position: absolute; top: 19px; height: 26px; width: 2px; margin-left: -1px; }
-.tz-dot { position: absolute; top: 0; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
-.tz-dot.is-below { top: 46px; }
+.tz-track { position: absolute; left: 0; right: 0; top: 28px; height: 8px; background: #eef0f3; }
+.tz-bar { position: absolute; top: 28px; height: 8px; left: 0; background: var(--navy); }
+.tz-mark { position: absolute; top: 23px; height: 18px; width: 2px; margin-left: -1px; background: var(--mark); }
+.tz-dot { position: absolute; top: 5px; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; background: var(--mark); color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.tz-dot.is-below { top: 43px; }
 .tz-ist { font-size: 15px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
 .tz-axis { font-size: 11.5px; color: var(--muted); margin-top: -6px; font-variant-numeric: tabular-nums; }
 .tz-axis > span:nth-child(2) { display: flex; justify-content: space-between; }
 .tz-legend { display: grid; grid-template-columns: 16px minmax(0, 1fr) 80px 80px 120px; gap: 8px 12px; align-items: center; font-size: 13px; border-top: 1px solid var(--line-4); margin-top: 6px; padding-top: 10px; font-variant-numeric: tabular-nums; }
 .tz-legend > * { min-width: 0; }
-.tz-sw { width: 16px; height: 8px; background: #1f2d3f; border-radius: 2px; }
+.tz-sw { width: 16px; height: 8px; background: var(--navy); }
 
 @media (max-width: 767.98px) {
   .kpi-grid { grid-template-columns: 1fr 1fr; }

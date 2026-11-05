@@ -42,6 +42,7 @@
   /* brand */
   --topbar: #344255;        /* measured */
   --navy: #10384f;          /* --primary-color */
+  --mark: #374151;          /* marks of the target charts: neutral, not a status colour */
   --navy-2: #10384f;        /* primary buttons */
   --navy-hover: #0b2538;
   --primary-ring: rgba(16, 56, 79, .2);

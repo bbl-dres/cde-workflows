@@ -40,7 +40,7 @@ function uebersicht(ctx, F) {
     <div class="fm-main">
       <div class="kpi-grid">
         ${F.kpis.map(k => html`<div class="card kpi" title="${k.tip}"><span class="kpi-k">${k.k}</span><span class="kpi-row"><span class="kpi-v">${k.v}</span><span class="kpi-u">${k.u}</span></span></div>`)}
-        <div class="card kpi" title="${F.comp.tip}"><span class="kpi-k">${F.comp.label}</span><span class="kpi-v">${F.comp.pct}</span>${progress(F.comp.w, F.comp.bar)}<span class="fs-12" style="color:${F.comp.fg}">${F.comp.text}</span></div>
+        <div class="card kpi" title="${F.comp.tip}"><span class="kpi-k">${F.comp.label}</span><span class="kpi-v">${F.comp.pct}</span><span class="fs-12 muted">${F.comp.text}</span></div>
       </div>
       ${F.kind === 'plan' ? planOverview(F, L) : F.erf.isTHG ? thgOverview(F, L, ctx) : costOverview(F, L)}
     </div>
@@ -68,15 +68,15 @@ function costOverview(F, L) {
 const ovRow = (F, g) => html`<div class="ov-row${g.tab ? ' is-link' : ''}" style="${OV_COLS}" title="${g.tip}${g.tab ? ' · Klick öffnet die Erfassung' : ''}" ${g.tab ? html`role="link" tabindex="0" data-action="formOpenGroup" data-form="${F.id}" data-group="${g.code}" data-tab="${g.tab}"` : ''}>
   <span class="ov-ic">${urlIcon(g.icon)}</span>
   <span class="ellipsis"><span class="fw-600">${g.code}</span> ${g.name}</span>
-  <div class="ov-bar"><div class="ov-track"></div><div class="ov-fill" style="width:${g.w}${g.bc ? ';background:' + g.bc : ''}"></div>${g.tx != null ? html`<div class="ov-tick" style="left:${g.tx}"></div>` : ''}</div>
-  <span class="right fw-600">${g.cur}</span><span class="right muted fs-12">${g.share}</span><span class="right" style="color:${g.dfg};font-weight:${g.dw}" title="${g.dp}">${g.d}</span>
+  <div class="ov-bar"><div class="ov-track"></div><div class="ov-fill" style="width:${g.w}${g.bc ? ';background:' + g.bc : ''}"></div>${g.tx != null ? html`<div class="ov-tick" style="--x:${g.tx}"></div>` : ''}</div>
+  <span class="right fw-600">${g.cur}</span><span class="right muted fs-12">${g.share}</span><span class="right" title="${g.dp}">${g.d}</span>
 </div>`;
 const ovListBody = (F, Lst) => html`<div class="fm-table"><div class="ov-body">
   <div class="ov-head" style="${OV_COLS}"><span></span><span>${Lst.col}</span><div class="ov-axis"><span>0</span><span>${Lst.max}</span></div><span class="right" title="${Lst.unitTip}">${Lst.unit}</span><span class="right" title="Anteil am Total">Anteil</span><span class="right" title="${Lst.dTip}">${Lst.dUnit}</span></div>
   ${Lst.rows.map(g => ovRow(F, g))}
   ${Lst.rows.length === 0 ? html`<div class="muted fs-13" style="padding:14px 0">Noch keine Werte erfasst.</div>` : ''}
   <div class="ov-total" style="${OV_COLS}"><span></span><span>${Lst.totalLabel}</span><span class="muted fs-12">${Lst.prevText}</span><span class="right fw-600" title="${Lst.totTip}">${Lst.tot}</span><span class="right muted fs-12">100 %</span><span class="right" title="${Lst.dTip}">${Lst.dTot}</span></div>
-  ${Lst.subs.length ? html`<div style="height:10px"></div>${Lst.subs.map(u => html`<div class="ov-sub" style="${OV_COLS}"><span></span><span><span>${u.code}</span> ${u.name}</span><span class="muted fs-12 fw-400">${u.prevText}</span><span class="right">${u.cur}</span><span class="right muted fs-12 fw-400">${u.share}</span><span class="right fw-400" style="color:${u.dfg};font-weight:${u.dw}">${u.d}</span></div>`)}` : ''}
+  ${Lst.subs.length ? html`<div style="height:10px"></div>${Lst.subs.map(u => html`<div class="ov-sub" style="${OV_COLS}"><span></span><span><span>${u.code}</span> ${u.name}</span><span class="muted fs-12 fw-400">${u.prevText}</span><span class="right">${u.cur}</span><span class="right muted fs-12 fw-400">${u.share}</span><span class="right fw-400">${u.d}</span></div>`)}` : ''}
 </div></div>`;
 
 /** Ökobilanz: the Grundlagen shared by Erstellung and Betrieb, the Hauptgruppen with the Betrieb rows, the Zielwerte SIA 390/1. */
@@ -92,10 +92,10 @@ const targetChart = F => {
   return html`<div class="tgt-body">
     <div class="tgt-ist" title="${K.istTip}"><span class="kpi-v">${K.ist}</span><span class="kpi-u">${F.ov.istLabel}</span></div>
     <div class="tgt" role="img" aria-label="${K.ist} im Vergleich mit ${K.targets.map(m => m.label + ' ' + m.val).join(', ')}"><div class="tgt-track"></div>${K.hasBand ? html`<div class="tgt-band" style="left:${K.bandL};width:${K.bandW}"></div>` : ''}<div class="tgt-bar" style="width:${K.istW}"></div>
-      ${K.targets.map(m => html`<div class="tgt-mark" style="left:${m.x};background:${m.c}"></div><span class="tgt-dot" style="top:${m.ly};left:${m.x};background:${m.c}">${m.n}</span>`)}</div>
+      ${K.targets.map(m => html`<div class="tgt-mark" style="--x:${m.x}"></div><span class="tgt-dot" style="top:${m.ly};--x:${m.x}">${m.n}</span>`)}</div>
     <div class="tgt-axis"><span>${K.min}</span><span>${K.max}</span></div>
     <div class="tgt-legend"><span></span><span class="muted fs-12">Ziel</span><span class="muted fs-12 right">Wert</span><span class="muted fs-12 right" title="Abweichung des Ist-Werts vom Zielwert">Ist zum Ziel</span>
-      ${K.targets.map(m => html`<span class="tgt-n" style="background:${m.c}">${m.n}</span><span class="ellipsis">${m.label}</span><span class="right">${m.val}</span><span class="right" style="color:${m.dc}" title="Ist ${K.ist} zu ${m.label} ${m.val}">${m.delta}</span>`)}
+      ${K.targets.map(m => html`<span class="tgt-n">${m.n}</span><span class="ellipsis">${m.label}</span><span class="right">${m.val}</span><span class="right" title="Ist ${K.ist} zu ${m.label} ${m.val}">${m.delta}</span>`)}
       ${K.hasBand ? html`<span class="tgt-bandsw"></span><span style="color:#374151">Genauigkeit ±${K.acc} % um Kostenziel</span><span class="right" style="color:#374151">${K.band}</span><span></span>` : ''}
     </div>
   </div>`;
@@ -108,12 +108,12 @@ const zielwerte = F => {
   return html`<div class="tz-body">
     ${Z.rows.map(r => html`<div class="tz-row"><span class="tz-label">${r.label}</span>
       <div class="tz-track-wrap" role="img" aria-label="${r.label} ${r.ist}${r.marks.length ? ', ' + r.marks.map(m => m.title).join(', ') : ''}"><div class="tz-track"></div><div class="tz-bar" style="width:${r.istW}"></div>
-        ${r.marks.map(m => html`<div class="tz-mark" style="left:${m.x};background:${m.c}"></div><span class="tz-dot${m.below ? ' is-below' : ''}" style="left:${m.x};background:${m.c}" title="${m.title}">${m.n}</span>`)}</div>
+        ${r.marks.map(m => html`<div class="tz-mark" style="--x:${m.x}"></div><span class="tz-dot${m.below ? ' is-below' : ''}" style="--x:${m.x}" title="${m.title}">${m.n}</span>`)}</div>
       <span class="tz-ist" title="${r.tip}">${r.ist}</span></div>`)}
     <div class="tz-axis"><span></span><span><span>0</span><span>${Z.max}</span></span><span></span></div>
     <div class="tz-legend"><span></span><span class="muted fs-12">Ziel</span><span class="muted fs-12 right" title="Richtwert Erstellung, informativ">Erstellung</span><span class="muted fs-12 right" title="Richtwert Betrieb, informativ">Betrieb</span><span class="muted fs-12 right" title="Höchstwert für Erstellung + Betrieb, einzuhalten">Zusatzanforderung</span>
       <span class="tz-sw"></span><span class="fw-600">Ist</span>${Z.ist.map(v => html`<span class="right fw-600">${v}</span>`)}
-      ${Z.legend.map(m => html`<span class="tgt-n" style="background:${m.c}">${m.n}</span><span class="ellipsis">${m.label}</span>${m.cells.map(c => html`<span class="right${c.over ? ' is-over' : ''}">${c.v}</span>`)}`)}
+      ${Z.legend.map(m => html`<span class="tgt-n">${m.n}</span><span class="ellipsis">${m.label}</span>${m.cells.map(c => html`<span class="right">${c.v}</span>`)}`)}
     </div>
   </div>`;
 };
@@ -127,6 +127,11 @@ function planOverview(F, L) {
 }
 
 // ---- Erfassung ----
+/** Locked Erfassung (from «Eingereicht»): a grey band with a lock under the card head says why and since when. The card gets
+ *  `is-locked`: its table is tinted and the values read as text instead of fields. Nothing covers the values, the reviewer still reads them. */
+const lockBand = F => (F.locked ? html`<div class="lock-band">${icon('lock', 15, '#374151')}<span>${F.lock}</span>${linkBtn({ label: 'Wieder öffnen (Prototyp)', cls: 'fs-125', action: F.act.reopen, key: F.id })}</div>` : '');
+const lockCls = F => (F.locked ? ' is-locked' : '');
+
 function erfassung(ctx, F) {
   const body = F.kind === 'plan' ? planEntry(ctx, F) : F.erf.isTHG ? html`${thgHeadCard(ctx, F, 'Erstellung', F.erf.head)}${dataEntry(ctx, F)}` : dataEntry(ctx, F);
   return html`<div class="fm-stack">${body}${submitBar(F)}</div>`;
@@ -151,8 +156,9 @@ function entryHead(ctx, F) {
 
 function dataEntry(ctx, F) {
   const E = F.erf;
-  return html`<div class="card">
+  return html`<div class="card${lockCls(F)}">
     ${entryHead(ctx, F)}
+    ${lockBand(F)}
     <div class="fm-table">${E.isTHG ? thgTable(F) : costTable(F)}</div>
     ${E.foot ? html`<div class="card-foot">${E.foot}</div>` : ''}
   </div>`;
@@ -218,15 +224,16 @@ const newPosRow = (F, r, ro) => html`<div class="ent-pos ent-new" style="${COLS}
 
 // ---- Erfassung: Ökobilanz (Grundlagen, Emissionsquellen der Erstellung je eBKP-H-Elementgruppe, Betrieb) ----
 /** Grundlagen fields: selects, text inputs (Datenstand, Minergie-ECO GW1) and the read-only areas from the floor plans. */
-const headFields = (F, list) => html`<div class="thg-head">${list.map(h => html`<label class="thg-field"><span>${h.label}</span>
+const headFields = (F, list, extra = '') => html`<div class="thg-head">${list.map(h => html`<label class="thg-field"><span>${h.label}</span>
   ${h.isSelect
     ? html`<select class="ent-select" aria-label="${h.label}" style="background:${h.bg}" data-change="thgHead" data-key="${h.key}" data-fid="thg-head-${h.key}" ${h.ro ? raw('disabled') : ''}>${h.opts.map(o => html`<option value="${o.v}" ${o.sel ? raw('selected') : ''}>${o.v}</option>`)}</select>`
     : h.isText
       ? html`<input class="ent-text" aria-label="${h.label}" value="${h.val}" style="background:${h.bg}" data-change="thgHead" data-key="${h.key}" data-fid="thg-head-${h.key}" ${h.ro ? raw('readonly') : ''}>`
       : html`<input class="ent-text" aria-label="${h.label}" value="${h.val}" style="background:${h.bg}" readonly>`}
-</label>`)}</div>`;
-/** Grundlagen card of an Erfassung tab; the shared fields (Gebäudekategorie, Bauvorhaben, EBF, GF, Datenstand) sit in the Übersicht. */
-const thgHeadCard = (ctx, F, part, list) => card(html`<span class="flex-1">Grundlagen</span>${headLink(`${part} · gemeinsame Angaben in der Übersicht`, ctx.link.delivery(F.codeLc, 'uebersicht'))}`, headFields(F, list));
+</label>`)}${extra}</div>`;
+/** Grundlagen card of an Erfassung tab; the shared fields (Gebäudekategorie, Bauvorhaben, EBF, GF, Datenstand) sit in the Übersicht.
+ *  `extra` are further fields of the tab (Betrieb: Photovoltaik). */
+const thgHeadCard = (ctx, F, part, list, extra) => card(html`<span class="flex-1">Grundlagen</span>${headLink(`${part} · gemeinsame Angaben in der Übersicht`, ctx.link.delivery(F.codeLc, 'uebersicht'))}`, headFields(F, list, extra));
 
 const thgTable = F => {
   const E = F.erf, ro = RO(F);
@@ -268,19 +275,20 @@ const thgSrcRow = (F, r, ro) => html`<div class="ent-pos ent-src${r.isNew ? ' en
   ${!F.locked ? delBtn('thgRemove', html`data-id="${r.id}"`, r.isNew ? 'Neue Zeile verwerfen' : 'Emissionsquelle entfernen') : html`<span></span>`}
 </div>`;
 
-/** Erfassung Betrieb (THG-32): Grundlagen des Betriebs, Photovoltaik, Energiedienstleistungen nach Rechenhilfe SIA 390/1. */
+/** Erfassung Betrieb (THG-32): Grundlagen des Betriebs with the Photovoltaik fields, Energiedienstleistungen nach Rechenhilfe SIA 390/1. */
 function betrieb(ctx, F) {
   if (F.kind !== 'data' || !F.erf.isTHG) return erfassung(ctx, F);
   const B = F.betr, ro = RO(F), open = !!ctx.state.ui.importMenu;
   return html`<div class="fm-stack">
-    ${thgHeadCard(ctx, F, 'Betrieb', B.head)}
-    <div class="card">
+    ${thgHeadCard(ctx, F, 'Betrieb', B.head, B.pv.map(p => html`<label class="thg-field pv-field"><span>${p.label}</span><input class="ent-text${p.key ? ' right' : ''}" aria-label="${p.label}" value="${p.val}" placeholder="fehlt" style="background:${p.bg};border-color:${p.bdc}" ${p.key ? html`data-change="thgBetr" data-key="${p.key}" data-fid="thg-betr-${p.key}"` : ''} ${p.ro ? raw('readonly') : ''}></label>`))}
+    <div class="card${lockCls(F)}">
       <div class="card-head" style="flex-wrap:wrap">
         <span class="flex-1" style="flex-basis:220px">${B.title}</span>
         ${F.locked ? '' : importMenu(F, B.importItems, open)}
+        <button type="button" class="btn btn-secondary" data-action="proto">Excel herunterladen</button>
       </div>
       ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}
-      <div class="thg-head pv-strip">${B.pv.map(p => html`<label class="thg-field"><span>${p.label}</span><input class="ent-text${p.key ? ' right' : ''}" aria-label="${p.label}" value="${p.val}" placeholder="fehlt" style="background:${p.bg};border-color:${p.bdc}" ${p.key ? html`data-change="thgBetr" data-key="${p.key}" data-fid="thg-betr-${p.key}"` : ''} ${p.ro ? raw('readonly') : ''}></label>`)}</div>
+      ${lockBand(F)}
       <div class="fm-table"><div class="ent ent-betr">
         <div class="ent-th" style="${COLS_BETR}"><span>Energiedienstleistung · Energieträger</span><span class="center" title="Projektspezifischer Wert statt Standardwert der Rechenhilfe SIA 390/1">Projektwert</span><span class="right" title="kWh/m² EBF·a">Nutzenergie</span><span class="right" title="Anteil des Energieträgers an der Energiedienstleistung">Anteil %</span><span class="right" title="Nutzungsgrad bzw. Jahresarbeitszahl">η / JAZ</span><span class="right" title="kWh/m² EBF·a, berechnet oder eigener Wert">Endenergie</span><span class="right" title="Treibhausgaskoeffizient des Energieträgers, Standard oder eigener Wert">kg CO₂-eq/kWh</span><span class="right" title="THG Betrieb pro Jahr und m² EBF">kg/m² EBF·a</span></div>
         ${B.rows.map(r => (r.isPv ? pvRow(r) : betrRow(F, r, ro)))}
@@ -328,8 +336,8 @@ function planEntry(ctx, F) {
       ${p.result && !F.locked ? html`<label class="btn btn-secondary btn-file">${icon('upload', 13, 'currentColor')}Neu hochladen<input type="file" accept=".dwg" class="vh" data-change="planFile" data-key="${p.key}" aria-label="DWG-Datei neu hochladen"></label>
         <button type="button" class="btn btn-secondary" data-action="planLoadSample" data-key="${p.key}">Musterplan laden</button>
         ${linkBtn({ label: 'Entfernen', cls: 'fs-12', action: 'planRemove', key: p.key })}` : ''}
-      ${F.locked ? html`<span class="muted fs-12">Erfassung gesperrt</span>` : ''}
     </div>
+    ${lockBand(F)}
     ${p.busy ? html`<div class="note note-grey" style="margin:10px 12px 6px"><span class="plan-spin">${icon('loader-circle', 14, '#5b6573')}</span>${p.busy}</div>` : ''}
     ${p.error ? html`<div class="note note-rose" style="margin:10px 12px 6px">${icon('circle-alert', 14, '#9b2c44')}${p.error}</div>` : ''}
     ${!p.result ? html`<div style="padding:40px 20px 36px">${dropZone(p)}</div>` : resultPanel(ctx, p)}
@@ -338,7 +346,7 @@ function planEntry(ctx, F) {
 
 function submitBar(F) {
   const B = F.bar, A = F.act;
-  if (B.locked) return html`<div class="submit-bar"><span class="fs-13 flex-1" style="min-width:240px">${B.lockedText}</span>${linkBtn({ label: 'Erfassung wieder öffnen (Prototyp)', cls: 'fs-125', action: A.reopen, key: F.id })}</div>`;
+  if (B.locked) return '';                                             // the lock band under the card head says it
   return html`<div class="submit-bar">
     <div class="submit-comp"><span class="fs-125" style="color:#374151">${B.compText}</span>${progress(B.compW, B.compBar)}</div>
     ${B.canFilter ? checkbox({ checked: F.erf.missingOnly, label: 'Nur fehlende Werte anzeigen', action: 'formToggleMissing', key: F.id }) : ''}
@@ -371,13 +379,13 @@ function pruefung(ctx, F) {
 }
 
 /** Prüfung (design 05.11.2026, last round): one plain table for every Lieferung: Prüfpunkt, what the Lieferung shows, result.
- *  The requirement is the hover text of the row; a flagged deviation of the Ökobilanz carries the Begründung des Planers below its row. */
+ *  The requirement is the hover text of the row. */
 function summaryCard(F, L) {
   return card(html`<span class="flex-1">Zusammenfassung</span>${headLink('Zur Erfassung', L('erfassung'))}`, !F.summ.length
     ? html`<div class="muted fs-125" style="padding:28px 16px">${F.summNote}</div>`
     : html`<div class="fm-table"><div class="sm-body">
       <div class="sm-th"><span>Prüfpunkt</span><span>Lieferung</span><span>Ergebnis</span></div>
-      ${F.summ.map((r, i) => html`<div class="sm-tr" style="background:${i % 2 ? '#fafbfc' : '#fff'}" title="${r.tip}"><span>${r.label}</span><span>${r.val}</span><span style="color:${r.fg};font-weight:${r.fw}">${r.res}</span></div>${(r.begr || []).map(g => html`<label class="sm-begr" style="background:${i % 2 ? '#fafbfc' : '#fff'}"><span>${g.code} ${g.name}, ${g.dp}</span>${F.locked ? html`<span class="sm-begr-text">${g.beg}</span>` : html`<input class="ent-text" value="${g.beg}" placeholder="Begründung des Planers, z. B. Lüftung neu mit höherer Luftmenge" style="border-color:${g.begBd}" aria-label="Begründung Abweichung ${g.code}" data-change="formBegr" data-form="${F.id}" data-group="${g.code}" data-fid="${F.id}-begr-${g.code}">`}</label>`)}`)}
+      ${F.summ.map((r, i) => html`<div class="sm-tr" style="background:${i % 2 ? '#fafbfc' : '#fff'}" title="${r.tip}"><span>${r.label}</span><span>${r.val}</span><span>${r.res}</span></div>`)}
     </div></div>`);
 }
 

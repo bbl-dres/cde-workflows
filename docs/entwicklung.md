@@ -25,11 +25,14 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   Anforderung hat den Typ «Dokument» oder «Datenformular» mit Vorlage (Kosten eBKP-H, Ökobilanz Erstellung und Betrieb nach SIA 390/1),
   Zielsystem und der Pflicht-Regel ab CHF 1 Mio Anlagekosten.
 - **Datenformulare** (Kostenvoranschlag KV-32, Kostenschätzung KS-31, Ökobilanz THG-32, Grundrisse DWG-UG … DWG-DG) haben dieselben Tabs: Übersicht (Kennzahlen, Kostenziele oder Zielwerte SIA 390/1,
-  Hauptgruppen als Balkenliste in eBKP-Reihenfolge mit der Vorphase als Strich, Anteil und Δ, markiert ab Schwellenwert und 0.1 Mio bzw.
-  0.1 kg, Zeilen öffnen die Erfassung; Lieferung, Verlauf mit dem nächsten Schritt, Beteiligte), Erfassung
+  Hauptgruppen als Balkenliste in eBKP-Reihenfolge mit der Vorphase als Strich, Anteil und Δ,
+  Zeilen öffnen die Erfassung; alle Balkendiagramme mit derselben Geometrie: Balken 8 px ohne Rundung, Marken und
+  Striche 2 × 18 px in einer neutralen Farbe; Werte ohne bedingte Formatierung (kein Rot, Grün oder Fett: das
+  Formular wertet nicht), «Vollständigkeit» als Kennzahl ohne Balken; Lieferung, Verlauf mit dem nächsten Schritt, Beteiligte), Erfassung
   (siehe unten; die Ökobilanz in den zwei Tabs Erfassung Erstellung und Erfassung Betrieb), Prüfung (Zusammenfassung als Tabelle: Prüfpunkt, Wert der Lieferung, Ergebnis «erfüllt / prüfen / nicht erfüllt», die Anforderung steht im Hover;
   Prüfung BBL mit zwei Prüfpunkten, Kommentar und Entscheid; Übergabe), Beteiligte, Dokumente (mit Pflicht), Verlauf (alle Ereignisse). Die Erfassung ist nach dem
-  Einreichen gesperrt; «Erfassung wieder öffnen (Prototyp)» öffnet sie wieder (Werte bleiben). Prüfen (Checkliste, Freigeben,
+  Einreichen gesperrt: ein graues Band mit Schloss unter dem Kartenkopf nennt Grund und Datum, die Tabelle ist grau
+  getönt und die Werte stehen als Text statt in Feldern; «Wieder öffnen (Prototyp)» im Band öffnet sie wieder (Werte bleiben). Prüfen (Checkliste, Freigeben,
   Zurückweisen) können nur BBL-Personen. Der Kommentar der Prüfung und ein Feld, in dem gerade getippt wird, bleiben beim
   Rendern erhalten. Dateien, die ein Import mitbringt (Tool-Export, Rechenhilfe, Excel), erscheinen unter Dokumente.
 - **Kosten erfassen (KV-32, KS-31)**: Betrag pro Hauptgruppe oder, nach Klick auf die Zeile, die Positionen (Menge + Kosten)
@@ -39,7 +42,7 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
 - **Ökobilanz erfassen (THG-32, Design 05.11.2026)**: Die Übersicht zeigt die Kennzahlen Erstellung und Betrieb, die Karte
   «Grundlagen» (gilt für Erstellung und Betrieb: Gebäudekategorie, Bauvorhaben, EBF/GF aus den Grundrissen, Datenstand), die
   «Zielwerte SIA 390/1» und die Karte «Wo entstehen die Emissionen?» mit Umschalter Erstellung (Hauptgruppen mit SIA-31-Strich
-  und Δ) und Betrieb (je Energiedienstleistung, PV-Gutschrift in Grün, keine Vorphase):
+  und Δ) und Betrieb (je Energiedienstleistung, PV-Gutschrift in hellerem Ton, keine Vorphase):
   Erstellung und Betrieb gegen die Richtwerte Basis (B) und ambitioniert (A) der Gebäudekategorie, die Summe gegen die
   Zusatzanforderung, dazu die Marken Minergie-ECO GW1 (M) und Vorphase (V) (`data/thg.json` «richtwerte»; Betrieb und
   Zusatzanforderung sind nur für Wohnen und Restaurant belegt, für Verwaltung, Schule und Verkauf als Annahme markiert, für
@@ -48,20 +51,19 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   `docs/research/2026-11-04-oekobilanzdaten-systemgrenzen.md`) und die Emissionsquellen aus dem Tool-Export je
   eBKP-H-Elementgruppe (SIA 2032): Code, Bauteil oder Anlage auf einer Zeile (Tool-Code wie Wa01 und Bezeichnung; die
   Ökobilanzdaten des Tool-Exports stehen im Hover), Hersteller-Flag, Referenzgrösse mit Einheit, Kennwert kg CO₂-eq/m² EBF·a und Anteil;
-  Hauptgruppen B–G zum Auf- und Zuklappen, «+ Emissionsquelle hinzufügen», Papierkorb, Total B–G, «THGE Erstellung pro Jahr»
+  Hauptgruppen B–G zum Auf- und Zuklappen (alle offen, auch im gesperrten Formular bedienbar), «+ Emissionsquelle hinzufügen», Papierkorb, Total B–G, «THGE Erstellung pro Jahr»
   und «THGE Erstellung, Betrachtungszeitraum 60 Jahre inkl. Ersatz» (Begriffe SIA 2032). «Tool-Export importieren» holt die
   Quellen des Projekts (bei einem offenen Formular alle 22, sonst die fehlenden Werte). **Erfassung Betrieb**: Grundlagen
-  (Tool Betrieb, Stromprodukt, PV-Überschuss), Photovoltaik (Leistung aus D01.01 der Erstellung, Ertrag, Eigenverbrauch) und
+  (Tool Betrieb, Stromprodukt, PV-Überschuss, Photovoltaik: Leistung aus D01.01 der Erstellung, Ertrag, Eigenverbrauch) und
   die Energiedienstleistungen nach Rechenhilfe SIA 390/1 (Nutzenergie, Anteil und Nutzungsgrad/JAZ je Energieträger mit
   Flag «Projektwert» (angekreuzt = projektspezifischer Wert statt Standardwert der Rechenhilfe, dieselbe Logik wie «Hersteller»
   in der Erstellung: das Kreuz markiert die Abweichung vom Standard); Endenergie = Nutzenergie × Anteil / Nutzungsgrad, THG = Endenergie × Koeffizient des Energieträgers, Strom
   nach Stromprodukt; der PV-Eigenverbrauch reduziert den Strombezug, der Überschuss folgt der gewählten Regel). Endenergie
   und Koeffizient sind abgeleitet (grau) und lassen sich durch einen eigenen Wert ersetzen; ein geleertes Feld wird wieder
-  abgeleitet. Dazu das Importieren-Menü mit «Rechenhilfe SIA 390/1 importieren», Total Betrieb und «THGE Erstellung + Betrieb
+  abgeleitet. Dazu das Importieren-Menü mit «Rechenhilfe SIA 390/1 importieren», «Excel herunterladen», Total Betrieb und «THGE Erstellung + Betrieb
   pro Jahr». Die Zusammenfassung der Prüfung hat sieben Zeilen (Vollständigkeit samt Pflichtdokumenten, Zusatzanforderung B,
   Abweichung zur Vorphase, Ökobilanzdaten und Systemgrenze, EBF, Stromprodukt, Anteile der Energieträger), die Checkliste
-  zwei Prüfpunkte. Jede markierte Abweichung (ab 15 % und 0.1 kg) verlangt eine Begründung des Planers (Eingabe unter der
-  Zeile, solange die Erfassung offen ist; fehlt sie, steht dort «ohne Begründung»). An Wüest Dimensions (Modul
+  zwei Prüfpunkte; eine Abweichung ab 15 % und 0.1 kg steht dort als «prüfen». An Wüest Dimensions (Modul
   Sustainability) gehen Erstellung und Betrieb in kg CO₂-eq/m² EBF·a. Grundlage sind die realen BBL-Berichte (lokal
   unter `docs/reference/beispiele/`) und die Empfehlungen in
   `docs/research/2026-11-05-oekobilanz-eingabemaske-erstellung-betrieb.md`. Von den Darstellungsvarianten der Design-Studie
@@ -135,7 +137,7 @@ Code-Reviews mit Befunden und Status: `docs/reviews/` (zuletzt `2026-11-05-code-
   Filter, Excel-Import, Einreichen), THG-32 (Übersicht mit Zielwerten, Emissionsquellen, Betrieb, Tool-Export, Rechenhilfe, neue Quelle, Hersteller-Flag, Einreichen),
   THG-32 einreichen und prüfen (freigeben, übertragen), KV-32 zurückweisen, Planlieferungen DWG (Parsen, Hochladen, Einreichen,
   Prüfung mit Suche, Alle ein-/ausblenden und Statusfilter), die Datenformulare der weiteren Projekte, Aufgabenliste,
-  Projektseiten, Hover-Zustände, Studien-Panel und bei 375 px Überlauf, Sidebar, Filter, Footer und Karte (Standort-Karte zoomt nur mit Ctrl + Mausrad oder den Knöpfen, die Karte der Startseite auch mit dem Mausrad; ≈272 Checks).
+  Projektseiten, Hover-Zustände, Studien-Panel und bei 375 px Überlauf, Sidebar, Filter, Footer und Karte (Standort-Karte zoomt nur mit Ctrl + Mausrad oder den Knöpfen, die Karte der Startseite auch mit dem Mausrad; ≈275 Checks).
 - `node tests/responsive-audit.mjs [ordner] [m375,t768,l1024]` macht bei laufendem Server Screenshots der Hauptseiten auf
   375 / 768 / 1024 px und misst Überlauf, zu kleine Bedienelemente und Felder unter 16 px (`report.json`).
 - `node tests/refshots.mjs` erzeugt Screenshots in den Fenstergrössen der Referenz-Screenshots der CDE Bund und legt

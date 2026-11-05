@@ -24,11 +24,11 @@ const DEV_PCT = 10;                                                 // default t
 const pct = (a, b) => (b ? a / b * 100 : 0);
 const signed = d => (d > 0 ? '+' : d < 0 ? '−' : '±') + FMT1(Math.abs(d)) + ' %';
 /** Row of the «Zusammenfassung» in the Prüfung: Prüfpunkt, what the Lieferung shows, result; `tip` names the requirement (hover). */
-const RES = { ok: ['erfüllt', '#262626', 400], warn: ['prüfen', '#8a6100', 600], err: ['nicht erfüllt', '#9b2c44', 600] };
-const sr = (key, label, val, tip, st, extra) => ({ key, label, val, tip, st, ok: st === 'ok', res: RES[st][0], fg: RES[st][1], fw: RES[st][2], ...extra });
+const RES = { ok: 'erfüllt', warn: 'prüfen', err: 'nicht erfüllt' };
+const sr = (key, label, val, tip, st) => ({ key, label, val, tip, st, ok: st === 'ok', res: RES[st] });
 const prevSum = prev => Object.values(prev).reduce((a, b) => a + b, 0);
 /** Deviation of a value from the previous phase: flagged from `limit` % and an absolute minimum (0.1 Mio / 0.1 kg), so small bases do not flag. */
-const devOf = (cur, pv, limit, absMin) => { const d = cur - pv, dp = pv ? d / pv * 100 : 0, fl = pv > 0 && Math.abs(dp) >= limit && Math.abs(d) >= absMin; return { d, dp, fl, dfg: fl ? (d > 0 ? '#9b2c44' : '#2f6b12') : '#374151', dw: fl ? 600 : 400 }; };
+const devOf = (cur, pv, limit, absMin) => { const d = cur - pv, dp = pv ? d / pv * 100 : 0, fl = pv > 0 && Math.abs(dp) >= limit && Math.abs(d) >= absMin; return { d, dp, fl }; };   // fl feeds the Zusammenfassung of the Prüfung only: the lists show plain values, the form does not judge a deviation
 const sgn = (v, fmt = FMT1) => (v > 0.04 ? '+' : v < -0.04 ? '−' : '±') + fmt(Math.abs(v));
 const ebkpIcon = code => `assets/ebkp/${code}.svg`;
 const alt = i => (i % 2 ? 'transparent' : '#f6f7f9');
@@ -73,10 +73,17 @@ const reviewOf = ({ step, canReview, allChecked, target, reviewer, notSubmitted,
   done: step >= 5, transferred: step >= 6, doneText: step >= 6 ? `Freigegeben und an ${target} übertragen.` : `Freigegeben durch ${reviewer}.`,
 });
 /** Sticky bar at the end of the Erfassung. */
-const barOf = ({ editing, locked, canFilter, canSubmit, reason, comp, reviewer }) => ({
+const barOf = ({ editing, locked, canFilter, canSubmit, reason, comp }) => ({
   editing, locked, canFilter, label: 'Zur Prüfung einreichen', canSubmit, reason: canSubmit || locked ? '' : reason,
-  compText: comp.text, compW: comp.w, compBar: comp.bar, lockedText: `Eingereicht. Die Erfassung ist gesperrt, bis ${reviewer} freigibt oder zurückweist.`,
+  compText: comp.text, compW: comp.w, compBar: comp.bar,
 });
+/** Why the Erfassung is locked (band under the card head): the step that locked it, with its date. */
+const when = (d, pre = 'am') => (!d || d === '–' ? '' : d === 'heute' ? (pre === 'seit' ? ' seit heute' : ' heute') : ` ${pre} ${d}`);
+const lockText = (step, dates, reviewer, target) => (step >= 6 ? `Gesperrt: an ${target} übertragen${when(dates[6] || dates[5])}`
+  : step === 5 ? `Gesperrt: freigegeben${when(dates[5])}`
+  : step === 4 ? `Gesperrt: in Prüfung bei ${reviewer}${when(dates[4], 'seit')}`
+  : `Gesperrt: eingereicht${when(dates[3])}, ${reviewer} prüft`);
+const groupBg = (open, locked) => (open ? (locked ? '#e9ecf0' : '#f3f4f6') : (locked ? 'transparent' : '#fff'));   // a locked table is tinted, closed groups let the tint through
 
 /** Instance of a form in a project (data/forms.json byProject) with generated defaults for people, documents and history,
  *  derived from the initial step of the instance (later transitions are user events). */
@@ -109,7 +116,7 @@ function targetChart(ist, tv, opts) {
   const x0 = Math.max(0, Math.floor(lo * (band ? 0.97 : 0.85) / st) * st), x1 = Math.max(x0 + st, Math.ceil(hi * (band ? 1.02 : 1.08) / st) * st);
   const X = v => ((v - x0) / (x1 - x0) * 100).toFixed(2) + '%';
   return { ist: fmtV(ist) + unit, istW: X(ist), hasBand: !!band, bandL: band ? X(bl) : '0%', bandW: band ? ((bh - bl) / (x1 - x0) * 100).toFixed(2) + '%' : '0%', min: fmtV(x0), max: fmtV(x1),
-    targets: tv.map((m, i) => { const d = pct(ist - m.v, m.v); return { ...m, n: String(i + 1), x: X(m.v), ly: i % 2 ? '48px' : '0px', val: fmtV(m.v), delta: ist ? signed(d) : '–', dc: d > 0 ? '#9b2c44' : '#2f6b12' }; }) };
+    targets: tv.map((m, i) => { const d = pct(ist - m.v, m.v); return { ...m, n: String(i + 1), x: X(m.v), ly: i % 2 ? '43px' : '5px', val: fmtV(m.v), delta: ist ? signed(d) : '–' }; }) };
 }
 
 // ---- Kosten (KV-32, KS-31): Hauptgruppen with a direct amount or the positions, Kostenelemente added or removed ----
@@ -151,7 +158,7 @@ function costPart(kind, P, f, data, T, M, ref, locked, bd) {
   const rows = [];
   groups.forEach(G => {
     const rf = T.groupRef[G.code] || ['pauschal'];
-    rows.push({ isGroupRow: true, code: G.code, name: G.name, unit: rf[0], bez: rf[1] ? FMT(ref[rf[1]]) : '', direct: G.direct, canToggle: !locked, gStr: disp(G.gval), gBd: bd(G.gMiss), gKey: G.hasKids ? '' : vKey, sum: FMT(G.sum), kw: G.direct && G.gMiss ? '' : kwOf(G.sum), chev: G.direct ? 'chevron-right' : 'chevron-down', toggleLabel: G.direct ? 'Aufschlüsseln' : 'Zusammenfassen', bg: G.direct ? '#fff' : '#f3f4f6', miss: G.gMiss || G.pos.some(p => p.miss) });
+    rows.push({ isGroupRow: true, code: G.code, name: G.name, unit: rf[0], bez: rf[1] ? FMT(ref[rf[1]]) : '', direct: G.direct, canToggle: !locked, gStr: disp(G.gval), gBd: bd(G.gMiss), gKey: G.hasKids ? '' : vKey, sum: FMT(G.sum), kw: G.direct && G.gMiss ? '' : kwOf(G.sum), chev: G.direct ? 'chevron-right' : 'chevron-down', toggleLabel: G.direct ? 'Aufschlüsseln' : 'Zusammenfassen', bg: groupBg(!G.direct, locked), miss: G.gMiss || G.pos.some(p => p.miss) });
     if (!G.direct) { rows.push(...G.pos); if (!locked && !f.missingOnly) rows.push({ isAdd: true, grp: G.code, label: '+ Kostenelement hinzufügen' }); }
   });
   const shownRows = f.missingOnly ? rows.filter(r => r.miss) : rows;
@@ -163,7 +170,7 @@ function costPart(kind, P, f, data, T, M, ref, locked, bd) {
     { k: 'Kennwert B–W', v: bw && GF ? FMT(bw / GF) : '–', u: 'CHF/m² GF', tip: `Erstellungskosten B–W je m² Geschossfläche GF${GF ? ` (${FMT(GF)} m² aus den Grundrissen)` : ''}` }];
   const prevTotal = prevSum(prev);
   const Tz = M.kostenziel, acc = T.accuracy, prevBW = sumOf('BCDEFGHIJVW', prev);
-  const tv = T.targets.map(([label, v, c]) => ({ label, c, v: v === 'ziel' ? Tz : v === 'prev' ? prevBW : v === 'dach' ? M.kostendach : v }));
+  const tv = T.targets.map(([label, v]) => ({ label, v: v === 'ziel' ? Tz : v === 'prev' ? prevBW : v === 'dach' ? M.kostendach : v }));
   const bl = Tz * (1 - acc / 100), bh = Tz * (1 + acc / 100);
   const chart = { ...targetChart(bw, tv, { band: [bl, bh], fmtV: mio, unit: '', step: 1e5 }), istTip: 'Erstellungskosten B–W: Summe der Hauptgruppen B bis W, ohne Reserve und MWST', acc, band: `${FMT2(bl / 1e6)}–${FMT2(bh / 1e6)} Mio` };
   // Prüfung: Zusammenfassung (Prüfpunkt, value of the Lieferung, result); without values a row reads «–» and «prüfen»
@@ -181,9 +188,9 @@ function costPart(kind, P, f, data, T, M, ref, locked, bd) {
   const listG = groups.filter(G => G.sum || prev[G.code]), mxL = Math.max(1, ...listG.flatMap(G => [G.sum, prev[G.code] || 0])) * 1.08;
   const mio1 = v => FMT1(v / 1e6), sgM = v => sgn(v / 1e6);
   const ovList = { col: 'Hauptgruppe', unit: 'Mio CHF', dUnit: 'Δ Mio', max: mio1(mxL), totalLabel: 'Total', prevText: `${T.cmpPrevLabel}: ${mio1(prevTotal)} Mio`, tot: mio1(total), dTot: sgM(total - prevTotal),
-    rows: listG.map(G => { const pv = prev[G.code] || 0, x = devOf(G.sum, pv, limit, 1e5); return { code: G.code, name: G.name, icon: ebkpIcon(G.code), cur: mio1(G.sum), share: total ? Math.round(G.sum / total * 100) + ' %' : '', w: (G.sum / mxL * 100).toFixed(2) + '%', tx: pv ? (pv / mxL * 100).toFixed(2) + '%' : null, d: sgM(x.d), dp: signed(x.dp), dfg: x.dfg, dw: x.dw, tip: `${T.cmpPrevLabel}: ${mio1(pv)} Mio · ${T.code}: ${mio1(G.sum)} Mio`, tab: 'erfassung' }; }),
-    subs: SUBS.map(([code, name, set, withMwst]) => { const cur = sumOf(set) * (withMwst ? 1 + mwst : 1) + (withMwst ? sumOf('A') : 0), pv = withMwst ? null : sumOf(set, prev), x = pv != null ? devOf(cur, pv, limit, 1e5) : null; return { code, name, cur: mio1(cur), prevText: pv != null ? `${T.cmpPrevLabel}: ${mio1(pv)} Mio` : '', share: total && !withMwst ? Math.round(cur / total * 100) + ' %' : '', d: x ? sgM(x.d) : '–', dfg: x ? x.dfg : '#6b7280', dw: x ? x.dw : 400 }; }),
-    foot: `Mio CHF · Strich = ${T.cmpPrevLabel}`, unitTip: 'Kosten in Mio CHF, ohne MWST', dTip: `Differenz zu ${T.cmpPrevLabel} in Mio CHF; markiert ab ${limit} % und 0.1 Mio`, totTip: 'Summe aller Hauptgruppen, ohne MWST' };
+    rows: listG.map(G => { const pv = prev[G.code] || 0, x = devOf(G.sum, pv, limit, 1e5); return { code: G.code, name: G.name, icon: ebkpIcon(G.code), cur: mio1(G.sum), share: total ? Math.round(G.sum / total * 100) + ' %' : '', w: (G.sum / mxL * 100).toFixed(2) + '%', tx: pv ? (pv / mxL * 100).toFixed(2) + '%' : null, d: sgM(x.d), dp: signed(x.dp), tip: `${T.cmpPrevLabel}: ${mio1(pv)} Mio · ${T.code}: ${mio1(G.sum)} Mio`, tab: 'erfassung' }; }),
+    subs: SUBS.map(([code, name, set, withMwst]) => { const cur = sumOf(set) * (withMwst ? 1 + mwst : 1) + (withMwst ? sumOf('A') : 0), pv = withMwst ? null : sumOf(set, prev), x = pv != null ? devOf(cur, pv, limit, 1e5) : null; return { code, name, cur: mio1(cur), prevText: pv != null ? `${T.cmpPrevLabel}: ${mio1(pv)} Mio` : '', share: total && !withMwst ? Math.round(cur / total * 100) + ' %' : '', d: x ? sgM(x.d) : '–' }; }),
+    foot: `Mio CHF · Strich = ${T.cmpPrevLabel}`, unitTip: 'Kosten in Mio CHF, ohne MWST', dTip: `Differenz zu ${T.cmpPrevLabel} in Mio CHF`, totTip: 'Summe aller Hauptgruppen, ohne MWST' };
   const value = `Erstellungskosten B–W CHF ${FMT(bw)}`;
   return { fields, missing, total, bw, groups: groups.map(G => ({ code: G.code, direct: G.direct, sum: G.sum, n: G.pos.length })), subtotals, kpis, chart, ovList, summ,
     handoverValue: value, submitDetail: value, canSubmitData: missing === 0, reason: 'Einreichen erst, wenn alle Werte erfasst sind', endwert: null, endwertStr: '–', nSrc: 0,
@@ -227,7 +234,7 @@ function thgPart(P, f, data, T, M, ref, locked, bd) {
   groups.forEach(G => {
     if (f.missingOnly && !G.miss) return;
     const open = G.open || !!f.missingOnly;
-    rows.push({ isGroupRow: true, code: G.code, name: G.name, canToggle: !locked && !f.missingOnly, direct: !open, sub: plural(G.n, 'Emissionsquelle', 'Emissionsquellen'), kw: G.n ? FMT1(G.kw) : '', share: G.n ? share(G.kw) : '', chev: open ? 'chevron-down' : 'chevron-right', toggleLabel: open ? 'Zuklappen' : 'Aufklappen', bg: open ? '#f3f4f6' : '#fff', miss: G.miss > 0 });
+    rows.push({ isGroupRow: true, code: G.code, name: G.name, canToggle: !f.missingOnly, direct: !open, sub: plural(G.n, 'Emissionsquelle', 'Emissionsquellen'), kw: G.n ? FMT1(G.kw) : '', share: G.n ? share(G.kw) : '', chev: open ? 'chevron-down' : 'chevron-right', toggleLabel: open ? 'Zuklappen' : 'Aufklappen', bg: groupBg(open, locked), miss: G.miss > 0 });   // a view state: the reviewer of a locked form opens and closes too
     if (!open) return;
     rows.push(...(f.missingOnly ? G.src.filter(r => r.miss) : G.src));
     if (!locked && !f.missingOnly) rows.push({ isAdd: true, grp: G.code, label: '+ Emissionsquelle hinzufügen' });
@@ -284,38 +291,36 @@ function thgPart(P, f, data, T, M, ref, locked, bd) {
   const kat = hv('kat'), RW = TH.richtwerte[kat] || {}, rw = k => RW[k] || [null, null];
   const prevAnn = EBF && prevTotal ? prevTotal / 60 / EBF : null, gw1 = num(hv('gw1'));
   const IST = [erst, thgB, sumIst], istOk = [hasSrc, hasBetr, hasSrc && hasBetr];
-  const MK = [{ n: 'B', label: 'Basis (B)', c: '#b07a00', v: [rw('erst')[0], rw('betr')[0], rw('zus')[0]] }, { n: 'A', label: 'Ambitioniert (A)', c: '#2f7d63', v: [rw('erst')[1], rw('betr')[1], rw('zus')[1]] },
-    { n: 'M', label: 'Minergie-ECO GW1, objektspezifisch', c: '#5a7184', v: [gw1, null, null] }, { n: 'V', label: `Vorphase ${T.cmpPrevLabel}`, c: '#6b7280', v: [prevAnn, null, null] }];
+  const MK = [{ n: 'B', label: 'Basis (B)', v: [rw('erst')[0], rw('betr')[0], rw('zus')[0]] }, { n: 'A', label: 'Ambitioniert (A)', v: [rw('erst')[1], rw('betr')[1], rw('zus')[1]] },
+    { n: 'M', label: 'Minergie-ECO GW1, objektspezifisch', v: [gw1, null, null] }, { n: 'V', label: `Vorphase ${T.cmpPrevLabel}`, v: [prevAnn, null, null] }];
   const allV = [...IST.filter((v, j) => istOk[j]), ...MK.flatMap(m => m.v)].filter(v => v != null);
   const mx = Math.max(1, Math.ceil(Math.max(0, ...allV) * 1.08)), X = v => Math.min(100, Math.max(0, v) / mx * 100).toFixed(2) + '%';
   const tzRows = [['Erstellung', 'Richtwert, informativ'], ['Betrieb', 'Richtwert, informativ'], ['Erstellung + Betrieb', 'Zusatzanforderung, einzuhalten']].map(([label, sub], j) => ({
     label, ist: istOk[j] ? neg(IST[j], FMT1) : '–', istW: istOk[j] ? X(IST[j]) : '0%',
     tip: `${label} (${sub}): Ist ${istOk[j] ? neg(IST[j], FMT1) : '–'} kg CO₂-eq/m² EBF·a${MK.filter(m => m.v[j] != null).map(m => ` · ${m.label} ${FMT1(m.v[j])}`).join('')}`,
-    marks: MK.filter(m => m.v[j] != null).sort((a, b) => a.v[j] - b.v[j]).map((m, i) => ({ n: m.n, c: m.c, x: X(m.v[j]), below: i % 2 === 1, title: `${m.label} ${FMT1(m.v[j])}` })) }));
+    marks: MK.filter(m => m.v[j] != null).sort((a, b) => a.v[j] - b.v[j]).map((m, i) => ({ n: m.n, x: X(m.v[j]), below: i % 2 === 1, title: `${m.label} ${FMT1(m.v[j])}` })) }));
   const zusB = rw('zus')[0];
   const tz = { title: T.ov.chartTitle, hint: `kg CO₂-eq/m² EBF·a · Richtwerte SIA 390/1 ${kat}${RW.zus ? (RW.verified ? '' : ' · Betrieb und Zusatzanforderung als Annahme') : ' · nur Erstellung'}`, max: FMT1(mx), rows: tzRows,
-    ist: IST.map((v, j) => (istOk[j] ? neg(v, FMT1) : '–')), legend: MK.map(m => ({ n: m.n, c: m.c, label: m.label, cells: m.v.map((v, j) => ({ v: v == null ? '–' : FMT1(v), over: v != null && j === 2 && istOk[2] && sumIst > v })) })) };
+    ist: IST.map((v, j) => (istOk[j] ? neg(v, FMT1) : '–')), legend: MK.map(m => ({ n: m.n, label: m.label, cells: m.v.map(v => ({ v: v == null ? '–' : FMT1(v) })) })) };
   const kpis = [{ k: 'Erstellung', v: erstStr, u: 'kg CO₂-eq/m² EBF·a', tip: 'THGE Erstellung pro Jahr und m² EBF: Summe der Emissionsquellen (SIA 2032, 60 Jahre inkl. Ersatz)' },
     { k: 'Betrieb', v: betrStr, u: 'kg CO₂-eq/m² EBF·a', tip: 'THG Betrieb pro Jahr und m² EBF: Endenergie × Treibhausgaskoeffizient, abzüglich PV-Eigenverbrauch (Rechenhilfe SIA 390/1)' }];
 
   // Übersicht «Wo entstehen die Emissionen?»: Erstellung per Hauptgruppe with the Vorphase as a tick, Betrieb per Energiedienstleistung (no Vorphase)
   const prevKw = code => (EBF ? (prev[code] || 0) / 60 / EBF : 0), prevAnnTot = EBF ? prevTotal / 60 / EBF : 0;
   const listG = groups.filter(G => G.n || prev[G.code]), mxE = Math.max(0.1, ...listG.flatMap(G => [G.kw, prevKw(G.code)])) * 1.08;
-  const gRow = G => { const pv = prevKw(G.code), x = devOf(G.kw, pv, limit, 0.1); return { G, pv, x, code: G.code, name: G.name, icon: ebkpIcon(G.code), d: sgn(x.d), dp: signed(x.dp), fl: x.fl, dfg: x.dfg, dw: x.dw }; };
+  const gRow = G => { const pv = prevKw(G.code), x = devOf(G.kw, pv, limit, 0.1); return { G, pv, x, code: G.code, name: G.name, icon: ebkpIcon(G.code), d: sgn(x.d), dp: signed(x.dp), fl: x.fl }; };
   const ovList = { col: 'Hauptgruppe', unit: 'kg', dUnit: 'Δ kg', max: FMT1(mxE), totalLabel: 'Total B–G', prevText: `${T.cmpPrevLabel}: ${FMT1(prevAnnTot)} kg`, tot: hasSrc ? FMT1(erst) : '–', dTot: hasSrc ? sgn(erst - prevAnnTot) : '–', subs: [],
-    rows: listG.map(G => { const r = gRow(G); return { code: r.code, name: r.name, icon: r.icon, cur: FMT1(G.kw), share: share(G.kw), w: (G.kw / mxE * 100).toFixed(2) + '%', tx: r.pv ? (r.pv / mxE * 100).toFixed(2) + '%' : null, d: r.d, dp: r.dp, dfg: r.dfg, dw: r.dw, tip: `${T.cmpPrevLabel}: ${FMT1(r.pv)} kg · ${T.code}: ${FMT1(G.kw)} kg`, tab: 'erfassung' }; }),
-    foot: `kg CO₂-eq/m² EBF·a · Strich = ${T.cmpPrevLabel}`, unitTip: 'THGE Erstellung in kg CO₂-eq/m² EBF·a', dTip: `Differenz zu ${T.cmpPrevLabel} in kg CO₂-eq/m² EBF·a; markiert ab ${limit} % und 0.1 kg`, totTip: 'THGE Erstellung: Summe der Hauptgruppen B bis G' };
+    rows: listG.map(G => { const r = gRow(G); return { code: r.code, name: r.name, icon: r.icon, cur: FMT1(G.kw), share: share(G.kw), w: (G.kw / mxE * 100).toFixed(2) + '%', tx: r.pv ? (r.pv / mxE * 100).toFixed(2) + '%' : null, d: r.d, dp: r.dp, tip: `${T.cmpPrevLabel}: ${FMT1(r.pv)} kg · ${T.code}: ${FMT1(G.kw)} kg`, tab: 'erfassung' }; }),
+    foot: `kg CO₂-eq/m² EBF·a · Strich = ${T.cmpPrevLabel}`, unitTip: 'THGE Erstellung in kg CO₂-eq/m² EBF·a', dTip: `Differenz zu ${T.cmpPrevLabel} in kg CO₂-eq/m² EBF·a`, totTip: 'THGE Erstellung: Summe der Hauptgruppen B bis G' };
   const agg = new Map(); betrRows.forEach(r => agg.set(r.name, (agg.get(r.name) || 0) + r.tv));
   if (pvOn) agg.set('Photovoltaik (Gutschrift)', -eig * kE - credit);
   const BR = [...agg].map(([name, v]) => ({ name, v })).filter(x => Math.abs(x.v) > 0.0005);
   const mxB = Math.max(0.01, ...BR.map(x => Math.abs(x.v))) * 1.08, posSum = BR.filter(x => x.v > 0).reduce((a, x) => a + x.v, 0);
   const ovBetr = { col: 'Energiedienstleistung', unit: 'kg', dUnit: 'Δ kg', max: FMT2(mxB), totalLabel: 'Total Betrieb', prevText: 'keine Vorphase', tot: hasBetr ? neg(thgB) : '–', dTot: '–', subs: [],
-    rows: BR.map(x => ({ code: '', name: x.name, icon: x.v < 0 ? 'assets/icons/zap.svg' : ebkpIcon('D'), cur: neg(x.v), share: x.v > 0 && posSum ? Math.round(x.v / posSum * 100) + ' %' : '', w: (Math.abs(x.v) / mxB * 100).toFixed(2) + '%', tx: null, bc: x.v < 0 ? '#389e0d' : null, d: '–', dp: '', dfg: '#6b7280', dw: 400, tip: x.v < 0 ? 'Gutschrift: PV-Eigenverbrauch und Überschuss' : x.name, tab: 'betrieb' })), foot: 'kg CO₂-eq/m² EBF·a · keine Vorphase', unitTip: 'THG Betrieb in kg CO₂-eq/m² EBF·a', dTip: 'Für den Betrieb gibt es keine Vorphase', totTip: 'THG Betrieb: Energiedienstleistungen abzüglich PV-Gutschrift' };
+    rows: BR.map(x => ({ code: '', name: x.name, icon: x.v < 0 ? 'assets/icons/zap.svg' : ebkpIcon('D'), cur: neg(x.v), share: x.v > 0 && posSum ? Math.round(x.v / posSum * 100) + ' %' : '', w: (Math.abs(x.v) / mxB * 100).toFixed(2) + '%', tx: null, bc: x.v < 0 ? '#8795a5' : null, d: '–', dp: '', tip: x.v < 0 ? 'Gutschrift: PV-Eigenverbrauch und Überschuss' : x.name, tab: 'betrieb' })), foot: 'kg CO₂-eq/m² EBF·a · keine Vorphase', unitTip: 'THG Betrieb in kg CO₂-eq/m² EBF·a', dTip: 'Für den Betrieb gibt es keine Vorphase', totTip: 'THG Betrieb: Energiedienstleistungen abzüglich PV-Gutschrift' };
 
-  // Prüfung: Zusammenfassung; a flagged deviation of a Hauptgruppe (limit % and 0.1 kg) asks for the Begründung des Planers while the Erfassung is open
-  const begr = f.begr || {};
-  const flagged = listG.map(gRow).filter(r => r.fl).map(r => { const beg = String(begr[r.code] || ''); return { code: r.code, name: r.name, dp: r.dp, beg, begBd: bd(!beg.trim()) }; });
-  const unexplained = flagged.filter(r => !r.beg.trim());
+  // Prüfung: Zusammenfassung; a Hauptgruppe is flagged when it deviates from the Vorphase by limit % and 0.1 kg
+  const flagged = listG.map(gRow).filter(r => r.fl).map(r => r.code);
   const stdBasis = hv('kbob') === DEF.kbob && hv('sys') === DEF.sys;
   const shares = {}; TH.betrieb.forEach(([name], i) => { const a = bv(`b${i}_a`); if (a != null) shares[name] = (shares[name] || 0) + a; });
   const badShares = Object.keys(shares).filter(x => Math.abs(shares[x] - 100) > 0.5);
@@ -324,8 +329,8 @@ function thgPart(P, f, data, T, M, ref, locked, bd) {
     sr('voll', 'Vollständigkeit', !nSrc ? 'Keine Emissionsquellen erfasst' : missing ? missingText(missing) : 'Alle Werte erfasst', 'Alle Werte der Erstellung und des Betriebs, alle Pflichtdokumente', nSrc && !missing ? 'ok' : 'err'),
     zusB == null ? sr('zus', lZus, `Keine für ${kat}`, 'Vergleichskategorie SIA 390/1 wählen', 'warn')
       : sr('zus', lZus, both ? sumStr + kgU : '–', `Höchstens ${FMT1(zusB)}${kgU}; die Richtwerte Erstellung und Betrieb sind informativ`, !both ? 'warn' : sumIst <= zusB ? 'ok' : 'err'),
-    ...(prevAnnTot && hasSrc ? [sr('prev', `Abweichung zur Vorphase ${T.cmpPrevLabel}`, !flagged.length ? `Total ${signed(pct(erst - prevAnnTot, prevAnnTot))}` : `ab ${limit} % bei ${flagged.map(r => r.code).join(', ')}${unexplained.length ? (locked ? '' : ', ohne Begründung') : ', begründet'}`,
-      `Je Hauptgruppe unter ${limit} % oder 0.1 kg, sonst vom Planer begründet`, flagged.length ? 'warn' : 'ok', { begr: flagged.filter(r => !locked || r.beg.trim()) })] : []),
+    ...(prevAnnTot && hasSrc ? [sr('prev', `Abweichung zur Vorphase ${T.cmpPrevLabel}`, !flagged.length ? `Total ${signed(pct(erst - prevAnnTot, prevAnnTot))}` : `ab ${limit} % bei ${flagged.join(', ')}`,
+      `Je Hauptgruppe unter ${limit} % oder 0.1 kg, sonst begründet`, flagged.length ? 'warn' : 'ok')] : []),
     sr('basis', 'Ökobilanzdaten und Systemgrenze', `${hv('kbob').replace('KBOB/ecobau-Liste 2022, ', 'KBOB ')} · ${hv('sys')}`, `Standard: ${DEF.kbob} · ${DEF.sys}`, stdBasis ? 'ok' : 'warn'),
     sr('ebf', 'Energiebezugsfläche EBF', EBF ? `${FMT(EBF)} m²` : '–', 'Aus den Grundrissen (DWG)', EBF ? 'ok' : 'err'),
     sr('strom', 'Stromprodukt Betrieb', hv('strom'), `Standard: ${DEF.strom}`, hv('strom') === DEF.strom ? 'ok' : 'warn'),
@@ -358,7 +363,7 @@ function dataForm(kind, P, data, project, user) {
   const { fields, missing } = C;
 
   const filled = fields - missing, compPct = fields ? Math.round(filled / fields * 100) : 0;
-  const comp = { label: 'Vollständigkeit', tip: isTHG ? 'Erfasste von verlangten Werten: Referenzgrösse und Kennwert je Emissionsquelle, Nutzenergie, Anteil und Nutzungsgrad je Energiedienstleistung, PV-Ertrag und Eigenverbrauch' : 'Erfasste von verlangten Werten: Betrag je Hauptgruppe oder Menge und Kosten je Position', pct: compPct + ' %', w: compPct + '%', bar: missing || !fields ? '#d48806' : '#2f7d63', fg: missing || !fields ? '#8a6100' : '#2f6b12',
+  const comp = { label: 'Vollständigkeit', tip: isTHG ? 'Erfasste von verlangten Werten: Referenzgrösse und Kennwert je Emissionsquelle, Nutzenergie, Anteil und Nutzungsgrad je Energiedienstleistung, PV-Ertrag und Eigenverbrauch' : 'Erfasste von verlangten Werten: Betrag je Hauptgruppe oder Menge und Kosten je Position', pct: compPct + ' %', w: compPct + '%', bar: missing || !fields ? '#d48806' : '#2f7d63',   // w and bar: progress of the Erfassung bar
     text: isTHG && !C.nSrc ? `Noch keine Emissionsquellen erfasst${C.missB ? ` · Betrieb: ${missingText(C.missB)}` : ''}` : !fields ? 'Noch keine Werte erfasst' : missing ? `${filled} von ${fields} Werten erfasst · ${missing} fehlen` : `Alle ${fields} Werte erfasst` };
   const open = C.open || (step === 0 && missing === fields ? { text: 'Noch keine Werte erfasst. Die Erfassung ist offen.', btn: 'Erfassung öffnen', tab: 'erfassung' }
     : missing ? { text: `${missingText(missing)} noch. Danach zur Prüfung einreichen.`, btn: 'Erfassung fortsetzen', tab: 'erfassung' }
@@ -373,11 +378,11 @@ function dataForm(kind, P, data, project, user) {
   const manual = T.manual.map(([key, label]) => ({ key, label, checked: !!f.checks[key], disabled: !canReview }));
   const rv = reviewOf({ step, canReview, allChecked: manual.every(m => m.checked), target: T.target, reviewer, notSubmitted: step < LOCKED_FROM && !rejected, comment: f.comment, internal: !user || !!user.internal });
   const canSubmit = step <= 1 && C.canSubmitData;
-  const bar = barOf({ editing: step <= 1, locked, canFilter: missing > 0 || !!f.missingOnly, canSubmit, reason: C.reason, comp, reviewer });
+  const bar = barOf({ editing: step <= 1, locked, canFilter: missing > 0 || !!f.missingOnly, canSubmit, reason: C.reason, comp });
 
   return {
     kind: 'data', id: kind, pid: project.id, code: T.code, codeLc: T.code.toLowerCase(), title: T.title, short: T.short, lead: X.lead, leadName: `${X.leadName} (${X.leadFirm})`, reviewer, target: T.target,
-    step, locked, rejected, status, pill: pillSpec(status), act: ACT_FORM,
+    step, locked, lock: locked ? lockText(step, f.dates, reviewer, T.target) : '', rejected, status, pill: pillSpec(status), act: ACT_FORM,
     steps: stepRows(D.steps, step, f.dates, rejected), next: nextStep(step, T.target, reviewer, open),
     kpis: C.kpis, comp, meta, people: peopleShort(people, X.peopleList), peopleRows: peopleRows(people, X.peopleList), docs: docRows(X.docs), hist: histRows(people, [...X.history, ...f.events]),
     ov: T.ov, subtotals: C.subtotals, chart: C.chart, tz: C.tz, headShared: C.headShared, betr: C.betr, ovList: C.ovList, ovBetr: C.ovBetr,
@@ -416,7 +421,7 @@ export function planForm(plan, data, user) {
   });
   const sia = plan.siaRows.map((x, i) => ({ ab: x.abbr, name: x.label, val: x.value, share: x.share, tip: x.tip, bg: alt(i), fw: x.sum ? 600 : 400 }));
   const compW = r ? passed / total * 100 : 0;
-  const comp = { label: 'Prüfregeln', tip: 'Bestandene Prüfregeln der CAD-Richtlinie BBL V1.0; Fehler sperren das Einreichen, Warnungen nicht', pct: r ? `${passed} / ${total}` : '–', w: compW + '%', bar: errors ? '#cf1322' : '#2f7d63', fg: errors ? '#9b2c44' : '#2f6b12', text: r ? `${errors} Fehler · ${warnings} Warnungen` : 'Noch keine DWG-Datei geprüft' };
+  const comp = { label: 'Prüfregeln', tip: 'Bestandene Prüfregeln der CAD-Richtlinie BBL V1.0; Fehler sperren das Einreichen, Warnungen nicht', pct: r ? `${passed} / ${total}` : '–', w: compW + '%', bar: errors ? '#cf1322' : '#2f7d63', text: r ? `${errors} Fehler · ${warnings} Warnungen` : 'Noch keine DWG-Datei geprüft' };
   const kpis = [{ k: 'Räume mit AOID', v: r ? String(plan.roomCount) : '–', u: 'Raumpolygone', tip: 'Geschlossene Polylinien auf R_RAUMPOLYGON mit AOID-Text auf R_AOID' },
     { k: 'Geschossfläche GF', v: k && k.gf != null ? FMT1(k.gf) : '–', u: 'm²', tip: 'Fläche des Geschosspolygons auf R_GESCHOSSPOLYGON' }];
   const open = !r ? { text: 'Noch keine DWG-Datei. Plan hochladen, die Prüfung läuft im Browser.', btn: 'Erfassung öffnen', tab: 'erfassung' }
@@ -427,13 +432,13 @@ export function planForm(plan, data, user) {
   const docs = docRows([...(plan.fileName ? [[plan.fileName, 'DWG', 'Pflicht', sup.name, plan.uploadedAt || '–']] : []), ...PF.docs]);
   const hist = histRows(people, plan.history.map(h => [h.d, '', h.who, h.t, h.detail]));
   const rv = reviewOf({ step, canReview: plan.isReviewable && internal, allChecked: !plan.approveDisabled, target: 'SAP RE-FX', reviewer, notSubmitted: step < LOCKED_FROM && !rejected, comment: plan.comment, internal });
-  const bar = barOf({ editing: !locked, locked, canFilter: false, canSubmit: plan.canSubmit, reviewer,
+  const bar = barOf({ editing: !locked, locked, canFilter: false, canSubmit: plan.canSubmit,
     reason: !r ? 'Einreichen erst, wenn ein Plan geprüft ist' : errors ? 'Einreichen erst, wenn der Plan keine Fehler hat' : '',
     comp: { text: r ? `${passed} von ${total} Prüfregeln bestanden · ${errors} Fehler · ${warnings} Warnungen` : 'Noch keine DWG-Datei geprüft', w: comp.w, bar: comp.bar } });
   const fileMeta = r ? [plan.version, plan.uploadedAt ? `hochgeladen ${plan.uploadedAt}` : ''].filter(Boolean).join(' · ') : '';
   return {
     kind: 'plan', id: plan.key, plan, code: plan.code, codeLc: plan.codeLc, title: plan.name, short: plan.floor, lead: sup.initials, leadName: `${sup.name} (${sup.firm})`, reviewer, target: 'SAP RE-FX',
-    step, locked, rejected, status, pill: plan.pill, act: ACT_PLAN,
+    step, locked, lock: locked ? lockText(step, dates, reviewer, 'SAP RE-FX') : '', rejected, status, pill: plan.pill, act: ACT_PLAN,
     steps: stepRows(D.steps, step, dates, rejected), next: nextStep(step, 'SAP RE-FX', reviewer, open),
     kpis, comp, meta, people: peopleShort(people, peopleList), peopleRows: peopleRows(people, peopleList, sc => sc.replace('{floor}', plan.name)), docs, hist,
     planOv: { sia, cats },

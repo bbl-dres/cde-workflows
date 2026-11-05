@@ -82,11 +82,13 @@ test('actions: Hauptgruppen toggle and sums (KV-32)', () => {
   assert.equal(F('kv').groups.find(g => g.code === 'V').sum, v0 + 100000);
   actions.formMode({ form: 'kv', group: 'V' });
   assert.equal(num(P().kvV.V), v0 + 100000); assert.equal(P().forms.kv.added.length, 0); assert.equal(F('kv').groups.find(g => g.code === 'V').sum, v0 + 100000);
-  // THG: formMode only opens and closes the group (C is open by default); a form in review ignores the toggle, reopening restores it
-  assert.equal(P().forms.thg.modes.C, 'detail');
+  // THG: formMode only opens and closes the group (all open by default); it is a view state, so the reviewer of a locked form toggles too
+  assert.deepEqual(Object.values(P().forms.thg.modes), ['detail', 'detail', 'detail', 'detail', 'detail', 'detail']);
   store.setIn('projects', { musterhausen: { ...P(), forms: { ...P().forms, thg: { ...P().forms.thg, step: 4 } } } });
   actions.formMode({ form: 'thg', group: 'C' });
-  assert.equal(P().forms.thg.modes.C, 'detail', 'locked form: no toggle');
+  assert.equal(P().forms.thg.modes.C, 'direct', 'locked form: the group still closes');
+  actions.formMode({ form: 'thg', group: 'C' });
+  assert.equal(P().forms.thg.modes.C, 'detail', 'and opens');
   actions.formReopen({ key: 'thg' });
   actions.formMode({ form: 'thg', group: 'C' });
   assert.equal(P().forms.thg.modes.C, 'direct');

@@ -146,10 +146,10 @@ export function makeActions(store, data, nav) {
       });
     },
     /** KV/KS: «Aufschlüsseln» opens the positions of a Hauptgruppe, «Zusammenfassen» keeps their sum as the group amount
-     *  (a group without positions keeps its Pauschalbetrag plus the Kostenelemente added). THG: opens or closes the group. */
+     *  (a group without positions keeps its Pauschalbetrag plus the Kostenelemente added). THG: opens or closes the group (all open by default). */
     formMode: ds => {
       const kind = ds.form, g = ds.group, f = formOf(kind);
-      if (!f || !(g in f.modes) || !editable(kind)) return;
+      if (!f || !(g in f.modes) || (kind !== 'thg' && !editable(kind))) return;   // THG: a view state, also on a locked form
       const direct = (f.modes[g] || 'direct') === 'direct';
       if (direct || kind === 'thg') { setForm(kind, { modes: { ...f.modes, [g]: direct ? 'detail' : 'direct' } }); return; }
       const grp = data.ebkp.ebkp.find(x => x.code === g), V = P()[KEYS[kind][1]] || {}, added = (f.added || []).filter(a => a.grp === g);
@@ -175,8 +175,6 @@ export function makeActions(store, data, nav) {
       if (ds.tab !== 'betrieb' && ds.group && (ds.group in f.modes)) setForm(kind, { modes: { ...f.modes, [ds.group]: 'detail' } });
       nav.navigate(link.delivery(pid(), T.code, ds.tab || 'erfassung'));
     },
-    /** Begründung des Planers for a Hauptgruppe whose deviation from the previous phase is flagged (THG-32 Prüfung). */
-    formBegr: (ds, el) => { if (editable(ds.form)) setForm(ds.form, f => ({ begr: { ...(f.begr || {}), [ds.group]: el.value } })); },
     toggleImportMenu: () => ui({ importMenu: !s().ui.importMenu, userMenu: false, notif: false }),
     importItem: ds => {
       ui({ importMenu: false });

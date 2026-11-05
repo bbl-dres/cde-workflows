@@ -323,7 +323,7 @@
       "infoOpen": true
     },
     "annotations": [
-      "Vergleich je Hauptgruppe mit der Kostenschätzung der Vorphase (KS-31). Abweichungen ab 10 % sind markiert. Rechnet live mit den Werten aus <a href=\"#s03\" data-screen-link>03</a> und dem Import <a href=\"#s03d\" data-screen-link>03d</a>.",
+      "Vergleich je Hauptgruppe mit der Kostenschätzung der Vorphase (KS-31). Rechnet live mit den Werten aus <a href=\"#s03\" data-screen-link>03</a> und dem Import <a href=\"#s03d\" data-screen-link>03d</a>.",
       "Kostenziel aus der Projektdefinition. Der Wert kommt idealerweise aus ePPM, damit beide Systeme dasselbe Ziel zeigen.",
       "Gleiches Prüfmuster wie bei der Ökobilanz (<a href=\"#s05\" data-screen-link>05</a>). Die Bezugsmengen kommen aus den Grundrissen (DWG); die Prüfung zeigt das als Hinweis; Freigabe ist trotzdem möglich."
     ],
