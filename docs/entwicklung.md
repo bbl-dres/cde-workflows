@@ -37,6 +37,19 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   wer die Lieferung hat, und «Erfassung wieder öffnen (Prototyp)» öffnet sie wieder (Werte bleiben). Prüfen (Checkliste, Freigeben,
   Zurückweisen) können nur BBL-Personen. Der Kommentar der Prüfung und ein Feld, in dem gerade getippt wird, bleiben beim
   Rendern erhalten. Dateien, die ein Import mitbringt (Tool-Export, Rechenhilfe, Excel), erscheinen unter Dokumente.
+- **Excel: herunterladen, bearbeiten, importieren** (`js/excel.js`): «Excel herunterladen» schreibt die Werte eines Datenformulars
+  in eine Arbeitsmappe, «Excel importieren» liest dieselbe Mappe wieder ein. Kosten (KV-32, KS-31): ein Blatt mit einer Zeile
+  je Hauptgruppe und Kostenelement (Code, Bezeichnung, Menge, Einheit, Kosten CHF, Kennwert CHF/m² GF; eine zusammengefasste
+  Hauptgruppe ist eine Zeile mit ihrem Betrag). Ökobilanz (THG-32): die Blätter «Grundlagen» (Schlüssel, Angabe, Wert, inkl.
+  Photovoltaik), «Erstellung» (eine Zeile je Emissionsquelle, die ID ist der Schlüssel, eine Zeile ohne ID ist eine neue
+  Quelle) und «Betrieb» (eine Zeile je Energiedienstleistung). Die Kopfzeile wird am Text der ersten Spalte erkannt, die
+  Spalten an ihrer Beschriftung (Reihenfolge und Zeilen darüber sind frei). Der Dialog zeigt vor dem Übernehmen je Zeile, was
+  sich ändert («Geändert» mit dem bisherigen Wert, «Hinweis» für fehlende oder unbekannte Angaben, «Ignoriert» für unbekannte
+  Codes); «Mit Werten aus Datei überschreiben» oder «Nur leere Felder füllen». Eine leere Zelle löscht nie einen Wert.
+  «Import zurücksetzen» stellt Werte und Zeilen wie vor dem Import her; Verlauf und Dokumente behalten den Import. Die Vorlage
+  («Excel-Vorlage herunterladen», «Leere Vorlage») ist dieselbe Mappe ohne Werte. Die Datei wird im Browser gelesen und
+  geschrieben (SheetJS von jsDelivr mit SRI, erst beim ersten Gebrauch geladen), nichts wird hochgeladen. Ohne gewählte Datei
+  zeigen die Kostenformulare die Beispieldatei des Prototyps (`data/ebkp.json › import`), die Ökobilanz wartet auf eine Datei.
 - **Kosten erfassen (KV-32, KS-31)**: alle Hauptgruppen A–Z der eBKP-H 2020, standardmässig aufgeklappt in ihre Elementgruppen
   (A01, B02, C01 … Z01 Mehrwertsteuer; keine Pauschalzeilen, H hat im Musterprojekt kein Element). Je Elementgruppe: Einheit
   als Auswahl (die Bezugsgrösse der Norm ist vorgewählt, «pauschal» braucht keine Menge), Menge, Kosten und der Kennwert
@@ -147,13 +160,14 @@ Code-Reviews mit Befunden und Status: `docs/reviews/` (zuletzt `2026-11-05-code-
   Vorlagen, Benachrichtigungen, veraltete Begriffe), den Router, die Zuordnung der Studien-Screens und die DWG-Prüf-Engine
   gegen die vorberechneten Ergebnisse (`tests/model.test.mjs`) sowie die Benutzeraktionen gegen den echten Store
   (Aufschlüsseln, Kostenelemente, Emissionsquellen, Importe, Workflow, Planprüfung), den Mock, den Store und die
-  Formatierung (`tests/actions.test.mjs`), Rollen der Prüfung, Statusfilter und Suche der Planprüfung, Nutzungsarten, DIN 277 und Ring der Kennzahlen; 35 Tests, Node 22+.
+  Formatierung (`tests/actions.test.mjs`), Rollen der Prüfung, Statusfilter und Suche der Planprüfung, Nutzungsarten, DIN 277 und Ring der Kennzahlen,
+  den Excel-Kreislauf (Blätter, Lesen, Vorschau, Übernehmen, Zurücksetzen, fremde Dateien) ohne Browser; 36 Tests, Node 22+.
 - `node tests/e2e.mjs` fährt bei laufendem Server einen Headless-Browser (Edge/Chrome/Brave) durch die Anwendung: Startseite mit
   Karte, Bestellen-Drawer, Rollenwechsel, Benachrichtigungen, KV-32 (Übersicht, Erfassung mit Aufschlüsseln, Kostenelemente,
-  Filter, Excel-Import, Einreichen), THG-32 (Übersicht mit Zielwerten, Emissionsquellen, Betrieb, Tool-Export, Rechenhilfe, neue Quelle, Hersteller-Flag, Einreichen),
+  Filter, Excel herunterladen, in der Mappe ändern und wieder importieren, Einreichen), THG-32 (Übersicht mit Zielwerten, Emissionsquellen, Betrieb, Tool-Export, Rechenhilfe, neue Quelle, Hersteller-Flag, Einreichen),
   THG-32 einreichen und prüfen (freigeben, übertragen), KV-32 zurückweisen, Planlieferungen DWG (Parsen, Hochladen, Einreichen,
   Prüfung mit Suche, Alle ein-/ausblenden und Statusfilter), die Datenformulare der weiteren Projekte, Aufgabenliste,
-  Projektseiten, Hover-Zustände, Studien-Panel und bei 375 px Überlauf, Sidebar, Filter, Footer und Karte (Standort-Karte zoomt nur mit Ctrl + Mausrad oder den Knöpfen, die Karte der Startseite auch mit dem Mausrad; ≈284 Checks).
+  Projektseiten, Hover-Zustände, Studien-Panel und bei 375 px Überlauf, Sidebar, Filter, Footer und Karte (Standort-Karte zoomt nur mit Ctrl + Mausrad oder den Knöpfen, die Karte der Startseite auch mit dem Mausrad; ≈295 Checks). Der Excel-Kreislauf braucht dabei das CDN (SheetJS).
 - `node tests/responsive-audit.mjs [ordner] [m375,t768,l1024]` macht bei laufendem Server Screenshots der Hauptseiten auf
   375 / 768 / 1024 px und misst Überlauf, zu kleine Bedienelemente und Felder unter 16 px (`report.json`).
 - `node tests/refshots.mjs` erzeugt Screenshots in den Fenstergrössen der Referenz-Screenshots der CDE Bund und legt
@@ -173,8 +187,9 @@ js/links.js           Link-Builder, Sidebar-Sektionen, Tabs der Datenformulare, 
 js/store.js           Zustand + sessionStorage (ohne busy/toast), patchDotted für Deep-Links · js/data.js lädt data/*.json · js/ui.js html``-Templating und UI-Atome
 js/shell.js           Topbar, Sidebars, Seitenkopf, Breadcrumb, Tabs, Benachrichtigungs-Drawer, Benutzermenü, Toast
 js/actions.js         alle Benutzeraktionen (Datenformulare, Bestellen, Import, Planlieferungen, Studie)
+js/excel.js           Excel-Kreislauf der Datenformulare: Blätter eines Formulars, Lesen einer Mappe, Vorschau und Patch eines Imports (rein, ohne Browser testbar); SheetJS nur zum Schreiben und Lesen der Datei
 js/model/             form.js (Datenformulare: costPart KV-32/KS-31, thgPart THG-32, planForm DWG in einer Form), mock.js (Werte je Projekt),
-                      plan.js (DWG-Prüfung), app.js (Projekte, Aufgaben, Benachrichtigungen, Dokumente, LOIN, Logs), import.js, templates.js, state.js
+                      plan.js (DWG-Prüfung), app.js (Projekte, Aufgaben, Benachrichtigungen, Dokumente, LOIN, Logs), import.js (Dialog «Excel importieren»), templates.js, state.js
 js/views/             delivery (Seite einer Lieferung) + form (die sechs Tabs) + plan (Upload, Prüfergebnis, Viewer); parts/map (MapLibre-Slot), parts/projectMap (Standort);
                       dashboard, projects, overview, tasks, timeline, documents, loin, section, settings, s01 (ILP), order, columns,
                       s03c/s03d (Excel-Import), s06 (Kontrolle), s09 (Vorlagen), Studienseiten home, review, qs, varb

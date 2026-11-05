@@ -22,7 +22,7 @@ Sign in as one of seven sample personas (name at the top right) to follow a deli
 ## Features
 
 - Order a data delivery in the Informationslieferplan with a template (Kosten eBKP-H, Ökobilanz Bauemissionen nach SIA 2032) and the rule «mandatory from CHF 1 Mio».
-- Enter costs per eBKP-H Hauptgruppe or per Kostenelement (open the group, add or remove positions), import an Excel file, see completeness and missing values live.
+- Enter costs per eBKP-H Hauptgruppe or per Kostenelement (open the group, add or remove positions), download the form as an Excel file, edit it and import it again (preview of every change), see completeness and missing values live.
 - Enter the Ökobilanz in two parts after SIA 390/1: the Erstellung as emission sources from the tool export per eBKP-H element group (reference quantity, kg CO₂-eq/m² EBF·a, manufacturer flag) and the Betrieb as energy services after the Rechenhilfe SIA 390/1 with photovoltaics and electricity product; the Übersicht compares both and their sum with the SIA 390/1 reference values of the building category, the Tool-Export and Rechenhilfe imports bring the values in. All eight projects carry complete, plausible mock data (KV-32, KS-31, THG-32) in different workflow states.
 - Upload DWG floor plans (one delivery per floor) and check them locally in the browser against the 40 rules of the CAD-Richtlinie BBL, with plan viewer, rooms, floor-area polygons, layers, SIA 416 figures and a downloadable Prüfbericht (PDF).
 - Submit, review (summary table, two-point checklist, approve or reject) and hand over to ePPM, Wüest Dimensions or SAP RE-FX; statuses flow into the Informationslieferplan, tasks and notifications.

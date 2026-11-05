@@ -155,13 +155,16 @@ const importMenu = (F, items, open) => (F.locked
   ${open ? html`<div class="dd-menu" role="menu">${items.map(([key, label], i) => html`<button type="button" role="menuitem" class="dd-item${i === 0 && items.length > 1 ? ' dd-sep' : ''}" data-action="importItem" data-arg="${key}" data-form="${F.id}">${label}</button>`)}</div>` : ''}
 </div>`);
 
+/** «Excel herunterladen»: the values of the form as a workbook, the file «Excel importieren» reads back (also on a locked form). */
+const excelBtn = F => html`<button type="button" class="btn btn-secondary" data-action="formExcel" data-form="${F.id}" title="Werte der Erfassung als Excel-Datei. Bearbeitet lässt sie sich wieder importieren">Excel herunterladen</button>`;
+
 /** Card head with title, Importieren menu and Excel export, shared by the cost forms and the Ökobilanz. */
 function entryHead(ctx, F) {
   const E = F.erf, open = !!ctx.state.ui.importMenu;
   return html`<div class="card-head" style="flex-wrap:wrap">
       <span class="flex-1" style="flex-basis:220px">${E.tableTitle}</span>
       ${importMenu(F, E.importItems, open)}
-      <button type="button" class="btn btn-secondary" data-action="proto">Excel herunterladen</button>
+      ${excelBtn(F)}
     </div>
     ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}`;
 }
@@ -302,7 +305,7 @@ function betrieb(ctx, F) {
       <div class="card-head" style="flex-wrap:wrap">
         <span class="flex-1" style="flex-basis:220px">${B.title}</span>
         ${importMenu(F, B.importItems, open)}
-        <button type="button" class="btn btn-secondary" data-action="proto">Excel herunterladen</button>
+        ${excelBtn(F)}
       </div>
       ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}
       <div class="lock-wrap"><div class="fm-table" ${INERT(F)}><div class="ent ent-betr">

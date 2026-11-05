@@ -21,6 +21,8 @@ import { num } from './format.js';
 import { planSession } from './plansession.js';
 import { buildReportModel, downloadPlanReport } from './plancheck/report.js';
 import { captureViewerImage, offscreenCapture, viewerReady } from './views/plan.js';
+import { sheetsOf, fileNameOf, workbookBlob, sheetsOfFile, saveBlob, readWorkbook, planImport, applyImport, importScope } from './excel.js';
+import { importSource } from './model/import.js';
 
 export function makeActions(store, data, nav) {
   const s = () => store.get();
@@ -32,6 +34,7 @@ export function makeActions(store, data, nav) {
     toastTimer = setTimeout(() => ui({ toast: null }), 4000);
   };
   const closeDialog = () => { ui({ dialog: null }); store.setIn('imp', { step: 1 }); };
+  const MAX_XLSX = 10 * 1024 * 1024;
 
   // ---- Datenformulare of the current project: one workflow object per form (state.projects[pid].forms[kind]) ----
   const pid = () => nav.currentPid();
@@ -88,6 +91,17 @@ export function makeActions(store, data, nav) {
       setPlan(key, { busy: null, error: err.message });
       toast(`Prüfung fehlgeschlagen: ${err.message}`);
     }
+  };
+
+  /** Workbook of a form (js/excel.js): downloads it, or only returns the Blob (tests). */
+  const excelDownload = async (kind, empty, save = true) => {
+    const p = P(), project = projectOf(pid());
+    if (!p || !project || !p.forms[kind]) return null;
+    try {
+      const blob = await workbookBlob(sheetsOf(kind, p, data, { empty })), name = fileNameOf(kind, project, data, empty);
+      if (save) { saveBlob(blob, name); toast(`${name} heruntergeladen.`); }
+      return blob;
+    } catch (err) { toast(err.message); return null; }
   };
 
   return {
@@ -182,7 +196,8 @@ export function makeActions(store, data, nav) {
     importItem: ds => {
       ui({ importMenu: false });
       if (!editable(ds.form)) { toast('Die Erfassung ist gesperrt.'); return; }
-      if (ds.arg === 'excel' && KEYS[ds.form]) { store.setIn('imp', { form: ds.form, step: 1, done: false, applied: 0 }); ui({ dialog: 'import' }); return; }
+      if (ds.arg === 'vorlage' && data.forms.kinds[ds.form]) { excelDownload(ds.form, true); return; }
+      if (ds.arg === 'excel' && data.forms.kinds[ds.form]) { store.setIn('imp', { form: ds.form, step: 1, filter: 'alle', done: false, applied: 0, file: null, undo: null }); ui({ dialog: 'import' }); return; }
       if (ds.arg === 'tool' && ds.form === 'thg') {
         // Tool-Export (XLSX/JSON of the Ökobilanz tool): the Emissionsquellen of the project come in, missing values are filled
         const p = P(), project = projectOf(pid()); if (!p || !project) return;
@@ -291,31 +306,49 @@ export function makeActions(store, data, nav) {
     orderSubmit: () => { closeDialog(); toast('Bestellung erstellt. Der Lieferverantwortliche erhält eine Aufgabe vom Typ «Datenformular».'); },
     orderCancel: closeDialog,
 
-    // ---- Excel importieren (dialog on the Erfassung of a Kostenformular; imp.form = kv | ks) ----
+    // ---- Excel: «Excel herunterladen» and the import dialog of a Datenformular (imp.form = kv | ks | thg), see js/excel.js ----
+    /** The values of a form as a workbook (ds.arg 'leer': the same sheets without values); opts.save = false returns the Blob only (tests). */
+    formExcel: (ds, el, ev, opts = {}) => excelDownload(ds.form, ds.arg === 'leer', opts.save !== false),
+    /** A file chosen or dropped in the dialog is read at once; a file that is not an export of this form is refused with the reason. */
+    impFile: async (ds, el) => {
+      const file = el && el.files && el.files[0];
+      if (el && 'value' in el) { try { el.value = ''; } catch { /* drop event stand-in */ } }
+      if (!file) return;
+      const { kind } = importSource(s(), data, P());
+      if (!/\.xlsx$/i.test(file.name)) { toast('Bitte eine Excel-Datei (.xlsx) wählen.'); return; }
+      if (file.size > MAX_XLSX) { toast('Die Datei ist grösser als 10 MB.'); return; }
+      try {
+        const payload = readWorkbook(kind, await sheetsOfFile(file), data);
+        store.setIn('imp', { file: { name: file.name, size: file.size, payload }, filter: 'alle', done: false, applied: 0, undo: null });
+      } catch (err) { toast(`${file.name}: ${err.message}`); }
+    },
+    impFileClear: () => store.setIn('imp', { file: null, step: 1 }),
     impFilter: ds => store.setIn('imp', { filter: ds.arg }),
     impMode: ds => store.setIn('imp', { mode: ds.arg }),
-    impNext: () => store.setIn('imp', { step: 2 }),
+    impNext: () => { if (importSource(s(), data, P()).payload) store.setIn('imp', { step: 2 }); else toast('Zuerst eine Excel-Datei wählen.'); },
     impBack: () => store.setIn('imp', { step: 1 }),
     impClose: closeDialog,
     impGoto: ds => { closeDialog(); nav.navigate(ds.arg); },   // ds.arg: path of the current form (Erfassung or Übersicht)
     impApply: () => {
-      const st = s(), p = P(), kind = (st.imp && KEYS[st.imp.form] ? st.imp.form : 'kv'), CH = data.ebkp.import.changes, vKey = KEYS[kind][1];
-      if (!p || !p.forms[kind] || !editable(kind)) return;
-      const patch = st.imp.mode === 'ueber' ? CH : Object.fromEntries(Object.entries(CH).filter(([c]) => num(p[vKey][c]) == null));   // «Nur leere Felder füllen»
-      const applied = Object.keys(patch).length;
-      const modes = { ...p.forms[kind].modes };
-      if (applied) for (const g of data.ebkp.ebkp) if (g.kids.some(k => patch[k.code] != null)) modes[g.code] = 'detail';   // imported positions are shown in detail
-      const events = applied ? [...p.forms[kind].events, ev(me(), 'Excel importiert', `${data.ebkp.import.file} · ${pl(applied, 'Wert', 'Werte')} übernommen`)] : p.forms[kind].events;
-      setP({ [vKey]: applied ? { ...p[vKey], ...patch } : p[vKey], forms: { ...p.forms, [kind]: { ...p.forms[kind], modes, events } } });
-      if (applied) addDoc(kind, data.ebkp.import.file);
-      store.setIn('imp', { done: true, applied });
+      const p = P(), { kind, payload, name } = importSource(s(), data, p);
+      if (!p || !p.forms[kind] || !editable(kind) || !payload) return;
+      const plan = planImport(kind, payload, p, data, s().imp.mode), applied = plan.values;
+      if (applied) {
+        const undo = { pid: pid(), kind, ...importScope(kind, p) };
+        setP(applyImport(kind, plan.patch, p));
+        logEv(kind, me(), 'Excel importiert', `${name} · ${pl(applied, 'Wert', 'Werte')} übernommen`);
+        addDoc(kind, name);
+        store.setIn('imp', { done: true, applied, undo });
+      } else store.setIn('imp', { done: true, applied: 0, undo: null });
     },
+    /** «Import zurücksetzen»: the values and the rows of the form as they were before the import; Verlauf and Dokumente keep the import. */
     impReset: () => {
-      const st = s(), kind = (st.imp && KEYS[st.imp.form] ? st.imp.form : 'kv'), vKey = KEYS[kind][1], project = projectOf(pid()); if (!project) return;
-      const init = initProject(data, project), orig = {};
-      Object.keys(data.ebkp.import.changes).forEach(c => { orig[c] = init[vKey][c]; });
-      setP(p => ({ [vKey]: { ...p[vKey], ...orig } }));
-      store.setIn('imp', { done: false, applied: 0 });
+      const u = (s().imp || {}).undo;
+      if (u && u.pid === pid() && editable(u.kind)) {
+        setP(p => ({ ...u.values, forms: { ...p.forms, [u.kind]: { ...p.forms[u.kind], ...u.form } } }));
+        logEv(u.kind, me(), 'Excel-Import zurückgesetzt', 'Werte wie vor dem Import');
+      }
+      store.setIn('imp', { done: false, applied: 0, undo: null });
     },
 
     // ---- 09 Vorlagen ----

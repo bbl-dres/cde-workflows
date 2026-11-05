@@ -40,7 +40,7 @@ export function initialState(data) {
     projects: initProjects(data),
     // Dialogs / flows
     orderType: 'thg',
-    imp: { step: 1, filter: 'alle', mode: 'ueber', done: false, applied: 0 },
+    imp: { form: 'kv', step: 1, filter: 'alle', mode: 'ueber', done: false, applied: 0, file: null, undo: null },   // Excel importieren: form of the dialog, chosen file { name, size, payload }, state before the import (undo)
     plans: initialPlans(data),                          // Planlieferungen DWG für das Flächenmanagement (SAP RE-FX) (DWG-UG … DWG-DG, Musterhausen)
     // Settings
     tplSel: data.templates.initialSelected,

@@ -6,7 +6,7 @@ body { background: var(--bg-canvas); font-family: var(--font); color: var(--text
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .vh { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
 .btn-file { position: relative; cursor: pointer; }
-.btn-file:focus-within, .plan-drop:focus-within { outline: 2px solid var(--navy); outline-offset: 2px; }
+.btn-file:focus-within, .plan-drop:focus-within, .imp-drop:focus-within { outline: 2px solid var(--navy); outline-offset: 2px; }
 /* Motion: people who ask for less motion get none (spinners, slide-ins, hover transitions). */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }

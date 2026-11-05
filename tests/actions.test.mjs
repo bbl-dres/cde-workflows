@@ -342,3 +342,108 @@ test('review 05.11.: strict numbers, no «-0», persisted slices merge per key, 
   actions.setMap({ key: 'kvV', code: 'C02' }, { value: '1' }); actions.formGroupVal({ form: 'kv', group: 'B' }, { value: '1' }); actions.formNewVal({ form: 'kv', id: 'kn1', field: 'v' }, { value: '1' }); actions.formDropNew({ form: 'kv', id: 'kn1' });
   assert.equal(JSON.stringify(P()), before, 'locked: no changes');
 });
+
+test('Excel round trip (js/excel.js): export → edit → import of KV-32 and THG-32, template, foreign file, undo', async () => {
+  const X = await mod('js/excel.js');
+  const { actions, P, F, store, toast } = setup('musterhausen');
+  const asFile = sheets => Object.fromEntries(sheets.map(s => [s.name, s.rows.map(r => [...r])]));   // what SheetJS reads back: { sheet name: rows }
+  const plan = (kind, file, mode) => X.planImport(kind, X.readWorkbook(kind, file, data), P(), data, mode);
+  const pick = (file, sheet, key) => file[sheet].find(r => r[0] === key);
+
+  // KV-32: one sheet, a heading row per Hauptgruppe and a row per Kostenelement
+  const kv = X.sheetsOf('kv', P(), data);
+  assert.deepEqual(kv.map(s => s.name), ['KV-32']); assert.deepEqual(kv[0].rows[0], X.COST_HEAD); assert.equal(kv[0].rows.length, 1 + 14 + 31);
+  assert.deepEqual(pick(asFile(kv), 'KV-32', 'C02').slice(0, 5), ['C02', 'Wandkonstruktion', 5240, 'm²', 1310000]);
+  assert.deepEqual(pick(asFile(kv), 'KV-32', 'V01').slice(2, 4), ['', 'pauschal'], '«pauschal» carries no Menge');
+  assert.equal(X.fileNameOf('kv', { id: 'musterhausen' }, data, false), 'KV-32_musterhausen.xlsx'); assert.equal(X.fileNameOf('kv', { id: 'musterhausen' }, data, true), 'KV-32_Vorlage.xlsx');
+  const tpl = X.sheetsOf('kv', P(), data, { empty: true })[0].rows;
+  assert.equal(tpl.length, 46); assert.ok(tpl.slice(1).every(r => r[2] === '' && r[4] === '' && r[5] === ''), 'the template has the rows, no values'); assert.equal(tpl.find(r => r[0] === 'C02')[3], 'm²', 'and the units');
+
+  // an unchanged file changes nothing; the Menge the form misses is a hint
+  let p = plan('kv', asFile(kv));
+  assert.equal(p.values, 0); assert.equal(p.changed, 0); assert.equal(p.rows.length, 31);
+  assert.deepEqual(p.rows.filter(r => r.st !== 'Unverändert').map(r => [r.code, r.st, r.note]), [['D08', 'Hinweis', 'Menge fehlt in Datei']]);
+
+  // the edited file: cost, Menge as text, the missing Menge, a unit (written «m2 GF») with its Menge, an own Kennwert, an unknown unit,
+  // an emptied cell, a Kostenelement of the norm the form does not have yet, an unknown code; the columns in another order
+  const file = asFile(kv), R = c => pick(file, 'KV-32', c);
+  R('C02')[4] = 1500000; R('C01')[2] = "1'700"; R('D08')[2] = 480; R('V01')[3] = 'm2 GF'; R('V01')[2] = 6000; R('E02')[5] = 250; R('G02')[3] = 'Fuder'; R('C04')[4] = '';
+  file['KV-32'].push(['E01', '', 900, '', 45000, ''], ['X9', 'Diverses', '', '', 85000, '']);
+  file['KV-32'] = [['Kostenvoranschlag, Stand heute'], ...file['KV-32']].map(r => (r.length === 6 ? [r[0], r[4], r[1], r[2], r[3], r[5]] : r));   // a title row above, «Kosten CHF» moved to column B
+  p = plan('kv', file);
+  const note = Object.fromEntries(p.rows.map(r => [r.code, `${r.st}: ${r.note}`]));
+  assert.equal(note.C02, "Geändert: bisher 1'310'000"); assert.equal(note.C01, "Geändert: Menge bisher 1'620"); assert.equal(note.D08, 'Geändert: Menge neu');
+  assert.equal(note.V01, 'Geändert: Menge neu, Einheit bisher pauschal'); assert.equal(note.E02, 'Geändert: Kennwert neu'); assert.equal(note.G02, 'Hinweis: Einheit «Fuder» unbekannt');
+  assert.equal(note.C04, 'Hinweis: Kosten fehlen in Datei', 'an empty cell does not clear the value'); assert.equal(note.E01, 'Geändert: neues Kostenelement'); assert.equal(note.X9, 'Ignoriert: Code nicht in eBKP-H');
+  assert.equal(p.changed, 6); assert.equal(p.values, 8); assert.equal(p.hints, 3);
+  assert.equal(plan('kv', file, 'leer').values, 4, '«nur leere Felder»: the missing Menge of D08, the Kennwert and the new Kostenelement (Menge, Kosten); filled fields and the unit stay');
+
+  // the dialog applies the file that was read (state.imp.file), logs it and lists it under Dokumente
+  actions.importItem({ arg: 'excel', form: 'kv' });
+  assert.equal(store.get().ui.dialog, 'import'); assert.equal(store.get().imp.file, null);
+  store.setIn('imp', { file: { name: 'KV-32_musterhausen.xlsx', size: 20480, payload: X.readWorkbook('kv', file, data) } });
+  const before = JSON.stringify(X.importScope('kv', P()));
+  actions.impApply();
+  const f = P().forms.kv, e01 = f.added.find(a => a.code === 'E01');
+  assert.equal(P().kvV.C02, 1500000); assert.equal(P().kvQ.C01, 1700); assert.equal(P().kvQ.D08, 480); assert.equal(P().kvQ.V01, 6000); assert.equal(f.units.V01, 'm² GF'); assert.equal(f.kws.E02, 250);
+  assert.equal(P().kvV.C04, 2010000); assert.equal(f.units.G02, undefined); assert.deepEqual([e01.grp, e01.q, e01.v], ['E', 900, 45000]); assert.equal(f.modes.E, 'detail');
+  assert.equal(store.get().imp.done, true); assert.equal(store.get().imp.applied, 8);
+  assert.deepEqual(f.events.at(-1).slice(3), ['Excel importiert', 'KV-32_musterhausen.xlsx · 8 Werte übernommen']); assert.ok(F('kv').docs.some(d => d.name === 'KV-32_musterhausen.xlsx'));
+  assert.equal(F('kv').missing, 0, 'the import filled the missing Menge');
+  // a second export is what the form shows now, and importing it again changes nothing
+  const kv2 = X.sheetsOf('kv', P(), data);
+  assert.deepEqual(pick(asFile(kv2), 'KV-32', 'E01'), ['E01', 'Äussere Wandbekleidung unter Terrain', 900, 'm²', 45000, '']); assert.equal(plan('kv', asFile(kv2)).values, 0);
+  actions.impReset();
+  assert.equal(JSON.stringify(X.importScope('kv', P())), before, '«Import zurücksetzen»: values and rows as before the import'); assert.equal(P().forms.kv.events.at(-1)[3], 'Excel-Import zurückgesetzt'); assert.equal(store.get().imp.undo, null);
+
+  // a Hauptgruppe that is «zusammengefasst» is one row with its amount
+  actions.formMode({ form: 'kv', group: 'C' });
+  const kv3 = asFile(X.sheetsOf('kv', P(), data));
+  assert.equal(kv3['KV-32'].length, 46 - 4); assert.deepEqual(pick(kv3, 'KV-32', 'C').slice(0, 5), ['C', 'Konstruktion Gebäude', '', '', 3970000]);
+  pick(kv3, 'KV-32', 'C')[4] = 4000000; pick(kv3, 'KV-32', 'D')[4] = 1;
+  p = plan('kv', kv3);
+  assert.deepEqual(p.rows.filter(r => r.code.length === 1).map(r => [r.code, r.st, r.note]), [['C', 'Geändert', "bisher 3'970'000"], ['D', 'Hinweis', 'Betrag ergibt sich aus den Kostenelementen']]); assert.deepEqual(p.patch.gvals, { C: 4000000 });
+
+  // foreign files are refused with the reason
+  assert.throws(() => X.readWorkbook('kv', { Tabelle1: [['Name', 'Wert'], ['a', 1]] }, data), /Kein Blatt mit der Kopfzeile/);
+  assert.throws(() => X.readWorkbook('thg', asFile(kv), data), /Keines der Blätter/);
+
+  // THG-32: three sheets (Grundlagen, Erstellung, Betrieb)
+  const thg = X.sheetsOf('thg', P(), data);
+  assert.deepEqual(thg.map(s => s.name), ['Grundlagen', 'Erstellung', 'Betrieb']); assert.deepEqual(thg.map(s => s.rows.length), [14, 1 + P().thgSrc.length, 10]);
+  assert.equal(plan('thg', asFile(thg)).values, 0, 'an unchanged file changes nothing');
+  const tf = asFile(thg), src = P().thgSrc[0];
+  pick(tf, 'Grundlagen', 'tool')[2] = 'Thermo'; pick(tf, 'Grundlagen', 'kat')[2] = 'Hochhaus'; pick(tf, 'Grundlagen', 'pv_y')[2] = 70000;
+  pick(tf, 'Erstellung', src.id)[8] = 0.09; pick(tf, 'Erstellung', src.id)[5] = 'x';
+  tf.Erstellung.push(['', 'C02.01', 'Wa09', 'Aussenwand Holz', 'KBOB 07.010', '', 800, '', 0.4], ['', 'Q99', '', 'Unbekannt', '', '', 1, '', 1]);
+  pick(tf, 'Betrieb', 1)[4] = 20; pick(tf, 'Betrieb', 1)[7] = 5.5; pick(tf, 'Betrieb', 2)[3] = 'x'; tf.Betrieb.push([12, 'Sauna', 'Strom', '', 1, 100, 1, '', '']);
+  p = plan('thg', tf);
+  assert.deepEqual(p.rows.filter(r => r.st !== 'Unverändert').map(r => `${r.code || r.name} ${r.st}: ${r.note}`), [
+    'Gebäudekategorie Hinweis: nicht in der Auswahl, bleibt unverändert', 'Tool Erstellung Geändert: bisher Lesosai', "PV-Ertrag kWh/a Geändert: bisher 55'800",
+    `${src.code} Geändert: bisher 0.05, Hersteller`, 'C02.01 Geändert: neue Emissionsquelle', 'Q99 Ignoriert: Elementgruppe unbekannt',
+    'B1 Geändert: Nutzenergie bisher 22.00, Endenergie neu', 'B2 Geändert: Projektwert', 'B12 Ignoriert: Zeile unbekannt']);
+  actions.importItem({ arg: 'excel', form: 'thg' });
+  assert.equal(store.get().imp.form, 'thg');
+  actions.impNext(); assert.equal(store.get().imp.step, 1, 'the Ökobilanz has no sample file: a file first'); assert.match(toast(), /Zuerst eine Excel-Datei/);
+  store.setIn('imp', { file: { name: 'THG-32_musterhausen.xlsx', size: 30720, payload: X.readWorkbook('thg', tf, data) } });
+  actions.impNext(); assert.equal(store.get().imp.step, 2);
+  const n = P().thgSrc.length;
+  actions.impApply();
+  const fresh = P().thgSrc.at(-1);
+  assert.equal(P().thgHead.tool, 'Thermo'); assert.equal(P().thgHead.kat, 'Verwaltung', 'a value outside the selection is not taken'); assert.equal(P().thgBetr.pv_y, 70000); assert.equal(P().thgSrc[0].kw, 0.09); assert.equal(P().thgSrc[0].hs, true);
+  assert.equal(P().thgSrc.length, n + 1); assert.deepEqual([fresh.grp, fresh.code, fresh.tcode, fresh.name, fresh.unit, fresh.q, fresh.kw], ['C', 'C02.01', 'Wa09', 'Aussenwand Holz', 'm²', 800, 0.4]);
+  assert.equal(P().thgBetr.b0_n, 20); assert.equal(P().thgBetr.b0_end, 5.5); assert.equal(P().thgBetr.b1_proj, true);
+  assert.equal(plan('thg', asFile(X.sheetsOf('thg', P(), data))).values, 0); assert.ok(eventTitles(P().forms.thg).includes('Excel importiert'));
+  actions.impReset();
+  assert.equal(P().thgSrc.length, n); assert.equal(P().thgSrc[0].kw, 0.05); assert.equal(P().thgBetr.b0_n, 22); assert.equal(P().thgHead.tool, 'Lesosai');
+
+  // a file of another form is not used; a locked form refuses the import
+  store.setIn('imp', { form: 'kv', done: false, file: { name: 'x.xlsx', size: 1, payload: X.readWorkbook('thg', tf, data) } });
+  const vBefore = JSON.stringify(P().kvV);
+  actions.impApply();
+  assert.equal(P().kvV.C02, data.ebkp.import.changes.C02, 'the sample file of the prototype applies instead'); assert.notEqual(JSON.stringify(P().kvV), vBefore);
+  setup.pid = 'agroscope-posieux';
+  const locked = JSON.stringify(P());
+  store.setIn('imp', { form: 'kv', done: false, file: null }); actions.impApply();
+  assert.equal(JSON.stringify(P()), locked);
+});

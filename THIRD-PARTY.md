@@ -9,6 +9,7 @@ The prototype itself is MIT-licensed (see [LICENSE](LICENSE)). It uses the follo
 | [MapLibre GL JS](https://maplibre.org/) | 4.7.1 | BSD-3-Clause | cdnjs, SRI in `index.html` | Maps on the start page and the project overview |
 | [jsPDF](https://github.com/parallax/jsPDF) | 2.5.2 | MIT | jsDelivr, SRI in `js/plancheck/report.js`, loaded on the first Prüfbericht | PDF report of a plan check |
 | [jspdf-autotable](https://github.com/simonbengtsson/jsPDF-AutoTable) | 3.8.4 | MIT | jsDelivr, SRI in `js/plancheck/report.js` | Tables in the PDF report |
+| [SheetJS Community Edition](https://sheetjs.com/) (`xlsx`) | 0.18.5 | Apache-2.0 | jsDelivr, SRI in `js/excel.js`, loaded on the first Excel download or import | Writing and reading the .xlsx files of the Datenformulare |
 | [@mlightcad/libredwg-web](https://github.com/mlightcad/libredwg-web) (LibreDWG compiled to WebAssembly) | 0.7.11 | **GPL-3.0** ([licence](js/vendor/libredwg-web/LICENSE), [sources and checksums](js/vendor/libredwg-web/README.md)) | vendored in `js/vendor/libredwg-web/`, loaded on the first plan check | Reading DWG files in the browser |
 | [plan-check](https://github.com/bbl-dres/plan-check) (Prüfplattform Flächenmanagement, BBL) | port of November 2026 | MIT ([licence](js/plancheck/LICENSE), [origin per file](js/plancheck/THIRD_PARTY.md)) | ported into `js/plancheck/` | Rules, geometry, viewer and SIA 416 figures of the plan check |
 
@@ -33,7 +34,7 @@ LibreDWG is a GNU project under GPL-3.0-or-later: keep its licence text and noti
 | [Esri World Light Gray Base](https://www.arcgis.com/home/item.html?id=ed712cb1db3e4bae9e85329040fb9a49) raster tiles | © Esri, HERE, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors; Esri terms of use | Fallback map style when the CARTO style cannot be loaded |
 | cdnjs, jsDelivr, Google Fonts | respective CDN terms | Delivery of the libraries and fonts above |
 
-Nothing is uploaded to these services except the tile, script and font requests of the browser. DWG files are parsed locally.
+Nothing is uploaded to these services except the tile, script and font requests of the browser. DWG and Excel files are read locally.
 
 ## Reference material (documentation only, not redistributed as code)
 

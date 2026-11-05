@@ -166,7 +166,7 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 /* ---- Workflow stepper ---- */
 
 /* ---- Overlay, dialog, popover ---- */
-.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-start; justify-content: center; padding-top: 100px; z-index: 10; }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-start; justify-content: center; padding-top: 100px; padding-bottom: 24px; overflow-y: auto; z-index: 10; }   /* a dialog taller than the window scrolls with the overlay */
 .dialog { background: #fff; border-radius: 4px; box-shadow: var(--shadow-dialog); position: relative; max-width: calc(100vw - 32px); }
 .dialog-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; border-bottom: 1px solid var(--line-4); }
 .dialog-title { font-size: 16px; font-weight: 600; }

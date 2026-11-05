@@ -11,7 +11,7 @@ export default {
     return html`<div class="overlay" style="padding-top:70px">
       <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="imp-title" style="width:900px">
         <div class="dialog-head">
-          <div><div class="dialog-title" id="imp-title">Excel importieren</div><div class="dialog-sub">${vm.impFile} · Blatt «KV ${vm.glLabel}»</div></div>
+          <div><div class="dialog-title" id="imp-title">Excel importieren</div><div class="dialog-sub">${vm.impFile} · Blatt «${vm.impSheet}»</div></div>
           <button type="button" class="dialog-close" data-action="impClose" aria-label="Dialog schliessen">${icon('x', 18, '#5b6573')}</button>
         </div>
         <div class="imp-steps">${step(vm.impStep1, 'Datei wählen')}${step(vm.impStep2, 'Vorschau prüfen')}${step(vm.impStep3, 'Übernehmen')}</div>
@@ -22,15 +22,16 @@ export default {
             ${vm.impTabs.map(t => html`<button type="button" class="imp-tab" data-action="impFilter" data-arg="${t.key}" aria-pressed="${t.active ? 'true' : 'false'}" style="border-color:${t.bd};background:${t.bg};color:${t.c}">${t.label}<span style="font-size:12px;font-weight:400;opacity:.8">${t.count}</span></button>`)}
           </div>
           <div class="imp-table">
-            <div class="imp-thead" style="${COLS}"><span>Code</span><span>Bezeichnung (Datei)</span><span class="right">Menge</span><span class="right">Kosten CHF</span><span>Status</span><span>Bemerkung</span></div>
+            <div class="imp-thead" style="${COLS}"><span>Code</span><span>Bezeichnung (Datei)</span><span class="right">${vm.impColQ}</span><span class="right">${vm.impColV}</span><span>Status</span><span>Bemerkung</span></div>
             ${vm.impRows.map(r => html`<div class="imp-trow" style="${COLS};background:${r.bg}">
               <span class="code">${r.code}</span>
               <span class="ellipsis">${r.name}</span>
               <span class="right">${r.fq}</span>
-              <span class="right" style="font-weight:${r.vW}">${r.fv}</span>
+              <span class="right ellipsis" style="font-weight:${r.vW}" title="${r.fv}">${r.fv}</span>
               <span><span class="imp-st" style="border-color:${r.stBd};background:${r.stBg};color:${r.stC}">${r.st}</span></span>
-              <span class="fs-12 muted ellipsis">${r.note}</span>
+              <span class="fs-12 muted ellipsis" title="${r.note}">${r.note}</span>
             </div>`)}
+            ${vm.impRows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine Zeilen in dieser Ansicht.</div>` : ''}
           </div>
           <div class="rel flex items-center fs-13 imp-modes" style="padding:14px 24px 0;gap:22px">
             ${ctx.marker(2, 'top:10px;left:2px')}
@@ -42,7 +43,7 @@ export default {
             ${icon('circle-check', 40, '#2f7d63')}
             <div class="fs-16 fw-600">${vm.impDoneText}</div>
             <div class="fs-13 muted" style="max-width:460px;line-height:1.5">Der Import ist im Verlauf protokolliert. Hinweise bleiben in der Erfassung markiert. Werte in <button type="button" class="btn-link" data-action="impGoto" data-arg="${ctx.link.delivery(ctx.route.params.code, 'erfassung')}">der Erfassung</button> und <button type="button" class="btn-link" data-action="impGoto" data-arg="${ctx.link.delivery(ctx.route.params.code, 'uebersicht')}">der Übersicht</button> sind aktualisiert.</div>
-            <button type="button" class="btn-link fs-13" style="margin-top:6px" data-action="impReset">Import zurücksetzen</button>
+            ${vm.impCanUndo ? html`<button type="button" class="btn-link fs-13" style="margin-top:6px" data-action="impReset">Import zurücksetzen</button>` : ''}
           </div>`}
 
         <div class="dialog-foot rel" style="margin-top:14px">

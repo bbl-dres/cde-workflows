@@ -134,6 +134,28 @@ try {
   await clickText('button', 'Übernehmen'); const st3 = await state();
   check('apply writes C02/G02 and opens C in detail', st3.imp.done && Number(st3.projects.musterhausen.kvV.C02) === 1285000 && Number(st3.projects.musterhausen.kvV.G02) === 742000 && st3.projects.musterhausen.forms.kv.modes.C === 'detail');
   await clickText('button', 'Schliessen'); check('close import', (await state()).ui.dialog === null && (await count('.ent-pos')) === 29);
+  // Excel round trip with a real file: «Excel herunterladen» → a cell edited in the workbook → «Excel importieren» → Übernehmen → zurücksetzen
+  check('Excel herunterladen is wired on the Erfassung', (await count('.card-head [data-action="formExcel"][data-form="kv"]')) === 1 && (await count('.card-head [data-action="proto"]')) === 0);
+  const xl = await evaluate(`(async () => {
+    const A = window.cde.actions, blob = await A.formExcel({ form: 'kv' }, null, null, { save: false });
+    if (!blob) return { err: 'no workbook' };
+    const wb = XLSX.read(await blob.arrayBuffer(), { type: 'array' }), ws = wb.Sheets['KV-32'], rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    XLSX.utils.sheet_add_aoa(ws, [[171000]], { origin: { r: rows.findIndex(r => r[0] === 'C03'), c: 4 } });
+    const file = new File([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], 'KV-32_bearbeitet.xlsx');
+    A.importItem({ arg: 'excel', form: 'kv' });
+    await A.impFile({}, { files: [file] });
+    return { size: blob.size, sheets: wb.SheetNames.join(), rows: rows.length, head: rows[0].join('|'), b: rows.find(r => r[0] === 'B')[4], c02: rows.find(r => r[0] === 'C02')[4] };
+  })()`); await settle();
+  check('the workbook has one sheet with the values of the form', xl.size > 5000 && xl.sheets === 'KV-32' && xl.rows === 1 + 14 + 29 && xl.head.startsWith('Code|Bezeichnung|Menge|Einheit|Kosten CHF|Kennwert') && xl.b === 600000 && xl.c02 === 1285000, JSON.stringify(xl));
+  check('import dialog shows the chosen file', (await state()).imp.file.name === 'KV-32_bearbeitet.xlsx' && (await text('.imp-file')).includes('KV-32_bearbeitet.xlsx') && (await text('.imp-file')).includes('Blatt «KV-32» erkannt · 30 Zeilen') && (await count('[data-action="impFileClear"]')) === 1 && (await count('.imp-drop input[type="file"][data-change="impFile"]')) === 1 && (await count('.dialog [data-action="formExcel"]')) === 2);
+  await clickText('button', 'Weiter');
+  check('preview: one changed row with the former value', (await text('.imp-tab[data-arg="geaendert"]')) === 'Geändert1' && (await text('.dialog-foot .btn-primary')) === 'Übernehmen (1 Änderung)' && await evaluate(`(() => { const r = [...document.querySelectorAll('.imp-trow')].find(x => x.textContent.includes('C03')); return !!r && r.textContent.includes('Geändert') && r.textContent.includes("bisher 164'000") && r.textContent.includes("171'000"); })()`), await text('.dialog-foot'));
+  await clickText('button', 'Übernehmen'); check('apply writes the edited cell', (await state()).projects.musterhausen.kvV.C03 === 171000 && (await state()).imp.applied === 1 && (await text('.imp-done')).includes('1 Wert übernommen'));
+  await clickText('button', 'Import zurücksetzen'); check('«Import zurücksetzen» restores the value', (await state()).projects.musterhausen.kvV.C03 === 164000 && (await state()).imp.done === false && (await state()).imp.undo === null);
+  await clickText('button', 'Zurück'); await click('[data-action="impFileClear"]'); check('«Entfernen» goes back to the sample file', (await state()).imp.file === null && (await text('.imp-file')).includes('Beispieldatei des Prototyps') && (await count('[data-action="impFileClear"]')) === 0);
+  const refused = await evaluate(`(async () => { await window.cde.actions.impFile({}, { files: [new File(['kein Excel'], 'notizen.txt')] }); const a = window.cde.state.ui.toast.text; const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Name', 'Wert'], ['a', 1]]), 'Tabelle1'); await window.cde.actions.impFile({}, { files: [new File([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], 'fremd.xlsx')] }); return a + ' / ' + window.cde.state.ui.toast.text; })()`); await settle();
+  check('foreign files are refused with the reason', refused.includes('Bitte eine Excel-Datei (.xlsx) wählen') && refused.includes('fremd.xlsx: Kein Blatt mit der Kopfzeile') && (await state()).imp.file === null, refused);
+  await click('[data-action="impClose"]');
   await shot('e2e-kv-erfassung');
   await click('[data-action="formSubmit"]'); check('KV submitted → Eingereicht, Erfassung locked', (await state()).projects.musterhausen.forms.kv.step === 3 && (await text('.page-title')).includes('Eingereicht') && (await count('.card.is-locked .lock-veil')) === 1 && (await text('.lock-box')).includes('Gesperrt') && (await text('.lock-text')) === 'Eingereicht heute. Änderungen erst nach Rückweisung.' && (await text('.submit-bar')).includes('Die Erfassung ist gesperrt, bis Paula Muster freigibt oder zurückweist') && (await count('.submit-bar [data-action="formReopen"]')) === 1 && await evaluate(`(() => { const b = [...document.querySelectorAll('.card-head button')].find(x => x.textContent.includes('Importieren')); return !!b && b.disabled && b.title === 'Gesperrt bis zur Rückweisung' && document.querySelector('.is-locked .fm-table').inert === true; })()`) && (await count('.ent-input:not([readonly])')) === 0 && await evaluate(`(() => { const i = document.querySelector('.is-locked .ent-input'), c = getComputedStyle(i); return c.borderTopColor === 'rgba(0, 0, 0, 0)' && c.backgroundColor === 'rgba(0, 0, 0, 0)'; })()`));
   await shot('e2e-kv-gesperrt');
@@ -159,7 +181,7 @@ try {
   await click('[data-action="thgAdd"][data-group="C"]'); check('new Emissionsquelle offers every Elementgruppe and Element of its Hauptgruppe', await evaluate(`(() => { const s = document.querySelector('.ent-new .ent-select[data-field="code"]'); return !!s && s.options.length > 20 && [...s.options].some(o => /^C02\.01 /.test(o.textContent)); })()`));
   await click('[data-action="thgRemove"][title="Neue Zeile verwerfen"]'); await shot('e2e-thg-erfassung-offen');
   await go('/projects/musterhausen/deliveries/thg-32/betrieb');
-  check('THG-32 Erfassung Betrieb: Grundlagen Betrieb with the Photovoltaik fields, 9 Energiedienstleistungen and 2 PV rows, totals, Importieren and Excel herunterladen', (await count('.thg-head select:not([disabled])')) === 3 && (await count('.thg-head .pv-field')) === 3 && (await count('.pv-strip')) === 0 && (await count('.card-head [data-action="proto"]')) === 1 && (await count('.ent-betr .ent-src')) === 11 && (await bodyText()).includes('Total Betrieb') && (await bodyText()).includes('THGE Erstellung + Betrieb pro Jahr') && (await count('.ent-betr [data-key$="_end"]')) === 9 && (await count('.ent-betr .ent-input.is-calc')) === 18 && (await count('[data-action="toggleImportMenu"]')) === 1 && await evaluate(`document.querySelector('.pv-field input').value.startsWith('62 kWp')`));
+  check('THG-32 Erfassung Betrieb: Grundlagen Betrieb with the Photovoltaik fields, 9 Energiedienstleistungen and 2 PV rows, totals, Importieren and Excel herunterladen', (await count('.thg-head select:not([disabled])')) === 3 && (await count('.thg-head .pv-field')) === 3 && (await count('.pv-strip')) === 0 && (await count('.card-head [data-action="formExcel"][data-form="thg"]')) === 1 && (await count('.card-head [data-action="proto"]')) === 0 && (await count('.ent-betr .ent-src')) === 11 && (await bodyText()).includes('Total Betrieb') && (await bodyText()).includes('THGE Erstellung + Betrieb pro Jahr') && (await count('.ent-betr [data-key$="_end"]')) === 9 && (await count('.ent-betr .ent-input.is-calc')) === 18 && (await count('[data-action="toggleImportMenu"]')) === 1 && await evaluate(`document.querySelector('.pv-field input').value.startsWith('62 kWp')`));
   await setInput('[data-fid="thg-betr-b0-n"]', '30'); check('Betrieb value editable and live', (await state()).projects.musterhausen.thgBetr.b0_n === 30 && await evaluate(`document.querySelector('[data-fid="thg-betr-b0-end"]').value === '7.5'`));
   await setInput('[data-fid="thg-betr-b0-end"]', '8'); check('own Endenergie replaces the derived value', (await state()).projects.musterhausen.thgBetr.b0_end === 8 && (await count('[data-fid="thg-betr-b0-end"].is-calc')) === 0 && await evaluate(`document.querySelector('[data-fid="thg-betr-b0-end"]').title.startsWith('Eigener Wert, berechnet 7.5')`));
   await setInput('[data-fid="thg-betr-b0-end"]', ''); check('a cleared Endenergie is derived again', await evaluate(`(() => { const el = document.querySelector('[data-fid="thg-betr-b0-end"]'); return el.value === '7.5' && el.classList.contains('is-calc'); })()`));
@@ -208,6 +230,22 @@ try {
   await click('[data-action="formToggleMissing"]');
   await click('[data-action="toggleImportMenu"]'); check('THG import menu has the Tool-Export', (await count('.dd-item')) === 3 && (await count('.dd-sep')) === 1 && (await bodyText()).includes('Tool-Export importieren') && (await bodyText()).includes('Excel-Vorlage herunterladen'));
   await click('[data-action="importItem"][data-arg="tool"]'); check('Tool-Export fills the missing values', /Alle 73 Werte erfasst/.test(await bodyText()) && (await enabled('[data-action="formSubmit"]')) && (await count('.toast')) === 1);
+  // Excel round trip of the Ökobilanz: three sheets, no sample file
+  const xt = await evaluate(`(async () => {
+    const A = window.cde.actions, blob = await A.formExcel({ form: 'thg' }, null, null, { save: false });
+    if (!blob) return { err: 'no workbook' };
+    const wb = XLSX.read(await blob.arrayBuffer(), { type: 'array' });
+    XLSX.utils.sheet_add_aoa(wb.Sheets.Betrieb, [[24]], { origin: 'E2' });
+    A.importItem({ arg: 'excel', form: 'thg' });
+    await new Promise(r => setTimeout(r, 120));   // the dialog renders with the next frame
+    const noFile = document.querySelector('.dialog [data-action="impNext"]').disabled && !document.querySelector('.imp-file');
+    await A.impFile({}, { files: [new File([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], 'THG-32_bearbeitet.xlsx')] });
+    return { sheets: wb.SheetNames.join(), noFile };
+  })()`); await settle();
+  check('THG workbook: Grundlagen, Erstellung, Betrieb; the dialog waits for a file', xt.sheets === 'Grundlagen,Erstellung,Betrieb' && xt.noFile === true && (await text('.imp-file')).includes('Blatt «Grundlagen, Erstellung, Betrieb» erkannt') && (await text('.dialog-sub')).includes('THG-32'), JSON.stringify(xt));
+  await clickText('button', 'Weiter'); await clickText('button', 'Übernehmen');
+  check('THG import writes the Nutzenergie', (await state()).projects.eigerplatz.thgBetr.b0_n === 24 && (await text('.imp-done')).includes('1 Wert übernommen'));
+  await clickText('button', 'Import zurücksetzen'); await click('[data-action="impClose"]'); check('THG import reset', (await state()).projects.eigerplatz.thgBetr.b0_n === 22 && (await state()).ui.dialog === null);
   await click('[data-action="thgAdd"][data-group="C"]'); check('new Emissionsquelle row', (await count('.ent-new')) === 1 && (await disabled('[data-action="formSubmit"]')) && (await state()).projects.eigerplatz.thgSrc.some(s => s.isNew));
   await setInput('[data-fid="thg-n1-code"]', 'C03'); check('element group sets the unit', (await state()).projects.eigerplatz.thgSrc.find(s => s.id === 'n1').code === 'C03' && await evaluate(`[...document.querySelectorAll('.ent-new > span')].some(s => s.textContent.trim() === 'm')`));
   await setInput('[data-fid="thg-n1-kbob"]', 'St02 Stahlstütze · KBOB 06.012'); await setInput('[data-fid="thg-n1-q"]', '640'); await setInput('[data-fid="thg-n1-kw"]', '0.12');

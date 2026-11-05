@@ -271,6 +271,11 @@ function bindEvents() {
     if ('defaultValue' in el) el.defaultValue = el.value;                 // committed: the next render may replace the field
     run(el.dataset.change, el.dataset, el, e);
   });
+  // Drop zones (data-drop="action"): a dropped file goes to the action like a chosen one (el.files)
+  const zoneOf = e => (e.target.closest ? e.target.closest('[data-drop]') : null);
+  document.body.addEventListener('dragover', e => { const z = zoneOf(e); if (z) { e.preventDefault(); z.classList.add('is-over'); } });
+  document.body.addEventListener('dragleave', e => { const z = zoneOf(e); if (z && !z.contains(e.relatedTarget)) z.classList.remove('is-over'); });
+  document.body.addEventListener('drop', e => { const z = zoneOf(e); if (!z) return; e.preventDefault(); z.classList.remove('is-over'); run(z.dataset.drop, z.dataset, { files: e.dataTransfer ? e.dataTransfer.files : [] }, e); });
   document.body.addEventListener('focusout', () => { if (deferred) setTimeout(() => { if (deferred) render(); }, 0); });   // a postponed render catches up when the field loses focus
   document.body.addEventListener('input', e => {                      // live fields (search), focus survives the re-render by data-fid
     const el = e.target.closest('[data-input]');
