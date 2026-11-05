@@ -19,7 +19,7 @@ export const LOCKED = new Set(['eingereicht', 'pruefung', 'freigegeben', 'uebert
 export const REVIEWABLE = new Set(['eingereicht', 'pruefung']);
 const pl = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 /** Hover text of the SIA 416 rows: where the figure comes from. */
-const SIA_TIP = { GF: 'Fläche des Geschosspolygons (R_GESCHOSSPOLYGON)', EBF: 'GF eines beheizten Geschosses, sonst 0 (SIA 416/1)', KF: 'GF − NGF', NGF: 'Summe der Raumflächen: NF + VF + FF', NF: 'HNF + NNF', HNF: 'Nach Nutzungsart des Raumstempels; Räume ohne Stempel zählen zur HNF', NNF: 'Nach Nutzungsart des Raumstempels', VF: 'Nach Nutzungsart des Raumstempels', FF: 'Nach Nutzungsart des Raumstempels' };
+const SIA_TIP = { GF: 'Fläche des Geschosspolygons (R_GESCHOSSPOLYGON)', EBF: 'GF eines beheizten Geschosses, sonst 0 (SIA 416/1)', KF: 'GF − NGF', NGF: 'Summe der Raumflächen: NF + VF + FF', NF: 'HNF + NNF', HNF: 'Nach Nutzungsart der Raumtabelle; Räume ohne Angabe zählen zur HNF', NNF: 'Nach Nutzungsart der Raumtabelle', VF: 'Nach Nutzungsart der Raumtabelle', FF: 'Nach Nutzungsart der Raumtabelle' };
 // Übersicht «Flächen SIA 416»: from the whole (GF) down to its parts; the Kennzahlen list the parts first and add the EBF
 const SIA_ROWS = [['GF', 'Geschossfläche', 'gf'], ['KF', 'Konstruktionsfläche', 'kf'], ['NGF', 'Nettogeschossfläche', 'ngf'], ['VF', 'Verkehrsfläche', 'vf'], ['FF', 'Funktionsfläche', 'ff'], ['NF', 'Nutzfläche', 'nf'], ['HNF', 'Hauptnutzfläche', 'hnf'], ['NNF', 'Nebennutzfläche', 'nnf']];
 const KPI_AREAS = ['HNF', 'NNF', 'NF', 'VF', 'FF', 'NGF', 'KF', 'GF', 'EBF'];
@@ -29,14 +29,15 @@ const area = v => (v == null ? '–' : fmtNum(v, Math.abs(v) >= 100 ? 0 : 1) + '
 const area1 = v => (v == null ? '–' : fmtNum(v, 1) + ' m²');           // area tables: one decimal
 const r2 = v => Math.round(v * 100) / 100;
 
-/** Nutzungsart per room: the room stamp (R_RAUMSTEMPEL) is not read by the plan check yet, data/plans.json › stamps stands in
- *  for it (AOID → DIN 277 group such as «HNF 2», «VF 9»). Rooms without a stamp count as HNF; without any match the figures stay. */
-export function withUsage(k, rooms, stamps) {
-  if (!k || !stamps || !rooms.some(r => stamps[r.aoid])) return k;
+/** Nutzungsart per room: the CAD-Richtlinie documents it in the Raumtabelle (Anhang CAD.A01, chapter 5.11), which the prototype
+ *  does not read yet; data/plans.json › usage stands in for it (AOID → DIN 277 group such as «HNF 2», «VF 9»). Rooms without an
+ *  entry count as HNF; without any match the figures stay. */
+export function withUsage(k, rooms, usage) {
+  if (!k || !usage || !rooms.some(r => usage[r.aoid])) return k;
   const cat = { HNF: 0, NNF: 0, VF: 0, FF: 0 }, din = {};
   for (const r of rooms) {
     if (r.duplicate) continue;
-    const g = stamps[r.aoid], c = g ? g.split(' ')[0] : 'HNF';
+    const g = usage[r.aoid], c = g ? g.split(' ')[0] : 'HNF';
     cat[c in cat ? c : 'HNF'] += r.area;
     if (g) din[g] = (din[g] || 0) + r.area;
   }
@@ -129,7 +130,7 @@ export function planModel(s, data) {
     const locked = LOCKED.has(status);
     const rules = ruleRows(result);
     const rooms = result ? result.rooms : [], areas = result ? result.areas : [];
-    const k0 = result ? withUsage(result.kpi, rooms, P.stamps) : null;
+    const k0 = result ? withUsage(result.kpi, rooms, P.usage) : null;
     const k = k0 ? { ...k0, ebf: k0.gf != null && result.areas.length > 0 ? (f.beheizt === false ? 0 : k0.gf) : null } : null;   // EBF (SIA 416/1): GF of a heated floor
     const hasRooms = rooms.length > 0, hasAreas = areas.length > 0;
     const passed = sum ? `${sum.passedRules}/${sum.totalRules}` : `–/${P.ruleCount}`;

@@ -261,7 +261,7 @@ function bindEvents() {
     if (a.dataset.nav) { e.preventDefault(); navTo(a.dataset.nav); return; }
     if (a.dataset.action) {
       if (a.disabled) return;
-      e.preventDefault();
+      if (!(a.tagName === 'A' && a.target === '_blank')) e.preventDefault();   // a link to a new tab still opens; its action (close the menu) runs too
       run(a.dataset.action, a.dataset, a, e);
     }
   });

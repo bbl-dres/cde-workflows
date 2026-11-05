@@ -135,6 +135,9 @@ export function makeActions(store, data, nav) {
     proto: () => toast('Im Prototyp ohne Funktion.'),
 
     // ---- Datenformulare: Erfassung (KV-32, KS-31) ----
+    /** Einheit of a Kostenelement (dropdown) and its Kennwert CHF/m² GF (own value; an empty field is derived again). */
+    formUnit: (ds, el) => { if (editable(ds.form)) setForm(ds.form, f => ({ units: { ...(f.units || {}), [ds.code]: el.value } })); },
+    formKw: (ds, el) => { if (editable(ds.form)) setForm(ds.form, f => ({ kws: { ...(f.kws || {}), [ds.code]: normNum(el.value) } })); },
     formGroupVal: (ds, el) => { if (editable(ds.form)) setForm(ds.form, f => ({ gvals: { ...f.gvals, [ds.group]: normNum(el.value) } })); },
     /** The code of a position is a dropdown: choosing another eBKP-H element group replaces the position by an edited row with the same values. */
     formPosCode: (ds, el) => {
@@ -146,16 +149,16 @@ export function makeActions(store, data, nav) {
       });
     },
     /** KV/KS: «Aufschlüsseln» opens the positions of a Hauptgruppe, «Zusammenfassen» keeps their sum as the group amount
-     *  (a group without positions keeps its Pauschalbetrag plus the Kostenelemente added). THG: opens or closes the group (all open by default). */
+     *  (0 for a Hauptgruppe without any element). THG: opens or closes the group (all open by default). */
     formMode: ds => {
       const kind = ds.form, g = ds.group, f = formOf(kind);
-      if (!f || !(g in f.modes) || (kind !== 'thg' && !editable(kind))) return;   // THG: a view state, also on a locked form
+      if (!f || !(g in f.modes) || !editable(kind)) return;
       const direct = (f.modes[g] || 'direct') === 'direct';
       if (direct || kind === 'thg') { setForm(kind, { modes: { ...f.modes, [g]: direct ? 'detail' : 'direct' } }); return; }
       const grp = data.ebkp.ebkp.find(x => x.code === g), V = P()[KEYS[kind][1]] || {}, added = (f.added || []).filter(a => a.grp === g);
-      if (grp) { setForm(kind, { modes: { ...f.modes, [g]: 'direct' }, gvals: { ...f.gvals, [g]: groupAmount(grp, V, f.removed, added) ?? '' } }); return; }
-      const sum = groupAmount({ kids: [{ code: g }] }, V, {}, added);                 // Pauschalbetrag + added elements → one amount again
-      setP(p => ({ [KEYS[kind][1]]: { ...p[KEYS[kind][1]], [g]: sum ?? '' }, forms: { ...p.forms, [kind]: { ...f, modes: { ...f.modes, [g]: 'direct' }, added: (f.added || []).filter(a => a.grp !== g) } } }));
+      if (!grp) return;
+      const empty = !added.length && grp.kids.every(k => (f.removed || {})[k.code]);
+      setForm(kind, { modes: { ...f.modes, [g]: 'direct' }, gvals: { ...f.gvals, [g]: groupAmount(grp, V, f.removed, added) ?? (empty ? 0 : '') } });
     },
     /** Remove a position (Kostenelement) from the Erfassung; the Verlauf keeps the event. */
     formRemovePos: ds => {
@@ -363,10 +366,9 @@ export function makeActions(store, data, nav) {
       } catch (err) { console.error(err); toast(`Prüfbericht konnte nicht erstellt werden: ${err.message}`); return null; }
       finally { if (dispose) dispose(); ui({ busy: null }); }
     },
-    /** «CAD-Richtlinie ▾» of a plan: the Musterplan downloads (it is not loaded into the delivery), the guideline PDF is not part of the prototype. */
-    cadItem: ds => {
+    /** «CAD-Richtlinie ▾» of a plan: the Musterplan downloads (it is not loaded into the delivery); the guideline is a plain link to the PDF. */
+    cadItem: () => {
       ui({ importMenu: false });
-      if (ds.arg !== 'sample') { toast('Im Prototyp ohne Funktion.'); return; }
       const s = data.plans.samples.cadv01, a = document.createElement('a');
       a.href = s.src; a.download = s.name; document.body.appendChild(a); a.click(); a.remove();
     },

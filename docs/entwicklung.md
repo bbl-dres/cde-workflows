@@ -31,13 +31,20 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   Formular wertet nicht), «Vollständigkeit» als Kennzahl ohne Balken; Lieferung, Verlauf mit dem nächsten Schritt, Beteiligte), Erfassung
   (siehe unten; die Ökobilanz in den zwei Tabs Erfassung Erstellung und Erfassung Betrieb), Prüfung (Zusammenfassung als Tabelle: Prüfpunkt, Wert der Lieferung, Ergebnis «erfüllt / prüfen / nicht erfüllt», die Anforderung steht im Hover;
   Prüfung BBL mit zwei Prüfpunkten, Kommentar und Entscheid; Übergabe), Beteiligte, Dokumente (mit Pflicht), Verlauf (alle Ereignisse). Die Erfassung ist nach dem
-  Einreichen gesperrt: ein graues Band mit Schloss unter dem Kartenkopf nennt Grund und Datum, die Tabelle ist grau
-  getönt und die Werte stehen als Text statt in Feldern; «Wieder öffnen (Prototyp)» im Band öffnet sie wieder (Werte bleiben). Prüfen (Checkliste, Freigeben,
+  Einreichen gesperrt (Design 06.11.2026): über der Tabelle liegt eine graue Fläche mit einer weissen Box (Schloss, «Gesperrt»,
+  Grund und Datum), darunter ist die Tabelle getönt und nicht bedienbar; der Kartenkopf behält seine Knöpfe («Importieren»
+  deaktiviert, «Excel herunterladen» bleibt). Gelesen werden die Werte in der Übersicht oder im Excel. Die Leiste am Fuss nennt,
+  wer die Lieferung hat, und «Erfassung wieder öffnen (Prototyp)» öffnet sie wieder (Werte bleiben). Prüfen (Checkliste, Freigeben,
   Zurückweisen) können nur BBL-Personen. Der Kommentar der Prüfung und ein Feld, in dem gerade getippt wird, bleiben beim
   Rendern erhalten. Dateien, die ein Import mitbringt (Tool-Export, Rechenhilfe, Excel), erscheinen unter Dokumente.
-- **Kosten erfassen (KV-32, KS-31)**: Betrag pro Hauptgruppe oder, nach Klick auf die Zeile, die Positionen (Menge + Kosten)
-  nach eBKP-H 2020 (B02, C01 …); Positionen lassen sich entfernen (Papierkorb) und mit «+ Kostenelement hinzufügen» aus den
-  Elementgruppen der Hauptgruppe ergänzen. Importieren (Excel-Vorlage, Excel-Dialog, Bezugsmengen aus den Grundrissen), «Nur fehlende Werte anzeigen», Leiste mit
+- **Kosten erfassen (KV-32, KS-31)**: alle Hauptgruppen A–Z der eBKP-H 2020, standardmässig aufgeklappt in ihre Elementgruppen
+  (A01, B02, C01 … Z01 Mehrwertsteuer; keine Pauschalzeilen, H hat im Musterprojekt kein Element). Je Elementgruppe: Einheit
+  als Auswahl (die Bezugsgrösse der Norm ist vorgewählt, «pauschal» braucht keine Menge), Menge, Kosten und der Kennwert
+  CHF/m² GF als Eingabe (grau = aus Kosten und GF der Grundrisse abgeleitet; ein eigener Wert ersetzt ihn, auch je
+  Hauptgruppe). Z Mehrwertsteuer wird wie jeder Betrag erfasst (die Musterprojekte tragen 8.1 % auf B–Y). Ein Klick auf die
+  Zeile der Hauptgruppe fasst sie zu einem Betrag zusammen und klappt sie wieder auf. Positionen lassen sich entfernen
+  (Papierkorb) und mit «+ Kostenelement hinzufügen» aus den Elementgruppen der Hauptgruppe ergänzen. Total = Anlagekosten A–Z;
+  die Übersicht listet alle Hauptgruppen A–Z mit «Anteil A–Z» und «Δ» zur Vorphase. Importieren (Excel-Vorlage, Excel-Dialog, Bezugsmengen aus den Grundrissen), «Nur fehlende Werte anzeigen», Leiste mit
   Vollständigkeit und «Zur Prüfung einreichen».
 - **Ökobilanz erfassen (THG-32, Design 05.11.2026)**: Die Übersicht zeigt die Kennzahlen Erstellung und Betrieb, die Karte
   «Grundlagen» (gilt für Erstellung und Betrieb: Gebäudekategorie, Bauvorhaben, EBF/GF aus den Grundrissen, Datenstand), die
@@ -51,7 +58,7 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   `docs/research/2026-11-04-oekobilanzdaten-systemgrenzen.md`) und die Emissionsquellen aus dem Tool-Export je
   eBKP-H-Elementgruppe (SIA 2032): Code, Bauteil oder Anlage auf einer Zeile (Tool-Code wie Wa01 und Bezeichnung; die
   Ökobilanzdaten des Tool-Exports stehen im Hover), Hersteller-Flag, Referenzgrösse mit Einheit, Kennwert kg CO₂-eq/m² EBF·a und Anteil;
-  Hauptgruppen B–G zum Auf- und Zuklappen (alle offen, auch im gesperrten Formular bedienbar), «+ Emissionsquelle hinzufügen», Papierkorb, Total B–G, «THGE Erstellung pro Jahr»
+  Hauptgruppen B–G zum Auf- und Zuklappen (alle offen), «+ Emissionsquelle hinzufügen», Papierkorb, Total B–G, «THGE Erstellung pro Jahr»
   und «THGE Erstellung, Betrachtungszeitraum 60 Jahre inkl. Ersatz» (Begriffe SIA 2032). «Tool-Export importieren» holt die
   Quellen des Projekts (bei einem offenen Formular alle 22, sonst die fehlenden Werte). **Erfassung Betrieb**: Grundlagen
   (Tool Betrieb, Stromprodukt, PV-Überschuss, Photovoltaik: Leistung aus D01.01 der Erstellung, Ertrag, Eigenverbrauch) und
@@ -74,16 +81,16 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   Fehlermeldungen, Layer, Räume, Flächen (Geschossflächen als Polygon) und Kennzahlen, ohne Zahlen in den Tabs.
   **Kennzahlen** (Design 06.11.2026) ersetzt Liste und Viewer: links «Flächen SIA 416» (samt Energiebezugsfläche EBF nach
   SIA 416/1: GF eines beheizten Geschosses, ein unbeheiztes wie das UG zählt 0) und «Flächen DIN 277» (m², % GF), rechts
-  «Flächenkennzahlen» und der Ring «Anteile SIA 416» mit Beschriftung je Segment. Die Nutzungsart je Raum käme aus dem
-  Raumstempel (R_RAUMSTEMPEL); die Planprüfung liest ihn noch nicht, darum hinterlegt `data/plans.json` › `stamps` für den
-  Musterplan je AOID eine DIN-277-Gruppe (Räume ohne Eintrag zählen zur HNF). Die **Übersicht** zeigt «Flächen SIA 416» als
+  «Flächenkennzahlen» und der Ring «Anteile SIA 416» mit Beschriftung je Segment. Die Nutzungsart je Raum steht nach der
+  CAD-Richtlinie in der Raumtabelle (Anhang CAD.A01, Kap. 5.11); der Prototyp liest sie noch nicht, darum hinterlegt
+  `data/plans.json` › `usage` für den Musterplan je AOID eine DIN-277-Gruppe (Räume ohne Eintrag zählen zur HNF). Die **Übersicht** zeigt «Flächen SIA 416» als
   Tabelle vom Ganzen zu den Teilen (GF, KF, NGF, VF, FF, NF, HNF, NNF) und «Prüfregeln nach Kategorie» als Balkenliste
   (bestanden, Warnungen, Fehler, Total), rechts nach «Lieferung» die Karte «Prüfbericht». Wie in
   plan-check hat jede Liste eine Suche, die Viewer-Listen (Layer, Räume, Geschossflächen) ein «Alle ein-/ausblenden»,
   und rechts der Sub-Tabs filtert «Alle | Warnungen | Fehler» alle Listen (Prüfregeln und Fehlermeldungen nach
   Schweregrad, Räume und Flächen nach Status, Layer nur bei Warnungen). Referenz: `docs/reference/plan-check/`. Einreichen ist erst ohne Regel mit Schweregrad Fehler möglich;
-  im Kartenkopf stehen «Prüfbericht herunterladen», «Neu hochladen», das Menü «CAD-Richtlinie» (Richtlinie als PDF: im
-  Prototyp ohne Funktion; «Musterplan herunterladen (DWG)» lädt den offiziellen BBL-Musterplan CAD.V01 herunter, 38/40,
+  im Kartenkopf stehen «Prüfbericht herunterladen», «Neu hochladen», das Menü «CAD-Richtlinie» (Richtlinie als PDF in
+  einem neuen Tab, `assets/plans/CAD-Richtlinie-BBL-DE.pdf`; «Musterplan herunterladen (DWG)» lädt den offiziellen BBL-Musterplan CAD.V01 herunter, 38/40,
   0 Fehler) und «Entfernen». Nur die leere Ablagefläche bietet noch «Musterplan prüfen (Prototyp)». «Prüfbericht
   herunterladen» (auch aus der Übersicht und aus den Kennzahlen: die Planbilder entstehen dann ausserhalb des Bildschirms)
   lädt das Prüfergebnis als PDF herunter (Deckblatt mit Lieferung und Zusammenfassung, Prüfregeln, Fehlermeldungen, Layer, Räume und Flächen mit
@@ -146,7 +153,7 @@ Code-Reviews mit Befunden und Status: `docs/reviews/` (zuletzt `2026-11-05-code-
   Filter, Excel-Import, Einreichen), THG-32 (Übersicht mit Zielwerten, Emissionsquellen, Betrieb, Tool-Export, Rechenhilfe, neue Quelle, Hersteller-Flag, Einreichen),
   THG-32 einreichen und prüfen (freigeben, übertragen), KV-32 zurückweisen, Planlieferungen DWG (Parsen, Hochladen, Einreichen,
   Prüfung mit Suche, Alle ein-/ausblenden und Statusfilter), die Datenformulare der weiteren Projekte, Aufgabenliste,
-  Projektseiten, Hover-Zustände, Studien-Panel und bei 375 px Überlauf, Sidebar, Filter, Footer und Karte (Standort-Karte zoomt nur mit Ctrl + Mausrad oder den Knöpfen, die Karte der Startseite auch mit dem Mausrad; ≈279 Checks).
+  Projektseiten, Hover-Zustände, Studien-Panel und bei 375 px Überlauf, Sidebar, Filter, Footer und Karte (Standort-Karte zoomt nur mit Ctrl + Mausrad oder den Knöpfen, die Karte der Startseite auch mit dem Mausrad; ≈284 Checks).
 - `node tests/responsive-audit.mjs [ordner] [m375,t768,l1024]` macht bei laufendem Server Screenshots der Hauptseiten auf
   375 / 768 / 1024 px und misst Überlauf, zu kleine Bedienelemente und Felder unter 16 px (`report.json`).
 - `node tests/refshots.mjs` erzeugt Screenshots in den Fenstergrössen der Referenz-Screenshots der CDE Bund und legt

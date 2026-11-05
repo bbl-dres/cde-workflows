@@ -129,7 +129,7 @@ function listKpi(plan) {
     <div class="kd-col">${areaTable('Flächen SIA 416', d.areas)}${areaTable('Flächen DIN 277', d.din277)}</div>
     <div class="kd-col">${ratioTable(d.economy)}${donut(d.donut)}</div>
   </div>
-  <div class="card-foot">Nutzungsart je Raum aus R_RAUMSTEMPEL (ohne Stempel: HNF) · GF aus R_GESCHOSSPOLYGON, KF = GF − NGF · EBF = GF eines beheizten Geschosses</div>`;
+  <div class="card-foot">Nutzungsart je Raum aus der Raumtabelle CAD.A01 (ohne Angabe: HNF) · GF aus R_GESCHOSSPOLYGON, KF = GF − NGF · EBF = GF eines beheizten Geschosses</div>`;
 }
 
 /** Result strip, sub tabs and the split view (list | viewer) of a checked plan. */

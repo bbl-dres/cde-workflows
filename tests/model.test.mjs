@@ -53,7 +53,7 @@ test('data files are consistent', () => {
       const [k, c, field] = spec.split(':');
       if (k === 'thg') assert.ok(ids.includes(c) && ['q', 'kw'].includes(field), `${pid}: missing spec ${spec}`);
       else if (k === 'thgB') assert.ok(/^(b\d_(n|a|eta)|pv_y|pv_ev)$/.test(c), `${pid}: missing spec ${spec}`);
-      else assert.ok(['kvQ', 'kvV', 'ksQ', 'ksV'].includes(k) && [...data.ebkp.ebkp.flatMap(g => g.kids), ...data.ebkp.extra].some(x => x.code === c), `${pid}: missing spec ${spec}`);
+      else assert.ok(['kvQ', 'kvV', 'ksQ', 'ksV'].includes(k) && data.ebkp.ebkp.flatMap(g => g.kids).some(x => x.code === c), `${pid}: missing spec ${spec}`);
     }
     assert.equal(I.dates.length, I.step + 1, `${pid}/${kind}: one date per step reached`);
   }
@@ -89,17 +89,19 @@ test('data files are consistent', () => {
 test('KV-32: Hauptgruppen, totals and completeness', () => {
   const kv = vm.forms.kv;
   assert.equal(kv.kind, 'data'); assert.equal(kv.status, 'In Bearbeitung'); assert.equal(kv.step, 1);
-  assert.equal(kv.total, 19100000); assert.equal(kv.bw, 18000000, 'Erstellungskosten B–W incl. J');
-  assert.equal(kv.fields, 27, '11 direct groups (A … Y without D, G) + 2 detailed groups × 4 positions × (Menge + Kosten)');
+  assert.equal(kv.total, 20647100, 'Anlagekosten A–Z, with Z Mehrwertsteuer'); assert.equal(kv.bw, 18000000, 'Erstellungskosten B–W incl. J');
+  assert.equal(kv.fields, 50, '31 Elementgruppen: 19 with Menge + Kosten, 12 with Kosten only');
   assert.equal(kv.missing, 1, 'D08 Menge fehlt'); assert.equal(kv.bar.canSubmit, false);
   assert.equal(kv.badges, undefined, 'the tabs carry no numbers');
   const rows = kv.erf.rows;
-  assert.equal(rows.filter(r => r.isGroupRow).length, 13); assert.equal(rows.filter(r => r.isPos).length, 8);
-  assert.equal(rows.filter(r => r.isAdd).length, 2, '«Kostenelement hinzufügen» under each opened group');
-  assert.ok(rows.find(r => r.code === 'D').canToggle && !rows.find(r => r.code === 'D').direct && rows.find(r => r.code === 'V').direct && rows.find(r => r.code === 'V').canToggle);
+  assert.equal(rows.filter(r => r.isGroupRow).length, 14); assert.equal(rows.filter(r => r.isPos).length, 31);
+  assert.equal(rows.filter(r => r.isAdd).length, 14, '«Kostenelement hinzufügen» under every Hauptgruppe');
+  assert.ok(rows.filter(r => r.isGroupRow).every(r => r.canToggle && !r.direct), 'every Hauptgruppe is broken down by default');
+  assert.ok(!rows.some(r => r.pauschal || r.name === 'Pauschalbetrag'), 'no lump-sum rows: every amount belongs to an Elementgruppe');
+  assert.deepEqual(rows.filter(r => r.isPos && r.code[0] === 'W').map(r => r.code), ['W01', 'W02', 'W04', 'W05']); assert.equal(kv.groups.find(g => g.code === 'V').sum, 2950000);
   assert.equal(rows.find(r => r.code === 'B').bez, "4'200", 'Bezugsmenge GSF from sia416');
   assert.equal(kv.subtotals.find(u => u.code === 'B–W').cur, "18'000'000");
-  assert.equal(kv.ovList.subs.find(u => u.code === 'A–Z').d, '–', 'no KS-31 for Anlagekosten');
+  assert.equal(kv.ovList.subs.find(u => u.code === 'A–Z').d, '+1.1', 'Anlagekosten against KS-31'); assert.equal(kv.ovList.subs.find(u => u.code === 'A–Z').prevText, 'KS-31: 19.6 Mio');
   assert.ok(!kv.erf.foot, 'no footer text (design)');
   // Filling the missing quantity enables the submit button; the filter shows only missing rows.
   const filled = structuredClone(base);
@@ -109,33 +111,43 @@ test('KV-32: Hauptgruppen, totals and completeness', () => {
   const only = structuredClone(base); only.projects.musterhausen.forms.kv.missingOnly = true;
   v = vmFor(only);
   assert.deepEqual(v.forms.kv.erf.rows.map(r => r.code), ['D', 'D08']);
-  // «Aufschlüsseln» of C adds its four positions (Menge + Kosten) and drops the direct field.
-  const det = structuredClone(base); det.projects.musterhausen.forms.kv.modes.C = 'detail';
+  // «Zusammenfassen» of C replaces its four positions (Menge + Kosten) by one amount.
+  const det = structuredClone(base); det.projects.musterhausen.forms.kv.modes.C = 'direct';
   v = vmFor(det);
-  assert.equal(v.forms.kv.fields, 34); assert.equal(v.forms.kv.erf.rows.filter(r => r.isPos).length, 12);
-  assert.equal(v.forms.kv.total, 19100000, 'sum of positions equals the direct amount');
-  // A missing direct amount counts as missing.
-  const empty = structuredClone(base); empty.projects.musterhausen.forms.kv.gvals.B = '';
+  assert.equal(v.forms.kv.fields, 50 - 8 + 1); assert.equal(v.forms.kv.erf.rows.filter(r => r.isPos).length, 27);
+  assert.equal(v.forms.kv.total, 20647100, 'the direct amount equals the sum of the positions');
+  // A missing direct amount counts as missing; H has no element, its direct amount is 0.
+  const empty = structuredClone(base); empty.projects.musterhausen.forms.kv.modes.B = 'direct'; empty.projects.musterhausen.forms.kv.gvals.B = ''; empty.projects.musterhausen.forms.kv.modes.H = 'direct';
   v = vmFor(empty);
-  assert.equal(v.forms.kv.missing, 2); assert.match(v.forms.kv.bar.reason, /alle Werte/);
+  assert.equal(v.forms.kv.missing, 2); assert.match(v.forms.kv.bar.reason, /alle Werte/); assert.equal(base.projects.musterhausen.forms.kv.gvals.H, 0);
   // Positions can be removed and Kostenelemente added (eBKP-H element groups of the Hauptgruppe not yet in the table).
   const ed = structuredClone(base); ed.projects.musterhausen.kvQ.D08 = 6480;
   ed.projects.musterhausen.forms.kv.removed = { D08: true };
   ed.projects.musterhausen.forms.kv.added = [{ id: 'kn1', grp: 'G', code: '', q: '', v: '' }];
   v = vmFor(ed);
-  assert.equal(v.forms.kv.erf.rows.filter(r => r.isPos).length, 7); assert.equal(v.forms.kv.fields, 27 - 2 + 2, 'D08 gone, new row counts code + Kosten (Menge once the element group has a unit)');
+  assert.equal(v.forms.kv.erf.rows.filter(r => r.isPos).length, 30); assert.equal(v.forms.kv.fields, 50 - 2 + 2, 'D08 gone, new row counts code + Kosten (Menge once the element group has a unit)');
   assert.equal(v.forms.kv.missing, 2);
   const nr = v.forms.kv.erf.rows.find(r => r.isNewPos);
   assert.ok(nr && nr.opts.length === 2 && nr.opts.map(o => o.v).join() === 'G05,G06', 'only element groups not yet in G');
   ed.projects.musterhausen.forms.kv.added[0] = { id: 'kn1', grp: 'G', code: 'G05', q: '120', v: '240000' };
   v = vmFor(ed);
-  assert.equal(v.forms.kv.missing, 0); assert.equal(v.forms.kv.fields, 28); assert.equal(v.forms.kv.total, 19100000 - 540000 + 240000);
+  assert.equal(v.forms.kv.missing, 0); assert.equal(v.forms.kv.fields, 51); assert.equal(v.forms.kv.total, 20647100 - 540000 + 240000);
   assert.equal(v.forms.kv.erf.rows.find(r => r.isNewPos).name, 'Einbauten, Schutzeinrichtung zu Ausbau');
-  // Opening a group without positions (V Planungskosten) shows only the add row; its amount stays in the value map.
-  ed.projects.musterhausen.forms.kv.modes.V = 'detail';
+  // Einheit from the dropdown: the Bezugsgrösse of the norm is preselected, «pauschal» needs no Menge, a unit asks for one.
+  const pos = code => v.forms.kv.erf.rows.find(r => r.code === code);
+  assert.equal(pos('C01').unit, 'm²'); assert.ok(pos('C01').hasQty && pos('C01').unitOpts.find(o => o.sel).v === 'm²' && pos('C01').unitOpts.some(o => o.v === 'pauschal'));
+  assert.equal(pos('V01').unit, 'pauschal'); assert.ok(!pos('V01').hasQty && !pos('V01').miss);
+  ed.projects.musterhausen.forms.kv.units = { V01: 'm² GF', C01: 'pauschal' };
   v = vmFor(ed);
-  assert.equal(v.forms.kv.erf.rows.filter(r => r.isAdd).length, 3); assert.equal(v.forms.kv.groups.find(g => g.code === 'V').sum, 2950000, 'the Pauschalbetrag stays in the total');
-  assert.ok(v.forms.kv.erf.rows.some(r => r.pauschal && r.code === 'V' && !r.canDel), 'Pauschalbetrag row, not removable');
+  assert.ok(pos('V01').hasQty && pos('V01').miss, 'a unit asks for the Menge'); assert.ok(!pos('C01').hasQty && !pos('C01').miss); assert.equal(v.forms.kv.fields, 51, 'one Menge more, one less'); assert.equal(v.forms.kv.missing, 1);
+  // Kennwert CHF/m² GF: derived from the costs and the GF of the Grundrisse; an own value replaces it, for an element or a Hauptgruppe.
+  assert.equal(pos('D01').kw, '191'); assert.ok(!pos('D01').kwOwn && pos('D01').kwTip.startsWith('Berechnet'));
+  ed.projects.musterhausen.forms.kv.kws = { D01: 250, D: 600, D05: '' };
+  v = vmFor(ed);
+  assert.equal(pos('D01').kw, '250'); assert.ok(pos('D01').kwOwn && pos('D01').kwTip.startsWith('Eigener Wert, berechnet 191')); assert.equal(pos('D').kw, '600'); assert.ok(!pos('D05').kwOwn, 'an emptied field is derived again');
+  const noGF = structuredClone(ed); noGF.projects.musterhausen.sia.GF = 0;
+  v = vmFor(noGF);
+  assert.equal(pos('D07').kw, '', 'without a Geschossfläche the Kennwert is entered'); assert.ok(pos('D07').kwTip.startsWith('Keine Geschossfläche')); assert.equal(pos('D01').kw, '250');
 });
 
 test('KV-32: Übersicht and Prüfung figures', () => {
@@ -143,14 +155,17 @@ test('KV-32: Übersicht and Prüfung figures', () => {
   assert.equal(kv.kpis[0].v, '18.0'); assert.equal(kv.kpis[1].v, "2'778");
   assert.equal(kv.chart.targets.length, 3); assert.equal(kv.chart.targets[0].val, 'CHF 17.00 Mio'); assert.equal(kv.chart.targets[0].delta, '+5.9 %');
   assert.equal(kv.chart.band, '15.30–18.70 Mio'); assert.ok(kv.chart.hasBand);
-  assert.equal(kv.ovList.prevText, 'KS-31: 18.1 Mio'); assert.ok(kv.kpis.every(k => k.tip) && kv.comp.tip && kv.chart.istTip && kv.subtotals.every(u => u.tip), 'the key figures explain themselves on hover');
-  assert.equal(kv.ovList.rows.length, 11, 'A and H (0) are not listed'); assert.equal(kv.ovList.subs.length, 3); assert.equal(kv.ovList.unit, 'Mio CHF'); assert.ok(kv.ovList.rows.every(r => r.icon.startsWith('assets/ebkp/')));
+  assert.equal(kv.ovList.prevText, 'KS-31: 19.6 Mio', 'Anlagekosten A–Z of the Vorphase'); assert.equal(kv.ovList.tot, '20.6'); assert.equal(kv.ovList.totShare, '100 %'); assert.ok(kv.kpis.every(k => k.tip) && kv.comp.tip && kv.chart.istTip && kv.subtotals.every(u => u.tip), 'the key figures explain themselves on hover');
+  assert.deepEqual(kv.ovList.rows.map(r => r.code).join(''), 'ABCDEFGHIJVWYZ', 'the whole eBKP-H: also A Grundstück and H without costs and Z Mehrwertsteuer'); assert.equal(kv.ovList.rows[0].cur, '0.0'); assert.equal(kv.ovList.rows[0].share, '0 %');
+  const zRow = kv.ovList.rows.at(-1); assert.equal(zRow.name, 'Mehrwertsteuer'); assert.equal(zRow.cur, '1.5', 'the sample project carries 8.1 % of B–Y (19.1 Mio)'); assert.equal(zRow.share, '7 %'); assert.ok(zRow.tx && zRow.tip.startsWith('KS-31: 1.5 Mio'));
+  assert.equal(kv.ovList.shareLabel, 'Anteil A–Z'); assert.equal(kv.ovList.dUnit, 'Δ KS-31'); assert.deepEqual(kv.ovList.subs.map(u => `${u.code} ${u.share}`), ['C–G 63 %', 'B–W 87 %', 'A–Z 100 %']);
+  const z01 = kv.erf.rows.find(r => r.code === 'Z01'); assert.ok(z01.isPos && z01.vStr === "1'547'100" && !z01.hasQty, 'Z01 Mehrwertsteuer is an amount the delivery team enters'); assert.equal(kv.erf.totalStr, "20'647'100", 'Total of the Erfassung = Anlagekosten A–Z'); assert.equal(kv.subtotals.find(u => u.code === 'A–Z').cur, kv.erf.totalStr); assert.equal(kv.ovList.subs.length, 3); assert.equal(kv.ovList.unit, 'Mio CHF'); assert.ok(kv.ovList.rows.every(r => r.icon.startsWith('assets/ebkp/')));
   // Prüfung: Zusammenfassung (Prüfpunkt, value of the Lieferung, result); the requirement is the hover text
   const S = (F, key) => F.summ.find(r => r.key === key);
   assert.deepEqual(kv.summ.map(r => r.key), ['voll', 'ziel', 'dach', 'prev', 'kw']); assert.ok(kv.summ.every(r => r.tip && r.res));
   assert.equal(S(kv, 'voll').val, '1 Wert fehlt'); assert.equal(S(kv, 'voll').res, 'nicht erfüllt'); assert.equal(S(kv, 'ziel').val, 'CHF 18.00 Mio (+5.9 %)'); assert.equal(S(kv, 'ziel').res, 'prüfen', 'above the Kostenziel, inside the accuracy');
   assert.equal(S(kv, 'dach').st, 'ok'); assert.ok(S(kv, 'prev').val.startsWith('ab 10 % bei ') && S(kv, 'prev').val.includes('D'), S(kv, 'prev').val); assert.equal(S(kv, 'prev').st, 'warn'); assert.equal(S(kv, 'kw').val, "2'778 CHF/m² GF"); assert.equal(S(kv, 'kw').st, 'ok');
-  assert.equal(kv.lock, '', 'an open Erfassung has no lock band'); assert.equal(vm.forms.ks.lock, 'Gesperrt: an ePPM übertragen am 10.03.2026'); assert.equal(vm.forms.ks.bar.locked, true);
+  assert.equal(kv.lock, '', 'an open Erfassung is not veiled'); assert.equal(vm.forms.ks.lock, 'An ePPM übertragen am 10.03.2026. Änderungen sind nicht mehr möglich.'); assert.equal(vm.forms.ks.lockTip, 'Gesperrt'); assert.equal(vm.forms.ks.bar.locked, true); assert.equal(vm.forms.ks.bar.lockedText, 'Abgeschlossen. Die Erfassung ist gesperrt.');
   assert.equal(kv.manual.length, 2); assert.equal(kv.erf.importItems[0][0], 'vorlage'); assert.equal(kv.erf.importItems.length, 3);
   assert.equal(kv.rv.canReview, false); assert.equal(kv.rv.reason, 'Erst nach der Einreichung möglich');
   assert.equal(kv.steps.length, 6); assert.equal(kv.steps[1].sub, 'aktuell'); assert.equal(kv.steps[0].sub, '12.03.2027');
@@ -208,7 +223,7 @@ test('THG-32: Emissionsquellen (Erstellung), Betrieb, Zielwerte SIA 390/1 and th
   assert.equal(vm.auRows.find(t => t.delivery === 'THG-32').status, 'In Bearbeitung');
   const st = structuredClone(base);
   st.projects.musterhausen.forms.thg.step = 4; st.projects.musterhausen.forms.thg.dates = ['12.03.2027', '15.03.2027', null, '03.05.2027', '04.05.2027'];
-  let v0 = vmFor(st); assert.equal(v0.forms.thg.status, 'In Prüfung'); assert.equal(v0.forms.thg.locked, true); assert.equal(v0.forms.thg.rv.canReview, true); assert.equal(v0.forms.thg.erf.rows.filter(r => r.isAdd).length, 0, 'locked: no add rows'); assert.ok(v0.forms.thg.erf.rows.filter(r => r.isGroupRow).every(r => r.canToggle), 'locked: the groups still open and close'); assert.ok(v0.forms.thg.lock.startsWith('Gesperrt: in Prüfung bei Paula Muster'), v0.forms.thg.lock);
+  let v0 = vmFor(st); assert.equal(v0.forms.thg.status, 'In Prüfung'); assert.equal(v0.forms.thg.locked, true); assert.equal(v0.forms.thg.rv.canReview, true); assert.equal(v0.forms.thg.erf.rows.filter(r => r.isAdd).length, 0, 'locked: no add rows'); assert.ok(v0.forms.thg.erf.rows.filter(r => r.isGroupRow).every(r => !r.canToggle), 'locked: the table lies under the veil'); assert.ok(/^Eingereicht( heute| am \d\d\.\d\d\.\d{4})?\. Änderungen erst nach Rückweisung\.$/.test(v0.forms.thg.lock), v0.forms.thg.lock); assert.equal(v0.forms.thg.lockTip, 'Gesperrt bis zur Rückweisung'); assert.equal(v0.forms.thg.bar.lockedText, 'Eingereicht. Die Erfassung ist gesperrt, bis Paula Muster freigibt oder zurückweist.');
   const ext = vmFor(st, detailed, userOf('AB')); assert.equal(ext.forms.thg.rv.canReview, false); assert.equal(ext.forms.thg.rv.decide, false); assert.ok(ext.forms.thg.manual.every(m => m.disabled), 'an external user cannot review');
   st.projects.musterhausen.forms.thg.checks = { t1: true, t2: true, t3: true, t4: true, t5: true };
   let v = vmFor(st);
@@ -270,7 +285,7 @@ test('every project: complete, plausible Datenformulare', () => {
       assert.ok(KNOWN.has(F.status), `${p.id}/${kind}: status ${F.status}`);
       assert.ok((F.fields > 0 || (kind === 'thg' && F.step === 0)) && F.steps.length === 6 && F.hist.length >= 1 && F.peopleRows.length >= 2 && F.kpis.length === 2, `${p.id}/${kind}: shape`);
       if (F.step >= 3) assert.equal(F.missing, 0, `${p.id}/${kind}: complete once submitted`);
-      if (F.step === 0) assert.equal(F.missing, F.fields - (kind === 'thg' ? 0 : 2), `${p.id}/${kind}: Offen has no values (A Grundstück and H keep their 0)`);
+      if (F.step === 0) assert.equal(F.missing, F.fields - (kind === 'thg' ? 0 : 1), `${p.id}/${kind}: Offen has no values (A01 Grundstück keeps its 0)`);
       if (F.step === 1 && !inst[kind].missing && !p.detailed) assert.equal(F.missing, 0, `${p.id}/${kind}: complete unless values are marked missing`);
       if (F.step >= 1) assert.ok(F.docs.length >= 1, `${p.id}/${kind}: documents`);
       assert.ok((kind === 'thg' ? F.tz.rows.length === 3 && F.tz.legend.length === 4 : F.chart.targets.length === 3) && F.ovList.rows.length >= 6 && F.kpis.every(k => k.tip), `${p.id}/${kind}: Übersicht`);
@@ -407,13 +422,18 @@ test('ebkp: every Hauptgruppe A–Z with all its Elementgruppen; A and H are gro
     assert.deepEqual(el[g].map(x => x[0]), [...el[g].map(x => x[0])].sort(), `${g} sorted by code`);
   }
   assert.equal(Object.values(el).flat().length, 71);
-  const formGroups = [...data.ebkp.ebkp, ...data.ebkp.extra].map(g => g.code);
-  for (const g of formGroups) assert.ok(el[g] && el[g].length, `dropdown of ${g} has options`);
-  assert.ok(formGroups.includes('A') && formGroups.includes('H'), 'A Grundstück and H Nutzungsspezifische Anlage are Hauptgruppen of the form');
-  assert.equal(data.ebkp.extra.find(g => g.code === 'W').name, 'Nebenkosten zu Erstellung');
+  const formGroups = data.ebkp.ebkp.map(g => g.code);
+  assert.equal(data.ebkp.extra, undefined, 'no Hauptgruppen with a lump sum');
+  assert.deepEqual(formGroups, Object.keys(EXPECT), 'the form has every Hauptgruppe A–Z');
+  for (const g of data.ebkp.ebkp) {
+    assert.ok(el[g.code] && el[g.code].length, `dropdown of ${g.code} has options`);
+    for (const k of g.kids) { const e = el[g.code].find(x => x[0] === k.code); assert.ok(e && e[1] === k.name && e[2] === k.unit && (k.unit ? k.qty > 0 : k.qty == null), `${k.code} is an Elementgruppe of the norm with its Bezugsgrösse`); }
+  }
+  assert.deepEqual(data.ebkp.ebkp.filter(g => !g.kids.length).map(g => g.code), ['H'], 'only H has no element in an office building');
+  assert.equal(data.ebkp.ebkp.find(g => g.code === 'W').name, 'Nebenkosten zu Erstellung');
   assert.equal(data.ebkp.elements.W.find(x => x[0] === 'W04')[1], 'Bewirtung, Öffentlichkeitsarbeit, Entschädigung');
   const kv = vm.forms.kv;
-  assert.deepEqual(kv.groups.map(g => g.code), ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'V', 'W', 'Y'], 'cost form groups A … Y in the order of the norm');
+  assert.deepEqual(kv.groups.map(g => g.code), ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'V', 'W', 'Y', 'Z'], 'cost form groups A … Z in the order of the norm');
   assert.equal(kv.groups.find(g => g.code === 'A').sum, 0); assert.equal(kv.groups.find(g => g.code === 'H').sum, 0); assert.equal(kv.missing, 1, 'a zero amount is a value, not a gap: only D08 is missing');
 });
 
@@ -463,7 +483,7 @@ test('plans: Datenformular shape (Übersicht, Prüfung) of a floor plan', () => 
   assert.equal(eg.comp.pct, '26 / 40'); assert.deepEqual(eg.summ.map(r => r.key), ['err', 'warn', 'aoid', 'sia']); assert.equal(eg.summ[0].val, '4'); assert.equal(eg.summ[0].res, 'nicht erfüllt'); assert.equal(eg.summ[1].res, 'prüfen');
   assert.equal(eg.planOv.cats[0].ratio, '0 / 8', 'all Layer rules fail for the office layer structure'); assert.equal(eg.planOv.catTot.ratio, '26 / 40'); assert.equal(Number(eg.planOv.catTot.w) + Number(eg.planOv.catTot.e), 14, 'fourteen rules fired');
   assert.equal(dg.planOv.catTot.ratio, '– / 40'); assert.equal(dg.planOv.catTot.e, '–', 'no result: no counts');
-  assert.equal(eg.comp.text, '4 Fehler · 44 Warnungen'); assert.equal(eg.lock, ''); assert.ok(ug.lock.startsWith('Gesperrt: an SAP RE-FX übertragen'), ug.lock); assert.equal(eg.rv.notSubmitted, true); assert.match(eg.bar.reason, /keine Fehler/);
+  assert.equal(eg.comp.text, '4 Fehler · 44 Warnungen'); assert.equal(vm.formByCode('dwg-eg').lock, ''); assert.ok(vm.formByCode('dwg-ug').lock.startsWith('An SAP RE-FX übertragen'), vm.formByCode('dwg-ug').lock); assert.equal(eg.rv.notSubmitted, true); assert.match(eg.bar.reason, /keine Fehler/);
   assert.equal(ug.status, 'Abgeschlossen'); assert.equal(ug.step, 6); assert.equal(ug.kpis[0].v, '30'); assert.equal(ug.kpis[1].v, '572.3');
   assert.ok(ug.steps.slice(0, 5).every(s => s.sym === '✓')); assert.equal(ug.docs[0].name, '9999.AA.U1_CAFM.dwg'); assert.equal(ug.docs[0].req, 'Pflicht');
   assert.ok(ug.hist.some(h => h.t === 'An SAP RE-FX übertragen') && ug.hist[0].t === 'An SAP RE-FX übertragen', 'newest first');
@@ -498,14 +518,14 @@ test('plans: status filter and search of the sub-tab lists (planLists, as in pla
   assert.equal(planLists(dg, {}).issues.length, 0); assert.equal(planLists(dg, {}).rules.failed.length, 0);
 });
 
-test('plans: Nutzungsart of the rooms (mock of R_RAUMSTEMPEL), DIN 277, Flächenkennzahlen and the ring', () => {
+test('plans: Nutzungsart of the rooms (mock of the Raumtabelle CAD.A01), DIN 277, Flächenkennzahlen and the ring', () => {
   const ug = vm.plans.UG, eg = vm.plans.EG, k = ug.kpiRaw;
-  // the stamps of data/plans.json split the 30 rooms of the Musterplan; the parts add up to the NGF, GF and KF stay
+  // the usage table of data/plans.json splits the 30 rooms of the Musterplan; the parts add up to the NGF, GF and KF stay
   assert.deepEqual([k.hnf, k.nnf, k.vf, k.ff, k.nf, k.ngf, k.kf, k.gf], [368.89, 40.87, 90.02, 17.28, 409.76, 517.06, 55.26, 572.32]);
   assert.ok(Math.abs(k.hnf + k.nnf + k.vf + k.ff - k.ngf) < 0.011 && Math.abs(k.ngf + k.kf - k.gf) < 0.011);
   assert.deepEqual(k.din277, { 'HNF 1': 22.48, 'HNF 2': 271.66, 'HNF 4': 39.08, 'HNF 5': 35.67, 'NNF 7': 40.87, 'FF 8': 17.28, 'VF 9': 90.02 });
-  assert.equal(Object.keys(data.plans.stamps).length, 30); assert.ok(Object.values(data.plans.stamps).every(g => /^(HNF [1-6]|NNF 7|FF 8|VF 9)$/.test(g)));
-  // withUsage: a room without a stamp counts as HNF, duplicates do not count, no match leaves the figures as they are
+  assert.equal(Object.keys(data.plans.usage).length, 30); assert.ok(Object.values(data.plans.usage).every(g => /^(HNF [1-6]|NNF 7|FF 8|VF 9)$/.test(g)));
+  // withUsage: a room without an entry counts as HNF, duplicates do not count, no match leaves the figures as they are
   const k0 = { hnf: 10, nnf: 0, vf: 0, ff: 0, nf: 10, ngf: 10 };
   const mixed = withUsage(k0, [{ aoid: 'a', area: 6 }, { aoid: 'b', area: 4 }, { aoid: 'a', area: 6, duplicate: true }], { a: 'VF 9' });
   assert.deepEqual([mixed.hnf, mixed.vf, mixed.nf, mixed.ngf], [4, 6, 4, 10]); assert.deepEqual(mixed.din277, { 'VF 9': 6 });

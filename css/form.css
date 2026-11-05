@@ -54,11 +54,17 @@
   .cat-th > :nth-child(2), .cat-tr > :nth-child(2), .cat-total > :nth-child(2) { display: none; }
 }
 
-/* Locked Erfassung (from «Eingereicht»): a grey band with a lock under the card head says why, the table is tinted and its
-   values read as text instead of fields. Nothing lies over the values: the reviewer still reads, selects and hovers them. */
-.lock-band { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 8px; min-height: 38px; padding: 7px 14px; background: #e3e7ec; border-bottom: 1px solid var(--line-3); font-size: 12.5px; font-weight: 500; color: #374151; text-align: center; }
-.lock-band .btn-link { font-weight: 400; margin-left: 8px; }
-.is-locked .fm-table { background: #f1f3f6; }
+/* Locked Erfassung (from «Eingereicht», design 06.11.2026): a grey veil over the table with a white box in the middle (lock,
+   «Gesperrt», reason); the box follows the scroll so it stays in view on long tables. Under the veil the table is tinted
+   and its values are text instead of fields. */
+.lock-wrap { position: relative; }
+.is-locked .lock-wrap { min-height: 300px; }
+.lock-veil { position: absolute; inset: 0; z-index: 3; background: rgba(229, 232, 237, .72); display: flex; justify-content: center; align-items: flex-start; padding: 96px 16px; border-radius: 0 0 6px 6px; cursor: not-allowed; }
+.lock-box { position: sticky; top: 96px; display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 340px; padding: 18px 22px; background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(16, 24, 40, .12); text-align: center; cursor: default; }
+.lock-ic { width: 44px; height: 44px; border-radius: 50%; background: #eef0f3; color: var(--navy); display: flex; align-items: center; justify-content: center; }
+.lock-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.lock-text { font-size: 13px; color: #374151; text-wrap: pretty; }
+.is-locked .fm-table { background: #f6f7f9; }
 .is-locked .ent-input, .is-locked .ent-input[readonly], .is-locked .ent-text, .is-locked .ent-text[readonly] { border-color: transparent !important; background: transparent !important; box-shadow: none !important; color: var(--text); cursor: default; }
 .is-locked .ent-pos:hover, .is-locked .ent-group:hover { background-color: transparent; }
 .is-locked .ent:not(.ent-betr) .ent-input { padding-right: 13px; }   /* without the box the value lines up with the sums and totals of its column */
@@ -209,6 +215,7 @@
 .dd-menu { position: absolute; right: 0; top: 32px; z-index: 61; background: #fff; border-radius: 4px; box-shadow: var(--shadow-pop); padding: 4px; min-width: 230px; display: flex; flex-direction: column; }
 .dd-item { text-align: left; background: #fff; border: 0; padding: 8px 10px; font-size: 13px; font-weight: 400; color: var(--text); cursor: pointer; border-radius: 3px; white-space: nowrap; }
 .dd-item:hover { background: var(--row-alt); }
+a.dd-item { display: block; text-decoration: none; }                /* a link among the menu buttons (guideline PDF) */
 .dd-sep { border-bottom: 1px solid var(--line-4); border-radius: 3px 3px 0 0; }
 
 /* Submit bar at the end of the Erfassung (sticky) */

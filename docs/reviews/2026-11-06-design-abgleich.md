@@ -10,7 +10,7 @@ Fassung vom 05.11.2026 (letzter Stand, 14:31) und mit dem Prototyp nach den Rüc
 |---|---|---|---|
 | alle · Tabs | keine Zahlen in den Tabs | schon so | – |
 | alle · Karten | Hinweise und Einheiten im grauen Kartenfuss mit Linie | Fuss ohne Linie | Linie ergänzt |
-| alle · Erfassung gesperrt | Kopf behält seine Knöpfe, «Importieren» deaktiviert mit Tooltip | «Importieren» ausgeblendet | deaktiviert, Tooltip nennt den Sperrgrund |
+| alle · Erfassung gesperrt | graue Fläche über der Tabelle mit weisser Box (Schloss, «Gesperrt», Grund), Leiste am Fuss bleibt, «Importieren» deaktiviert mit Tooltip | graues Band mit Schloss, Werte als Text, Leiste entfernt | umgesetzt nach Entscheid vom 05.11.2026: die Werte werden in der Übersicht oder im Excel gelesen, nicht in der gesperrten Erfassung |
 | KV-32, THG-32 · Übersicht | neutrale Diagramme, keine Farben für Abweichungen | schon so | – |
 | THG-32 · Betrieb | Photovoltaik in «Grundlagen», «Projektwert», Endenergie und Faktor überschreibbar | schon so | – |
 | DWG · Übersicht | «Flächen SIA 416» als Tabelle GF, KF, NGF, VF, FF, NF, HNF, NNF (m², % GF) mit Fuss | neun Zeilen samt EBF, andere Reihenfolge | umgesetzt (EBF steht in den Kennzahlen) |
@@ -26,11 +26,6 @@ Fassung vom 05.11.2026 (letzter Stand, 14:31) und mit dem Prototyp nach den Rüc
 
 Diese Punkte der Aufgabenbeschreibung widersprechen späteren Rückmeldungen der Nutzenden oder dem Design selbst:
 
-- **Gesperrte Erfassung**: Die Komponente legt eine halbtransparente Fläche mit einer weissen Box («Gesperrt») über die
-  Tabelle und behält die Leiste am Fuss. Die Beschreibungen der Bildschirme im selben Export nennen dagegen das graue Band
-  mit Schloss, die getönte Tabelle und Werte als Text. Der Prototyp bleibt beim Band: Die Fläche (72 % deckend) macht die
-  Werte für die Prüfung kaum lesbar und sperrt Hover, Kopieren, waagrechtes Scrollen und das Aufklappen der Hauptgruppen.
-  Offen, falls die Box gewünscht ist.
 - **Farben und bedingte Formatierung**: Rot und Grün für Δ, die rot markierte Zusatzanforderung, die grüne PV-Gutschrift und
   der Balken unter «Vollständigkeit» bleiben weg (Rückmeldungen vom 05.11.2026: keine Wertung durch Farbe).
 - **Prüfung**: Die Aufzählung von neun Prüfpunkten der Ökobilanz und der Vergleich mit KS-31 samt Subtotalen stammen aus
@@ -44,11 +39,15 @@ Diese Punkte der Aufgabenbeschreibung widersprechen späteren Rückmeldungen der
 - **Richtwerte SIA 390/1**: Betrieb und Zusatzanforderung sind nur für Wohnen und Restaurant belegt; die Werte für
   Verwaltung, Schule und Verkauf sind Annahmen und im Fuss der Zielwerte so bezeichnet.
 - **Stromprodukt**: Wasserkraft mit 0.012 kg CO₂-eq/kWh ist eine Annahme (CH-Verbrauchermix 0.125).
-- **Nutzungsart der Räume**: Die Planprüfung liest den Raumstempel (R_RAUMSTEMPEL) noch nicht. `data/plans.json` › `stamps`
+- **Nutzungsart der Räume**: Nach der CAD-Richtlinie (Kap. 5.10, 5.11) steht sie in der Raumtabelle (Anhang CAD.A01), nicht im
+  Raumstempel, wie der Entwurf schreibt; der Fuss der Kennzahlen nennt darum die Raumtabelle. Der Prototyp liest sie noch
+  nicht: `data/plans.json` › `usage`
   ordnet den 30 Räumen des Musterplans eine DIN-277-Gruppe zu; daraus folgen HNF 368.9, NNF 40.9, VF 90.0 und FF 17.3 m²
   (NGF 517.1, GF 572.3 m² aus der Datei). Die Zahlen des Entwurfs (HNF 386.42, NNF 41.30, VF 72.18, FF 17.16 m²) sind
   frei gesetzt und mit den echten Raumflächen nicht genau erreichbar. Hochgeladene Pläne ohne Eintrag zählen zur HNF.
-- **CAD-Richtlinie als PDF**: Im Repository liegt keine Datei; der Menüpunkt meldet «Im Prototyp ohne Funktion».
+- **CAD-Richtlinie als PDF**: liegt seit dem 05.11.2026 unter `assets/plans/` (Version 1.0, Stand 01.01.2026) und öffnet aus dem
+  Menü; die Anhänge stehen unter `docs/reference/cad-richtlinie/`. Der Musterplan des Archivs ist etwas neuer als der des
+  Prototyps (5 statt 3 Warnungen, NGF 517.05 statt 517.06 m²); ein Wechsel hiesse Seeds und Tests neu erzeugen.
 - **Prüfbericht (PDF)**: enthält weiterhin «Gebäudevolumen» und «Objektübersicht»; der Entwurf betrifft nur den Unter-Tab.
 
 ## 4. Tests

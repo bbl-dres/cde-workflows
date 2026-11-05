@@ -18,6 +18,24 @@ responsive Breiten 900 und 640 px) werden nur als `ours-*.png` abgelegt.
 Weitere Screenshots (z. B. Projekte Liste/Karten, Überblick, Benachrichtigungen, Erstellen-Drawer, schmale
 Fensterbreiten für das responsive Verhalten) bitte mit demselben Schema ablegen.
 
+## `cad-richtlinie/` – CAD-Richtlinie BBL mit Anhängen (öffentlich, im Repository)
+
+Die publizierte CAD-Richtlinie des BBL (Version 1.0, Stand 01.01.2026, Klassifizierung «Public») samt Anhängen, bezogen am
+05.11.2026 als Archiv von <https://www.bbl.admin.ch/dam/de/sd-web/SM1CZngKsniY/CAD-Richtlinie%20BBL-DE.zip>. Sie ist die
+Grundlage der Planprüfung (`js/plancheck/`, 40 Regeln) und der Planlieferungen DWG.
+
+| Datei | Inhalt | Verwendung im Prototyp |
+|---|---|---|
+| `assets/plans/CAD-Richtlinie-BBL-DE.pdf` | Richtlinie, 20 Seiten | Menü «CAD-Richtlinie» der Planlieferung öffnet das PDF; liegt bei den Plan-Assets, damit die Anwendung es ausliefert |
+| `CAD-Richtlinie BBL-DE.md` | dieselbe Richtlinie als Markdown (docling) | zum Lesen und Durchsuchen durch Agenten; massgebend ist das PDF |
+| `CAD.A01-Raumtabelle.xlsx` | Raumtabelle je Geschoss (Kap. 5.11): AOID, Nutzung, Flächen, Ausstattung | noch nicht eingelesen; `data/plans.json` › `usage` ersetzt die Nutzungsart für den Musterplan |
+| `CAD.A02-Flächenbaum-DE.pdf` | Flächenbaum BBL (SIA 416) | Grundlage der Flächentabellen GF, KF, NGF, VF, FF, NF, HNF, NNF |
+| `CAD.A03-Übersicht Flächenarten.xlsx` | Detail zum Flächenbaum | – |
+| `CAD.A04-Planverzeichnis.xlsm` | Planverzeichnis | – |
+| `CAD.A05-Beschreibung Plankopf-DE.pdf` | Plankopf BBL | – |
+| `CAD.V01-CAFM-Plan-DE.dwg` | Musterplan CAFM-Plan, Stand des Archivs | Der Prototyp prüft und verteilt weiterhin `assets/plans/CAD.V01-CAFM-Plan-DE.dwg` (ältere Fassung aus plan-check: 3 statt 5 Warnungen, NGF 517.06 statt 517.05 m², sonst gleich) |
+| `CAD.V02-Aussenparkplätze.dwg` | Musterplan Aussenparkplätze (Kap. 6) | – |
+
 ## `sources/` – Normen, Richtlinien und Datengrundlagen Dritter (lokal, ignoriert)
 
 Heruntergeladene oder erhaltene Quellen der Recherche-Notizen in `docs/research/`. PDFs sind mit docling (DocumentConverter,

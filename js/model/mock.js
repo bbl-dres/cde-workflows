@@ -46,17 +46,16 @@ export function mockProject(project, data, opts = {}) {
   const sia = Object.fromEntries(Object.entries(data.sia416.initial).map(([k, v]) => [k, base ? v : qty(v)]));
   const kvQ = {}, kvV = {}, ksQ = {}, ksV = {};
   const ksFactor = {};
-  E.ebkp.forEach(g => { const s = g.kids.reduce((a, k) => a + k.cost, 0); ksFactor[g.code] = (E.ks31[g.code] || s * 0.93) / s; });
+  E.ebkp.forEach(g => { const s = g.kids.reduce((a, k) => a + k.cost, 0); ksFactor[g.code] = s ? (E.ks31[g.code] || s * 0.93) / s : 0; });
   E.ebkp.forEach(g => g.kids.forEach(k => {
-    const q = qty(k.qty);
+    const q = k.qty != null ? qty(k.qty) : null;             // only elements with a Bezugsgrösse carry a Menge
     kvQ[k.code] = q; ksQ[k.code] = q;
-    kvV[k.code] = chf(k.cost);
-    ksV[k.code] = chf(k.cost * ksFactor[g.code]);
+    kvV[k.code] = k.cost ? chf(k.cost) : 0;                  // A Grundstück is 0 in the sample projects
+    ksV[k.code] = k.cost ? chf(k.cost * ksFactor[g.code]) : 0;
   }));
-  E.extra.forEach(k => {
-    kvV[k.code] = k.cost ? chf(k.cost) : 0;                  // A Grundstück and H Nutzungsspezifische Anlage are 0 in the sample projects
-    ksV[k.code] = k.cost ? Math.max(1000, roundTo(kvV[k.code] * (E.ks31[k.code] ? E.ks31[k.code] / k.cost : 0.93), 1000)) : 0;
-  });
+  // Z Mehrwertsteuer is an amount the delivery team enters; the sample projects carry the rate of data/project.json on B–Y (A Grundstück is not taxed)
+  const MWST = data.project.mwstRate || 0.081, taxable = V => Object.entries(V).reduce((a, [c, v]) => a + (/^[AZ]/.test(c) ? 0 : (v || 0)), 0);
+  kvV.Z01 = roundTo(taxable(kvV) * MWST, 100); ksV.Z01 = roundTo(taxable(ksV) * MWST, 100);
   // THG: the Emissionsquellen of the design (Tool-Export) with the reference quantities scaled to the project (per m² EBF for the
   // Gebäudetechnik) and jittered Kennwerte, calibrated to the Endwert of the instance (THGE Erstellung, kg CO₂-eq/m² EBF·a) when
   // one is given; the Betrieb starts with the Standardwerte of the Rechenhilfe SIA 390/1
@@ -72,6 +71,7 @@ export function mockProject(project, data, opts = {}) {
   // Previous phases: KS-31 for the KV, Kostengrobschätzung SIA 21 for the KS, SIA 31 for the THG
   const prev = { kv: {}, ks: {}, thg: {} };
   Object.entries(E.ks31).forEach(([c, v]) => { prev.kv[c] = base || !v ? v : chf(v, 0.9, 1.05); prev.ks[c] = v ? Math.max(1000, roundTo(prev.kv[c] * (base ? 0.9 : jit(0.85, 0.95)), 1000)) : 0; });
+  prev.kv.Z = roundTo(taxable(prev.kv) * MWST, 100); prev.ks.Z = roundTo(taxable(prev.ks) * MWST, 100);
   Object.entries(TH.prev31).forEach(([c, v]) => { prev.thg[c] = base ? v : chf(v); });
   // Missing values (forms in progress) and empty forms (step 0)
   const values = { kvQ, kvV, ksQ, ksV };
@@ -83,11 +83,11 @@ export function mockProject(project, data, opts = {}) {
     else if (values[k] && c in values[k]) values[k][c] = null;
   });
   if (!opts.complete) {
-    const zeroExtra = new Set(E.extra.filter(g => !g.cost).map(g => g.code));   // A Grundstück and H Nutzungsspezifische Anlage are 0 in every sample project, also on an open form
-    Object.entries(inst).forEach(([kind, i]) => { if (i.step === 0) (KEYS[kind] || []).forEach(k => Object.keys(values[k]).forEach(c => { values[k][c] = k.endsWith('V') && zeroExtra.has(c) ? 0 : null; })); });
+    const zero = new Set(E.ebkp.flatMap(g => g.kids.filter(k => !k.cost).map(k => k.code)));   // A Grundstück is 0 in every sample project, also on an open form
+    Object.entries(inst).forEach(([kind, i]) => { if (i.step === 0) (KEYS[kind] || []).forEach(k => Object.keys(values[k]).forEach(c => { values[k][c] = k.endsWith('V') && zero.has(c) ? 0 : null; })); });
     if (thgInst.step === 0) { thgSrc = []; thgBetr = {}; }   // an open THG-32 has no Emissionsquellen and no Betrieb yet (Tool-Export, Rechenhilfe or manual entry)
   }
-  const kostenziel = project.kostenzielBW || roundTo(sum(prev.kv) * 1.03, 1e5);
+  const kostenziel = project.kostenzielBW || roundTo((sum(prev.kv) - prev.kv.Z) * 1.03, 1e5);   // net of the Mehrwertsteuer, as before Z was a group
   const kostendach = (inst.kv && inst.kv.kostendach) || roundTo(kostenziel * 1.1, 1e5);
   return { sia, ...values, thgSrc, thgHead, thgBetr, prev, kostenziel, kostendach };
 }
@@ -98,7 +98,7 @@ export function groupAmount(g, V, removed = {}, added = []) {
   return vals.length ? vals.reduce((a, b) => a + b, 0) : null;
 }
 /** Group amounts for the direct entry mode of every Hauptgruppe ('' when nothing is entered). */
-export const groupAmounts = (values, data) => Object.fromEntries(data.ebkp.ebkp.map(g => [g.code, groupAmount(g, values) ?? '']));
+export const groupAmounts = (values, data) => Object.fromEntries(data.ebkp.ebkp.map(g => [g.code, groupAmount(g, values) ?? (g.kids.length ? '' : 0)]));   // a Hauptgruppe without elements (H) is 0, not missing
 
 /** Tool-Export import: the complete Emissionsquellen of the project come in; existing rows keep their values, blanks are filled. */
 export function mergeToolExport(current, complete) {

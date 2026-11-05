@@ -9,14 +9,14 @@ import { dropZone, resultPanel } from './plan.js';
 // only): Energiedienstleistungen nach Rechenhilfe SIA 390/1 with Photovoltaik; sticky submit bar. Prüfung: comparison or plan
 // result, Prüfung BBL, Übergabe. Beteiligte, Dokumente, Verlauf: tables.
 
-const COLS = 'grid-template-columns:96px minmax(0,1fr) 72px 120px 140px 100px 36px';   // code column holds the fixed-width code control
+const COLS = 'grid-template-columns:96px minmax(0,1fr) 96px 120px 140px 100px 36px';   // code column holds the fixed-width code control
 const COLS_THG = 'grid-template-columns:96px minmax(0,1fr) 72px 110px 64px 104px 72px 36px';   // Erstellung: Code · Emissionsquelle · Hersteller · Referenzgrösse · Einheit · kg/m² EBF·a · Anteil
 const COLS_BETR = 'grid-template-columns:minmax(0,1fr) 92px 104px 88px 88px 100px 112px 112px';   // Betrieb: Energiedienstleistung · Projektwert · Nutzenergie · Anteil · η · Endenergie · Koeffizient · kg/m² EBF·a
 const kvRow = (k, v) => html`<div class="rv-kv"><span class="rv-kv-k">${k}</span><span>${v}</span></div>`;
 const RO = F => (F.locked ? raw('readonly') : '');
 /** Icon from a URL (Hauptgruppen pictograms in assets/ebkp, lucide icons in assets/icons), as a CSS mask like icon(). */
 const urlIcon = (url, size = 18) => html`<span class="ic" style="width:${size}px;height:${size}px;background:currentColor;-webkit-mask:url(${url}) center/contain no-repeat;mask:url(${url}) center/contain no-repeat" aria-hidden="true"></span>`;
-const OV_COLS = 'grid-template-columns:28px minmax(120px,220px) minmax(0,1fr) 60px 44px 56px';   // bar lists of the Übersicht: icon · name · bar · value · share · Δ
+const OV_COLS = 'grid-template-columns:28px minmax(120px,220px) minmax(0,1fr) 60px 72px 68px';   // bar lists of the Übersicht: icon · name · bar · value · share · Δ
 const DIS = F => (F.locked ? raw('disabled') : '');
 
 
@@ -72,10 +72,10 @@ const ovRow = (F, g) => html`<div class="ov-row${g.tab ? ' is-link' : ''}" style
   <span class="right fw-600">${g.cur}</span><span class="right muted fs-12">${g.share}</span><span class="right" title="${g.dp}">${g.d}</span>
 </div>`;
 const ovListBody = (F, Lst) => html`<div class="fm-table"><div class="ov-body">
-  <div class="ov-head" style="${OV_COLS}"><span></span><span>${Lst.col}</span><div class="ov-axis"><span>0</span><span>${Lst.max}</span></div><span class="right" title="${Lst.unitTip}">${Lst.unit}</span><span class="right" title="Anteil am Total">Anteil</span><span class="right" title="${Lst.dTip}">${Lst.dUnit}</span></div>
+  <div class="ov-head" style="${OV_COLS}"><span></span><span>${Lst.col}</span><div class="ov-axis"><span>0</span><span>${Lst.max}</span></div><span class="right" title="${Lst.unitTip}">${Lst.unit}</span><span class="right" title="${Lst.shareTip}">${Lst.shareLabel}</span><span class="right" title="${Lst.dTip}">${Lst.dUnit}</span></div>
   ${Lst.rows.map(g => ovRow(F, g))}
   ${Lst.rows.length === 0 ? html`<div class="muted fs-13" style="padding:14px 0">Noch keine Werte erfasst.</div>` : ''}
-  <div class="ov-total" style="${OV_COLS}"><span></span><span>${Lst.totalLabel}</span><span class="muted fs-12">${Lst.prevText}</span><span class="right fw-600" title="${Lst.totTip}">${Lst.tot}</span><span class="right muted fs-12">100 %</span><span class="right" title="${Lst.dTip}">${Lst.dTot}</span></div>
+  <div class="ov-total" style="${OV_COLS}"><span></span><span>${Lst.totalLabel}</span><span class="muted fs-12">${Lst.prevText}</span><span class="right fw-600" title="${Lst.totTip}">${Lst.tot}</span><span class="right muted fs-12">${Lst.totShare}</span><span class="right" title="${Lst.dTip}">${Lst.dTot}</span></div>
   ${Lst.subs.length ? html`<div style="height:10px"></div>${Lst.subs.map(u => html`<div class="ov-sub" style="${OV_COLS}"><span></span><span><span>${u.code}</span> ${u.name}</span><span class="muted fs-12 fw-400">${u.prevText}</span><span class="right">${u.cur}</span><span class="right muted fs-12 fw-400">${u.share}</span><span class="right fw-400">${u.d}</span></div>`)}` : ''}
 </div></div>`;
 
@@ -135,10 +135,12 @@ function planOverview(F, L) {
 }
 
 // ---- Erfassung ----
-/** Locked Erfassung (from «Eingereicht»): a grey band with a lock under the card head says why and since when. The card gets
- *  `is-locked`: its table is tinted and the values read as text instead of fields. Nothing covers the values, the reviewer still reads them. */
-const lockBand = F => (F.locked ? html`<div class="lock-band">${icon('lock', 15, '#374151')}<span>${F.lock}</span>${linkBtn({ label: 'Wieder öffnen (Prototyp)', cls: 'fs-125', action: F.act.reopen, key: F.id })}</div>` : '');
+/** Locked Erfassung (from «Eingereicht», design 06.11.2026): a grey veil lies over the table with a white box in the middle
+ *  (lock, «Gesperrt», what locked it and when). The values below are not meant to be read here: the Übersicht and the Excel
+ *  download are for that. The card keeps its head; the table is inert, so the keyboard does not reach what the veil covers. */
+const lockVeil = F => (F.locked ? html`<div class="lock-veil" role="status"><div class="lock-box"><span class="lock-ic">${icon('lock', 22, 'currentColor')}</span><span class="lock-title">Gesperrt</span><span class="lock-text">${F.lock}</span></div></div>` : '');
 const lockCls = F => (F.locked ? ' is-locked' : '');
+const INERT = F => (F.locked ? raw('inert') : '');
 
 function erfassung(ctx, F) {
   const body = F.kind === 'plan' ? planEntry(ctx, F) : F.erf.isTHG ? html`${thgHeadCard(ctx, F, 'Erstellung', F.erf.head)}${dataEntry(ctx, F)}` : dataEntry(ctx, F);
@@ -147,7 +149,7 @@ function erfassung(ctx, F) {
 
 /** Importieren menu: the Excel template first (separated), then the imports of the tab. */
 const importMenu = (F, items, open) => (F.locked
-  ? html`<button type="button" class="btn btn-secondary" disabled title="${F.lock}">Importieren ${icon('chevron-down', 12, 'currentColor')}</button>`
+  ? html`<button type="button" class="btn btn-secondary" disabled title="${F.lockTip}">Importieren ${icon('chevron-down', 12, 'currentColor')}</button>`
   : html`<div class="dd">
   <button type="button" class="btn btn-secondary" data-action="toggleImportMenu" aria-haspopup="menu" aria-expanded="${open ? 'true' : 'false'}">Importieren ${icon('chevron-down', 12, 'currentColor')}</button>
   ${open ? html`<div class="dd-menu" role="menu">${items.map(([key, label], i) => html`<button type="button" role="menuitem" class="dd-item${i === 0 && items.length > 1 ? ' dd-sep' : ''}" data-action="importItem" data-arg="${key}" data-form="${F.id}">${label}</button>`)}</div>` : ''}
@@ -168,8 +170,7 @@ function dataEntry(ctx, F) {
   const E = F.erf;
   return html`<div class="card${lockCls(F)}">
     ${entryHead(ctx, F)}
-    ${lockBand(F)}
-    <div class="fm-table">${E.isTHG ? thgTable(F) : costTable(F)}</div>
+    <div class="lock-wrap"><div class="fm-table" ${INERT(F)}>${E.isTHG ? thgTable(F) : costTable(F)}</div>${lockVeil(F)}</div>
     ${E.foot ? html`<div class="card-foot">${E.foot}</div>` : ''}
   </div>`;
 }
@@ -177,13 +178,19 @@ function dataEntry(ctx, F) {
 const costTable = F => {
   const E = F.erf, ro = RO(F);
   return html`<div class="ent">
-    <div class="ent-th" style="${COLS}"><span>Code</span><span>Bezeichnung</span><span>Einheit</span><span class="right">${E.qtyLabel}</span><span class="right">${E.valLabel}</span><span class="right" title="Kennwert: Kosten je m² Geschossfläche GF">${E.kwLabel}</span><span></span></div>
+    <div class="ent-th" style="${COLS}"><span>Code</span><span>Bezeichnung</span><span>Einheit</span><span class="right">${E.qtyLabel}</span><span class="right">${E.valLabel}</span><span class="right" title="Kennwert: Kosten je m² Geschossfläche GF, berechnet oder eigener Wert">${E.kwLabel}</span><span></span></div>
     ${E.rows.map(r => (r.isGroupRow ? groupRow(F, r, ro) : r.isAdd ? addRow(F, r, 'formAddPos') : r.isNewPos ? newPosRow(F, r, ro) : posRow(F, r, ro)))}
     ${E.rows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine fehlenden Werte.</div>` : ''}
-    <div class="ent-total" style="${COLS}" title="Summe aller Hauptgruppen, ohne MWST"><span></span><span>${E.totalLabel}</span><span></span><span></span><span class="right pr18">${E.totalStr}</span><span class="right muted">${E.totalKw}</span><span></span></div>
+    <div class="ent-total" style="${COLS}" title="Anlagekosten: Summe der Hauptgruppen A bis Z"><span></span><span>${E.totalLabel}</span><span></span><span></span><span class="right pr18">${E.totalStr}</span><span class="right muted">${E.totalKw}</span><span></span></div>
     ${F.subtotals.length ? html`<div class="fm-space"></div>${F.subtotals.map(u => html`<div class="ent-subtotal" style="${COLS}" title="${u.tip}"><span>${u.code}</span><span>${u.name}</span><span></span><span></span><span class="right pr18">${u.cur}</span><span class="right">${u.kw}</span><span></span></div>`)}<div style="height:8px"></div>` : ''}
   </div>`;
 };
+
+/** Einheit of a Kostenelement: dropdown (the Bezugsgrösse of the norm is preselected; «pauschal» needs no Menge); text on a locked form. */
+const unitCell = (F, r, attrs) => (F.locked ? html`<span class="muted fs-12">${r.unit}</span>`
+  : html`<span class="ent-cell-input"><select class="ent-select" aria-label="Einheit ${r.code || ''}" ${attrs}>${r.unitOpts.map(o => html`<option value="${o.v}" ${o.sel ? raw('selected') : ''}>${o.v}</option>`)}</select></span>`);
+/** Kennwert CHF/m² GF: shows the derived value (grey); an own value replaces it until the field is cleared. */
+const kwCell = (F, r, ro) => html`<span class="ent-cell-input"><input class="ent-input${r.kwOwn ? '' : ' is-calc'}" aria-label="Kennwert CHF/m² GF ${r.code || ''}" title="${r.kwTip}" value="${r.kw}" placeholder="–" style="background:${F.erf.inputBg}" data-change="formKw" data-form="${F.id}" data-code="${r.kwKey}" data-fid="${F.id}-kw-${r.kwKey}" ${ro}></span>`;
 
 /** Hauptgruppe: the whole row toggles «Aufschlüsseln / Zusammenfassen» (not on locked forms), the chevron is the keyboard target. */
 const chevron = (F, r) => (r.canToggle
@@ -204,31 +211,31 @@ const groupRow = (F, r, ro) => html`<div class="ent-group${r.canToggle ? ' is-to
   <span class="muted fs-12">${r.unit}</span>
   <span class="right muted">${r.bez}</span>
   ${r.direct
-    ? html`<span class="ent-cell-input"><input class="ent-input fw-600" aria-label="${F.erf.valLabel} ${r.code} ${r.name}" value="${r.gStr}" placeholder="fehlt" style="border-color:${r.gBd};background:${F.erf.inputBg}" ${r.gKey ? html`data-change="setMap" data-key="${r.gKey}" data-code="${r.code}" data-fid="${r.gKey}-${r.code}"` : html`data-change="formGroupVal" data-form="${F.id}" data-group="${r.code}" data-fid="${F.id}-g-${r.code}"`} ${ro}></span>`
+    ? html`<span class="ent-cell-input"><input class="ent-input fw-600" aria-label="${F.erf.valLabel} ${r.code} ${r.name}" value="${r.gStr}" placeholder="fehlt" style="border-color:${r.gBd};background:${F.erf.inputBg}" data-change="formGroupVal" data-form="${F.id}" data-group="${r.code}" data-fid="${F.id}-g-${r.code}" ${ro}></span>`
     : html`<span class="right fw-600 pr18">${r.sum}</span>`}
-  <span class="right muted fs-125">${r.kw}</span>
+  ${kwCell(F, r, ro)}
   <span></span>
 </div>`;
 
-/** A position: base position of the eBKP-H, or the Pauschalbetrag of a Hauptgruppe without positions (not removable). */
-const posRow = (F, r, ro) => html`<div class="ent-pos${r.pauschal ? ' ent-pauschal' : ''}" style="${COLS}">
-  ${r.pauschal || F.locked
-    ? html`<span class="ent-pos-code">${r.pauschal ? '' : r.code}</span><span class="ellipsis${r.pauschal ? ' muted' : ''}">${r.name}</span>`
+/** A position: an Elementgruppe of the eBKP-H with Menge (where the norm names a Bezugsgrösse) and Kosten. */
+const posRow = (F, r, ro) => html`<div class="ent-pos" style="${COLS}">
+  ${F.locked
+    ? html`<span class="ent-pos-code">${r.code}</span><span class="ellipsis">${r.name}</span>`
     : codeSelect(F, r, html`data-change="formPosCode" data-code="${r.code}"`, `${r.vKey}-code-${r.code}`)}
-  <span class="muted fs-12">${r.unit}</span>
+  ${unitCell(F, r, html`data-change="formUnit" data-form="${F.id}" data-code="${r.uKey}" data-fid="${F.id}-unit-${r.uKey}"`)}
   ${r.hasQty ? html`<span class="ent-cell-input"><input class="ent-input" aria-label="Menge ${r.code}" value="${r.qStr}" placeholder="fehlt" style="border-color:${r.qBd};background:${F.erf.inputBg}" data-change="setMap" data-key="${r.qKey}" data-code="${r.code}" data-fid="${r.qKey}-${r.code}" ${ro}></span>` : html`<span class="right muted fs-12">–</span>`}
-  <span class="ent-cell-input"><input class="ent-input" aria-label="${F.erf.valLabel} ${r.pauschal ? r.name + ' ' : ''}${r.code}" value="${r.vStr}" placeholder="fehlt" style="border-color:${r.vBd};background:${F.erf.inputBg}" data-change="setMap" data-key="${r.vKey}" data-code="${r.code}" data-fid="${r.vKey}-${r.code}" ${ro}></span>
-  <span class="right muted fs-125">${r.kw}</span>
+  <span class="ent-cell-input"><input class="ent-input" aria-label="${F.erf.valLabel} ${r.code}" value="${r.vStr}" placeholder="fehlt" style="border-color:${r.vBd};background:${F.erf.inputBg}" data-change="setMap" data-key="${r.vKey}" data-code="${r.code}" data-fid="${r.vKey}-${r.code}" ${ro}></span>
+  ${kwCell(F, r, ro)}
   ${r.canDel ? delBtn('formRemovePos', html`data-form="${F.id}" data-code="${r.code}"`, `Kostenelement ${r.code} entfernen`) : html`<span></span>`}
 </div>`;
 
 /** A Kostenelement added in the Erfassung: eBKP-H element group from the list, Menge and Kosten. */
 const newPosRow = (F, r, ro) => html`<div class="ent-pos ent-new" style="${COLS}">
   ${codeSelect(F, r, html`data-change="formNewVal" data-id="${r.id}" data-field="code"`, `${F.id}-new-${r.id}-code`)}
-  <span class="muted fs-12">${r.unit}</span>
+  ${unitCell(F, r, html`data-change="formUnit" data-form="${F.id}" data-code="${r.uKey}" data-fid="${F.id}-unit-${r.uKey}"`)}
   ${r.hasQty ? html`<span class="ent-cell-input"><input class="ent-input" aria-label="Menge" value="${r.qStr}" placeholder="fehlt" style="border-color:${r.qBd};background:${F.erf.inputBg}" data-change="formNewVal" data-form="${F.id}" data-id="${r.id}" data-field="q" data-fid="${F.id}-new-${r.id}-q" ${ro}></span>` : html`<span class="right muted fs-12">–</span>`}
   <span class="ent-cell-input"><input class="ent-input" aria-label="${F.erf.valLabel}" value="${r.vStr}" placeholder="fehlt" style="border-color:${r.vBd};background:${F.erf.inputBg}" data-change="formNewVal" data-form="${F.id}" data-id="${r.id}" data-field="v" data-fid="${F.id}-new-${r.id}-v" ${ro}></span>
-  <span class="right muted fs-125">${r.kw}</span>
+  ${kwCell(F, r, ro)}
   ${!F.locked ? delBtn('formDropNew', html`data-form="${F.id}" data-id="${r.id}"`, 'Neue Zeile verwerfen') : html`<span></span>`}
 </div>`;
 
@@ -298,8 +305,7 @@ function betrieb(ctx, F) {
         <button type="button" class="btn btn-secondary" data-action="proto">Excel herunterladen</button>
       </div>
       ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}
-      ${lockBand(F)}
-      <div class="fm-table"><div class="ent ent-betr">
+      <div class="lock-wrap"><div class="fm-table" ${INERT(F)}><div class="ent ent-betr">
         <div class="ent-th" style="${COLS_BETR}"><span>Energiedienstleistung · Energieträger</span><span class="center" title="Projektspezifischer Wert statt Standardwert der Rechenhilfe SIA 390/1">Projektwert</span><span class="right" title="kWh/m² EBF·a">Nutzenergie</span><span class="right" title="Anteil des Energieträgers an der Energiedienstleistung">Anteil %</span><span class="right" title="Nutzungsgrad bzw. Jahresarbeitszahl">η / JAZ</span><span class="right" title="kWh/m² EBF·a, berechnet oder eigener Wert">Endenergie</span><span class="right" title="Treibhausgaskoeffizient des Energieträgers, Standard oder eigener Wert">kg CO₂-eq/kWh</span><span class="right" title="THG Betrieb pro Jahr und m² EBF">kg/m² EBF·a</span></div>
         ${B.rows.map(r => (r.isPv ? pvRow(r) : betrRow(F, r, ro)))}
         ${B.rows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine fehlenden Werte.</div>` : ''}
@@ -307,7 +313,7 @@ function betrieb(ctx, F) {
         <div class="fm-space"></div>
         ${B.subs.map(u => html`<div class="ent-subtotal" style="${COLS_BETR}"><span style="grid-column:1 / span 7">${u.name}</span><span class="right" title="${u.tip}">${u.v}</span></div>`)}
         <div style="height:8px"></div>
-      </div></div>
+      </div></div>${lockVeil(F)}</div>
     </div>
     ${submitBar(F)}
   </div>`;
@@ -337,11 +343,12 @@ const pvRow = r => html`<div class="ent-pos ent-src" style="${COLS_BETR}">
   <span class="right fs-125" title="THG in kg CO₂-eq/m² EBF·a: Endenergie × Koeffizient">${r.thg}</span>
 </div>`;
 
-/** «CAD-Richtlinie ▾» of a plan: the guideline and the Musterplan to download (reference material, also on a locked form). */
+/** «CAD-Richtlinie ▾» of a plan: the guideline (PDF in a new tab) and the Musterplan to download (reference material, also on a locked form). */
+const GUIDELINE_PDF = 'assets/plans/CAD-Richtlinie-BBL-DE.pdf';
 const cadMenu = open => html`<div class="dd">
   <button type="button" class="btn btn-secondary" data-action="toggleImportMenu" aria-haspopup="menu" aria-expanded="${open ? 'true' : 'false'}">CAD-Richtlinie ${icon('chevron-down', 12, 'currentColor')}</button>
   ${open ? html`<div class="dd-menu" role="menu">
-    <button type="button" role="menuitem" class="dd-item" data-action="cadItem" data-arg="guideline">CAD-Richtlinie BBL V1.0 (PDF)</button>
+    <a role="menuitem" class="dd-item" href="${GUIDELINE_PDF}" target="_blank" rel="noopener" data-action="closeMenus">CAD-Richtlinie BBL V1.0 (PDF)</a>
     <button type="button" role="menuitem" class="dd-item" data-action="cadItem" data-arg="sample">Musterplan herunterladen (DWG)</button>
   </div>` : ''}
 </div>`;
@@ -357,7 +364,6 @@ function planEntry(ctx, F) {
       ${p.result && !F.locked ? linkBtn({ label: 'Entfernen', cls: 'fs-12', action: 'planRemove', key: p.key }) : ''}
     </div>
     ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}
-    ${lockBand(F)}
     ${p.busy ? html`<div class="note note-grey" style="margin:10px 12px 6px"><span class="plan-spin">${icon('loader-circle', 14, '#5b6573')}</span>${p.busy}</div>` : ''}
     ${p.error ? html`<div class="note note-rose" style="margin:10px 12px 6px">${icon('circle-alert', 14, '#9b2c44')}${p.error}</div>` : ''}
     ${!p.result ? html`<div style="padding:40px 20px 36px">${dropZone(p)}</div>` : resultPanel(ctx, p)}
@@ -366,7 +372,7 @@ function planEntry(ctx, F) {
 
 function submitBar(F) {
   const B = F.bar, A = F.act;
-  if (B.locked) return '';                                             // the lock band under the card head says it
+  if (B.locked) return html`<div class="submit-bar"><span class="fs-13 flex-1" style="min-width:240px">${B.lockedText}</span>${linkBtn({ label: 'Erfassung wieder öffnen (Prototyp)', cls: 'fs-125', action: A.reopen, key: F.id })}</div>`;
   return html`<div class="submit-bar">
     <div class="submit-comp"><span class="fs-125" style="color:#374151">${B.compText}</span>${progress(B.compW, B.compBar)}</div>
     ${B.canFilter ? checkbox({ checked: F.erf.missingOnly, label: 'Nur fehlende Werte anzeigen', action: 'formToggleMissing', key: F.id }) : ''}

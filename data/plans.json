@@ -1,5 +1,5 @@
 {
- "note": "Planlieferungen DWG für das Flächenmanagement (SAP RE-FX) (Projekt Verwaltungszentrum Musterhausen): ein Grundriss = eine Lieferung. «seeds» sind die unveränderten Prüfergebnisse der plan-check-Engine (js/plancheck) für die mitgelieferten Musterdateien (assets/plans), erzeugt unter Node; tests/model.test.mjs prüft, dass sie mit der Engine übereinstimmen. Siehe docs/reviews/2026-11-03-planlieferungen-dwg.md. «beheizt»: false markiert ein Geschoss ausserhalb der thermischen Gebäudehülle (EBF nach SIA 416/1 = 0, z. B. UG); sonst gilt EBF = GF. «stamps» ersetzt im Prototyp den Raumstempel (R_RAUMSTEMPEL), den die Planprüfung noch nicht liest: Nutzungsart je AOID als DIN-277-Gruppe für den Musterplan; Räume ohne Eintrag zählen zur HNF.",
+ "note": "Planlieferungen DWG für das Flächenmanagement (SAP RE-FX) (Projekt Verwaltungszentrum Musterhausen): ein Grundriss = eine Lieferung. «seeds» sind die unveränderten Prüfergebnisse der plan-check-Engine (js/plancheck) für die mitgelieferten Musterdateien (assets/plans), erzeugt unter Node; tests/model.test.mjs prüft, dass sie mit der Engine übereinstimmen. Siehe docs/reviews/2026-11-03-planlieferungen-dwg.md. «beheizt»: false markiert ein Geschoss ausserhalb der thermischen Gebäudehülle (EBF nach SIA 416/1 = 0, z. B. UG); sonst gilt EBF = GF. «usage» ersetzt im Prototyp die Raumtabelle (Anhang CAD.A01 der CAD-Richtlinie, Kap. 5.11), die zur Lieferung gehört, aber noch nicht eingelesen wird: Nutzungsart je AOID als DIN-277-Gruppe für den Musterplan; Räume ohne Eintrag zählen zur HNF.",
  "guideline": "CAD-Richtlinie BBL V1.0",
  "ruleCount": 40,
  "gate": "no-errors",
@@ -42,7 +42,7 @@
    "label": "Plan mit Büro-Layerstruktur (Testdatei plan-check)"
   }
  },
- "stamps": {
+ "usage": {
   "9999.AA.05.001": "NNF 7",
   "9999.AA.05.002": "FF 8",
   "9999.AA.05.003": "FF 8",

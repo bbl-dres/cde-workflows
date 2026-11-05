@@ -61,34 +61,45 @@ test('actions: THG Emissionsquelle input splits tool code, Bezeichnung and Ökob
 
 test('actions: Hauptgruppen toggle and sums (KV-32)', () => {
   const { actions, P, F, store } = setup();
-  actions.formMode({ form: 'kv', group: 'C' });
-  assert.equal(P().forms.kv.modes.C, 'detail');
+  // every Hauptgruppe is broken down by default; «Zusammenfassen» keeps the sum as the group amount, «Aufschlüsseln» shows the positions again
+  assert.ok(Object.values(P().forms.kv.modes).every(m => m === 'detail'));
   actions.formMode({ form: 'kv', group: 'C' });
   const sum = data.ebkp.ebkp.find(g => g.code === 'C').kids.reduce((a, k) => a + num(P().kvV[k.code]), 0);
   assert.equal(P().forms.kv.modes.C, 'direct'); assert.equal(P().forms.kv.gvals.C, sum, 'Zusammenfassen keeps the sum as the group amount');
+  actions.formMode({ form: 'kv', group: 'C' });
+  assert.equal(P().forms.kv.modes.C, 'detail');
   // A group whose positions are all empty closes with an empty amount, not 0.
   actions.setMap({ key: 'kvQ', code: 'D01' }, { value: '' });
   ['D01', 'D05', 'D07', 'D08'].forEach(c => actions.setMap({ key: 'kvV', code: c }, { value: '' }));
   actions.formMode({ form: 'kv', group: 'D' });
   assert.equal(P().forms.kv.gvals.D, ''); assert.ok(F('kv').missing >= 1);
-  // A group without positions keeps its Pauschalbetrag; added elements are merged into it when closing.
-  const v0 = num(P().kvV.V);
-  actions.formMode({ form: 'kv', group: 'V' });
-  assert.equal(F('kv').groups.find(g => g.code === 'V').sum, v0, 'opening V does not change the total');
+  // A Hauptgruppe without any element (H) closes with 0, not with a gap.
+  actions.formMode({ form: 'kv', group: 'H' });
+  assert.equal(P().forms.kv.gvals.H, 0); assert.equal(F('kv').groups.find(g => g.code === 'H').sum, 0);
+  actions.formMode({ form: 'kv', group: 'H' });
+  // V Planungskosten adds up its elements; a Kostenelement added counts and stays when the group is closed.
+  const v0 = F('kv').groups.find(g => g.code === 'V').sum;
+  assert.equal(v0, num(P().kvV.V01) + num(P().kvV.V03));
   actions.formAddPos({ form: 'kv', group: 'V' });
   const id = P().forms.kv.added[0].id;
-  actions.formNewVal({ form: 'kv', id, field: 'code' }, { value: 'V01' });
+  actions.formNewVal({ form: 'kv', id, field: 'code' }, { value: 'V02' });
   actions.formNewVal({ form: 'kv', id, field: 'v' }, { value: '100000' });
   assert.equal(F('kv').groups.find(g => g.code === 'V').sum, v0 + 100000);
   actions.formMode({ form: 'kv', group: 'V' });
-  assert.equal(num(P().kvV.V), v0 + 100000); assert.equal(P().forms.kv.added.length, 0); assert.equal(F('kv').groups.find(g => g.code === 'V').sum, v0 + 100000);
-  // THG: formMode only opens and closes the group (all open by default); it is a view state, so the reviewer of a locked form toggles too
+  assert.equal(P().forms.kv.gvals.V, v0 + 100000); assert.equal(P().forms.kv.added.length, 1); assert.equal(F('kv').groups.find(g => g.code === 'V').sum, v0 + 100000);
+  // Einheit and Kennwert of a Kostenelement: own values, cleared again; nothing on a locked form
+  actions.formUnit({ form: 'kv', code: 'V01' }, { value: 'm² GF' });
+  actions.formKw({ form: 'kv', code: 'C01' }, { value: "1'250" });
+  assert.equal(P().forms.kv.units.V01, 'm² GF'); assert.equal(P().forms.kv.kws.C01, 1250); assert.equal(F('kv').erf.rows.find(r => r.code === 'C01').kw, "1'250");
+  actions.formKw({ form: 'kv', code: 'C01' }, { value: '' });
+  assert.ok(!F('kv').erf.rows.find(r => r.code === 'C01').kwOwn, 'cleared: derived again');
+  actions.formUnit({ form: 'ks', code: 'C01' }, { value: 'pauschal' }); actions.formKw({ form: 'ks', code: 'C01' }, { value: '9' });
+  assert.deepEqual([P().forms.ks.units, P().forms.ks.kws], [{}, {}], 'KS-31 is Abgeschlossen: no change');
+  // THG: formMode only opens and closes the group (all open by default); a form in review ignores the toggle, reopening restores it
   assert.deepEqual(Object.values(P().forms.thg.modes), ['detail', 'detail', 'detail', 'detail', 'detail', 'detail']);
   store.setIn('projects', { musterhausen: { ...P(), forms: { ...P().forms, thg: { ...P().forms.thg, step: 4 } } } });
   actions.formMode({ form: 'thg', group: 'C' });
-  assert.equal(P().forms.thg.modes.C, 'direct', 'locked form: the group still closes');
-  actions.formMode({ form: 'thg', group: 'C' });
-  assert.equal(P().forms.thg.modes.C, 'detail', 'and opens');
+  assert.equal(P().forms.thg.modes.C, 'detail', 'locked form: no toggle');
   actions.formReopen({ key: 'thg' });
   actions.formMode({ form: 'thg', group: 'C' });
   assert.equal(P().forms.thg.modes.C, 'direct');
@@ -250,8 +261,10 @@ test('mock: deterministic, scaled, calibrated; group amounts; Tool-Export merge'
   assert.ok(Math.abs(thgErst(agro.thgSrc) - 11.4) < 0.05, 'calibrated to the Endwert of the instance');
   for (const p of projects) {
     const M = mockProject(p, data, { complete: true });
-    const zero = new Set(data.ebkp.extra.filter(g => !g.cost).map(g => g.code));   // A Grundstück, H Nutzungsspezifische Anlage
-    assert.ok(Object.entries(M.kvV).every(([c, v]) => (zero.has(c) ? v === 0 : v >= 1000)) && Object.values(M.kvQ).every(q => q >= 10), `${p.id}: scaled values`);
+    const zero = new Set(data.ebkp.ebkp.flatMap(g => g.kids.filter(k => !k.cost).map(k => k.code)));   // A01 Grundstück
+    assert.ok(Object.entries(M.kvV).every(([c, v]) => (zero.has(c) ? v === 0 : v >= 1000)) && Object.values(M.kvQ).every(q => q == null || q >= 10), `${p.id}: scaled values`);
+    const net = Object.entries(M.kvV).reduce((a, [c, v]) => a + (/^[AZ]/.test(c) ? 0 : v), 0);
+    assert.ok(Math.abs(M.kvV.Z01 - net * 0.081) <= 50 && Math.abs(M.prev.kv.Z - (Object.entries(M.prev.kv).reduce((a, [c, v]) => a + (/^[AZ]/.test(c) ? 0 : v), 0)) * 0.081) <= 50, `${p.id}: Z Mehrwertsteuer of the sample is 8.1 % of B–Y`);
     assert.ok(M.thgSrc.length === data.thg.sources.length && M.thgSrc.every(s => s.q != null && s.kw != null), `${p.id}: complete sources`);
     assert.ok(Object.keys(M.thgBetr).length === data.thg.betrieb.length * 4 + 2 && M.thgBetr.pv_y > 0, `${p.id}: complete Betrieb`);
   }

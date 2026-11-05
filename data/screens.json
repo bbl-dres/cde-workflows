@@ -143,7 +143,7 @@
       "infoOpen": true
     },
     "annotations": [
-      "Die Erfassung öffnet sich aus der Aufgabe des Lieferanten und funktioniert ohne 3D-Modell. Erfasst wird der Betrag pro Hauptgruppe eBKP-H; ein Klick auf die Zeile öffnet die Positionen (Menge und Kosten), der Betrag der Hauptgruppe ist dann ihre Summe.",
+      "Die Erfassung öffnet sich aus der Aufgabe des Lieferanten und funktioniert ohne 3D-Modell. Erfasst werden die Elementgruppen aller Hauptgruppen A–Z der eBKP-H (Einheit, Menge, Kosten, Kennwert), auch Z Mehrwertsteuer; ein Klick auf die Zeile fasst eine Hauptgruppe zu einem Betrag zusammen.",
       "Zwei Eingabewege wie im eBKP-Assistant: manuell und Excel (<a href=\"#s03c\" data-screen-link>03c</a>, <a href=\"#s03d\" data-screen-link>03d</a>); die Bezugsmengen kommen aus den Grundrissen. «Excel herunterladen» liefert den aktuellen Stand zum Weiterbearbeiten.",
       "Vollständigkeit und Einreichen in der Leiste am Ende der Erfassung: Einreichen ist erst möglich, wenn alle Werte erfasst sind (Probieren: Menge bei D08 eintragen, «Nur fehlende Werte anzeigen»)."
     ],

@@ -26,8 +26,8 @@
       "target": "ePPM",
       "ziel": "ePPM",
       "tableTitle": "Kosten nach Hauptgruppen · eBKP-H",
-      "qtyLabel": "Menge", "valLabel": "Kosten CHF", "kwLabel": "CHF/m² GF", "cmpUnit": "CHF", "cmpPrevLabel": "KS-31", "totalLabel": "Total", "devPct": 10,
-      "detailDefault": ["D", "G"],
+      "qtyLabel": "Menge", "valLabel": "Kosten CHF", "kwLabel": "CHF/m² GF", "units": ["pauschal", "m²", "m³", "m", "Stk.", "m² GF", "kW"], "cmpUnit": "CHF", "cmpPrevLabel": "KS-31", "totalLabel": "Total", "devPct": 10,
+      "detailDefault": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "V", "W", "Y", "Z"],
       "groupRef": { "B": ["m² GSF", "GSF"], "C": ["m² GF", "GF"], "D": ["m² GF", "GF"], "E": ["m² FAW", "FAW"], "F": ["m² FB", "FB"], "G": ["m² GF", "GF"], "I": ["m² BUF", "BUF"], "J": ["m² NF", "NF"], "V": ["pauschal"], "W": ["m² GF", "GF"], "Y": ["pauschal"] },
       "accuracy": 10,
       "targets": [["Kostenziel B–W", "ziel"], ["KS-31 Kostenschätzung", "prev"], ["Kostendach Projektauftrag", "dach"]],
@@ -44,8 +44,8 @@
       "target": "ePPM",
       "ziel": "ePPM",
       "tableTitle": "Kosten nach Hauptgruppen · eBKP-H",
-      "qtyLabel": "Menge", "valLabel": "Kosten CHF", "kwLabel": "CHF/m² GF", "cmpUnit": "CHF", "cmpPrevLabel": "SIA 21", "totalLabel": "Total", "devPct": 15,
-      "detailDefault": ["C"],
+      "qtyLabel": "Menge", "valLabel": "Kosten CHF", "kwLabel": "CHF/m² GF", "units": ["pauschal", "m²", "m³", "m", "Stk.", "m² GF", "kW"], "cmpUnit": "CHF", "cmpPrevLabel": "SIA 21", "totalLabel": "Total", "devPct": 15,
+      "detailDefault": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "V", "W", "Y", "Z"],
       "groupRef": { "B": ["m² GSF", "GSF"], "C": ["m² GF", "GF"], "D": ["m² GF", "GF"], "E": ["m² FAW", "FAW"], "F": ["m² FB", "FB"], "G": ["m² GF", "GF"], "I": ["m² BUF", "BUF"], "J": ["m² NF", "NF"], "V": ["pauschal"], "W": ["m² GF", "GF"], "Y": ["pauschal"] },
       "accuracy": 15,
       "targets": [["Kostenziel B–W", "ziel"], ["Kostengrobschätzung SIA 21", "prev"], ["Kostendach Projektauftrag", "dach"]],
@@ -206,14 +206,14 @@
     },
     "botschaft-wien": {
       "thg": { "head": { "art": "Erneuerung (Modernisierung, Bestandsbau)" }, "step": 0, "dates": ["17.11.2026"], "frist": "30.09.2027", "lead": "SB" },
-      "ks": { "step": 1, "dates": ["01.04.2027", "10.04.2027"], "frist": "31.05.2027", "lead": "SB", "missing": ["ksV:V", "ksQ:C04"] }
+      "ks": { "step": 1, "dates": ["01.04.2027", "10.04.2027"], "frist": "31.05.2027", "lead": "SB", "missing": ["ksV:V01", "ksQ:C04"] }
     },
     "prangins": {
       "thg": { "step": 6, "dates": ["02.02.2025", "01.03.2025", null, "15.01.2027", "18.01.2027", "31.01.2027", "31.01.2027"], "frist": "31.01.2027", "lead": "AB", "endwert": 7.8, "head": { "kat": "Sonstige", "art": "Erneuerung (Modernisierung, Bestandsbau)", "tool": "GREG" } }
     },
     "tenero": {
       "thg": { "head": { "art": "Erneuerung (Modernisierung, Bestandsbau)" }, "step": 0, "dates": ["05.01.2027"], "frist": "31.10.2027", "lead": "HB", "kann": true },
-      "kv": { "step": 1, "dates": ["15.03.2027", "25.03.2027"], "frist": "31.05.2027", "lead": "HB", "missing": ["kvQ:D07", "kvV:Y"] }
+      "kv": { "step": 1, "dates": ["15.03.2027", "25.03.2027"], "frist": "31.05.2027", "lead": "HB", "missing": ["kvQ:D07", "kvV:Y01"] }
     }
   }
 }

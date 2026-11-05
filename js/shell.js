@@ -12,7 +12,8 @@ export const banner = () => html`<div class="proto-banner" role="note"><span cla
 
 /** Footer: source link at the right. */
 export const REPO_URL = 'https://github.com/bbl-dres/cde-workflows';
-export const footer = () => html`<footer class="app-footer"><span class="app-footer-note">Prototyp – nur zur Demonstration</span><span>Quellcode: <a href="${REPO_URL}" target="_blank" rel="noopener">${REPO_URL.replace('https://', '')}</a></span></footer>`;
+const CDE_URL = 'https://www.astra.admin.ch/de/cde-bund';   // the real CDE Bund this prototype mimics
+export const footer = () => html`<footer class="app-footer"><span class="app-footer-note">Prototyp – nur zur Demonstration</span><span class="app-footer-links"><span>Quellcode: <a href="${REPO_URL}" target="_blank" rel="noopener">${REPO_URL.replace('https://', '')}</a></span><span>CDE Bund: <a href="${CDE_URL}" target="_blank" rel="noopener">${CDE_URL.replace('https://www.', '')}</a></span></span></footer>`;
 
 // ---- Topbar ----
 export function topbar(ctx, hasSidebar) {

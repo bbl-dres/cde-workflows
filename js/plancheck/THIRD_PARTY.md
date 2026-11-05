@@ -31,8 +31,10 @@ WebAssembly-Build zu behalten. Der Build wird erst beim ersten Prüfen eines Pla
 
 | Datei | Herkunft | Verwendung |
 |---|---|---|
-| `CAD.V01-CAFM-Plan-DE.dwg` | plan-check `assets/test-files/`, CAFM-Musterplan BBL (Anhang CAD.V01 der CAD-Richtlinie) | Vorbefüllte Geschosse UG, 1. OG, 2. OG; «Musterplan laden» |
+| `CAD.V01-CAFM-Plan-DE.dwg` | plan-check `assets/test-files/`, CAFM-Musterplan BBL (Anhang CAD.V01 der CAD-Richtlinie) | Vorbefüllte Geschosse UG, 1. OG, 2. OG; Menü «CAD-Richtlinie» › «Musterplan herunterladen (DWG)» |
 | `2011-DM-0-A04-6A1.dwg` | plan-check `assets/test-files/`, Testdatei mit Büro-Layerstruktur | Vorbefülltes EG (Beispiel einer nicht richtlinienkonformen Lieferung) |
 
 Die Dateien werden ausschliesslich lokal im Browser verarbeitet; nichts wird an einen Server gesendet.
-Die CAD-Richtlinie BBL V1.0 sowie SIA 416 / DIN 277 sind nicht Teil dieses Repositories.
+| `CAD-Richtlinie-BBL-DE.pdf` | BBL, CAD-Richtlinie Version 1.0 (Stand 01.01.2026, publiziert, «Public»), bezogen von bbl.admin.ch | Menü «CAD-Richtlinie» der Planlieferung; Anhänge unter `docs/reference/cad-richtlinie/` |
+
+SIA 416 und DIN 277 sind nicht Teil dieses Repositories.
