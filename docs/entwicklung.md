@@ -40,6 +40,9 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   Zuklappen, «+ Emissionsquelle hinzufügen», Papierkorb, Total B–G, «THGE Erstellung pro Jahr» und «THGE Erstellung, Betrachtungszeitraum 60 Jahre inkl. Ersatz» (Begriffe SIA 2032). Der
   Endwert für das SUS wird berechnet (Erstellung pro Jahr je m² EBF). «Tool-Export importieren» holt die Quellen des Projekts
   (bei einem offenen Formular alle 25, sonst die fehlenden Werte).
+  Die Maske deckt den Bereich Erstellung ab; die realen BBL-Berichte (lokal unter ) bilanzieren
+  zusätzlich den Betrieb (Energiedienstleistungen, PV, Strombilanz). Empfehlungen zur Erweiterung:
+  .
 - **Planlieferungen DWG**: ein Grundriss pro Lieferung. Die DWG-Datei wird per Drag & Drop hochgeladen und lokal im Browser gegen
   die 40 Prüfregeln der CAD-Richtlinie BBL V1.0 geprüft (LibreDWG WebAssembly, nichts wird hochgeladen), mit Plan-Viewer,
   Fehlermeldungen, Räumen, Geschossflächen (Bruttogeschossfläche als Polygon), Layern und Kennzahlen SIA 416 samt

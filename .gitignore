@@ -8,3 +8,6 @@ Thumbs.db
 
 # downloaded third-party sources of the research notes (KBOB, ecobau, CRB, BAFU) are kept locally only
 docs/reference/sources/
+
+# examples of real deliveries received from the BBL (reports of engineering firms, with contact details) are kept locally only
+docs/reference/beispiele/
