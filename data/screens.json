@@ -53,7 +53,7 @@
     "annotations": [
       "Unverändertes Frontend: Datenlieferungen sind normale Einträge mit den bestehenden Spalten. Der Typ «Datenformular» steht in der Beschreibung; Kacheln und Status-Labels bleiben gleich.",
       "Keine neue Schaltfläche. Bestellt wird über den bestehenden Dialog «Aufgabenplan hinzufügen», ergänzt um die Auswahl einer Datenformular-Vorlage (<a href=\"#s02\" data-screen-link>02</a>).",
-      "Die Beschreibung nennt Typ, Inhalt und Zielsystem (ePPM oder SUS). Ein Klick auf den Namen öffnet die Lieferung (<a href=\"#s03\" data-screen-link>03</a>, <a href=\"#s05\" data-screen-link>05</a>)."
+      "Die Beschreibung nennt Typ, Inhalt und Zielsystem (ePPM oder Wüest Dimensions). Ein Klick auf den Namen öffnet die Lieferung (<a href=\"#s03\" data-screen-link>03</a>, <a href=\"#s05\" data-screen-link>05</a>)."
     ],
     "group": "screens",
     "fullPage": false
@@ -74,7 +74,7 @@
       "infoOpen": true
     },
     "annotations": [
-      "Zwei Vorlagen: Kosten (Menge + Kosten) und Ökobilanz (Menge + THG). Vorlage anklicken zum Umschalten.",
+      "Zwei Vorlagen: Kosten (KS / KV) und Ökobilanz (Erstellung und Betrieb). Die Vorlage bestimmt Zielsystem und Pflicht-Regel.",
       "Pflicht und Kontrolle werden aus den Anlagekosten in den Stammdaten abgeleitet: ab 1 Mio CHF Muss und Kontrolle, darunter Kann nach Ermessen PPE/PM. Anlagekosten als Tweak änderbar.",
       "Der Lieferverantwortliche erhält eine Aufgabe und meldet sich über AGOV an. Rechte wie bei bestehenden Projektmitgliedern."
     ],
@@ -143,8 +143,8 @@
       "infoOpen": true
     },
     "annotations": [
-      "Die Erfassung öffnet sich aus der Aufgabe des Lieferanten und funktioniert ohne 3D-Modell. Erfasst wird der Betrag pro Hauptgruppe eBKP-H; «Aufschlüsseln» öffnet die Positionen (Menge + Kosten), der Betrag der Hauptgruppe ist dann ihre Summe.",
-      "Drei Eingabewege wie im eBKP-Assistant: manuell, Excel (<a href=\"#s03c\" data-screen-link>03c</a>, <a href=\"#s03d\" data-screen-link>03d</a>) und IFC optional (nur Mengen). «Excel herunterladen» liefert den aktuellen Stand zum Weiterbearbeiten.",
+      "Die Erfassung öffnet sich aus der Aufgabe des Lieferanten und funktioniert ohne 3D-Modell. Erfasst wird der Betrag pro Hauptgruppe eBKP-H; ein Klick auf die Zeile öffnet die Positionen (Menge und Kosten), der Betrag der Hauptgruppe ist dann ihre Summe.",
+      "Zwei Eingabewege wie im eBKP-Assistant: manuell und Excel (<a href=\"#s03c\" data-screen-link>03c</a>, <a href=\"#s03d\" data-screen-link>03d</a>); die Bezugsmengen kommen aus den Grundrissen. «Excel herunterladen» liefert den aktuellen Stand zum Weiterbearbeiten.",
       "Vollständigkeit und Einreichen in der Leiste am Ende der Erfassung: Einreichen ist erst möglich, wenn alle Werte erfasst sind (Probieren: Menge bei D08 eintragen, «Nur fehlende Werte anzeigen»)."
     ],
     "group": "screens",
@@ -212,7 +212,7 @@
       "infoOpen": true
     },
     "annotations": [
-      "Tab «Übersicht» statt Zusammenfassung, für jede Lieferung gleich aufgebaut: Kennzahlen, Kosten nach Hauptgruppen im Vergleich mit der Vorphase (KS-31) und das Kostenziel, live aus der Erfassung (<a href=\"#s03\" data-screen-link>03</a>).",
+      "Tab «Übersicht» statt Zusammenfassung, für jede Lieferung gleich aufgebaut: Kennzahlen, Kostenziele und Kosten nach Hauptgruppen als Liste mit der Vorphase (KS-31) als Strich, live aus der Erfassung (<a href=\"#s03\" data-screen-link>03</a>).",
       "Rechts stehen Lieferung, Verlauf (Status-Schritte mit dem nächsten Schritt) und Beteiligte als Kurzfassung; die Details liegen in den Tabs Verlauf und Beteiligte.",
       "Bauwerks-, Erstellungs- und Anlagekosten als Eckwerte. Diese gehen nach Freigabe an ePPM und sind über alle Projekte vergleichbar."
     ],
@@ -235,8 +235,8 @@
       "infoOpen": true
     },
     "annotations": [
-      "Gleiche Maske wie beim KV, mit THG-Emissionen statt Kosten. Die CDE Bund verwaltet nur den Data Drop und rechnet nichts.",
-      "Erfassung Erstellung: die Emissionsquellen aus dem Tool-Export je eBKP-H-Elementgruppe mit Referenzgrösse und Kennwert in kg CO₂-eq/m² EBF·a (SIA 2032); Erfassung Betrieb: die Energiedienstleistungen nach Rechenhilfe SIA 390/1 mit Photovoltaik und Stromprodukt. THGE Erstellung und Betrieb pro Jahr werden daraus berechnet und mit den Richtwerten SIA 390/1 der Gebäudekategorie verglichen. Bericht (PDF), Tool-Export und Rechenhilfe sind Pflicht; «Tool-Export importieren» und «Rechenhilfe importieren» übernehmen die Werte aus den Tools."
+      "Die Ökobilanz wird im Tool gerechnet. Die CDE Bund übernimmt die Ergebnisse (Data Drop) und bildet nur Summen und Anteile.",
+      "Erfassung Erstellung: Emissionsquellen aus dem Tool-Export je eBKP-H-Elementgruppe (Referenzgrösse, kg CO₂-eq/m² EBF·a). Erfassung Betrieb: Energiedienstleistungen nach Rechenhilfe SIA 390/1 mit Photovoltaik und Stromprodukt. Bericht, Tool-Export und Rechenhilfe sind Pflichtdokumente; die Übersicht vergleicht mit den Richtwerten SIA 390/1."
     ],
     "group": "screens",
     "fullPage": false
@@ -258,8 +258,8 @@
     },
     "annotations": [
       "Der Workflow-Status zeigt, wo die Lieferung steht. Im Informationslieferplan erscheint er über die bestehenden Status-Pills.",
-      "Automatische Prüfungen plus manuelle Bestätigung durch die PM. Alle vier Prüfpunkte setzen, dann Freigeben und Übertragen durchklicken.",
-      "Übergabe per Schnittstelle: KV an ePPM, THG Erstellung und Betrieb an SUS. Offen ist, wer die Übertragung auslöst."
+      "Die Zusammenfassung zeigt je Prüfpunkt den Wert der Lieferung und das Ergebnis (erfüllt, prüfen, nicht erfüllt). Die PM bestätigt zwei Prüfpunkte, gibt frei und überträgt.",
+      "Übergabe per Schnittstelle: KV an ePPM, THG Erstellung und Betrieb an Wüest Dimensions (Modul Sustainability). Offen ist, wer die Übertragung auslöst."
     ],
     "group": "screens",
     "fullPage": false
@@ -323,7 +323,7 @@
       "infoOpen": true
     },
     "annotations": [
-      "Vergleich je Hauptgruppe mit der Kostenschätzung der Vorphase (KS-31). Abweichungen über 10 % sind markiert. Rechnet live mit den Werten aus <a href=\"#s03\" data-screen-link>03</a> und dem Import <a href=\"#s03d\" data-screen-link>03d</a>.",
+      "Vergleich je Hauptgruppe mit der Kostenschätzung der Vorphase (KS-31). Abweichungen ab 10 % sind markiert. Rechnet live mit den Werten aus <a href=\"#s03\" data-screen-link>03</a> und dem Import <a href=\"#s03d\" data-screen-link>03d</a>.",
       "Kostenziel aus der Projektdefinition. Der Wert kommt idealerweise aus ePPM, damit beide Systeme dasselbe Ziel zeigen.",
       "Gleiches Prüfmuster wie bei der Ökobilanz (<a href=\"#s05\" data-screen-link>05</a>). Die Bezugsmengen kommen aus den Grundrissen (DWG); die Prüfung zeigt das als Hinweis; Freigabe ist trotzdem möglich."
     ],
@@ -347,8 +347,8 @@
     },
     "annotations": [
       "Die Vorlagen sitzen im bestehenden Tab «Informationsanforderungen», neben LOIN. Im Projekt werden sie nur aktiviert; der Bestelldialog (<a href=\"#s02\" data-screen-link>02</a>) zeigt nur aktive Vorlagen. Zeile anklicken für Details.",
-      "Inhalt und Version werden zentral gepflegt. So bleiben Lieferungen über alle Projekte vergleichbar und ePPM und SUS erhalten immer dieselbe Struktur.",
-      "Die Prüfregeln speisen die automatischen Prüfungen in <a href=\"#s05\" data-screen-link>05</a> und <a href=\"#s08\" data-screen-link>08</a>. Für IFC kann hier zusätzlich festgelegt werden, welche Mengen und Klassifikationen das Modell liefern muss."
+      "Inhalt und Version werden zentral gepflegt. So bleiben Lieferungen über alle Projekte vergleichbar, und ePPM und Wüest Dimensions erhalten immer dieselbe Struktur.",
+      "Die Prüfregeln speisen die Zusammenfassung der Prüfung in <a href=\"#s05\" data-screen-link>05</a> und <a href=\"#s08\" data-screen-link>08</a>. Für IFC kann hier zusätzlich festgelegt werden, welche Mengen und Klassifikationen das Modell liefern muss."
     ],
     "group": "screens",
     "fullPage": false
@@ -382,8 +382,8 @@
     },
     "annotations": [
       "Jedes Geschoss ist eine eigene Lieferung (DWG-UG … DWG-DG) mit denselben Tabs wie die anderen Datenformulare.",
-      "Eine Zeile pro Geschoss mit Ebene, Geschosshöhe, Datei und Prüfstatus. Probieren: 02 neu hochladen und 03 hochladen.",
-      "Eine Lieferung pro Geschoss: die Übersicht zeigt die Flächen SIA 416 des geprüften Grundrisses und die Prüfregeln nach Kategorie. Einreichen erst ohne Fehler; die Flächen fliessen als Bezugsmengen in 03b und 04.",
+      "Rechts stehen Lieferung, Verlauf mit dem nächsten Schritt und Beteiligte, wie bei den anderen Datenformularen.",
+      "Die Übersicht zeigt die Flächen SIA 416 des geprüften Grundrisses und die Prüfregeln nach Kategorie. Einreichen erst ohne Fehler; die Flächen sind Bezugsmengen für KV-32 und THG-32.",
       "Offene Frage: Wo werden Geschosse definiert? Vorschlag: in den Stammdaten des Gebäudes, mit Übernahme in die Lieferung."
     ],
     "group": "varianteb",

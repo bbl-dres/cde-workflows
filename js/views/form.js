@@ -13,14 +13,11 @@ const COLS = 'grid-template-columns:96px minmax(0,1fr) 72px 120px 140px 100px 36
 const SIA_COLS = 'grid-template-columns:52px minmax(0,1fr) 90px 56px';   // Flächen SIA 416: the same grid table as Projektaufgaben
 const COLS_THG = 'grid-template-columns:96px minmax(0,1fr) 72px 110px 64px 104px 72px 36px';   // Erstellung: Code · Emissionsquelle · Hersteller · Referenzgrösse · Einheit · kg/m² EBF·a · Anteil
 const COLS_BETR = 'grid-template-columns:minmax(0,1fr) 92px 104px 88px 88px 100px 112px 112px';   // Betrieb: Energiedienstleistung · Projektwert · Nutzenergie · Anteil · η · Endenergie · Koeffizient · kg/m² EBF·a
-const check = c => html`<div class="rv-check">${icon(c.icon, 16, c.color)}<span class="flex-1">${c.label}</span></div>`;
-const devCell = c => html`<span class="right${c.hi ? ' is-over' : ''}" ${c.hi ? raw('title="Abweichung über dem Schwellenwert, Begründung nötig"') : ''}>${c.delta}</span>`;
 const kvRow = (k, v) => html`<div class="rv-kv"><span class="rv-kv-k">${k}</span><span>${v}</span></div>`;
 const RO = F => (F.locked ? raw('readonly') : '');
 /** Icon from a URL (Hauptgruppen pictograms in assets/ebkp, lucide icons in assets/icons), as a CSS mask like icon(). */
 const urlIcon = (url, size = 18) => html`<span class="ic" style="width:${size}px;height:${size}px;background:currentColor;-webkit-mask:url(${url}) center/contain no-repeat;mask:url(${url}) center/contain no-repeat" aria-hidden="true"></span>`;
 const OV_COLS = 'grid-template-columns:28px minmax(120px,220px) minmax(0,1fr) 60px 44px 56px';   // bar lists of the Übersicht: icon · name · bar · value · share · Δ
-const DEV_COLS = 'grid-template-columns:28px minmax(120px,200px) minmax(0,1fr) 48px 48px 56px';
 const DIS = F => (F.locked ? raw('disabled') : '');
 
 export const tabBadge = b => (b ? html`<span class="tab-badge" style="background:${b.bg};color:${b.fg}">${b.n}</span>` : '');
@@ -43,8 +40,8 @@ function uebersicht(ctx, F) {
   return html`<div class="fm-cols">
     <div class="fm-main">
       <div class="kpi-grid">
-        ${F.kpis.map(k => html`<div class="card kpi"><span class="kpi-k">${k.k}</span><span class="kpi-row"><span class="kpi-v">${k.v}</span><span class="kpi-u">${k.u}</span></span></div>`)}
-        <div class="card kpi"><span class="kpi-k">${F.comp.label}</span><span class="kpi-v">${F.comp.pct}</span>${progress(F.comp.w, F.comp.bar)}<span class="fs-12" style="color:${F.comp.fg}">${F.comp.text}</span></div>
+        ${F.kpis.map(k => html`<div class="card kpi" title="${k.tip}"><span class="kpi-k">${k.k}</span><span class="kpi-row"><span class="kpi-v">${k.v}</span><span class="kpi-u">${k.u}</span></span></div>`)}
+        <div class="card kpi" title="${F.comp.tip}"><span class="kpi-k">${F.comp.label}</span><span class="kpi-v">${F.comp.pct}</span>${progress(F.comp.w, F.comp.bar)}<span class="fs-12" style="color:${F.comp.fg}">${F.comp.text}</span></div>
       </div>
       ${F.kind === 'plan' ? planOverview(F, L) : F.erf.isTHG ? thgOverview(F, L, ctx) : costOverview(F, L)}
     </div>
@@ -63,17 +60,6 @@ const stepsList = (F, L) => html`<div class="st-list">${F.steps.map(s => html`<d
   ${s.isCur ? html`<div class="st-next"><span class="st-next-text">${F.next.text}</span>${F.next.btn ? html`<div>${btn({ label: F.next.btn, kind: 'primary', nav: L(F.next.tab) })}</div>` : ''}</div>` : ''}
 </div>`)}</div>`;
 
-/** Hauptgruppen im Vergleich mit der Vorphase (Kosten and Ökobilanz), with the subtotals of the form. */
-const ovTable = (F, L) => {
-  const C = 'grid-template-columns:52px minmax(0,1fr) 130px 130px 110px';
-  return card(html`<span class="flex-1">${F.ov.tableTitle}</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div class="fm-table"><div style="min-width:520px">
-      <div class="fm-th" style="${C}"><span>Code</span><span>Hauptgruppe</span><span class="right">${F.ov.colCur}</span><span class="right">${F.ov.colPrev}</span><span class="right">${F.ov.colKw}</span></div>
-      ${F.costRows.map(c => html`<div class="fm-tr" style="${C};background:${c.bg}"><span class="fm-code">${c.code}</span><span class="ellipsis">${c.name}</span><span class="right">${c.cur}</span><span class="right muted">${c.prev}</span><span class="right muted">${c.kw}</span></div>`)}
-      <div class="fm-total" style="${C}"><span></span><span>Total</span><span class="right">${F.totalRow.cur}</span><span class="right muted">${F.totalRow.prev}</span><span class="right muted">${F.totalRow.kw}</span></div>
-      ${F.subtotals.length ? html`<div class="fm-space"></div>${F.subtotals.map(u => html`<div class="fm-sub" style="${C}"><span>${u.code}</span><span>${u.name}</span><span class="right">${u.cur}</span><span class="right muted fw-400">${u.prev}</span><span class="right">${u.kw}</span></div>`)}` : ''}
-    </div></div>`);
-};
-
 function costOverview(F, L) {
   return html`${card(html`<span class="flex-1">${F.ov.chartTitle}</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`${targetChart(F)}<div class="card-foot">${F.ov.chartHint}</div>`)}
     ${card(html`<span class="flex-1">Kosten nach Hauptgruppen</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`${ovListBody(F, F.ovList)}<div class="card-foot">${F.ovList.foot}</div>`)}`;
@@ -87,10 +73,10 @@ const ovRow = (F, g) => html`<div class="ov-row${g.tab ? ' is-link' : ''}" style
   <span class="right fw-600">${g.cur}</span><span class="right muted fs-12">${g.share}</span><span class="right" style="color:${g.dfg};font-weight:${g.dw}" title="${g.dp}">${g.d}</span>
 </div>`;
 const ovListBody = (F, Lst) => html`<div class="fm-table"><div class="ov-body">
-  <div class="ov-head" style="${OV_COLS}"><span></span><span>${Lst.col}</span><div class="ov-axis"><span>0</span><span>${Lst.max}</span></div><span class="right">${Lst.unit}</span><span class="right">Anteil</span><span class="right">${Lst.dUnit}</span></div>
+  <div class="ov-head" style="${OV_COLS}"><span></span><span>${Lst.col}</span><div class="ov-axis"><span>0</span><span>${Lst.max}</span></div><span class="right" title="${Lst.unitTip}">${Lst.unit}</span><span class="right" title="Anteil am Total">Anteil</span><span class="right" title="${Lst.dTip}">${Lst.dUnit}</span></div>
   ${Lst.rows.map(g => ovRow(F, g))}
   ${Lst.rows.length === 0 ? html`<div class="muted fs-13" style="padding:14px 0">Noch keine Werte erfasst.</div>` : ''}
-  <div class="ov-total" style="${OV_COLS}"><span></span><span>${Lst.totalLabel}</span><span class="muted fs-12">${Lst.prevText}</span><span class="right fw-600">${Lst.tot}</span><span class="right muted fs-12">100 %</span><span class="right">${Lst.dTot}</span></div>
+  <div class="ov-total" style="${OV_COLS}"><span></span><span>${Lst.totalLabel}</span><span class="muted fs-12">${Lst.prevText}</span><span class="right fw-600" title="${Lst.totTip}">${Lst.tot}</span><span class="right muted fs-12">100 %</span><span class="right" title="${Lst.dTip}">${Lst.dTot}</span></div>
   ${Lst.subs.length ? html`<div style="height:10px"></div>${Lst.subs.map(u => html`<div class="ov-sub" style="${OV_COLS}"><span></span><span><span>${u.code}</span> ${u.name}</span><span class="muted fs-12 fw-400">${u.prevText}</span><span class="right">${u.cur}</span><span class="right muted fs-12 fw-400">${u.share}</span><span class="right fw-400" style="color:${u.dfg};font-weight:${u.dw}">${u.d}</span></div>`)}` : ''}
 </div></div>`;
 
@@ -98,19 +84,19 @@ const ovListBody = (F, Lst) => html`<div class="fm-table"><div class="ov-body">
 function thgOverview(F, L, ctx) {
   const area = ctx.state.ui.ovArea === 'b' ? 'b' : 'e', Lst = area === 'b' ? F.ovBetr : F.ovList;
   return html`${card(html`<span class="flex-1">Grundlagen</span>${hint('gilt für Erstellung und Betrieb')}`, headFields(F, F.headShared))}
-    ${card(html`<span class="flex-1">${F.tz.title}</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`${zielwerte(F)}<div class="card-foot">${F.tz.hint} · Nur die Zusatzanforderung (Erstellung + Betrieb) ist einzuhalten; Richtwerte sind informativ.</div>`)}
-    ${card(html`<span class="flex-1">Wo entstehen die Emissionen?</span>${headLink('Zur Erfassung', L(area === 'b' ? 'betrieb' : 'erfassung'))}`, html`<div class="seg" role="group" aria-label="Bereich">${[['e', 'Erstellung'], ['b', 'Betrieb']].map(([k, label]) => html`<button type="button" class="seg-btn${area === k ? ' is-on' : ''}" data-action="ovArea" data-arg="${k}" aria-pressed="${area === k ? 'true' : 'false'}">${label}</button>`)}</div>${ovListBody(F, Lst)}<div class="card-foot">${F.ovList.foot}</div>`)}`;
+    ${card(html`<span class="flex-1">${F.tz.title}</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`${zielwerte(F)}<div class="card-foot">${F.tz.hint}</div>`)}
+    ${card(html`<span class="flex-1">Wo entstehen die Emissionen?</span>${headLink('Zur Erfassung', L(area === 'b' ? 'betrieb' : 'erfassung'))}`, html`<div class="seg" role="group" aria-label="Bereich">${[['e', 'Erstellung'], ['b', 'Betrieb']].map(([k, label]) => html`<button type="button" class="seg-btn${area === k ? ' is-on' : ''}" data-action="ovArea" data-arg="${k}" aria-pressed="${area === k ? 'true' : 'false'}">${label}</button>`)}</div>${ovListBody(F, Lst)}<div class="card-foot">${Lst.foot}</div>`)}`;
 }
 
 const targetChart = F => {
   const K = F.chart;
   return html`<div class="tgt-body">
-    <div class="tgt-ist"><span class="kpi-v">${K.ist}</span><span class="kpi-u">${F.ov.istLabel}</span></div>
+    <div class="tgt-ist" title="${K.istTip}"><span class="kpi-v">${K.ist}</span><span class="kpi-u">${F.ov.istLabel}</span></div>
     <div class="tgt" role="img" aria-label="${K.ist} im Vergleich mit ${K.targets.map(m => m.label + ' ' + m.val).join(', ')}"><div class="tgt-track"></div>${K.hasBand ? html`<div class="tgt-band" style="left:${K.bandL};width:${K.bandW}"></div>` : ''}<div class="tgt-bar" style="width:${K.istW}"></div>
       ${K.targets.map(m => html`<div class="tgt-mark" style="left:${m.x};background:${m.c}"></div><span class="tgt-dot" style="top:${m.ly};left:${m.x};background:${m.c}">${m.n}</span>`)}</div>
     <div class="tgt-axis"><span>${K.min}</span><span>${K.max}</span></div>
-    <div class="tgt-legend"><span></span><span class="muted fs-12">Ziel</span><span class="muted fs-12 right">Wert</span><span class="muted fs-12 right">Ist zum Ziel</span>
-      ${K.targets.map(m => html`<span class="tgt-n" style="background:${m.c}">${m.n}</span><span class="ellipsis">${m.label}</span><span class="right">${m.val}</span><span class="right" style="color:${m.dc}">${m.delta}</span>`)}
+    <div class="tgt-legend"><span></span><span class="muted fs-12">Ziel</span><span class="muted fs-12 right">Wert</span><span class="muted fs-12 right" title="Abweichung des Ist-Werts vom Zielwert">Ist zum Ziel</span>
+      ${K.targets.map(m => html`<span class="tgt-n" style="background:${m.c}">${m.n}</span><span class="ellipsis">${m.label}</span><span class="right">${m.val}</span><span class="right" style="color:${m.dc}" title="Ist ${K.ist} zu ${m.label} ${m.val}">${m.delta}</span>`)}
       ${K.hasBand ? html`<span class="tgt-bandsw"></span><span style="color:#374151">Genauigkeit ±${K.acc} % um Kostenziel</span><span class="right" style="color:#374151">${K.band}</span><span></span>` : ''}
     </div>
   </div>`;
@@ -121,12 +107,12 @@ const targetChart = F => {
 const zielwerte = F => {
   const Z = F.tz;
   return html`<div class="tz-body">
-    ${Z.rows.map(r => html`<div class="tz-row"><div class="tz-label"><span>${r.label}</span><span class="tz-sub">${r.sub}</span></div>
+    ${Z.rows.map(r => html`<div class="tz-row"><span class="tz-label">${r.label}</span>
       <div class="tz-track-wrap" role="img" aria-label="${r.label} ${r.ist}${r.marks.length ? ', ' + r.marks.map(m => m.title).join(', ') : ''}"><div class="tz-track"></div><div class="tz-bar" style="width:${r.istW}"></div>
         ${r.marks.map(m => html`<div class="tz-mark" style="left:${m.x};background:${m.c}"></div><span class="tz-dot${m.below ? ' is-below' : ''}" style="left:${m.x};background:${m.c}" title="${m.title}">${m.n}</span>`)}</div>
-      <span class="tz-ist">${r.ist}</span></div>`)}
+      <span class="tz-ist" title="${r.tip}">${r.ist}</span></div>`)}
     <div class="tz-axis"><span></span><span><span>0</span><span>${Z.max}</span></span><span></span></div>
-    <div class="tz-legend"><span></span><span class="muted fs-12">Ziel</span><span class="muted fs-12 right">Erstellung</span><span class="muted fs-12 right">Betrieb</span><span class="muted fs-12 right">Zusatzanforderung</span>
+    <div class="tz-legend"><span></span><span class="muted fs-12">Ziel</span><span class="muted fs-12 right" title="Richtwert Erstellung, informativ">Erstellung</span><span class="muted fs-12 right" title="Richtwert Betrieb, informativ">Betrieb</span><span class="muted fs-12 right" title="Höchstwert für Erstellung + Betrieb, einzuhalten">Zusatzanforderung</span>
       <span class="tz-sw"></span><span class="fw-600">Ist</span>${Z.ist.map(v => html`<span class="right fw-600">${v}</span>`)}
       ${Z.legend.map(m => html`<span class="tgt-n" style="background:${m.c}">${m.n}</span><span class="ellipsis">${m.label}</span>${m.cells.map(c => html`<span class="right${c.over ? ' is-over' : ''}">${c.v}</span>`)}`)}
     </div>
@@ -136,7 +122,7 @@ const zielwerte = F => {
 function planOverview(F, L) {
   const P = F.planOv;
   return html`
-    ${card(html`<span class="flex-1">Flächen SIA 416 · EBF SIA 416/1</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div class="sia-tbl"><div class="grid-head" style="${SIA_COLS};background:#f4f5f7;height:34px;font-size:12.5px"><span style="grid-column:1/3">Flächenart</span><span class="right">Fläche</span><span class="right" title="Anteil an der Geschossfläche GF">% GF</span></div>${P.sia.map((a, i) => html`<div class="grid-row" style="${SIA_COLS};height:30px;background:${i % 2 ? '#f6f7f9' : '#fff'};border:0;font-weight:${a.fw}"><span class="fw-600">${a.ab}</span><span class="ellipsis">${a.name}</span><span class="right">${a.val}</span><span class="right muted">${a.share}</span></div>`)}</div>`)}
+    ${card(html`<span class="flex-1">Flächen SIA 416 · EBF SIA 416/1</span>${headLink('Zur Erfassung', L('erfassung'))}`, html`<div class="sia-tbl"><div class="grid-head" style="${SIA_COLS};background:#f4f5f7;height:34px;font-size:12.5px"><span style="grid-column:1/3">Flächenart</span><span class="right">Fläche</span><span class="right" title="Anteil an der Geschossfläche GF">% GF</span></div>${P.sia.map((a, i) => html`<div class="grid-row" style="${SIA_COLS};height:30px;background:${i % 2 ? '#f6f7f9' : '#fff'};border:0;font-weight:${a.fw}" title="${a.tip}"><span class="fw-600">${a.ab}</span><span class="ellipsis">${a.name}</span><span class="right">${a.val}</span><span class="right muted">${a.share}</span></div>`)}</div>`)}
     ${card(html`<span class="flex-1">Prüfregeln nach Kategorie</span>${hint('CAD-Richtlinie BBL V1.0')}`, html`<div class="cat-list">${P.cats.map(c => html`<div class="cat-row"><span>${c.name}</span><div class="cat-bar"><div style="width:${c.wOk};background:#7fb69a"></div><div style="width:${c.wWarn};background:#e0b54a"></div><div style="width:${c.wErr};background:#cf1322"></div></div><span class="right muted">${c.ratio}</span></div>`)}
       <div class="cat-legend"><span><span class="cat-sw" style="background:#7fb69a"></span>Bestanden</span><span><span class="cat-sw" style="background:#e0b54a"></span>Warnung</span><span><span class="cat-sw" style="background:#cf1322"></span>Fehler</span></div></div>`)}`;
 }
@@ -147,15 +133,18 @@ function erfassung(ctx, F) {
   return html`<div class="fm-stack">${body}${submitBar(F)}</div>`;
 }
 
+/** Importieren menu: the Excel template first (separated), then the imports of the tab. */
+const importMenu = (F, items, open) => html`<div class="dd">
+  <button type="button" class="btn btn-secondary" data-action="toggleImportMenu" aria-haspopup="menu" aria-expanded="${open ? 'true' : 'false'}">Importieren ${icon('chevron-down', 12, 'currentColor')}</button>
+  ${open ? html`<div class="dd-menu" role="menu">${items.map(([key, label], i) => html`<button type="button" role="menuitem" class="dd-item${i === 0 && items.length > 1 ? ' dd-sep' : ''}" data-action="importItem" data-arg="${key}" data-form="${F.id}">${label}</button>`)}</div>` : ''}
+</div>`;
+
 /** Card head with title, Importieren menu and Excel export, shared by the cost forms and the Ökobilanz. */
 function entryHead(ctx, F) {
   const E = F.erf, open = !!ctx.state.ui.importMenu;
   return html`<div class="card-head" style="flex-wrap:wrap">
       <span class="flex-1" style="flex-basis:220px">${E.tableTitle}</span>
-      ${F.locked ? '' : html`<div class="dd">
-        <button type="button" class="btn btn-secondary" data-action="toggleImportMenu" aria-haspopup="menu" aria-expanded="${open ? 'true' : 'false'}">Importieren ${icon('chevron-down', 12, 'currentColor')}</button>
-        ${open ? html`<div class="dd-menu" role="menu">${E.importItems.map(([key, label]) => html`<button type="button" role="menuitem" class="dd-item" data-action="importItem" data-arg="${key}" data-form="${F.id}">${label}</button>`)}</div>` : ''}
-      </div>`}
+      ${F.locked ? '' : importMenu(F, E.importItems, open)}
       <button type="button" class="btn btn-secondary" data-action="proto">Excel herunterladen</button>
     </div>
     ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}`;
@@ -173,11 +162,11 @@ function dataEntry(ctx, F) {
 const costTable = F => {
   const E = F.erf, ro = RO(F);
   return html`<div class="ent">
-    <div class="ent-th" style="${COLS}"><span>Code</span><span>Bezeichnung</span><span>Einheit</span><span class="right">${E.qtyLabel}</span><span class="right">${E.valLabel}</span><span class="right">${E.kwLabel}</span><span></span></div>
+    <div class="ent-th" style="${COLS}"><span>Code</span><span>Bezeichnung</span><span>Einheit</span><span class="right">${E.qtyLabel}</span><span class="right">${E.valLabel}</span><span class="right" title="Kennwert: Kosten je m² Geschossfläche GF">${E.kwLabel}</span><span></span></div>
     ${E.rows.map(r => (r.isGroupRow ? groupRow(F, r, ro) : r.isAdd ? addRow(F, r, 'formAddPos') : r.isNewPos ? newPosRow(F, r, ro) : posRow(F, r, ro)))}
     ${E.rows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine fehlenden Werte.</div>` : ''}
-    <div class="ent-total" style="${COLS}"><span></span><span>${E.totalLabel}</span><span></span><span></span><span class="right pr18">${E.totalStr}</span><span class="right muted">${E.totalKw}</span><span></span></div>
-    ${F.subtotals.length ? html`<div class="fm-space"></div>${F.subtotals.map(u => html`<div class="ent-subtotal" style="${COLS}"><span>${u.code}</span><span>${u.name}</span><span></span><span></span><span class="right pr18">${u.cur}</span><span class="right">${u.kw}</span><span></span></div>`)}<div style="height:8px"></div>` : ''}
+    <div class="ent-total" style="${COLS}" title="Summe aller Hauptgruppen, ohne MWST"><span></span><span>${E.totalLabel}</span><span></span><span></span><span class="right pr18">${E.totalStr}</span><span class="right muted">${E.totalKw}</span><span></span></div>
+    ${F.subtotals.length ? html`<div class="fm-space"></div>${F.subtotals.map(u => html`<div class="ent-subtotal" style="${COLS}" title="${u.tip}"><span>${u.code}</span><span>${u.name}</span><span></span><span></span><span class="right pr18">${u.cur}</span><span class="right">${u.kw}</span><span></span></div>`)}<div style="height:8px"></div>` : ''}
   </div>`;
 };
 
@@ -243,12 +232,12 @@ const thgHeadCard = (ctx, F, part, list) => card(html`<span class="flex-1">Grund
 const thgTable = F => {
   const E = F.erf, ro = RO(F);
   return html`<div class="ent ent-thg">
-    <div class="ent-th" style="${COLS_THG}"><span>Code</span><span title="Bauteil oder Anlage aus dem Tool-Export: Code, Bezeichnung · Ökobilanzdaten (Bauteil des Tools oder KBOB-Datensatz)">Emissionsquelle · Tool-Export</span><span class="center" title="Herstellerspezifischer Datensatz oder EPD statt KBOB-Durchschnitt">Hersteller</span><span class="right" title="Menge in der Einheit des Datensatzes (m², m, kWp, kW, m² EBF)">Referenzgrösse</span><span>Einheit</span><span class="right" title="THGE Erstellung pro Jahr und m² EBF (SIA 2032, 60 Jahre inkl. Ersatz)">kg/m² EBF·a</span><span class="right" title="Anteil an der Erstellung">Anteil</span><span></span></div>
+    <div class="ent-th" style="${COLS_THG}"><span>Code</span><span title="Bauteil oder Anlage aus dem Tool-Export">Emissionsquelle · Tool-Export</span><span class="center" title="Herstellerspezifischer Datensatz oder EPD statt KBOB-Durchschnitt">Hersteller</span><span class="right" title="Menge in der Einheit des Datensatzes (m², m, kWp, kW, m² EBF)">Referenzgrösse</span><span>Einheit</span><span class="right" title="THGE Erstellung pro Jahr und m² EBF (SIA 2032, 60 Jahre inkl. Ersatz)">kg/m² EBF·a</span><span class="right" title="Anteil an der THGE Erstellung">Anteil</span><span></span></div>
     ${E.rows.map(r => (r.isGroupRow ? thgGroupRow(F, r) : r.isAdd ? addRow(F, r, 'thgAdd') : thgSrcRow(F, r, ro)))}
     ${E.rows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine fehlenden Werte.</div>` : ''}
-    <div class="ent-total" style="${COLS_THG}"><span></span><span>${E.totalLabel}</span><span></span><span></span><span></span><span class="right pr18">${E.tot.kw}</span><span class="right muted">${E.tot.share}</span><span></span></div>
+    <div class="ent-total" style="${COLS_THG}" title="THGE Erstellung: Summe der Emissionsquellen"><span></span><span>${E.totalLabel}</span><span></span><span></span><span></span><span class="right pr18">${E.tot.kw}</span><span class="right muted">${E.tot.share}</span><span></span></div>
     <div class="fm-space"></div>
-    ${E.derived.map(u => html`<div class="ent-subtotal" style="${COLS_THG}"><span></span><span>${u.name}</span><span class="right pr18" style="grid-column:3 / span 3" title="${u.u}">${u.v}</span><span class="right pr18" title="${u.ku}">${u.kw}</span><span></span><span></span></div>`)}
+    ${E.derived.map(u => html`<div class="ent-subtotal" style="${COLS_THG}"><span></span><span>${u.name}</span><span class="right pr18" style="grid-column:3 / span 3" title="${u.tip}">${u.v}</span><span class="right pr18" title="${u.kTip}">${u.kw}</span><span></span><span></span></div>`)}
     <div style="height:8px"></div>
   </div>`;
 };
@@ -265,13 +254,13 @@ const thgGroupRow = (F, r) => html`<div class="ent-group${r.canToggle ? ' is-tog
 const hsBox = (F, r) => html`<span class="center"><button type="button" class="hs-box${r.hs ? ' is-on' : ''}" role="checkbox" aria-checked="${r.hs ? 'true' : 'false'}" aria-label="Herstellerspezifisch ${r.code || ''}" title="Herstellerspezifischer Datensatz oder EPD statt KBOB-Durchschnitt" data-action="thgToggleHs" data-id="${r.id}" ${DIS(F)}>${r.hs ? '✓' : ''}</button></span>`;
 const numCell = (F, r, field, label, str, bdc, ro) => html`<span class="ent-cell-input"><input class="ent-input" aria-label="${label} ${r.code || ''}" value="${str}" placeholder="fehlt" style="border-color:${bdc};background:${F.erf.inputBg}" data-change="thgVal" data-id="${r.id}" data-field="${field}" data-fid="thg-${r.id}-${field}" ${ro}></span>`;
 
-/** An Emissionsquelle: existing (code, Bauteil · Ökobilanzdaten) or new (element group from the list, Bauteil from the Tool-Export). */
+/** An Emissionsquelle on one line: element group and Bauteil (the Ökobilanzdaten of the Tool-Export are the hover text). */
 const thgSrcRow = (F, r, ro) => html`<div class="ent-pos ent-src${r.isNew ? ' ent-new' : ''}" style="${COLS_THG}">
   ${!F.locked
     ? html`<span class="ent-cell-input ent-code-cell">${codeControl(r.code, html`<select class="ent-select" aria-label="Elementgruppe${r.code ? ' ' + r.code : ''}" data-change="thgVal" data-id="${r.id}" data-field="code" data-fid="thg-${r.id}-code" ${DIS(F)}>${optionList(r, 'wählen…')}</select>`)}</span>
-      <span class="ent-cell-input pl6"><input class="ent-text" aria-label="Emissionsquelle aus dem Tool-Export" value="${r.dataset}" placeholder="${r.isNew ? 'Bauteil oder Anlage aus dem Tool-Export (Code, Bezeichnung · Ökobilanzdaten)…' : 'Bauteil oder Anlage aus dem Tool-Export…'}" style="border-color:${r.dsBd};background:${F.erf.inputBg}" data-change="thgVal" data-id="${r.id}" data-field="dataset" data-fid="thg-${r.id}-kbob" ${ro}></span>`
+      <span class="ent-cell-input pl6"><input class="ent-text" aria-label="Emissionsquelle aus dem Tool-Export" value="${r.dataset}" title="${r.quelle}" placeholder="Bauteil oder Anlage" style="border-color:${r.dsBd};background:${F.erf.inputBg}" data-change="thgVal" data-id="${r.id}" data-field="dataset" data-fid="thg-${r.id}-kbob" ${ro}></span>`
     : html`<span class="ent-pos-code">${r.code}</span>
-      <span class="ent-two"><span class="ellipsis">${r.name}</span><span class="fs-12 muted ellipsis" title="${r.quelle}">${r.quelle}</span></span>`}
+      <span class="ellipsis" title="${r.quelle}">${r.name}</span>`}
   ${hsBox(F, r)}
   ${numCell(F, r, 'q', 'Referenzgrösse', r.qStr, r.qBd, ro)}
   <span class="muted fs-12">${r.unit}</span>
@@ -283,22 +272,23 @@ const thgSrcRow = (F, r, ro) => html`<div class="ent-pos ent-src${r.isNew ? ' en
 /** Erfassung Betrieb (THG-32): Grundlagen des Betriebs, Photovoltaik, Energiedienstleistungen nach Rechenhilfe SIA 390/1. */
 function betrieb(ctx, F) {
   if (F.kind !== 'data' || !F.erf.isTHG) return erfassung(ctx, F);
-  const B = F.betr, ro = RO(F);
+  const B = F.betr, ro = RO(F), open = !!ctx.state.ui.importMenu;
   return html`<div class="fm-stack">
     ${thgHeadCard(ctx, F, 'Betrieb', B.head)}
     <div class="card">
       <div class="card-head" style="flex-wrap:wrap">
         <span class="flex-1" style="flex-basis:220px">${B.title}</span>
-        ${F.locked ? '' : html`<button type="button" class="btn btn-secondary" data-action="importItem" data-arg="rechenhilfe" data-form="${F.id}" title="Energiedienstleistungen und Photovoltaik aus der Rechenhilfe SIA 390/1 übernehmen">Rechenhilfe importieren</button>`}
+        ${F.locked ? '' : importMenu(F, B.importItems, open)}
       </div>
+      ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}
       <div class="thg-head pv-strip">${B.pv.map(p => html`<label class="thg-field"><span>${p.label}</span><input class="ent-text${p.key ? ' right' : ''}" aria-label="${p.label}" value="${p.val}" placeholder="fehlt" style="background:${p.bg};border-color:${p.bdc}" ${p.key ? html`data-change="thgBetr" data-key="${p.key}" data-fid="thg-betr-${p.key}"` : ''} ${p.ro ? raw('readonly') : ''}></label>`)}</div>
       <div class="fm-table"><div class="ent ent-betr">
-        <div class="ent-th" style="${COLS_BETR}"><span>Energiedienstleistung · Energieträger</span><span class="center" title="Projektspezifischer Wert statt Standardwert der Rechenhilfe SIA 390/1">Projektwert</span><span class="right" title="kWh/m² EBF·a">Nutzenergie</span><span class="right" title="Anteil des Energieträgers an der Energiedienstleistung">Anteil %</span><span class="right" title="Nutzungsgrad bzw. Jahresarbeitszahl">η / JAZ</span><span class="right" title="kWh/m² EBF·a">Endenergie</span><span class="right" title="Treibhausgaskoeffizient des Energieträgers">kg CO₂-eq/kWh</span><span class="right" title="THG Betrieb pro Jahr und m² EBF">kg/m² EBF·a</span></div>
+        <div class="ent-th" style="${COLS_BETR}"><span>Energiedienstleistung · Energieträger</span><span class="center" title="Projektspezifischer Wert statt Standardwert der Rechenhilfe SIA 390/1">Projektwert</span><span class="right" title="kWh/m² EBF·a">Nutzenergie</span><span class="right" title="Anteil des Energieträgers an der Energiedienstleistung">Anteil %</span><span class="right" title="Nutzungsgrad bzw. Jahresarbeitszahl">η / JAZ</span><span class="right" title="kWh/m² EBF·a, berechnet oder eigener Wert">Endenergie</span><span class="right" title="Treibhausgaskoeffizient des Energieträgers, Standard oder eigener Wert">kg CO₂-eq/kWh</span><span class="right" title="THG Betrieb pro Jahr und m² EBF">kg/m² EBF·a</span></div>
         ${B.rows.map(r => (r.isPv ? pvRow(r) : betrRow(F, r, ro)))}
         ${B.rows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine fehlenden Werte.</div>` : ''}
-        <div class="ent-total" style="${COLS_BETR}"><span>Total Betrieb</span><span></span><span></span><span></span><span></span><span class="right">${B.end}</span><span></span><span class="right">${B.thg}</span></div>
+        <div class="ent-total" style="${COLS_BETR}"><span>Total Betrieb</span><span></span><span></span><span></span><span></span><span class="right pr13" title="Endenergie nach Abzug des PV-Eigenverbrauchs, kWh/m² EBF·a">${B.end}</span><span></span><span class="right" title="THG Betrieb pro Jahr und m² EBF">${B.thg}</span></div>
         <div class="fm-space"></div>
-        ${B.subs.map(u => html`<div class="ent-subtotal" style="${COLS_BETR}"><span style="grid-column:1 / span 7">${u.name}</span><span class="right">${u.v}</span></div>`)}
+        ${B.subs.map(u => html`<div class="ent-subtotal" style="${COLS_BETR}"><span style="grid-column:1 / span 7">${u.name}</span><span class="right" title="${u.tip}">${u.v}</span></div>`)}
         <div style="height:8px"></div>
       </div></div>
     </div>
@@ -308,24 +298,26 @@ function betrieb(ctx, F) {
 
 const projBox = (F, r) => html`<span class="center"><button type="button" class="hs-box${r.proj ? ' is-on' : ''}" role="checkbox" aria-checked="${r.proj ? 'true' : 'false'}" aria-label="Projektwert ${r.name}" title="Projektspezifischer Wert statt Standardwert der Rechenhilfe SIA 390/1" data-action="thgBetrFlag" data-key="${r.key}_proj" ${DIS(F)}>${r.proj ? '✓' : ''}</button></span>`;
 const betrCell = (F, r, field, label, str, bdc, ro) => html`<span class="ent-cell-input"><input class="ent-input" aria-label="${label} ${r.name} ${r.carrier}" value="${str}" placeholder="fehlt" style="border-color:${bdc};background:${F.erf.inputBg}" data-change="thgBetr" data-key="${r.key}_${field}" data-fid="thg-betr-${r.key}-${field}" ${ro}></span>`;
-/** An Energiedienstleistung with its Energieträger: Projektwert flag (ticked = exception to the default, like «Hersteller»), three inputs, the derived Endenergie and THG. */
+/** Derived cell of the Betrieb (Endenergie, Koeffizient): shows the derived value, an own value replaces it until the field is cleared. */
+const calcCell = (F, r, field, label, str, own, tip, ro) => html`<span class="ent-cell-input"><input class="ent-input${own ? '' : ' is-calc'}" aria-label="${label} ${r.name} ${r.carrier}" title="${tip}" value="${str}" placeholder="–" style="background:${F.erf.inputBg}" data-change="thgBetr" data-key="${r.key}_${field}" data-fid="thg-betr-${r.key}-${field}" ${ro}></span>`;
+/** An Energiedienstleistung on one line (the Energieträger is the hover text): Projektwert flag (ticked = exception to the default, like «Hersteller»), three inputs, Endenergie, Koeffizient and the THG. */
 const betrRow = (F, r, ro) => html`<div class="ent-pos ent-src" style="${COLS_BETR}">
-  <span class="ent-two"><span class="ellipsis">${r.name}</span><span class="fs-12 muted ellipsis">${r.carrier}</span></span>
+  <span class="ellipsis" title="${r.carrier}">${r.label}</span>
   ${projBox(F, r)}
   ${betrCell(F, r, 'n', 'Nutzenergie', r.nStr, r.nBd, ro)}
   ${betrCell(F, r, 'a', 'Anteil', r.aStr, r.aBd, ro)}
   ${betrCell(F, r, 'eta', 'Nutzungsgrad', r.etaStr, r.etaBd, ro)}
-  <span class="right muted fs-125">${r.end}</span>
-  <span class="right muted fs-125">${r.kE}</span>
-  <span class="right fs-125">${r.thg}</span>
+  ${calcCell(F, r, 'end', 'Endenergie', r.endStr, r.endOwn, r.endTip, ro)}
+  ${calcCell(F, r, 'kf', 'Koeffizient', r.kStr, r.kOwn, r.kTip, ro)}
+  <span class="right fs-125" title="THG in kg CO₂-eq/m² EBF·a: Endenergie × Koeffizient">${r.thg}</span>
 </div>`;
 /** Photovoltaik rows (Eigenverbrauch reduces the Endenergie Strom, the surplus follows the rule «PV-Überschuss»). */
 const pvRow = r => html`<div class="ent-pos ent-src" style="${COLS_BETR}">
-  <span class="ent-two"><span class="ellipsis">${r.name}</span><span class="fs-12 muted" style="white-space:normal">${r.carrier}</span></span>
+  <span class="ellipsis" title="${r.carrier}">${r.name}</span>
   <span></span><span></span><span></span><span></span>
-  <span class="right muted fs-125">${r.end}</span>
-  <span class="right muted fs-125">${r.kE}</span>
-  <span class="right fs-125">${r.thg}</span>
+  <span class="right muted fs-125 pr13" title="Endenergie in kWh/m² EBF·a, Eigenverbrauch negativ">${r.end}</span>
+  <span class="right muted fs-125 pr13" title="Treibhausgaskoeffizient">${r.kE}</span>
+  <span class="right fs-125" title="THG in kg CO₂-eq/m² EBF·a: Endenergie × Koeffizient">${r.thg}</span>
 </div>`;
 
 function planEntry(ctx, F) {
@@ -361,13 +353,13 @@ function submitBar(F) {
 function pruefung(ctx, F) {
   const L = tab => ctx.link.delivery(F.codeLc, tab), A = F.act;
   return html`<div class="fm-cols">
-    <div class="fm-main">${F.kind === 'plan' ? planResult(F, L) : F.cmpList ? devCard(F) : compareCard(F)}</div>
+    <div class="fm-main">${summaryCard(F, L)}</div>
     <div class="fm-side">
       ${card(html`<span class="flex-1">Prüfung BBL</span>${hint(`${F.reviewer}, BBL`)}`, html`<div class="card-body flex-col" style="gap:10px">
-        ${F.rv.notSubmitted ? html`<div class="note note-grey">Wartet auf die Einreichung durch ${F.leadName}.</div>` : F.autoChecks.map(check)}
+        ${F.rv.notSubmitted ? html`<div class="note note-grey">Wartet auf die Einreichung durch ${F.leadName}.</div>` : ''}
         <div class="rv-manual">${F.manual.map(m => checkbox({ checked: m.checked, label: m.label, action: A.toggle, key: m.key, arg: F.id, disabled: m.disabled }))}</div>
         ${F.rv.done && !F.rv.transferred ? html`<div class="rv-note rv-note-green">${F.rv.doneText}</div>` : ''}
-        <textarea class="rv-textarea" placeholder="Kommentar an Lieferant (bei Rückweisung Pflicht)" aria-label="Kommentar an Lieferant" data-change="${A.comment}" data-key="${F.id}" data-fid="${F.id}-comment" ${F.rv.decide ? '' : raw('readonly')}>${F.rv.comment}</textarea>
+        <textarea class="rv-textarea" placeholder="Kommentar, z. B. Grund der Rückweisung" aria-label="Kommentar zur Prüfung" data-change="${A.comment}" data-key="${F.id}" data-fid="${F.id}-comment" ${F.rv.decide ? '' : raw('readonly')}>${F.rv.comment}</textarea>
         ${F.rv.decide ? html`<div class="rv-actions">
           <span class="fs-12 muted flex-1" style="min-width:120px">${F.rv.reason}</span>
           ${btn({ label: 'Zurückweisen', action: A.reject, key: F.id, disabled: !F.rv.canReview })}
@@ -379,37 +371,15 @@ function pruefung(ctx, F) {
   </div>`;
 }
 
-function compareCard(F) {
-  const C = 'grid-template-columns:64px minmax(0,1fr) 130px 130px 100px';
-  const subs = F.cmpSubs || [];
-  return card(`Vergleich mit Vorphase ${F.cmpPrevLabel}`, html`<div class="fm-table"><div style="min-width:540px">
-    <div class="fm-th" style="${C}"><span>Code</span><span>Bezeichnung</span><span class="right">${F.code} ${F.cmpUnit}</span><span class="right">${F.cmpPrevLabel} ${F.cmpUnit}</span><span class="right">Abweichung</span></div>
-    ${F.cmp.map(c => html`<div class="fm-tr" style="${C}"><span class="fw-600">${c.code}</span><span class="ellipsis">${c.name}</span><span class="right">${c.cur}</span><span class="right muted">${c.prev}</span>${devCell(c)}</div>`)}
-    <div class="fm-total" style="${C}"><span></span><span>Total</span><span class="right">${F.cmpT.cur}</span><span class="right muted">${F.cmpT.prev}</span>${devCell(F.cmpT)}</div>
-    ${subs.length ? html`<div class="fm-space"></div>${subs.map(u => html`<div class="fm-sub" style="${C}"><span>${u.code}</span><span>${u.name}</span><span class="right">${u.cur}</span><span class="right muted fw-400">${u.prev}</span>${devCell(u)}</div>`)}<div style="height:8px"></div>` : ''}
-  </div></div><div class="card-foot">Abweichungen ab ${F.devPct} % sind rot markiert und brauchen eine Begründung.</div>`);
-}
-
-/** Prüfung THG-32 (design 05.11.2026): deviation per Hauptgruppe as a dumbbell (Vorphase ○, THG-32 ●); a flagged deviation asks for the Begründung des Planers. */
-function devCard(F) {
-  const J = F.cmpList, ro = RO(F);
-  return card(html`<span class="flex-1">Abweichungen zur Vorphase ${F.cmpPrevLabel}</span>${hint('kg CO₂-eq/m² EBF·a')}`, html`<div class="fm-table"><div class="ov-body">
-    <div class="ov-head" style="${DEV_COLS}"><span></span><span>Hauptgruppe</span><div class="ov-axis"><span>0</span><span>${J.max}</span></div><span class="right">${J.cur}</span><span class="right">${J.prev}</span><span class="right">Δ</span></div>
-    ${J.rows.map(g => html`<div class="ov-row" style="${DEV_COLS}">
-      <span class="ov-ic">${urlIcon(g.icon)}</span><span class="ellipsis"><span class="fw-600">${g.code}</span> ${g.name}</span>
-      <div class="ov-bar ov-dumb" role="img" aria-label="${g.code}: ${J.cur} ${g.kg}, ${J.prev} ${g.prev}"><div class="ov-line"></div>${g.two ? html`<div class="ov-span" style="left:${g.lo};width:${g.span};background:${g.lc}"></div><div class="ov-dot ov-dot-prev" style="left:${g.xp}"></div>` : ''}<div class="ov-dot" style="left:${g.xc}"></div></div>
-      <span class="right fw-600">${g.kg}</span><span class="right muted">${g.prev}</span><span class="right" style="color:${g.dfg};font-weight:${g.dw}" title="${g.dp}">${g.d}</span>
-    </div>${g.fl ? html`<div class="ov-begr"><span></span><label class="ov-begr-field"><span>Abweichung ${g.dp} · Begründung des Planers erforderlich</span><input class="ent-text" value="${g.beg}" placeholder="z. B. Lüftung neu mit höherer Luftmenge" style="border-color:${g.begBd}" aria-label="Begründung Abweichung ${g.code}" data-change="formBegr" data-form="${F.id}" data-group="${g.code}" data-fid="${F.id}-begr-${g.code}" ${ro}></label></div>` : ''}`)}
-  </div></div><div class="card-foot">${J.foot}</div>`);
-}
-
-function planResult(F, L) {
-  const R = F.res, p = F.plan;
-  return card(html`<span class="flex-1">Prüfergebnis</span>${p.fileName ? hint(p.fileName) : ''}`, F.rv.notSubmitted
-    ? html`<div class="muted fs-125" style="padding:28px 16px">Die Lieferung wurde noch nicht eingereicht (Status ${F.status}). Das Prüfergebnis ist nach der Einreichung durch den Lieferverantwortlichen sichtbar.</div>`
-    : html`<div class="res-row"><span class="res-sym" style="background:${R.bg};color:${R.fg}">${R.sym}</span><div class="flex-col" style="gap:2px"><span class="res-title">${R.title}</span><span class="res-sub">${R.sub}</span></div></div>
-      <div style="padding:0 14px 6px">${F.reviewIssues.map(it => html`<div class="res-issue">${icon(it.icon, 16, it.color)}<span>${it.text}</span><span class="res-code">${it.code}${it.count ? ` · ${it.count}×` : ''}</span></div>`)}</div>
-      <div style="padding:8px 14px 12px"><a class="fs-125" href="#${L('erfassung')}" data-nav="${L('erfassung')}">Im Plan anzeigen</a></div>`);
+/** Prüfung (design 05.11.2026, last round): one plain table for every Lieferung: Prüfpunkt, what the Lieferung shows, result.
+ *  The requirement is the hover text of the row; a flagged deviation of the Ökobilanz carries the Begründung des Planers below its row. */
+function summaryCard(F, L) {
+  return card(html`<span class="flex-1">Zusammenfassung</span>${headLink('Zur Erfassung', L('erfassung'))}`, !F.summ.length
+    ? html`<div class="muted fs-125" style="padding:28px 16px">${F.summNote}</div>`
+    : html`<div class="fm-table"><div class="sm-body">
+      <div class="sm-th"><span>Prüfpunkt</span><span>Lieferung</span><span>Ergebnis</span></div>
+      ${F.summ.map((r, i) => html`<div class="sm-tr" style="background:${i % 2 ? '#fafbfc' : '#fff'}" title="${r.tip}"><span>${r.label}</span><span>${r.val}</span><span style="color:${r.fg};font-weight:${r.fw}">${r.res}</span></div>${(r.begr || []).map(g => html`<label class="sm-begr" style="background:${i % 2 ? '#fafbfc' : '#fff'}"><span>${g.code} ${g.name}, ${g.dp}</span>${F.locked ? html`<span class="sm-begr-text">${g.beg}</span>` : html`<input class="ent-text" value="${g.beg}" placeholder="Begründung des Planers, z. B. Lüftung neu mit höherer Luftmenge" style="border-color:${g.begBd}" aria-label="Begründung Abweichung ${g.code}" data-change="formBegr" data-form="${F.id}" data-group="${g.code}" data-fid="${F.id}-begr-${g.code}">`}</label>`)}`)}
+    </div></div>`);
 }
 
 // ---- Beteiligte · Dokumente · Verlauf ----
@@ -430,7 +400,7 @@ function dokumente(F) {
     <div class="fm-th" style="${C}"><span>Name</span><span>Typ</span><span>Pflicht</span><span>Hochgeladen von</span><span>Datum</span></div>
     ${F.docs.map(d => html`<div class="fm-tr" style="${C};min-height:40px"><span class="ellipsis" title="${d.name}">${d.name}</span><span>${d.type}</span><span style="color:${d.reqFg};font-weight:${d.reqFw}">${d.req}</span><span class="ellipsis">${d.by}</span><span>${d.date}</span></div>`)}
     ${F.docs.length === 0 ? html`<div style="padding:28px 0">${emptyState('Keine Dokumente')}</div>` : ''}
-  </div></div><div class="card-foot">Pflichtdokumente sind Teil der Einreichung. Fehlt eines, ist «Einreichen» gesperrt.</div>`);
+  </div></div><div class="card-foot">Pflichtdokumente gehören zur Einreichung; fehlende meldet die Prüfung.</div>`);
 }
 
 function verlauf(F) {

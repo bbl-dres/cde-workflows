@@ -49,14 +49,14 @@ export function toResult(file, parsed, drawing, validation) {
  * Returns { drawing, validation, result }. Throws with a German message when the file cannot be read.
  */
 export async function checkDwg(buffer, file = {}, log = () => {}) {
-    if (!/\.dwg$/i.test(file.name || '')) throw new Error('Nur .dwg-Dateien.');
+    if (!/\.dwg$/i.test(file.name || '')) throw new Error('Nur DWG-Dateien (.dwg).');
     if (buffer.byteLength > MAX_FILE_SIZE) throw new Error('Datei zu gross (max. 50 MB).');
     const parsed = await parseDwg(buffer, file, log);
-    log('Zeichnungsdaten werden aufbereitet...');
+    log('Zeichnungsdaten werden aufbereitet…');
     const drawing = prepareDrawing(parsed.entities, parsed.layers, parsed.db, log);
     const validation = validate(drawing, log);
     const result = toResult({ name: file.name, size: file.size ?? buffer.byteLength }, parsed, drawing, validation);
-    log(`Score: ${result.summary.passedRules}/${result.summary.totalRules} Prüfregeln bestanden (${result.summary.score}%)`, result.summary.scoreClass);
+    log(`Score: ${result.summary.passedRules}/${result.summary.totalRules} Prüfregeln bestanden (${result.summary.score} %)`, result.summary.scoreClass);
     return { drawing, validation, result };
 }
 

@@ -44,10 +44,10 @@ export const RULES = [
     { code: 'AOID_005', severity: 'warning', text: 'AOID-Text ausserhalb aller Raumpolygone', ref: 'Kap. 5.10' },
     { code: 'AOID_006', severity: 'warning', text: 'AOID-Basispunkt ausserhalb Polygon', ref: 'Kap. 5.10' },
     { code: 'GEOM_001', severity: 'error', text: 'Zeichnungseinheit ist nicht Millimeter', ref: 'Kap. 4.2' },
-    { code: 'GEOM_002', severity: 'warning', text: 'Element hat Z-Koordinate != 0', ref: 'Kap. 5.1' },
+    { code: 'GEOM_002', severity: 'warning', text: 'Element hat Z-Koordinate ungleich 0', ref: 'Kap. 5.1' },
     { code: 'GEOM_003', severity: 'error', text: 'Unzulässiger Entitätstyp vorhanden', ref: 'Kap. 5.1' },
     { code: 'GEOM_004', severity: 'warning', text: 'Externe Referenz (XREF) vorhanden', ref: 'Kap. 4.7' },
-    { code: 'GEOM_005', severity: 'warning', text: 'Element ausserhalb des Schnittrahmens', ref: 'Kap. 4.10' },
+    { code: 'GEOM_005', severity: 'warning', text: 'Element ausserhalb des Planrahmens', ref: 'Kap. 4.10' },
     { code: 'TEXT_001', severity: 'warning', text: 'Textelement auf unzulässigem Layer', ref: 'Kap. 5.5' },
     { code: 'TEXT_002', severity: 'warning', text: 'Schriftart ist nicht ARIAL', ref: 'Kap. 5.5' },
     { code: 'STYLE_001', severity: 'warning', text: 'Polylinienbreite ist nicht 0 mm', ref: 'Kap. 5.4' },
@@ -63,7 +63,7 @@ export const RULES_BY_CODE = new Map(RULES.map(r => [r.code, r]));
 /** Builds an issue; severity and category come from the catalogue so they cannot drift. */
 export function createIssue(code, message, extra = {}) {
     const rule = RULES_BY_CODE.get(code);
-    if (!rule) throw new Error(`Unknown rule ${code}`);
+    if (!rule) throw new Error(`Unbekannte Regel ${code}`);
     return { code, severity: rule.severity, category: code.split('_')[0], message, ...extra };
 }
 

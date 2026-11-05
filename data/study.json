@@ -2,7 +2,7 @@
   "intro": {
     "eyebrow": "Design-Studie · BBL · November 2026",
     "title": "Datenlieferungen KV und THG in der CDE Bund",
-    "lead": "Ergänzung der bestehenden CDE Bund um Eingabemasken und einen Workflow für Kostenvoranschläge (ePPM) und Ökobilanzen der Bauemissionen (SUS). Navigation, Komponenten und Layouts der CDE Bund bleiben unverändert; neue Elemente sind mit {marker} markiert und unter dem Screen erklärt.",
+    "lead": "Ergänzung der bestehenden CDE Bund um Eingabemasken und einen Workflow für Kostenvoranschläge (ePPM) und Ökobilanzen (Wüest Dimensions). Navigation, Komponenten und Layouts der CDE Bund bleiben unverändert; neue Elemente sind mit {marker} markiert und unter dem Screen erklärt.",
     "noteTitle": "Alle Personen, Firmen, Projekte und Werte sind fiktiv.",
     "noteText": "Musterpersonen: Paula Muster (Projektleitung BBL) · Alex Beispiel (Architekt) · Kai Beispiel (Kostenplaner) · Olivia Beispiel (Ökobilanz) · Gian Muster (Generalplaner) · Bea Muster (BIM-Management BBL) · Fiona Muster (Fachstelle Nachhaltigkeit)"
   },
@@ -13,11 +13,11 @@
     { "label": "Eingereicht" },
     { "label": "In Prüfung", "who": "PM" },
     { "label": "Freigegeben" },
-    { "label": "Übertragen", "who": "ePPM / SUS" }
+    { "label": "Übertragen", "who": "ePPM / Wüest Dimensions" }
   ],
   "openPoints": [
-    "Wer überträgt den THG-Endwert ins SUS: PM oder Fachstelle?",
-    "Schnittstellen ePPM und SUS: Datenformat und Zeitpunkt der Übertragung.",
+    "Wer überträgt die THG-Werte an Wüest Dimensions: PM oder Fachstelle?",
+    "Schnittstellen ePPM und Wüest Dimensions: Datenformat und Zeitpunkt der Übertragung.",
     "Bestellung im Informationslieferplan (wie gezeigt) oder als Vorlage unter «Workflows»?"
   ],
   "review": {
@@ -39,7 +39,7 @@
       { "role": "BBL BIM-Manager", "good": "Passt in die Logik von Informationslieferplan und LOIN.", "gaps": [
         { "text": "Vorlagen nicht fest einbauen, sondern zentral pflegen.", "link": "s09", "linkLabel": "→ 09" },
         { "text": "IFC-Anforderungen (Mengen, eBKP-H-Klassifikation) in die LOIN." },
-        { "text": "Werte strukturiert mit stabilen IDs speichern, Basis für ePPM, SUS und Auswertungen." } ] },
+        { "text": "Werte strukturiert mit stabilen IDs speichern, Basis für ePPM, Wüest Dimensions und Auswertungen." } ] },
       { "role": "Generalplaner (GP)", "good": "Alle Lieferungen an einem Ort, Status für alle Beteiligten gleich.", "gaps": [
         { "text": "Lieferverantwortlich und Bearbeitende trennen, Weiterleiten an Subplaner.", "link": "s07", "linkLabel": "→ 07" },
         { "text": "Interne Prüfung durch GP vor Einreichung.", "link": "s07", "linkLabel": "→ 07" },
@@ -52,13 +52,13 @@
     "columns": [
       { "title": "Harmonisiert in dieser Studie", "items": [
         ["Begriffe", "«Datenformular» als Typ in Informationslieferplan und Aufgaben. Eine Status-Reihe für alle Lieferungen, mit optionalem Schritt «Intern geprüft (GP)»."],
-        ["Navigation", "Alle Lieferungen haben dieselben Tabs: Übersicht, Erfassung, Prüfung, Beteiligte, Dokumente, Verlauf (Design 04.11.2026)."],
+        ["Navigation", "Alle Lieferungen haben dieselben Tabs: Übersicht, Erfassung, Prüfung, Beteiligte, Dokumente, Verlauf; die Ökobilanz erfasst Erstellung und Betrieb in zwei Tabs (Design 05.11.2026)."],
         ["Zahlen", "Format de-CH durchgehend (1’234.5, Prozent mit Leerschlag). THG-Einheit überall kg CO₂-eq/m² EBF·a."],
         ["Kontrast", "Hilfs- und Fusstexte auf mindestens 4.5:1 angehoben, Mindestschrift 12 px. Markierungen der Studie in dunklerem Orange."],
         ["Tastatur", "Checkboxen, Auswahlkarten, Optionsfelder und Vorlagen-Schalter mit Tab, Enter und Leertaste bedienbar, mit Rollen und Zustand für Screenreader. Eingabefelder sind beschriftet."],
         ["Nicht nur Farbe", "Fehlende Werte zeigen zusätzlich «fehlt» und eine Textliste. Status-Labels haben immer Icon und Text. Deaktivierte Buttons nennen den Grund daneben."] ] },
       { "title": "Empfehlungen für Umsetzung und Design System", "items": [
-        ["Linkfarbe", "Das Türkis der CDE Bund erreicht auf Weiss etwa 4:1 und liegt damit knapp unter 4.5:1. Für Links in Fliesstext beim Design System prüfen lassen."],
+        ["Linkfarbe", "Das Türkis der CDE Bund erreicht auf Weiss etwa 2.9:1 und liegt damit unter 4.5:1. Für Links in Fliesstext beim Design System prüfen lassen."],
         ["Deaktiviert", "Grau mit weisser Schrift ist schwer lesbar. Einen deaktivierten Button-Stil mit lesbarem Text im Design System definieren."],
         ["Tabellen", "Als echte Tabellen mit Spaltenköpfen umsetzen, damit Screenreader Zeile und Spalte ansagen. Eingaben pro Zelle mit Code und Spalte beschriften."],
         ["Rückmeldungen", "Statuswechsel (Import, Einreichen, Freigabe) als Live-Region ansagen. Fokus nach Dialogen auf den auslösenden Button zurücksetzen."],

@@ -145,13 +145,17 @@ try {
   await go('/projects/musterhausen/deliveries/thg-32/uebersicht');
   await go('/projects/musterhausen/deliveries/thg-32/erfassung');
   check('THG-32 In Bearbeitung: head selects enabled, add rows, complete → Einreichen enabled', (await count('.thg-head select:not([disabled])')) === 4 && (await count('.ent-add')) === 2 && (await count('.ent-input[readonly]')) < 10 && await enabled('[data-action="formSubmit"]'));
-  check('every Emissionsquelle in edit mode: code control and Tool-Export input per row', (await count('.ent-src .ent-code-wrap')) === 9 && (await count('.ent-src input[data-field="dataset"]')) === 9 && await evaluate(`document.querySelector('.ent-src input[data-field="dataset"]').value.includes('Bauteil Lesosai')`));
+  check('every Emissionsquelle in edit mode: code control and Tool-Export input per row', (await count('.ent-src .ent-code-wrap')) === 9 && (await count('.ent-src input[data-field="dataset"]')) === 9 && await evaluate(`(() => { const el = document.querySelector('.ent-src input[data-field="dataset"]'); return !el.value.includes('·') && el.title.includes('Bauteil Lesosai'); })()`));
   await setInput('[data-fid="thg-C01.03-1-kbob"]', 'Ba02 Bodenplatte neu · Bauteil Lesosai'); check('Tool-Export input updates tool code, Bezeichnung and Ökobilanzdaten', await evaluate(`(() => { const s = window.cde.state.projects.musterhausen.thgSrc.find(x => x.id === 'C01.03-1'); return s.tcode === 'Ba02' && s.name === 'Bodenplatte neu' && s.quelle === 'Bauteil Lesosai'; })()`));
   await click('.ent-add [data-action="thgAdd"], [data-action="thgAdd"]'); check('new Emissionsquelle offers every Elementgruppe and Element of its Hauptgruppe', await evaluate(`(() => { const s = document.querySelector('.ent-select[data-field="code"]'); return !!s && s.options.length > 20 && [...s.options].some(o => /^C02\.01 /.test(o.textContent)); })()`));
   await click('[data-action="thgRemove"][title="Neue Zeile verwerfen"]'); await shot('e2e-thg-erfassung-offen');
   await go('/projects/musterhausen/deliveries/thg-32/betrieb');
-  check('THG-32 Erfassung Betrieb: Grundlagen Betrieb, 9 Energiedienstleistungen and 2 PV rows, totals, Rechenhilfe button', (await count('.thg-head select:not([disabled])')) === 3 && (await count('.ent-betr .ent-src')) === 11 && (await bodyText()).includes('Total Betrieb') && (await bodyText()).includes('THGE Erstellung + Betrieb pro Jahr') && (await count('[data-action="importItem"][data-arg="rechenhilfe"]')) === 1 && await evaluate(`document.querySelector('.pv-strip input').value.startsWith('62 kWp')`));
-  await setInput('[data-fid="thg-betr-b0-n"]', '30'); check('Betrieb value editable and live', (await state()).projects.musterhausen.thgBetr.b0_n === 30 && (await bodyText()).includes('7.5'));
+  check('THG-32 Erfassung Betrieb: Grundlagen Betrieb, 9 Energiedienstleistungen and 2 PV rows, totals, Rechenhilfe button', (await count('.thg-head select:not([disabled])')) === 3 && (await count('.ent-betr .ent-src')) === 11 && (await bodyText()).includes('Total Betrieb') && (await bodyText()).includes('THGE Erstellung + Betrieb pro Jahr') && (await count('.ent-betr [data-key$="_end"]')) === 9 && (await count('.ent-betr .ent-input.is-calc')) === 18 && (await count('[data-action="toggleImportMenu"]')) === 1 && await evaluate(`document.querySelector('.pv-strip input').value.startsWith('62 kWp')`));
+  await setInput('[data-fid="thg-betr-b0-n"]', '30'); check('Betrieb value editable and live', (await state()).projects.musterhausen.thgBetr.b0_n === 30 && await evaluate(`document.querySelector('[data-fid="thg-betr-b0-end"]').value === '7.5'`));
+  await setInput('[data-fid="thg-betr-b0-end"]', '8'); check('own Endenergie replaces the derived value', (await state()).projects.musterhausen.thgBetr.b0_end === 8 && (await count('[data-fid="thg-betr-b0-end"].is-calc')) === 0 && await evaluate(`document.querySelector('[data-fid="thg-betr-b0-end"]').title.startsWith('Eigener Wert, berechnet 7.5')`));
+  await setInput('[data-fid="thg-betr-b0-end"]', ''); check('a cleared Endenergie is derived again', await evaluate(`(() => { const el = document.querySelector('[data-fid="thg-betr-b0-end"]'); return el.value === '7.5' && el.classList.contains('is-calc'); })()`));
+  await setInput('[data-fid="thg-betr-b2-kf"]', '0.0385'); check('own Koeffizient with three decimals', (await state()).projects.musterhausen.thgBetr.b2_kf === 0.039 && await evaluate(`document.querySelector('[data-fid="thg-betr-b2-kf"]').title.startsWith('Eigener Wert, Standard 0.049')`));
+  await setInput('[data-fid="thg-betr-b2-kf"]', '');
   await setInput('[data-fid="thg-betr-b0-n"]', '22');
   check('Projektwert flags: ticked = project value instead of the Standardwert', (await count('.ent-betr .hs-box.is-on')) === 5 && (await bodyText()).includes('Projektwert') && !(await text('.ent-betr .ent-th')).includes('Standard'));
   await click('[data-action="thgBetrFlag"][data-key="b0_proj"]'); check('Projektwert flag toggles', (await state()).projects.musterhausen.thgBetr.b0_proj === false && (await count('.ent-betr .hs-box.is-on')) === 4);
@@ -159,8 +163,8 @@ try {
   await shot('e2e-thg-betrieb');
   await click('[data-action="formSubmit"]'); check('THG submitted → Eingereicht', (await state()).projects.musterhausen.forms.thg.step === 3 && (await text('.page-title')).includes('Eingereicht'));
   await go('/projects/musterhausen/deliveries/thg-32/pruefung');
-  check('Prüfung: deviations with Begründung, checks, Freigeben disabled', (await count('.ov-row')) === 6 && (await count('.ov-begr')) === 1 && (await count('.ov-dot-prev')) >= 1 && (await bodyText()).includes('begründet') && (await disabled('[data-action="formApprove"]')) && (await bodyText()).includes('Erst alle Prüfpunkte bestätigen') && (await bodyText()).includes('Alle 22 Emissionsquellen') && (await bodyText()).includes('Zusatzanforderung B eingehalten') && (await count('.rv-check')) === 9);
-  for (const k of ['t1', 't2', 't3', 't4', 't5']) await click(`[data-action="formToggleCheck"][data-key="${k}"]`);
+  check('Prüfung: Zusammenfassung with seven rows, Begründung, two Prüfpunkte, Freigeben disabled', (await count('.sm-tr')) === 7 && (await count('.sm-begr')) === 1 && (await bodyText()).includes('ab 15 % bei D, begründet') && (await bodyText()).includes('Zusatzanforderung B') && (await count('.rv-manual .checkbox')) === 2 && (await disabled('[data-action="formApprove"]')) && (await bodyText()).includes('Erst alle Prüfpunkte bestätigen') && await evaluate(`[...document.querySelectorAll('.sm-tr')].every(r => r.title)`));
+  for (const k of ['t1', 't2']) await click(`[data-action="formToggleCheck"][data-key="${k}"]`);
   check('checklist enables Freigeben', await enabled('[data-action="formApprove"]'));
   await shot('e2e-thg-pruefung');
   await click('[data-action="formApprove"]'); check('THG freigegeben', (await state()).projects.musterhausen.forms.thg.step === 5 && (await bodyText()).includes('Freigegeben durch Paula Muster') && (await count('[data-action="formTransfer"]')) === 1);
@@ -183,7 +187,7 @@ try {
   check('THG table: Emissionsquellen of C and E, totals and derived rows', (await count('.ent-src')) === 9 && (await count('.ent-group')) === 6 && (await bodyText()).includes('Total B–G') && (await bodyText()).includes('Betrachtungszeitraum 60 Jahre inkl. Ersatz') && (await count('.hs-box.is-on')) === 2);
   await go('/projects/musterhausen/deliveries/thg-32/betrieb');
   check('THG Betrieb locked after transfer', (await count('.ent-betr .ent-input:not([readonly])')) === 0 && (await count('.thg-head select[disabled]')) === 3 && (await count('[data-arg="rechenhilfe"]')) === 0 && (await count('.ent-betr .hs-box:not([disabled])')) === 0);
-  await clickText('.tab', 'Verlauf'); check('Verlauf has no duplicated generated rows after the transfer', await evaluate(`(() => { const t = [...document.querySelectorAll('.hist-row .fw-500')].map(e => e.textContent.trim()); return t.filter(x => x === 'Freigegeben').length === 1 && t.filter(x => x.startsWith('An SUS')).length === 1 && t.filter(x => x === 'Zur Prüfung eingereicht').length === 1; })()`), await evaluate(`[...document.querySelectorAll('.hist-row .fw-500')].map(e => e.textContent.trim()).join(' | ')`));
+  await clickText('.tab', 'Verlauf'); check('Verlauf has no duplicated generated rows after the transfer', await evaluate(`(() => { const t = [...document.querySelectorAll('.hist-row .fw-500')].map(e => e.textContent.trim()); return t.filter(x => x === 'Freigegeben').length === 1 && t.filter(x => x.startsWith('An Wüest Dimensions')).length === 1 && t.filter(x => x === 'Zur Prüfung eingereicht').length === 1; })()`), await evaluate(`[...document.querySelectorAll('.hist-row .fw-500')].map(e => e.textContent.trim()).join(' | ')`));
   await go('/projects/musterhausen/deliveries/thg-32/beteiligte'); check('Beteiligte table', (await count('.fm-tr')) === 3 && (await bodyText()).includes('Lieferverantwortlich'));
   await go('/projects/musterhausen/deliveries/thg-32/dokumente'); check('Dokumente with Pflicht column', (await bodyText()).includes('Pflicht') && (await bodyText()).includes('Oekobilanz_Bericht') && (await bodyText()).includes('Oekobilanz_Toolexport'));
   // THG-32 of another project: missing values, Tool-Export import, new Emissionsquelle, Hersteller flag, removal, submission
@@ -192,7 +196,7 @@ try {
   await click('.ent-group[data-group="G"]'); check('group row opens G', (await state()).projects.eigerplatz.forms.thg.modes.G === 'detail' && (await count('.ent-add')) === 3);
   await click('[data-action="formToggleMissing"]'); check('filter: only the three rows with missing values', (await count('.ent-src')) === 3 && (await count('.ent-add')) === 0);
   await click('[data-action="formToggleMissing"]');
-  await click('[data-action="toggleImportMenu"]'); check('THG import menu has the Tool-Export', (await count('.dd-item')) === 4 && (await bodyText()).includes('Tool-Export importieren'));
+  await click('[data-action="toggleImportMenu"]'); check('THG import menu has the Tool-Export', (await count('.dd-item')) === 3 && (await count('.dd-sep')) === 1 && (await bodyText()).includes('Tool-Export importieren') && (await bodyText()).includes('Excel-Vorlage herunterladen'));
   await click('[data-action="importItem"][data-arg="tool"]'); check('Tool-Export fills the missing values', (await count('.tab-badge')) === 1 && /Alle 73 Werte erfasst/.test(await bodyText()) && (await enabled('[data-action="formSubmit"]')) && (await count('.toast')) === 1);
   await click('[data-action="thgAdd"][data-group="C"]'); check('new Emissionsquelle row', (await count('.ent-new')) === 1 && (await disabled('[data-action="formSubmit"]')) && (await state()).projects.eigerplatz.thgSrc.some(s => s.isNew));
   await setInput('[data-fid="thg-n1-code"]', 'C03'); check('element group sets the unit', (await state()).projects.eigerplatz.thgSrc.find(s => s.id === 'n1').code === 'C03' && await evaluate(`[...document.querySelectorAll('.ent-new > span')].some(s => s.textContent.trim() === 'm')`));
@@ -208,8 +212,8 @@ try {
   check('open THG without Emissionsquellen', (await bodyText()).includes('Noch keine Emissionsquellen erfasst') && (await count('.ent-src')) === 0 && (await count('.ent-group')) === 6 && (await bodyText()).includes('Einreichen erst, wenn Emissionsquellen erfasst sind'));
   await click('[data-action="toggleImportMenu"]'); await click('[data-action="importItem"][data-arg="tool"]');
   check('Tool-Export brings the 22 Emissionsquellen, the Betrieb stays open', (await state()).projects['botschaft-wien'].thgSrc.length === 22 && /29 fehlen/.test(await bodyText()) && (await text('.tab-badge')) === '29');
-  await go('/projects/botschaft-wien/deliveries/thg-32/betrieb'); check('open Betrieb: empty rows', (await count('.ent-betr .ent-input[value=""]')) === 27 && (await disabled('[data-action="formSubmit"]')));
-  await click('[data-action="importItem"][data-arg="rechenhilfe"]'); check('Rechenhilfe fills the Betrieb', /Alle 73 Werte erfasst/.test(await bodyText()) && (await enabled('[data-action="formSubmit"]')) && (await count('.ent-betr .hs-box.is-on')) === 5);
+  await go('/projects/botschaft-wien/deliveries/thg-32/betrieb'); check('open Betrieb: empty rows', (await count('.ent-betr .ent-input:not(.is-calc)[value=""]')) === 27 && (await count('.ent-betr .ent-input.is-calc[value=""]')) === 9 && (await disabled('[data-action="formSubmit"]')));
+  await click('[data-action="toggleImportMenu"]'); await click('[data-action="importItem"][data-arg="rechenhilfe"]'); check('Rechenhilfe fills the Betrieb', /Alle 73 Werte erfasst/.test(await bodyText()) && (await enabled('[data-action="formSubmit"]')) && (await count('.ent-betr .hs-box.is-on')) === 5);
   await clickText('.tab', 'Verlauf'); check('Verlauf lists the Tool-Export and the Rechenhilfe', (await bodyText()).includes('Tool-Export importiert') && (await bodyText()).includes('22 Emissionsquellen übernommen') && (await bodyText()).includes('Rechenhilfe SIA 390/1 importiert'));
 
   // 6. Tasks pages, favorites, sections
@@ -226,7 +230,7 @@ try {
   await go('/projects/eigerplatz/deliveries/thg-32'); await sleep(100);
   check('other project: THG-32 form with mock data (Eingereicht after the flow above)', (await hash()).endsWith('/eigerplatz/deliveries/thg-32/uebersicht') && (await text('.page-title')).includes('Eingereicht') && (await count('.st-row')) === 6 && (await count('.pp-row')) === 2);
   await go('/projects/agroscope-posieux/deliveries/kv-32/erfassung'); check('other project: KV-32 Abgeschlossen, locked, no Musterhausen note', (await text('.page-title')).includes('Abgeschlossen') && (await count('.ent-group')) === 13 && (await count('.ent-input:not([readonly])')) === 0 && (await count('.ent-del')) === 0 && !(await bodyText()).includes('nur für das Projekt'));
-  await go('/projects/zollanlage-brig/deliveries/ks-31/pruefung'); check('other project: KS-31 Prüfung compares with SIA 21', (await count('.fm-tr')) >= 7 && (await bodyText()).includes('SIA 21') && (await text('.page-title')).includes('Abgeschlossen') && !(await bodyText()).includes('Lieferung abgeschlossen'));
+  await go('/projects/zollanlage-brig/deliveries/ks-31/pruefung'); check('other project: KS-31 Prüfung compares with SIA 21', (await count('.sm-tr')) === 5 && (await bodyText()).includes('SIA 21') && (await text('.page-title')).includes('Abgeschlossen') && !(await bodyText()).includes('Lieferung abgeschlossen'));
   await go('/projects/tenero/deliveries/kv-32/erfassung'); await setInput('[data-fid="kvV-Y"]', '25000'); check('other project: values are stored per project', String((await state()).projects.tenero.kvV.Y) === '25000' && (await state()).projects.musterhausen.kvV.Y !== '25000');
   // Kostenelemente: add a row to G, pick an element group, remove a position
   const nPos = await count('.ent-pos');
@@ -439,7 +443,7 @@ try {
   await go('/projects/musterhausen/deliveries/dwg-eg'); await sleep(100);
   check('DWG canonical URL for PM (Übersicht)', (await hash()) === '#/projects/musterhausen/deliveries/dwg-eg/uebersicht', await hash());
   await go('/projects/musterhausen/deliveries/dwg-eg/pruefung');
-  check('Prüfung: result, warnings, Freigeben disabled, no upload', (await count('.res-row')) === 1 && (await text('.res-title')) === 'Keine Fehler' && (await count('.res-issue')) >= 1 && (await disabled('[data-action="planApprove"]')) && (await count('[data-change="planFile"]')) === 0);
+  check('Prüfung: Zusammenfassung, Freigeben disabled, no upload', (await count('.sm-tr')) === 4 && (await text('.sm-tr')).includes('Fehler nach CAD-Richtlinie BBL V1.0') && (await bodyText()).includes('erfüllt') && (await count('.rv-manual .checkbox')) === 2 && (await disabled('[data-action="planApprove"]')) && (await count('[data-change="planFile"]')) === 0);
   await click('[data-action="planToggleCheck"][data-key="c1"]'); await click('[data-action="planToggleCheck"][data-key="c2"]');
   check('checklist enables Freigeben', (await enabled('[data-action="planApprove"]')) && (await state()).plans.EG.status === 'pruefung');
   await shot('e2e-plan-pruefung');
@@ -448,7 +452,7 @@ try {
   await go('/projects/musterhausen/deliveries/dwg-og2/pruefung'); await click('[data-action="planReject"]');
   check('OG2 zurückgewiesen', (await state()).plans.OG2.status === 'zurueck' && (await bodyText()).includes('Zurückgewiesen'));
   await go('/projects/musterhausen/delivery-plan'); check('ILP reflects review', (await rowPill('DWG-EG')) === 'Abgeschlossen' && (await rowPill('DWG-OG2')) === 'Zurückgewiesen' && (await rowPill('DWG-DG')) === 'In Bearbeitung');
-  await go('/projects/musterhausen/deliveries/dwg-dg/pruefung'); check('not submitted plan shows no result to BBL', (await bodyText()).includes('noch nicht eingereicht') && (await count('[data-action="planApprove"]:not([disabled])')) === 0);
+  await go('/projects/musterhausen/deliveries/dwg-dg/pruefung'); check('not submitted plan waits for the Einreichung', (await bodyText()).includes('Wartet auf die Einreichung') && (await count('[data-action="planApprove"]:not([disabled])')) === 0);
   await click('[data-action="toggleUserMenu"]'); await click('[data-action="setUser"][data-key="AB"]');
   await go('/projects/musterhausen/deliveries/dwg-og2/erfassung'); check('rejected plan is open again for the supplier', (await bodyText()).includes('Zurückgewiesen durch Paula Muster') && (await enabled('[data-action="planSubmit"]')) && (await count('[data-change="planFile"]')) >= 1);
   await go('/projects/musterhausen/tasks'); check('plan tasks in the project task list', (await bodyText()).includes('Grundriss EG (DWG)') && (await bodyText()).includes('Grundriss DG (DWG)'));
@@ -489,6 +493,8 @@ try {
 } finally {
   console.log(`\n${pass} passed, ${fail} failed · Screenshots: ${SHOTS}`);
   process.exitCode = fail ? 1 : 0;
+  // Browser.close ends the whole browser; proc.kill() alone leaves its child processes on the debugging port (Windows), and the next run would attach to that stale browser
+  try { await Promise.race([send('Browser.close'), sleep(1500)]); } catch {}
   try { ws && ws.close(); } catch {}
   proc.kill();
 }

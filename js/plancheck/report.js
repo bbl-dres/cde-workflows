@@ -143,7 +143,7 @@ export async function buildPlanReport(model, { capture = () => null } = {}) {
   function tableCaption(text) {
     const y = doc.lastAutoTable.finalY + 3;
     setFont(7, theme.muted);
-    doc.text(`Tab. ${++tableNumber} — ${text}`, marginX, y);
+    doc.text(`Tab. ${++tableNumber}: ${text}`, marginX, y);
     return y + 4;
   }
   function addImage(image, y, maxHeight) {
@@ -259,14 +259,14 @@ export async function buildPlanReport(model, { capture = () => null } = {}) {
     }
     py = sectionSubtitle(`Bestanden (${model.rules.passed.length})`, ensureSpace(py, 30, title));
     table({ title, statusColumn: 0, startY: py, head, body: rows(model.rules.passed), columnStyles });
-    tableCaption('Prüfregeln — automatisierte Prüfung nach CAD-Richtlinie BBL V1.0');
+    tableCaption('Prüfregeln: automatisierte Prüfung nach CAD-Richtlinie BBL V1.0');
   });
 
   // ── Fehlermeldungen ──
   chapter('errors', `Fehlermeldungen (${model.issues.length})`, title => {
     if (model.issues.length === 0) {
       doc.setFillColor(...theme.successLight); doc.roundedRect(marginX, 32, contentWidth, 12, 2, 2, 'F');
-      setFont(10, theme.success, 'bold'); doc.text('Keine Fehlermeldungen — alle Prüfungen bestanden.', marginX + 4, 39.5);
+      setFont(10, theme.success, 'bold'); doc.text('Keine Fehlermeldungen: alle Prüfregeln bestanden.', marginX + 4, 39.5);
       return;
     }
     table({
@@ -275,7 +275,7 @@ export async function buildPlanReport(model, { capture = () => null } = {}) {
       body: model.issues.map((issue, i) => [String(i + 1), statusLabel(issue.severity), issue.code, issue.message]),
       columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 20 }, 2: { cellWidth: 28 } },
     });
-    tableCaption('Fehlermeldungen — erkannte Verstösse und Warnungen');
+    tableCaption('Fehlermeldungen: erkannte Verstösse und Warnungen');
   });
 
   // ── Layer ──
@@ -288,7 +288,7 @@ export async function buildPlanReport(model, { capture = () => null } = {}) {
       body: model.layers.map((l, i) => [String(i + 1), l.ok ? LABEL.ok : LABEL.unknown, l.name, String(l.count), l.color || DASH]),
       columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 20 }, 3: { cellWidth: 22, halign: 'right' }, 4: { cellWidth: 20 } },
     });
-    tableCaption('Layer — erkannte CAD-Layer mit Objektanzahl und CAFM-Status');
+    tableCaption('Layer: erkannte CAD-Layer mit Objektanzahl und CAFM-Status');
   });
 
   // ── Räume und Flächen ──
@@ -301,8 +301,8 @@ export async function buildPlanReport(model, { capture = () => null } = {}) {
       tableCaption(caption);
     });
   };
-  polygonChapter('rooms', 'Räume', model.rooms, 'rooms', 'Keine Räume erkannt.', 'Raumliste', 'Räume — Raumpolygone mit Flächenangaben (R_RAUMPOLYGON)');
-  polygonChapter('areas', 'Flächen', model.areas, 'areas', 'Keine Flächenpolygone erkannt.', 'Flächenliste', 'Flächen — Geschossflächenpolygone (R_GESCHOSSPOLYGON)');
+  polygonChapter('rooms', 'Räume', model.rooms, 'rooms', 'Keine Räume erkannt.', 'Raumliste', 'Räume: Raumpolygone mit Flächenangaben (R_RAUMPOLYGON)');
+  polygonChapter('areas', 'Flächen', model.areas, 'areas', 'Keine Flächenpolygone erkannt.', 'Flächenliste', 'Flächen: Geschossflächenpolygone (R_GESCHOSSPOLYGON)');
 
   // ── Kennzahlen ──
   chapter('kpi', 'Kennzahlen SIA 416', title => {
@@ -326,7 +326,7 @@ export async function buildPlanReport(model, { capture = () => null } = {}) {
       ky = ensureSpace(doc.lastAutoTable.finalY + 10, 50, continuation);
       ky = sectionSubtitle('Objektübersicht', ky);
       table({ title: continuation, startY: ky, head: [['Typ', 'Anzahl', 'Layer']], body: model.entities.map(e => [e.type, String(e.count), e.layers]), columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 }, 1: { cellWidth: 20, halign: 'right' } } });
-      tableCaption('Objektübersicht — CAD-Entitäten nach Typ');
+      tableCaption('Objektübersicht: CAD-Entitäten nach Typ');
     }
   });
 

@@ -106,7 +106,7 @@
           "name": "Kostenvoranschlag eBKP-H",
           "firm": "Planerteam Nord AG",
           "gewerk": "Kostenplanung",
-          "desc": "Datenformular · Menge + Kosten, Ziel ePPM",
+          "desc": "Datenformular · Kosten nach eBKP-H (Menge und Kosten), Ziel ePPM",
           "status": "Offen",
           "isForm": true
         },
@@ -115,7 +115,7 @@
           "name": "Ökobilanz Erstellung und Betrieb",
           "firm": "Planerteam Nord AG",
           "gewerk": "Nachhaltigkeit",
-          "desc": "Datenformular · Emissionsquellen nach SIA 2032, Ziel SUS",
+          "desc": "Datenformular · Ökobilanz Erstellung und Betrieb (SIA 390/1), Ziel Wüest Dimensions",
           "status": "Überfällig",
           "isForm": true
         },
@@ -144,7 +144,7 @@
         },
         {
           "name": "Kostenvoranschlag eBKP-H",
-          "desc": "KV-32 · Menge + Kosten",
+          "desc": "KV-32 · Kosten nach eBKP-H (Menge und Kosten)",
           "status": "Offen",
           "typ": "Datenformular",
           "zug": "Planerteam Nord AG",
@@ -205,7 +205,7 @@
           "name": "Ökobilanz Erstellung und Betrieb",
           "firm": "Ökobilanz Beispiel AG",
           "gewerk": "Nachhaltigkeit",
-          "desc": "Datenformular · Emissionsquellen nach SIA 2032, Ziel SUS",
+          "desc": "Datenformular · Ökobilanz Erstellung und Betrieb (SIA 390/1), Ziel Wüest Dimensions",
           "status": "In Bearbeitung",
           "isForm": true
         },
@@ -214,7 +214,7 @@
           "name": "Kostenschätzung eBKP-H",
           "firm": "Atelier Süd GmbH",
           "gewerk": "Kostenplanung",
-          "desc": "Datenformular · Menge + Kosten, an ePPM übertragen",
+          "desc": "Datenformular · Kosten nach eBKP-H (Menge und Kosten), an ePPM übertragen",
           "status": "Abgeschlossen",
           "isForm": true
         }
@@ -282,7 +282,7 @@
           "name": "Ökobilanz Erstellung und Betrieb",
           "firm": "Lab Planung AG",
           "gewerk": "Nachhaltigkeit",
-          "desc": "Datenformular · Emissionsquellen nach SIA 2032, an SUS übertragen",
+          "desc": "Datenformular · Ökobilanz Erstellung und Betrieb (SIA 390/1), an Wüest Dimensions übertragen",
           "status": "Abgeschlossen",
           "isForm": true
         },
@@ -291,7 +291,7 @@
           "name": "Kostenvoranschlag eBKP-H",
           "firm": "Lab Planung AG",
           "gewerk": "Kostenplanung",
-          "desc": "Datenformular · Menge + Kosten, an ePPM übertragen",
+          "desc": "Datenformular · Kosten nach eBKP-H (Menge und Kosten), an ePPM übertragen",
           "status": "Abgeschlossen",
           "isForm": true
         },
@@ -366,7 +366,7 @@
           "name": "Ökobilanz Erstellung und Betrieb",
           "firm": "Atelier Süd GmbH",
           "gewerk": "Nachhaltigkeit",
-          "desc": "Datenformular · Emissionsquellen nach SIA 2032, Ziel SUS",
+          "desc": "Datenformular · Ökobilanz Erstellung und Betrieb (SIA 390/1), Ziel Wüest Dimensions",
           "status": "Offen",
           "isForm": true
         },
@@ -375,7 +375,7 @@
           "name": "Kostenschätzung eBKP-H",
           "firm": "Atelier Süd GmbH",
           "gewerk": "Kostenplanung",
-          "desc": "Datenformular · Menge + Kosten, Ziel ePPM",
+          "desc": "Datenformular · Kosten nach eBKP-H (Menge und Kosten), Ziel ePPM",
           "status": "In Bearbeitung",
           "isForm": true
         }
@@ -383,7 +383,7 @@
       "tasks": [
         {
           "name": "Kostenschätzung eBKP-H",
-          "desc": "KS-31 · Menge + Kosten",
+          "desc": "KS-31 · Kosten nach eBKP-H (Menge und Kosten)",
           "status": "In Bearbeitung",
           "typ": "Datenformular",
           "zug": "Atelier Süd GmbH",
@@ -432,7 +432,7 @@
           "name": "Ökobilanz Erstellung und Betrieb",
           "firm": "Muster Architekten AG",
           "gewerk": "Nachhaltigkeit",
-          "desc": "Datenformular · Emissionsquellen nach SIA 2032, an SUS übertragen",
+          "desc": "Datenformular · Ökobilanz Erstellung und Betrieb (SIA 390/1), an Wüest Dimensions übertragen",
           "status": "Abgeschlossen",
           "isForm": true
         },
@@ -516,7 +516,7 @@
           "name": "Kostenvoranschlag eBKP-H",
           "firm": "Holzbau Beispiel AG",
           "gewerk": "Kostenplanung",
-          "desc": "Datenformular · Hauptgruppen und Kostenelemente eBKP-H (Menge + Kosten) eBKP-H, Ziel ePPM",
+          "desc": "Datenformular · Kosten nach eBKP-H (Menge und Kosten), Ziel ePPM",
           "status": "In Bearbeitung",
           "isForm": true
         }
@@ -524,7 +524,7 @@
       "tasks": [
         {
           "name": "Kostenvoranschlag eBKP-H",
-          "desc": "KV-32 · Hauptgruppen und Kostenelemente eBKP-H (Menge + Kosten)",
+          "desc": "KV-32 · Kosten nach eBKP-H (Menge und Kosten)",
           "status": "In Bearbeitung",
           "typ": "Datenformular",
           "zug": "Holzbau Beispiel AG",

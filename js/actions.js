@@ -44,6 +44,7 @@ export function makeActions(store, data, nav) {
   const now = () => { const d = new Date(); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
   const ev = (who, text, detail = '') => ['heute', now(), who, text, detail];
   const me = () => s().user;
+  const pl = (n, one, many) => `${n} ${n === 1 ? one : many}`;
   const userOf = () => data.users.users.find(u => u.key === me());
   const isInternal = () => { const u = userOf(); return !u || !!u.internal; };   // only BBL users review
   /** A file an import brought in becomes a document of the form (once). */
@@ -73,7 +74,7 @@ export function makeActions(store, data, nav) {
     const floor = floorOf(key);
     if (!floor || !planOf(key)) return;
     if (planOf(key).busy) { toast('Eine Prüfung läuft bereits. Bitte warten.'); return; }
-    setPlan(key, { busy: 'Datei wird gelesen und geprüft (LibreDWG WebAssembly, lokal im Browser)…', error: null });
+    setPlan(key, { busy: 'Plan wird lokal im Browser geprüft…', error: null });
     try {
       const { entry, src } = await run();
       const result = { ...entry.result, src: src || null, checkedAt: new Date().toISOString() };
@@ -81,7 +82,7 @@ export function makeActions(store, data, nav) {
       setPlan(key, { busy: null, result, status: p.status === 'offen' ? 'bearbeitung' : p.status });
       const sm = result.summary;
       toast(sm.errorCount === 0
-        ? `${floor.code}: ${result.file.name} geprüft, ${sm.passedRules}/${sm.totalRules} Prüfregeln bestanden, ${sm.warningCount} Warnung(en).`
+        ? `${floor.code}: ${result.file.name} geprüft, ${sm.passedRules}/${sm.totalRules} Prüfregeln bestanden, ${pl(sm.warningCount, 'Warnung', 'Warnungen')}.`
         : `${floor.code}: ${result.file.name} geprüft, ${sm.errorCount} Fehler. Plan im CAD korrigieren und neu hochladen.`);
     } catch (err) {
       setPlan(key, { busy: null, error: err.message });
@@ -188,7 +189,7 @@ export function makeActions(store, data, nav) {
         if (!added && !filled) { toast('Tool-Export enthält keine neuen Werte.'); return; }
         const doc = (data.forms.kinds.thg.docs.find(d => /toolexport/i.test(d[0])) || [])[0] || 'Tool-Export';
         const tool = (p.thgHead || {}).tool || data.thg.head.find(h => h[0] === 'tool')[2];
-        const what = added ? `${added} Emissionsquellen übernommen` : `${filled} Werte ergänzt`;
+        const what = added ? `${pl(added, 'Emissionsquelle', 'Emissionsquellen')} übernommen` : `${pl(filled, 'Wert', 'Werte')} ergänzt`;
         setP({ thgSrc: next });
         addDoc('thg', doc);
         logEv('thg', me(), 'Tool-Export importiert', `${doc} · ${tool} · ${what}`);
@@ -203,8 +204,8 @@ export function makeActions(store, data, nav) {
         const doc = (data.forms.kinds.thg.docs.find(d => /rechenhilfe/i.test(d[0])) || [])[0] || 'Rechenhilfe';
         setP({ thgBetr: next });
         addDoc('thg', doc);
-        logEv('thg', me(), 'Rechenhilfe SIA 390/1 importiert', `${doc} · ${filled} Werte übernommen`);
-        toast(`Rechenhilfe importiert: ${filled} Werte übernommen.`);
+        logEv('thg', me(), 'Rechenhilfe SIA 390/1 importiert', `${doc} · ${pl(filled, 'Wert', 'Werte')} übernommen`);
+        toast(`Rechenhilfe importiert: ${pl(filled, 'Wert', 'Werte')} übernommen.`);
         return;
       }
       toast('Im Prototyp ohne Funktion.');
@@ -224,7 +225,7 @@ export function makeActions(store, data, nav) {
       if (ds.field === 'code') { const eg = egOf(data, el.value); patch.unit = eg ? eg[2] : ''; if (src.isNew || !src.name) patch.name = eg ? eg[1] : ''; }   // an existing row keeps its Bauteil
       setSrc(ds.id, patch);
     },
-    thgBetr: (ds, el) => { if (editable('thg')) setP(p => ({ thgBetr: { ...(p.thgBetr || {}), [ds.key]: normNum(el.value, 2) } })); },
+    thgBetr: (ds, el) => { if (editable('thg')) setP(p => ({ thgBetr: { ...(p.thgBetr || {}), [ds.key]: normNum(el.value, /_kf$/.test(ds.key) ? 3 : 2) } })); },   // b{i}_end and b{i}_kf are own values that replace the derived ones
     thgBetrFlag: ds => { if (editable('thg')) setP(p => ({ thgBetr: { ...(p.thgBetr || {}), [ds.key]: !(p.thgBetr || {})[ds.key] } })); },
     thgToggleHs: ds => { const x = ((P() || {}).thgSrc || []).find(y => y.id === ds.id); if (x && editable('thg')) setSrc(ds.id, { hs: !x.hs }); },
     thgAdd: ds => {
@@ -303,7 +304,7 @@ export function makeActions(store, data, nav) {
       const applied = Object.keys(patch).length;
       const modes = { ...p.forms[kind].modes };
       if (applied) for (const g of data.ebkp.ebkp) if (g.kids.some(k => patch[k.code] != null)) modes[g.code] = 'detail';   // imported positions are shown in detail
-      const events = applied ? [...p.forms[kind].events, ev(me(), 'Excel importiert', `${data.ebkp.import.file} · ${applied} Werte übernommen`)] : p.forms[kind].events;
+      const events = applied ? [...p.forms[kind].events, ev(me(), 'Excel importiert', `${data.ebkp.import.file} · ${pl(applied, 'Wert', 'Werte')} übernommen`)] : p.forms[kind].events;
       setP({ [vKey]: applied ? { ...p[vKey], ...patch } : p[vKey], forms: { ...p.forms, [kind]: { ...p.forms[kind], modes, events } } });
       if (applied) addDoc(kind, data.ebkp.import.file);
       store.setIn('imp', { done: true, applied });

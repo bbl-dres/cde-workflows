@@ -24,6 +24,26 @@
 .kpi-v { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
 .kpi-u { font-size: 12.5px; color: var(--muted); }
 
+/* Prüfung: Zusammenfassung (Prüfpunkt · Lieferung · Ergebnis); the Begründung des Planers sits under its row */
+.sm-body { min-width: 560px; }
+.sm-th, .sm-tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 220px) 100px; gap: 0 16px; align-items: center; padding: 0 14px; }
+.sm-th { height: 34px; background: #fafafa; font-size: 12px; font-weight: 500; color: var(--text); border-bottom: 1px solid var(--line-4); }
+.sm-tr { min-height: 40px; padding-top: 6px; padding-bottom: 6px; font-size: 13px; border-bottom: 1px solid var(--line-4); text-wrap: pretty; cursor: help; }
+.sm-tr > span { min-width: 0; }
+.sm-begr { display: grid; grid-template-columns: minmax(120px, 200px) minmax(0, 1fr); gap: 0 12px; align-items: center; padding: 2px 14px 8px 28px; font-size: 12.5px; color: var(--muted); border-bottom: 1px solid var(--line-4); margin-top: -1px; }
+.sm-begr-text { color: var(--text); text-wrap: pretty; }                /* locked: the Begründung reads as text, not as a clipped field */
+@media (max-width: 639.98px) {                                          /* phones: the value moves under its Prüfpunkt, the result stays visible */
+  .sm-body { min-width: 0; }
+  .sm-th, .sm-tr { grid-template-columns: minmax(0, 1fr) auto; }
+  .sm-th > span:nth-child(2) { display: none; }
+  .sm-tr > span:nth-child(2) { grid-row: 2; grid-column: 1; color: var(--muted); font-size: 12.5px; }
+  .sm-tr > span:nth-child(3) { grid-row: 1 / span 2; grid-column: 2; }
+  .sm-begr { grid-template-columns: minmax(0, 1fr); gap: 4px 0; padding-left: 14px; }
+}
+
+/* Numbers with an explanation on hover */
+.kpi[title], .tgt-ist[title], .tz-ist[title], .plan-result > [title] { cursor: help; }
+
 /* Tables inside cards */
 .fm-table { overflow-x: auto; }
 .fm-th { display: grid; gap: 0 10px; height: 34px; align-items: center; padding: 0 14px; background: #fafafa; font-size: 12px; font-weight: 500; color: var(--text); border-bottom: 1px solid var(--line-4); }
@@ -32,8 +52,6 @@
 .fm-tr > * { min-width: 0; }
 .fm-tr:hover { background: var(--row-hover) !important; }
 .fm-code { color: #374151; }
-.fm-total { display: grid; gap: 0 10px; height: 40px; align-items: center; padding: 0 14px; font-size: 13px; border-top: 1px solid #1f2d3f; font-variant-numeric: tabular-nums; }
-.fm-sub { display: grid; gap: 0 10px; min-height: 38px; align-items: center; padding: 0 14px; font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .fm-space { height: 14px; }
 .fw-400 { font-weight: 400; }
 
@@ -69,13 +87,6 @@
 .ov-tick { position: absolute; top: 0; height: 18px; width: 2px; margin-left: -1px; background: #374151; }
 .ov-total { height: 38px; font-size: 13px; border-top: 1px solid #1f2d3f; margin-top: 4px; }
 .ov-sub { min-height: 36px; font-size: 13.5px; font-weight: 700; }
-.ov-dumb { height: 20px; }
-.ov-line { position: absolute; left: 0; right: 0; top: 9px; height: 2px; background: #eef0f3; }
-.ov-span { position: absolute; top: 7px; height: 6px; border-radius: 3px; }
-.ov-dot { position: absolute; top: 3px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--navy); }
-.ov-dot-prev { border: 2px solid #56687a; background: #fff; box-sizing: border-box; }
-.ov-begr { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 0 10px; padding: 0 0 8px; }
-.ov-begr-field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #9b2c44; }
 .seg { display: inline-flex; border: 1px solid #d1d5db; border-radius: 4px; overflow: hidden; margin: 12px 16px 0; }
 .seg-btn { height: 26px; padding: 0 12px; border: 0; font-size: 12.5px; font-weight: 600; cursor: pointer; background: #fff; color: var(--navy); white-space: nowrap; }
 .seg-btn.is-on { background: var(--navy); color: #fff; }
@@ -130,6 +141,9 @@
 .ent-input:hover { border-color: #21485c; }
 .ent-input:focus { border-color: #21485c !important; box-shadow: 0 0 0 2px var(--primary-ring); }
 .ent-input[readonly] { color: var(--muted); }
+.ent-input.is-calc { color: var(--muted); }                 /* derived value (Endenergie, Koeffizient); an own value is shown in the text colour */
+.ent-input.is-calc::placeholder { color: var(--muted); }
+.pr13 { padding-right: 13px !important; }                   /* aligns plain numbers with the text of the inputs above */
 .ent-text { width: 100%; height: 28px; font-size: 13px; padding: 0 8px; border-radius: 4px; outline: none; border: 1px solid var(--line-2); background: #fff; transition: border-color .3s, box-shadow .3s; }
 .ent-text::placeholder { color: var(--muted-2); }
 .ent-text:hover:not([readonly]) { border-color: #21485c; }
@@ -149,7 +163,6 @@
 .ent-new { background: #fcfcfd; }
 .ent-code-cell { grid-column: 1; padding-left: 14px !important; }
 .ent-src { min-height: 48px; }
-.ent-two { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 4px 10px !important; }
 .ent-add { display: flex; align-items: center; min-height: 36px; padding: 0 14px 0 34px; border-bottom: 1px solid var(--line-4); }
 .ent-add a { font-size: 12.5px; white-space: nowrap; }
 .ent-del-cell { display: flex; justify-content: center; padding: 0 !important; }
@@ -175,6 +188,7 @@
 .dd-menu { position: absolute; right: 0; top: 32px; z-index: 61; background: #fff; border-radius: 4px; box-shadow: var(--shadow-pop); padding: 4px; min-width: 230px; display: flex; flex-direction: column; }
 .dd-item { text-align: left; background: #fff; border: 0; padding: 8px 10px; font-size: 13px; font-weight: 400; color: var(--text); cursor: pointer; border-radius: 3px; white-space: nowrap; }
 .dd-item:hover { background: var(--row-alt); }
+.dd-sep { border-bottom: 1px solid var(--line-4); border-radius: 3px 3px 0 0; }
 
 /* Submit bar at the end of the Erfassung (sticky) */
 .submit-bar { position: sticky; bottom: 0; z-index: 2; background: #fff; border-radius: 6px; box-shadow: 0 -6px 16px -10px rgba(16,24,40,.25), var(--shadow-1); padding: 12px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
@@ -184,17 +198,10 @@
 .submit-bar .checkbox-box { margin-top: 0; width: 16px; height: 16px; border-radius: 3px; }
 
 /* Prüfung */
-.res-row { display: flex; align-items: center; gap: 12px; padding: 14px 14px 12px; }
-.res-sym { flex: none; width: 28px; height: 28px; border-radius: 50%; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
-.res-title { font-size: 15px; font-weight: 600; }
-.res-sub { font-size: 12.5px; color: var(--muted); }
-.res-issue { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 36px; border-top: 1px solid var(--line-4); font-size: 13px; }
-.res-code { font-size: 12px; color: var(--muted); font-family: var(--mono); white-space: nowrap; }
 .rv-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
 
 /* Ökobilanz: Betrieb (Energiedienstleistungen nach Rechenhilfe SIA 390/1) */
 .ent-betr { min-width: 900px; }
-.ent-betr .ent-two { padding: 5px 10px 5px 14px !important; }
 .thg-field .ent-text.right { text-align: right; font-variant-numeric: tabular-nums; }
 .thg-field .ent-text::placeholder { color: #b4242f; }
 .thg-head.pv-strip { border-bottom: 1px solid var(--line-4); }
@@ -202,8 +209,7 @@
 /* Übersicht (THG-32): Zielwerte SIA 390/1, three rows (Erstellung, Betrieb, Zusatzanforderung) with the Richtwerte as marks */
 .tz-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; }
 .tz-row, .tz-axis { display: grid; grid-template-columns: 150px minmax(0, 1fr) 56px; gap: 0 14px; align-items: center; }
-.tz-label { display: flex; flex-direction: column; gap: 2px; font-size: 13px; font-weight: 500; }
-.tz-sub { font-size: 11.5px; font-weight: 400; color: var(--muted); }
+.tz-label { font-size: 13px; font-weight: 500; }
 .tz-track-wrap { position: relative; height: 62px; }
 .tz-track { position: absolute; left: 0; right: 0; top: 25px; height: 14px; background: #f3f4f6; border-radius: 3px; }
 .tz-bar { position: absolute; top: 28px; height: 8px; left: 0; background: #1f2d3f; border-radius: 0 2px 2px 0; }

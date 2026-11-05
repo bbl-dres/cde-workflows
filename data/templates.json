@@ -31,17 +31,15 @@
         "Z"
       ],
       "fields": [
-        "Menge und Einheit",
-        "Kosten CHF",
-        "Kommentar je Position",
-        "«Nicht zutreffend» mit Begründung",
-        "Beilage detaillierter KV (PDF/Excel)"
+        "Hauptgruppen direkt oder aufgeschlüsselt in Positionen (Menge und Kosten)",
+        "Kennwert CHF/m² GF (berechnet)",
+        "Beilage detaillierter KV (PDF, Pflicht)"
       ],
       "rules": [
-        "Pflichtpositionen erfasst oder «nicht zutreffend»",
-        "Bezugsmengen aus Grundmengen derselben Phase",
-        "Abweichung zur Vorphase über 10 % je Hauptgruppe: Hinweis",
-        "Kostenziel B–W überschritten: Hinweis"
+        "Alle Hauptgruppen erfasst",
+        "Kennwert B–W im Erfahrungsbereich",
+        "Abweichung zur Vorphase ab 10 % je Hauptgruppe: Hinweis",
+        "Bezugsmengen aus den Grundrissen (DWG)"
       ]
     },
     "bkp": {
@@ -71,8 +69,8 @@
       "name": "Ökobilanz Erstellung und Betrieb",
       "gl": "eBKP-H B–G (SIA 2032) · Betrieb SIA 390/1",
       "ver": "2",
-      "ziel": "SUS",
-      "pflicht": "ab SIA 32, AK ≥ 1 Mio CHF",
+      "ziel": "Wüest Dimensions (Modul Sustainability)",
+      "pflicht": "ab SIA 32, AK ≥ CHF 1 Mio",
       "pos": [
         "B",
         "C",
@@ -92,8 +90,8 @@
         "Alle Emissionsquellen mit Elementgruppe, Referenzgrösse und Kennwert",
         "Bericht, Tool-Export und Rechenhilfe vorhanden",
         "Zusatzanforderung B (Erstellung + Betrieb) der Gebäudekategorie eingehalten",
-        "Abweichung zur Vorphase SIA 31 über 15 %: Hinweis",
-        "Bestellung Muss ab Anlagekosten 1 Mio CHF"
+        "Abweichung zur Vorphase SIA 31 ab 15 % und 0.1 kg: Begründung des Planers",
+        "Bestellung Pflicht ab Anlagekosten CHF 1 Mio"
       ]
     }
   },
@@ -106,7 +104,7 @@
     {
       "key": "thg",
       "title": "Ökobilanz Erstellung und Betrieb",
-      "desc": "Erstellung nach SIA 2032 (Tool-Export) und Betrieb nach SIA 390/1<br>Zielsystem SUS"
+      "desc": "Erstellung nach SIA 2032 (Tool-Export) und Betrieb nach SIA 390/1<br>Zielsystem Wüest Dimensions"
     }
   ]
 }

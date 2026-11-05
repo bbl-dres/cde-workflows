@@ -163,7 +163,7 @@ test('actions: Importieren (Tool-Export, Excel, others)', () => {
   assert.equal(F('thg').missing, 29, 'the Betrieb of an open form is still empty'); assert.equal(F('thg').next.tab, 'betrieb');
   actions.importItem({ arg: 'rechenhilfe', form: 'thg' });
   assert.equal(F('thg').missing, 0); assert.match(toast(), /29 Werte übernommen/); assert.ok(eventTitles(P().forms.thg).includes('Rechenhilfe SIA 390/1 importiert')); assert.equal(F('thg').bar.canSubmit, true);
-  assert.equal(F('thg').docs.length, 2, 'Tool-Export and Rechenhilfe appear under Dokumente'); assert.ok(F('thg').autoChecks[1].label.includes('Oekobilanz_Bericht'), 'the report is still missing');
+  assert.equal(F('thg').docs.length, 2, 'Tool-Export and Rechenhilfe appear under Dokumente'); assert.ok(F('thg').summ[0].tip.includes('Oekobilanz_Bericht') && F('thg').summ[0].val === 'Alle Werte erfasst · 1 Pflichtdokument fehlt' && !F('thg').summ[0].ok, 'the report is still missing');
   actions.importItem({ arg: 'rechenhilfe', form: 'thg' });
   assert.match(toast(), /keine neuen Werte/);
   // Excel: form-aware dialog; locked forms refuse every import

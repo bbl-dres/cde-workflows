@@ -2,7 +2,7 @@
   {
     "id": "n1",
     "title": "Die Aufgabe Kostenvoranschlag eBKP-H (KV-32) wurde erstellt.",
-    "text": "Paula Muster hat KV-32 bei Ihnen bestellt. Fällig am 30.04.2027.",
+    "text": "Paula Muster hat KV-32 bestellt. Fällig am 30.04.2027.",
     "date": "12.03.27",
     "unread": true,
     "for": [
@@ -18,7 +18,7 @@
   {
     "id": "n2",
     "title": "Erinnerung: Grundriss DG (DWG-DG)",
-    "text": "Die Aufgabe DWG-DG muss noch abgeschlossen werden. Fällig am 15.05.2027.",
+    "text": "DWG-DG ist noch offen. Fällig am 15.05.2027.",
     "date": "05.05.27",
     "unread": false,
     "for": [
@@ -137,7 +137,7 @@
   {
     "id": "n10",
     "title": "Die Aufgaben Grundrisse DWG (DWG-UG … DWG-DG) wurden erstellt.",
-    "text": "Paula Muster hat fünf Planlieferungen DWG für das Flächenmanagement (SAP RE-FX) bei Ihnen bestellt, ein Grundriss pro Geschoss. Fällig am 30.04.2027.",
+    "text": "Paula Muster hat fünf Grundrisse DWG für das Flächenmanagement (SAP RE-FX) bestellt, einen pro Geschoss. Fällig am 30.04.2027.",
     "date": "12.03.27",
     "unread": false,
     "for": [
@@ -167,7 +167,7 @@
   {
     "id": "n12",
     "title": "Prüfung fehlgeschlagen: Grundriss EG (DWG-EG)",
-    "text": "Die hochgeladene Datei 9999.AA.00_CAFM.dwg erfüllt 26 von 40 Prüfregeln (4 Fehler): Pflicht-Layer R_RAUMPOLYGON, R_AOID und R_GESCHOSSPOLYGON fehlen. Bitte im CAD korrigieren und neu hochladen.",
+    "text": "Die hochgeladene Datei 9999.AA.00_CAFM.dwg erfüllt 26 von 40 Prüfregeln (4 Fehler), unter anderem fehlen die Pflicht-Layer R_RAUMPOLYGON, R_AOID und R_GESCHOSSPOLYGON. Im CAD korrigieren und neu hochladen.",
     "date": "14.04.27",
     "unread": true,
     "for": [

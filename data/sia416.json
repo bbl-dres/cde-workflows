@@ -20,7 +20,7 @@
       { "code": "NNF", "name": "Nebennutzfläche", "unit": "m²", "base": "GF" },
       { "code": "AGF", "name": "Aussengeschossfläche", "unit": "m²", "base": "GF" } ] },
     { "title": "Weitere Bezugsmengen", "rows": [
-      { "code": "EBF", "name": "Energiebezugsfläche (SIA 380/1)", "unit": "m²" },
+      { "code": "EBF", "name": "Energiebezugsfläche (SIA 416/1)", "unit": "m²" },
       { "code": "FAW", "name": "Fläche Aussenwand (eBKP-H)", "unit": "m²" },
       { "code": "FB", "name": "Fläche Bedachung (eBKP-H)", "unit": "m²" } ] }
   ]

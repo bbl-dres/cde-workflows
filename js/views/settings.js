@@ -11,7 +11,7 @@ const TABS = [
 const PLACEHOLDER = {
   files: ['Dateien', 'Ablagestruktur, Namenskonventionen und erlaubte Dateitypen des Projekts.'],
   categories: ['Kategorien', 'Kategorien für Aufgaben, Dateien und Lieferungen.'],
-  links: ['Verknüpfungen', 'Verknüpfte Projekte und externe Systeme (ePPM, SUS).'],
+  links: ['Verknüpfungen', 'Verknüpfte Projekte und externe Systeme (ePPM, Wüest Dimensions).'],
   'danger-zone': ['Gefahrenzone', 'Projekt archivieren oder löschen.'],
 };
 

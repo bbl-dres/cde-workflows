@@ -31,10 +31,10 @@
       "groupRef": { "B": ["m² GSF", "GSF"], "C": ["m² GF", "GF"], "D": ["m² GF", "GF"], "E": ["m² FAW", "FAW"], "F": ["m² FB", "FB"], "G": ["m² GF", "GF"], "I": ["m² BUF", "BUF"], "J": ["m² NF", "NF"], "V": ["pauschal"], "W": ["m² GF", "GF"], "Y": ["pauschal"] },
       "accuracy": 10,
       "targets": [["Kostenziel B–W", "ziel", "#b07a00"], ["KS-31 Kostenschätzung", "prev", "#6b7280"], ["Kostendach Projektauftrag", "dach", "#9b2c44"]],
-      "manual": [["k1", "Kostenziel eingehalten"], ["k2", "Beilage detaillierter KV geprüft"]],
+      "manual": [["k1", "Abweichungen zur Vorphase begründet"], ["k2", "Detaillierter KV plausibel"]],
       "docs": [["Kostenvoranschlag_detail.pdf", "PDF", "Pflicht"], ["Kostenvoranschlag_positionen.xlsx", "Excel", "Optional"]],
-      "ov": { "tableTitle": "Kosten nach Hauptgruppen · Vergleich mit Vorphase", "colCur": "KV-32 CHF", "colPrev": "KS-31 CHF", "colKw": "CHF/m² GF", "chartTitle": "Kostenziele", "chartHint": "Ziele werden in ePPM verwaltet", "istLabel": "Ist · KV-32 Erstellungskosten B–W" },
-      "importItems": [["excel", "Excel importieren"], ["ifc", "IFC importieren"], ["dwg", "Bezugsmengen aus den Grundrissen übernehmen"]]
+      "ov": { "chartTitle": "Kostenziele", "chartHint": "Ziele werden in ePPM verwaltet", "istLabel": "Ist · KV-32 Erstellungskosten B–W" },
+      "importItems": [["vorlage", "Excel-Vorlage herunterladen"], ["excel", "Excel importieren"], ["dwg", "Bezugsmengen aus den Grundrissen übernehmen"]]
     },
     "ks": {
       "code": "KS-31",
@@ -49,10 +49,10 @@
       "groupRef": { "B": ["m² GSF", "GSF"], "C": ["m² GF", "GF"], "D": ["m² GF", "GF"], "E": ["m² FAW", "FAW"], "F": ["m² FB", "FB"], "G": ["m² GF", "GF"], "I": ["m² BUF", "BUF"], "J": ["m² NF", "NF"], "V": ["pauschal"], "W": ["m² GF", "GF"], "Y": ["pauschal"] },
       "accuracy": 15,
       "targets": [["Kostenziel B–W", "ziel", "#b07a00"], ["Kostengrobschätzung SIA 21", "prev", "#6b7280"], ["Kostendach Projektauftrag", "dach", "#9b2c44"]],
-      "manual": [["k1", "Kostenziel eingehalten"], ["k2", "Beilage Kostenschätzung geprüft"]],
+      "manual": [["k1", "Abweichungen zur Vorphase begründet"], ["k2", "Kostenschätzung plausibel"]],
       "docs": [["Kostenschaetzung_eBKP-H.pdf", "PDF", "Pflicht"]],
-      "ov": { "tableTitle": "Kosten nach Hauptgruppen · Vergleich mit Vorphase", "colCur": "KS-31 CHF", "colPrev": "SIA 21 CHF", "colKw": "CHF/m² GF", "chartTitle": "Kostenziele", "chartHint": "Ziele werden in ePPM verwaltet", "istLabel": "Ist · KS-31 Erstellungskosten B–W" },
-      "importItems": [["excel", "Excel importieren"], ["ifc", "IFC importieren"], ["dwg", "Bezugsmengen aus den Grundrissen übernehmen"]]
+      "ov": { "chartTitle": "Kostenziele", "chartHint": "Ziele werden in ePPM verwaltet", "istLabel": "Ist · KS-31 Erstellungskosten B–W" },
+      "importItems": [["vorlage", "Excel-Vorlage herunterladen"], ["excel", "Excel importieren"], ["dwg", "Bezugsmengen aus den Grundrissen übernehmen"]]
     },
     "thg": {
       "code": "THG-32",
@@ -60,16 +60,17 @@
       "short": "Ökobilanz",
       "vorlage": "Ökobilanz SIA 390/1 · Version 2",
       "reporting": "Modell ecCo · Netto-Null Bundesverwaltung 2040 (GHG Protocol, Scope 3): THG Erstellung und Betrieb pro Jahr",
-      "target": "SUS",
-      "ziel": "SUS",
+      "target": "Wüest Dimensions",
+      "ziel": "Wüest Dimensions (Modul Sustainability)",
       "tableTitle": "Erstellung · Emissionsquellen aus dem Tool-Export nach eBKP-H-Elementgruppen",
       "betrTitle": "Betrieb · Energiedienstleistungen nach Rechenhilfe SIA 390/1 · kWh/m² EBF·a",
       "cmpUnit": "t CO₂-eq", "cmpPrevLabel": "SIA 31", "totalLabel": "Total B–G", "devPct": 15,
       "detailDefault": ["C", "E"],
-      "manual": [["t1", "Systemgrenze SIA 2032 eingehalten (A1–A3, A4–A5, B4, C1–C4)"], ["t2", "KBOB/ecobau-Liste 2022, Version 9.0 verwendet"], ["t3", "Biogener Kohlenstoff separat ausgewiesen, nicht verrechnet"], ["t4", "Wiederverwendete Bauteile mit null bilanziert und gelistet"], ["t5", "Pflichtenheft BBL eingehalten (Erstellung, Betrieb, Stromprodukt)"]],
+      "manual": [["t1", "Abweichungen zur Vorphase begründet"], ["t2", "Ökobilanz-Bericht plausibel, Pflichtenheft BBL eingehalten"]],
       "docs": [["Oekobilanz_Bericht_SIA32.pdf", "PDF", "Pflicht"], ["Oekobilanz_Toolexport_SIA32.xlsx", "Excel", "Pflicht"], ["Rechenhilfe_SIA390-1_Betrieb.xlsx", "Excel", "Pflicht"]],
-      "ov": { "tableTitle": "THG-Emissionen nach Hauptgruppen · Vergleich mit Vorphase", "colCur": "THG-32 t CO₂-eq", "colPrev": "SIA 31 t CO₂-eq", "colKw": "kg/m² EBF·a", "chartTitle": "Zielwerte SIA 390/1", "chartHint": "Richtwerte Erstellung und Betrieb, Zusatzanforderung", "istLabel": "Ist" },
-      "importItems": [["excel", "Excel importieren"], ["ifc", "IFC importieren"], ["tool", "Tool-Export importieren (XLSX, JSON)"], ["kvqty", "Mengen aus KV-32 übernehmen"]]
+      "ov": { "chartTitle": "Zielwerte SIA 390/1" },
+      "importItems": [["vorlage", "Excel-Vorlage herunterladen"], ["excel", "Excel importieren"], ["tool", "Tool-Export importieren (XLSX, JSON)"]],
+      "betrImportItems": [["vorlage", "Excel-Vorlage herunterladen"], ["excel", "Excel importieren"], ["rechenhilfe", "Rechenhilfe SIA 390/1 importieren"]]
     }
   },
   "plan": {
@@ -159,7 +160,7 @@
             "09:25",
             "PM",
             "Lieferung erstellt",
-            "Vorlage Ökobilanz SIA 390/1 · Version 2, Frist 31.05.2027, Zielsystem SUS"
+            "Vorlage Ökobilanz SIA 390/1 · Version 2, Frist 31.05.2027, Zielsystem Wüest Dimensions"
           ],
           [
             "15.03.2027",

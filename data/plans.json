@@ -11,7 +11,7 @@
   "initials": "AB"
  },
  "target": "ERP SAP RE-FX (Flächenmanagement BBL)",
- "desc": "DWG nach BBL CAD-Richtlinie · Prüfregeln Flächenmanagement",
+ "desc": "DWG nach CAD-Richtlinie BBL V1.0, Ziel SAP RE-FX",
  "steps": [
   "Bestellt",
   "In Bearbeitung",
@@ -27,7 +27,7 @@
   },
   {
    "key": "c2",
-   "label": "Flächen plausibel (Abgleich mit Vorphase und Bezugsmengen KV-32)"
+   "label": "Flächen plausibel (Abgleich mit Vorphase)"
   }
  ],
  "samples": {
@@ -159,7 +159,7 @@
      "code": "TEXT_001",
      "severity": "warning",
      "category": "TEXT",
-     "message": "1 Textelement(e) auf unzulässigem Layer \"A_ELEKTRO\"",
+     "message": "1 Textelement auf unzulässigem Layer «A_ELEKTRO»",
      "layer": "A_ELEKTRO",
      "handles": [
       "E4"
@@ -169,7 +169,7 @@
      "code": "TEXT_001",
      "severity": "warning",
      "category": "TEXT",
-     "message": "4 Textelement(e) auf unzulässigem Layer \"V_REFERENZPUNKT\"",
+     "message": "4 Textelemente auf unzulässigem Layer «V_REFERENZPUNKT»",
      "layer": "V_REFERENZPUNKT",
      "handles": [
       "5D56",
@@ -182,7 +182,7 @@
      "code": "STYLE_002",
      "severity": "warning",
      "category": "STYLE",
-     "message": "5 Element(e) mit Farbe nicht VONLAYER (Layer: V_PLANLAYOUT)",
+     "message": "5 Elemente mit Farbe nicht VONLAYER (Layer: V_PLANLAYOUT)",
      "handles": [
       "14AD",
       "14B0",
@@ -905,7 +905,7 @@
      "code": "TEXT_001",
      "severity": "warning",
      "category": "TEXT",
-     "message": "72 Textelement(e) auf unzulässigem Layer \"A1E00---T-\"",
+     "message": "72 Textelemente auf unzulässigem Layer «A1E00---T-»",
      "layer": "A1E00---T-",
      "handles": [
       "13F01",
@@ -986,7 +986,7 @@
      "code": "TEXT_001",
      "severity": "warning",
      "category": "TEXT",
-     "message": "9 Textelement(e) auf unzulässigem Layer \"A1------J-\"",
+     "message": "9 Textelemente auf unzulässigem Layer «A1------J-»",
      "layer": "A1------J-",
      "handles": [
       "16891",
@@ -1004,7 +1004,7 @@
      "code": "TEXT_001",
      "severity": "warning",
      "category": "TEXT",
-     "message": "19 Textelement(e) auf unzulässigem Layer \"A1------N-\"",
+     "message": "19 Textelemente auf unzulässigem Layer «A1------N-»",
      "layer": "A1------N-",
      "handles": [
       "168AB",
@@ -1032,7 +1032,7 @@
      "code": "TEXT_001",
      "severity": "warning",
      "category": "TEXT",
-     "message": "39 Textelement(e) auf unzulässigem Layer \"A1------W-\"",
+     "message": "39 Textelemente auf unzulässigem Layer «A1------W-»",
      "layer": "A1------W-",
      "handles": [
       "188A5",
@@ -1080,7 +1080,7 @@
      "code": "TEXT_001",
      "severity": "warning",
      "category": "TEXT",
-     "message": "6 Textelement(e) auf unzulässigem Layer \"0\"",
+     "message": "6 Textelemente auf unzulässigem Layer «0»",
      "layer": "0",
      "handles": [
       "188F4",
@@ -1095,7 +1095,7 @@
      "code": "TEXT_001",
      "severity": "warning",
      "category": "TEXT",
-     "message": "502 Textelement(e) auf unzulässigem Layer \"A1Z29---T-\"",
+     "message": "502 Textelemente auf unzulässigem Layer «A1Z29---T-»",
      "layer": "A1Z29---T-",
      "handles": [
       "1BC64",

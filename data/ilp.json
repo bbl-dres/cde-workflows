@@ -41,7 +41,7 @@
       "name": "Grundriss UG (DWG)",
       "firm": "Muster Architekten AG",
       "gewerk": "Architektur",
-      "desc": "DWG nach BBL CAD-Richtlinie · Prüfregeln Flächenmanagement",
+      "desc": "DWG nach CAD-Richtlinie BBL V1.0, Ziel SAP RE-FX",
       "plan": "UG",
       "isForm": false
     },
@@ -50,7 +50,7 @@
       "name": "Grundriss EG (DWG)",
       "firm": "Muster Architekten AG",
       "gewerk": "Architektur",
-      "desc": "DWG nach BBL CAD-Richtlinie · Prüfregeln Flächenmanagement",
+      "desc": "DWG nach CAD-Richtlinie BBL V1.0, Ziel SAP RE-FX",
       "plan": "EG",
       "isForm": false
     },
@@ -59,7 +59,7 @@
       "name": "Grundriss 1. OG (DWG)",
       "firm": "Muster Architekten AG",
       "gewerk": "Architektur",
-      "desc": "DWG nach BBL CAD-Richtlinie · Prüfregeln Flächenmanagement",
+      "desc": "DWG nach CAD-Richtlinie BBL V1.0, Ziel SAP RE-FX",
       "plan": "OG1",
       "isForm": false
     },
@@ -68,7 +68,7 @@
       "name": "Grundriss 2. OG (DWG)",
       "firm": "Muster Architekten AG",
       "gewerk": "Architektur",
-      "desc": "DWG nach BBL CAD-Richtlinie · Prüfregeln Flächenmanagement",
+      "desc": "DWG nach CAD-Richtlinie BBL V1.0, Ziel SAP RE-FX",
       "plan": "OG2",
       "isForm": false
     },
@@ -77,7 +77,7 @@
       "name": "Grundriss DG (DWG)",
       "firm": "Muster Architekten AG",
       "gewerk": "Architektur",
-      "desc": "DWG nach BBL CAD-Richtlinie · Prüfregeln Flächenmanagement",
+      "desc": "DWG nach CAD-Richtlinie BBL V1.0, Ziel SAP RE-FX",
       "plan": "DG",
       "isForm": false
     },
@@ -86,7 +86,7 @@
       "name": "Kostenschätzung eBKP-H",
       "firm": "Muster Architekten AG",
       "gewerk": "Kostenplanung",
-      "desc": "Datenformular · Hauptgruppen und Kostenelemente eBKP-H (Menge + Kosten) eBKP-H, an ePPM übertragen",
+      "desc": "Datenformular · Kosten nach eBKP-H (Menge und Kosten), an ePPM übertragen",
       "isForm": true,
       "statusKey": "ks"
     },
@@ -95,7 +95,7 @@
       "name": "Kostenvoranschlag eBKP-H",
       "firm": "Generalplaner Beispiel AG",
       "gewerk": "Kostenplanung",
-      "desc": "Datenformular · Hauptgruppen und Kostenelemente eBKP-H (Menge + Kosten) eBKP-H, Ziel ePPM",
+      "desc": "Datenformular · Kosten nach eBKP-H (Menge und Kosten), Ziel ePPM",
       "statusKey": "kv",
       "isForm": true,
       "mark": true,
@@ -106,7 +106,7 @@
       "name": "Ökobilanz Erstellung und Betrieb",
       "firm": "Ökobilanz Beispiel AG",
       "gewerk": "Nachhaltigkeit",
-      "desc": "Datenformular · Erstellung (Emissionsquellen je eBKP-H-Elementgruppe, SIA 2032) und Betrieb (Rechenhilfe SIA 390/1), THG an SUS",
+      "desc": "Datenformular · Ökobilanz Erstellung und Betrieb (SIA 390/1), Ziel Wüest Dimensions",
       "statusKey": "thg",
       "isForm": true
     },

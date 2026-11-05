@@ -1,9 +1,7 @@
 /* Screen-specific styles (views-c: Prüfung BBL of a Datenformular, Übergabe). Shared components live in components.css. */
 
 /* Prüfung card: auto checks, manual checks, comment, state notes */
-.rv-check { display: flex; gap: 9px; font-size: 13px; align-items: flex-start; }
-.rv-check .ic { margin-top: 2px; }
-.rv-manual { border-top: 1px solid var(--line-5); margin-top: 4px; padding-top: 12px; display: flex; flex-direction: column; gap: 9px; }
+.rv-manual { display: flex; flex-direction: column; gap: 9px; }
 .rv-manual .checkbox { gap: 9px; }
 .rv-textarea { width: 100%; height: 64px; border: 1px solid var(--line-2); border-radius: 2px; padding: 6px 8px; font-size: 13px; resize: none; outline: none; margin-top: 4px; background: #fff; }
 .rv-textarea:focus { border-color: var(--navy); }

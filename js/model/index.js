@@ -76,12 +76,12 @@ export function compute(state, data, project, user) {
     orderType: ot,
     glText: 'eBKP-H (vorgegeben)', glReadonly: true,
     supplier: isTHG ? 'Olivia Beispiel, Ökobilanz Beispiel AG' : 'Gian Muster, Generalplaner Beispiel AG', supplierInitials: isTHG ? 'OB' : 'GM',
-    target: isTHG ? 'SUS (THG Erstellung und Betrieb)' : 'ePPM (Leitsystem Baukosten)',
+    target: isTHG ? 'Wüest Dimensions (THG Erstellung und Betrieb)' : 'ePPM (Leitsystem Baukosten)',
     ruleOrder: isTHG ? (big ? 'Muss' : 'Kann') : 'Muss', ruleCheck: isTHG ? (big ? 'Pflicht' : 'Keine') : 'Pflicht',
     ruleColor: (isTHG && !big) ? '#5b6573' : '#1f2937',
     ruleText: isTHG
-      ? (big ? `Anlagekosten gemäss Stammdaten: CHF ${akStr} Mio. Ab 1 Mio CHF ist die Ökobilanz der Bauemissionen zu bestellen und zu kontrollieren.`
-             : `Anlagekosten gemäss Stammdaten: CHF ${akStr} Mio. Unter 1 Mio CHF kann die Ökobilanz nach Ermessen PPE/PM bestellt werden; sie wird nur abgelegt, nicht kontrolliert.`)
+      ? (big ? `Anlagekosten gemäss Stammdaten: CHF ${akStr} Mio. Ab CHF 1 Mio ist die Ökobilanz zu bestellen und zu kontrollieren.`
+             : `Anlagekosten gemäss Stammdaten: CHF ${akStr} Mio. Unter CHF 1 Mio kann die Ökobilanz nach Ermessen PPE/PM bestellt werden; sie wird abgelegt, nicht kontrolliert.`)
       : 'Kostenvoranschlag gemäss Phasenvorgabe SIA 32. Freigegebene Werte werden an ePPM übertragen; die Bezugsmengen kommen aus den Grundrissen (DWG).',
 
     // 06 Portfolio

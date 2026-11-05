@@ -25,18 +25,18 @@ export const dropZone = (plan, compact = false) => html`
   <label class="plan-drop" data-plan-drop="${plan.key}" style="${raw(compact ? 'padding:22px 16px' : '')}">
     ${icon('upload', compact ? 22 : 30, '#5b6573')}
     <div class="plan-drop-title">DWG-Datei für ${plan.name} hierher ziehen oder auswählen</div>
-    <div class="plan-drop-hint">.dwg, max. 50 MB · geprüft wird lokal im Browser nach CAD-Richtlinie BBL V1.0, nichts wird hochgeladen</div>
+    <div class="plan-drop-hint">.dwg, max. 50 MB · Prüfung lokal im Browser nach CAD-Richtlinie BBL V1.0, nichts wird hochgeladen</div>
     <span class="btn btn-primary">Datei auswählen</span>
     <input type="file" accept=".dwg" data-change="planFile" data-key="${plan.key}" aria-label="DWG-Datei für ${plan.name} auswählen">
     <div class="plan-drop-hint">Keine Datei? <button type="button" class="btn-link" data-action="planLoadSample" data-key="${plan.key}">${plan.sampleLabel} laden</button></div>
   </label>`;
 
 const resultStrip = plan => html`<div class="plan-result">
-  <div><div class="plan-kpi-label">Räume</div><div class="plan-kpi">${plan.roomCount}</div></div>
-  <div><div class="plan-kpi-label">NGF</div><div class="plan-kpi">${plan.ngf}</div></div>
-  <div><div class="plan-kpi-label">${plan.scoreLabel}</div><div class="plan-kpi" style="color:${plan.scoreC}">${plan.score}</div></div>
-  <div><div class="plan-kpi-label">Fehler</div><div class="plan-kpi" style="color:${plan.errors ? '#9b2c44' : '#2f7d63'}">${plan.errors}</div></div>
-  <div><div class="plan-kpi-label">Warnungen</div><div class="plan-kpi" style="color:${plan.warnings ? '#8a6100' : '#2f7d63'}">${plan.warnings}</div></div>
+  <div title="Raumpolygone auf R_RAUMPOLYGON"><div class="plan-kpi-label">Räume</div><div class="plan-kpi">${plan.roomCount}</div></div>
+  <div title="Nettogeschossfläche: Summe der Raumflächen"><div class="plan-kpi-label">NGF</div><div class="plan-kpi">${plan.ngf}</div></div>
+  <div title="Anteil der bestandenen Prüfregeln (bestanden / geprüft)"><div class="plan-kpi-label">${plan.scoreLabel}</div><div class="plan-kpi" style="color:${plan.scoreC}">${plan.score}</div></div>
+  <div title="Verstösse mit Schweregrad Fehler; sie sperren das Einreichen"><div class="plan-kpi-label">Fehler</div><div class="plan-kpi" style="color:${plan.errors ? '#9b2c44' : '#2f7d63'}">${plan.errors}</div></div>
+  <div title="Verstösse mit Schweregrad Warnung; zulässig, in der Prüfung sichtbar"><div class="plan-kpi-label">Warnungen</div><div class="plan-kpi" style="color:${plan.warnings ? '#8a6100' : '#2f7d63'}">${plan.warnings}</div></div>
 </div>`;
 
 const viewerBox = plan => html`<div class="plan-viewer" data-plan-viewer="${plan.drawingKey || ''}" data-plan-src="${plan.src || ''}" data-plan-status="idle">
@@ -106,7 +106,7 @@ function listLayers(plan, L) {
     ${L.layers.map(l => { const hidden = viewer.hiddenLayers.has(l.name); return html`<label class="plan-row${hidden ? ' is-hidden' : ''}" style="cursor:pointer">
       <input type="checkbox" ${hidden ? '' : raw('checked')} data-plan-layer="${l.name}" aria-label="Layer ${l.name} ein-/ausblenden">
       ${icon(l.ok ? 'circle-check' : 'triangle-alert', 14, l.ok ? '#2f7d63' : '#8a6100')}<span class="plan-swatch" style="background:${l.color}"></span>
-      <span class="plan-row-text" title="${l.ok ? 'Zulässiger CAFM-Layer' : 'Unbekannter Layer — nicht in der CAFM-Layerliste'}">${l.name}</span><span class="plan-row-count">${l.count} Objekte</span></label>`; })}`;
+      <span class="plan-row-text" title="${l.ok ? 'Zulässiger CAFM-Layer' : 'Unbekannter Layer, nicht in der CAFM-Layerliste'}">${l.name}</span><span class="plan-row-count">${l.count} Objekte</span></label>`; })}`;
 }
 
 /** Kennzahlen: two columns like the Prüfplattform — Gebäudevolumen, Gebäudeflächen SIA 416, Flächen DIN 277 | Wirtschaftlichkeit, Donut, Objektübersicht. */
@@ -137,7 +137,7 @@ function listKpi(plan) {
       ${kpiTable('Wirtschaftlichkeitskennzahlen', d.economy, 'ratio')}
       ${donut(segs)}
       ${d.entities.length ? kpiTable('Objektübersicht', d.entities, 'entity') : ''}
-      <div class="muted fs-12" style="margin-top:12px;line-height:1.5">Raumpolygone zählen zur HNF, solange keine Nutzungsart aus dem Raumstempel vorliegt (R_RAUMSTEMPEL wird von der Prüfstelle ergänzt). GF aus R_GESCHOSSPOLYGON, KF = GF − NGF. EBF nach SIA 416/1 = GF innerhalb der thermischen Gebäudehülle: ein Geschoss gilt als beheizt, ausser es ist in der Lieferung als unbeheizt markiert (dann 0).</div>
+      <div class="muted fs-12" style="margin-top:12px;line-height:1.5">Raumpolygone zählen zur HNF, bis die Prüfstelle die Nutzungsart ergänzt (R_RAUMSTEMPEL). GF aus R_GESCHOSSPOLYGON, KF = GF − NGF. EBF (SIA 416/1) = GF eines beheizten Geschosses, sonst 0.</div>
     </div>
   </div>`;
 }

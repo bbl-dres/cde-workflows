@@ -5,7 +5,7 @@ import { SECTIONS, link, sectionKeyFor } from './links.js';
 import { searchModel } from './model/search.js';
 
 export const PROJECT_PAGES = ['overview', 'projectTasks', 'ilp', 'delivery', 'settings', 'section', 'documents', 'loin', 'timeline'];
-export const BANNER_TEXT = 'Prototyp, fiktive oder öffentlich verfügbare Inhalte — nur zur Demonstration';
+export const BANNER_TEXT = 'Prototyp, fiktive oder öffentlich verfügbare Inhalte – nur zur Demonstration';
 
 /** Red prototype banner above the topbar (white on red). */
 export const banner = () => html`<div class="proto-banner" role="note"><span class="proto-banner-long">${BANNER_TEXT}</span><span class="proto-banner-short" aria-hidden="true">Prototyp – nur zur Demonstration</span></div>`;
@@ -40,7 +40,7 @@ function searchBox(ctx) {
   const q = state.ui.search || '', open = !!(state.ui.searchOpen && q.trim()), idx = state.ui.searchIdx;
   const m = open ? searchModel(q, data) : null;
   return html`<div class="topbar-search${open ? ' is-open' : ''}" role="search">
-    <input class="topbar-search-input" type="text" value="${q}" placeholder="Suchen nach Projekten und Bestandsdaten..." aria-label="Suchen nach Projekten und Bestandsdaten" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="${open ? 'true' : 'false'}" ${open ? raw('aria-controls="search-list"') : ''} aria-autocomplete="list" ${open && idx >= 0 ? html`aria-activedescendant="search-opt-${idx}"` : ''} data-input="searchType" data-fid="topbar-search">
+    <input class="topbar-search-input" type="text" value="${q}" placeholder="Suchen nach Projekten und Bestandsdaten…" aria-label="Suchen nach Projekten und Bestandsdaten" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="${open ? 'true' : 'false'}" ${open ? raw('aria-controls="search-list"') : ''} aria-autocomplete="list" ${open && idx >= 0 ? html`aria-activedescendant="search-opt-${idx}"` : ''} data-input="searchType" data-fid="topbar-search">
     ${q ? html`<button type="button" class="topbar-search-clear" data-action="searchClear" aria-label="Suche löschen" title="Suche löschen">${icon('x', 14, '#1f2937')}</button>` : ''}
     <button type="button" class="topbar-search-btn" data-action="searchGo" aria-label="Suchen">${icon('search', 16, '#1f2937')}</button>
     ${open ? html`<div class="search-pop" id="search-list" role="listbox" aria-label="Vorschläge">${m.total ? m.groups.map(g => html`<div class="search-group" role="presentation">${g.label}</div>${g.items.map(it => html`<a class="search-item${it.idx === idx ? ' is-active' : ''}" id="search-opt-${it.idx}" role="option" aria-selected="${it.idx === idx ? 'true' : 'false'}" href="#${it.href}" data-nav="${it.href}"><span class="ellipsis">${it.label}</span>${it.sub ? html`<span class="search-sub ellipsis">${it.sub}</span>` : ''}</a>`)}`) : html`<div class="search-empty">Keine Treffer für «${m.query}»</div>`}</div>` : ''}

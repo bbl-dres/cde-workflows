@@ -39,7 +39,7 @@ export default {
         <div class="pf-head" style="${COLS}">
           <span>Projekt</span><span>Teilportfolio</span><span class="right">Anlagekosten</span>
           <span class="rel">Pflicht${ctx.marker(2, 'top:-4px;left:50px')}</span>
-          <span>Lieferverantwortlicher</span><span>Fällig</span><span>Status</span><span class="right">Erstellung</span><span>SUS</span>
+          <span>Lieferverantwortlicher</span><span>Fällig</span><span>Status</span><span class="right" title="THGE Erstellung in kg CO₂-eq/m² EBF·a, sichtbar nach der Übertragung an Wüest Dimensions">Erstellung</span><span title="Übertragung an Wüest Dimensions (Modul Sustainability)">Übergabe</span>
         </div>
         ${vm.pfRows.map(r => html`
           <div class="pf-row" style="${COLS};background:${r.bg}">

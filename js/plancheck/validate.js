@@ -45,10 +45,12 @@ const POLYLINE_TYPES = new Set(['LWPOLYLINE', 'POLYLINE2D']);
 const FORBIDDEN_ENTITY_TYPES = new Set(['MLINE', 'ELLIPSE', 'SPLINE', 'OLE2FRAME', 'OLEFRAME']);
 const TEXT_WIDTH_PER_CHAR = 0.6;
 
+const pl = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
 const MSG = {
     polyNotClosed: 'Raumpolygon ist nicht geschlossen',
     polyNotClosedFlag: 'Raumpolygon: Endpunkte fallen zusammen, aber das Attribut «geschlossen» ist nicht gesetzt',
-    polyHasArcs: 'Raumpolygon enthält Bogensegmente (bulge != 0)',
+    polyHasArcs: 'Raumpolygon enthält Bogensegmente',
     polyTooFewVerts: 'Polygon hat weniger als 3 Eckpunkte',
     polyTooSmall: a => `Raumfläche sehr klein (${a} m² < 0.25 m²)`,
     polySelfIntersect: 'Raumpolygon hat Selbstüberschneidung',
@@ -58,7 +60,7 @@ const MSG = {
     gpolyNone: 'Kein Geschosspolygon vorhanden',
     gpolyNotClosed: 'Geschosspolygon ist nicht geschlossen',
     gpolyNotClosedFlag: 'Geschosspolygon: Endpunkte fallen zusammen, aber das Attribut «geschlossen» ist nicht gesetzt',
-    gpolyHasArcs: 'Geschosspolygon enthält Bogensegmente (bulge != 0)',
+    gpolyHasArcs: 'Geschosspolygon enthält Bogensegmente',
     gpolyDuplicate: 'Mögliches doppeltes Geschosspolygon',
     gpolyNotLwpolyline: (layer, type) => `Element auf ${layer} ist keine LWPOLYLINE (Typ: ${type})`,
 };
@@ -198,7 +200,7 @@ function runLayerRules(drawing) {
         if (!rule.layer || names.has(rule.layer)) continue;
         const similar = byLower.get(rule.layer.toLowerCase());
         issues.push(similar
-            ? createIssue(rule.code, `Layer ${rule.layer} fehlt; vorhanden ist "${similar}" (Gross-/Kleinschreibung prüfen)`, { layer: similar })
+            ? createIssue(rule.code, `Layer ${rule.layer} fehlt; vorhanden ist «${similar}» (Gross-/Kleinschreibung prüfen)`, { layer: similar })
             : createIssue(rule.code, `Pflicht-Layer fehlt: ${rule.layer} nicht vorhanden`, { layer: rule.layer }));
     }
 
@@ -208,7 +210,7 @@ function runLayerRules(drawing) {
         const canonical = cafmByLower.get(l.name.toLowerCase());
         if (canonical && requiredNames.has(canonical)) continue; // already reported by the LAYER_00x rule
         issues.push(canonical
-            ? createIssue('LAYER_008', `Layer ${canonical} fehlt; vorhanden ist "${l.name}" (Gross-/Kleinschreibung prüfen)`, { layer: l.name })
+            ? createIssue('LAYER_008', `Layer ${canonical} fehlt; vorhanden ist «${l.name}» (Gross-/Kleinschreibung prüfen)`, { layer: l.name })
             : createIssue('LAYER_008', `Unbekannter Layer: ${l.name} ist nicht in der zulässigen Layerliste`, { layer: l.name }));
     }
     return issues;
@@ -264,10 +266,10 @@ function runAoidRules(rooms, outsideTexts) {
         if (room.aoidMatches.length === 0) issues.push(createIssue('AOID_001', `Raum ${room.aoid}: kein AOID-Text auf R_AOID innerhalb des Polygons`, roomRef(room)));
         if (room.aoidMatches.length > 1) issues.push(createIssue('AOID_004', `Raum ${room.aoid}: ${room.aoidMatches.length} Texte auf R_AOID innerhalb desselben Polygons`, roomRef(room)));
         if (room.aoidText && !AOID_PATTERN.test(room.aoidText) && !PARKING_AOID_PATTERN.test(room.aoidText)) {
-            issues.push(createIssue('AOID_003', `AOID-Format ungültig: "${room.aoidText}" (erwartet: WWWW.GG.EE.RRR)`, roomRef(room)));
+            issues.push(createIssue('AOID_003', `AOID-Format ungültig: «${room.aoidText}» (erwartet: WWWW.GG.EE.RRR)`, roomRef(room)));
         }
         for (const match of room.aoidMatches) {
-            if (!match.basePointInside) issues.push(createIssue('AOID_006', `AOID "${match.text}": Basispunkt (Einfügepunkt) liegt ausserhalb des Raumpolygons`, roomRef(room)));
+            if (!match.basePointInside) issues.push(createIssue('AOID_006', `AOID «${match.text}»: Basispunkt (Einfügepunkt) liegt ausserhalb des Raumpolygons`, roomRef(room)));
         }
     }
 
@@ -278,11 +280,11 @@ function runAoidRules(rooms, outsideTexts) {
     }
     for (const [aoid, list] of roomsByAoid) {
         if (list.length < 2) continue;
-        for (const room of list) issues.push(createIssue('AOID_002', `AOID "${aoid}" ist nicht eindeutig (${list.length}× vorhanden)`, roomRef(room)));
+        for (const room of list) issues.push(createIssue('AOID_002', `AOID «${aoid}» ist nicht eindeutig (${list.length}× vorhanden)`, roomRef(room)));
     }
 
     for (const txt of outsideTexts) {
-        issues.push(createIssue('AOID_005', `AOID-Text "${txt.text.trim()}" auf R_AOID liegt ausserhalb aller Raumpolygone`, { handle: txt.handle }));
+        issues.push(createIssue('AOID_005', `AOID-Text «${txt.text.trim()}» auf R_AOID liegt ausserhalb aller Raumpolygone`, { handle: txt.handle }));
     }
     return issues;
 }
@@ -306,11 +308,11 @@ function planFrame(index, unitScale) {
 function runGeomRules(drawing, index) {
     const issues = [];
     if (drawing.insunits !== null && drawing.insunits !== INSUNITS_MM) {
-        issues.push(createIssue('GEOM_001', `Zeichnungseinheit ist nicht Millimeter — aktuell: ${UNIT_NAMES[drawing.insunits] ?? drawing.insunits}`));
+        issues.push(createIssue('GEOM_001', `Zeichnungseinheit ist nicht Millimeter (aktuell: ${UNIT_NAMES[drawing.insunits] ?? drawing.insunits})`));
     }
     if (drawing.nonZeroZEntities.length > 0) {
         const sample = drawing.nonZeroZEntities.slice(0, SAMPLE_SIZE).map(e => `${e.type}@${e.layer}`).join(', ');
-        issues.push(createIssue('GEOM_002', `${drawing.nonZeroZEntities.length} Element(e) mit Z-Koordinate != 0 (z.B. ${sample})`, { handles: drawing.nonZeroZEntities.map(e => e.handle) }));
+        issues.push(createIssue('GEOM_002', `${pl(drawing.nonZeroZEntities.length, 'Element', 'Elemente')} mit Z-Koordinate ungleich 0 (z. B. ${sample})`, { handles: drawing.nonZeroZEntities.map(e => e.handle) }));
     }
     const forbidden = new Map();   // top-level entities plus the content of inserted blocks (drawn, so checked)
     for (const entry of drawing.entitySummary) if (FORBIDDEN_ENTITY_TYPES.has(entry.type)) forbidden.set(entry.type, entry.count);
@@ -319,7 +321,7 @@ function runGeomRules(drawing, index) {
     for (const [type, handles] of inBlocks) forbidden.set(type, (forbidden.get(type) || 0) + handles.size);
     for (const [type, count] of forbidden) issues.push(createIssue('GEOM_003', `Unzulässiger Entitätstyp: ${type} (${count}× vorhanden${inBlocks.has(type) ? `, davon ${inBlocks.get(type).size} in Blöcken` : ''})`));
     for (const xref of drawing.xrefBlocks) {
-        issues.push(createIssue('GEOM_004', `Externe Referenz (XREF): "${xref.name}"`));
+        issues.push(createIssue('GEOM_004', `Externe Referenz (XREF): «${xref.name}»`));
     }
     const frame = planFrame(index, drawing.unitScale);
     if (frame) {
@@ -332,7 +334,7 @@ function runGeomRules(drawing, index) {
                 if (!boundsContain(frame, b, tolerance)) outside.push(item.handle);
             }
         }
-        if (outside.length > 0) issues.push(createIssue('GEOM_005', `${outside.length} Element(e) liegen ausserhalb des Planrahmens`, { handles: outside }));
+        if (outside.length > 0) issues.push(createIssue('GEOM_005', `${pl(outside.length, 'Element liegt', 'Elemente liegen')} ausserhalb des Planrahmens`, { handles: outside }));
     }
     return issues;
 }
@@ -352,11 +354,11 @@ function runTextRules(index) {
     // Dimension text and block content are not drafted text elements
     const texts = index.ofKind('text').filter(i => i.entityType !== 'DIMENSION' && !i.inBlock);
     for (const [layer, handles] of groupHandles(texts, i => (TEXT_LAYERS.has(i.layer) ? null : i.layer))) {
-        issues.push(createIssue('TEXT_001', `${handles.length} Textelement(e) auf unzulässigem Layer "${layer}"`, { layer, handles }));
+        issues.push(createIssue('TEXT_001', `${pl(handles.length, 'Textelement', 'Textelemente')} auf unzulässigem Layer «${layer}»`, { layer, handles }));
     }
     const wrongFont = texts.filter(i => i.layer !== FRAME_LAYER && i.fontName && !/arial/i.test(i.fontName));
     for (const [font, handles] of groupHandles(wrongFont, i => i.fontName)) {
-        issues.push(createIssue('TEXT_002', `${handles.length} Text(e) verwenden Schriftart "${font}" statt ARIAL`, { handles }));
+        issues.push(createIssue('TEXT_002', `${pl(handles.length, 'Text verwendet', 'Texte verwenden')} Schriftart «${font}» statt ARIAL`, { handles }));
     }
     return issues;
 }
@@ -367,7 +369,7 @@ function runStyleRules(index) {
     const widthPolys = index.ofKind('poly').filter(i => i.width > 0 && i.handle && !widthSeen.has(i.handle) && widthSeen.add(i.handle));   // one entry per entity, not per block reference
     if (widthPolys.length > 0) {
         const layers = [...new Set(widthPolys.map(p => p.layer))].slice(0, SAMPLE_SIZE).join(', ');
-        issues.push(createIssue('STYLE_001', `${widthPolys.length} Polylinie(n) mit Breite != 0 mm (Layer: ${layers})`, { handles: widthPolys.map(p => p.handle) }));
+        issues.push(createIssue('STYLE_001', `${pl(widthPolys.length, 'Polylinie', 'Polylinien')} mit Breite ungleich 0 mm (Layer: ${layers})`, { handles: widthPolys.map(p => p.handle) }));
     }
     const notByLayer = [], colorSeen = new Set();
     for (const [layer, items] of index.byLayer) {
@@ -375,7 +377,7 @@ function runStyleRules(index) {
     }
     if (notByLayer.length > 0) {
         const layers = [...new Set(notByLayer.map(p => p.layer))].slice(0, SAMPLE_SIZE).join(', ');
-        issues.push(createIssue('STYLE_002', `${notByLayer.length} Element(e) mit Farbe nicht VONLAYER (Layer: ${layers})`, { handles: notByLayer.map(p => p.handle) }));
+        issues.push(createIssue('STYLE_002', `${pl(notByLayer.length, 'Element', 'Elemente')} mit Farbe nicht VONLAYER (Layer: ${layers})`, { handles: notByLayer.map(p => p.handle) }));
     }
     return issues;
 }
@@ -383,7 +385,7 @@ function runStyleRules(index) {
 function runLayoutRules(drawing, index) {
     const issues = [];
     if (drawing.paperSpaceEntityCount > 0) {
-        issues.push(createIssue('LAYOUT_001', `${drawing.paperSpaceLayouts.length || 1} Layout-Tab(s) (Paper Space) vorhanden: ${drawing.paperSpaceLayouts.join(', ') || '-'} (${drawing.paperSpaceEntityCount} Objekte)`));
+        issues.push(createIssue('LAYOUT_001', `${pl(drawing.paperSpaceLayouts.length || 1, 'Layout-Tab', 'Layout-Tabs')} (Paper Space) vorhanden: ${drawing.paperSpaceLayouts.join(', ') || '-'} (${drawing.paperSpaceEntityCount} Objekte)`));
     }
     if (!planFrame(index, drawing.unitScale)) issues.push(createIssue('LAYOUT_002', 'Kein Planrahmen auf V_PLANLAYOUT erkannt'));
     return issues;
@@ -397,7 +399,7 @@ function runHatchRules(index) {
     const nonSolid = index.onLayer(HATCH_LAYER).filter(i => i.kind === 'hatch' && !i.solid);
     if (nonSolid.length === 0) return [];
     const patterns = [...new Set(nonSolid.map(h => h.patternName || '?'))].join(', ');
-    return [createIssue('HATCH_001', `${nonSolid.length} Schraffur(en) auf A_SCHRAFFUR nicht vom Typ SOLID (${patterns})`, { handles: nonSolid.map(h => h.handle) })];
+    return [createIssue('HATCH_001', `${pl(nonSolid.length, 'Schraffur', 'Schraffuren')} auf A_SCHRAFFUR nicht vom Typ SOLID (${patterns})`, { handles: nonSolid.map(h => h.handle) })];
 }
 
 function runAllRules(drawing, index, rooms, outsideTexts) {
@@ -440,16 +442,16 @@ function applyStatuses(issues, rooms, areas) {
  */
 export function validate(drawing, log = () => {}) {
     const index = indexRenderList(drawing.renderList);
-    log('Räume und Flächen werden extrahiert...');
+    log('Räume und Flächen werden extrahiert…');
     const { rooms, areas, deductions, appliedDeductions, outsideTexts } = extractPolygons(index, drawing.unitScale);
-    log(`${rooms.length} Räume auf ${ROOM_LAYER}, ${areas.length} Geschossfläche(n) erkannt`, 'success');
-    if (deductions.length > 0) log(`${appliedDeductions} von ${deductions.length} Abzugspolygon(en) auf ${DEDUCTION_LAYER} von den Raumflächen abgezogen`);
+    log(`${pl(rooms.length, 'Raum', 'Räume')} auf ${ROOM_LAYER}, ${pl(areas.length, 'Geschossfläche', 'Geschossflächen')} erkannt`, 'success');
+    if (deductions.length > 0) log(`${appliedDeductions} von ${pl(deductions.length, 'Abzugspolygon', 'Abzugspolygonen')} auf ${DEDUCTION_LAYER} von den Raumflächen abgezogen`);
 
-    log(`${RULES.length} Prüfregeln werden ausgeführt...`);
+    log(`${RULES.length} Prüfregeln werden ausgeführt…`);
     const issues = runAllRules(drawing, index, rooms, outsideTexts);
     applyStatuses(issues, rooms, areas);
     const summary = summarizeValidation(issues);
     if (summary.errorCount === 0 && summary.warningCount === 0) log('Validierung abgeschlossen: keine Fehler oder Warnungen', 'success');
-    else log(`Validierung abgeschlossen: ${summary.errorCount} Fehler, ${summary.warningCount} Warnungen in ${summary.firedRules} Prüfregel(n)`, summary.errorCount > 0 ? 'error' : 'warn');
+    else log(`Validierung abgeschlossen: ${summary.errorCount} Fehler, ${summary.warningCount} Warnungen in ${pl(summary.firedRules, 'Prüfregel', 'Prüfregeln')}`, summary.errorCount > 0 ? 'error' : 'warn');
     return { rooms, areas, deductions, appliedDeductions, issues, summary, index };
 }

@@ -50,7 +50,7 @@ const POLYLINE_FLAG_CLOSED = 1;        // DXF group 70 for POLYLINE2D/3D and SPL
 
 // LibreDWG DWG_ERR_* bits with German labels
 const DWG_ERROR_FLAGS = [
-    [1, 'CRC-Fehler'], [2, 'nicht unterstützte Features'], [4, 'unbekannte Objektklassen'], [8, 'ungültiger Typ'],
+    [1, 'CRC-Fehler'], [2, 'nicht unterstützte Funktionen'], [4, 'unbekannte Objektklassen'], [8, 'ungültiger Typ'],
     [16, 'ungültiger Handle'], [32, 'ungültige EED'], [64, 'Werte ausserhalb des gültigen Bereichs'], [128, 'Klassen nicht gefunden'],
     [256, 'Sektion nicht gefunden'], [512, 'Seite nicht gefunden'], [1024, 'interner Fehler'], [2048, 'ungültige DWG-Datei'],
     [4096, 'IO-Fehler'], [8192, 'Speicherfehler'],
@@ -66,7 +66,7 @@ let libraryPromise = null;
 /** Loads the WebAssembly module once (lazy, ~10 MB); concurrent callers share the same promise. */
 export function loadLibreDwg(log = noop) {
     if (!libraryPromise) {
-        log('LibreDWG WebAssembly wird geladen (~10 MB)...');
+        log('LibreDWG WebAssembly wird geladen (~10 MB)…');
         libraryPromise = import('../vendor/libredwg-web/dist/libredwg-web.js')
             .then(mod => mod.LibreDwg.create())
             .then(lib => { log('LibreDWG WebAssembly geladen', 'success'); return lib; })
@@ -100,7 +100,7 @@ function readDwg(lib, buffer) {
 function describeReadFailure(code) {
     if (!code) return 'DWG konnte nicht gelesen werden';
     const flags = DWG_ERROR_FLAGS.filter(([bit]) => code & bit).map(([, label]) => label).join(', ');
-    return `DWG konnte nicht gelesen werden (Code ${code}: ${flags}). Die Datei enthält möglicherweise proprietäre AutoCAD-Erweiterungen (ARX). Versuchen Sie, die Datei in einem anderen CAD-Programm neu zu speichern.`;
+    return `DWG konnte nicht gelesen werden (Code ${code}: ${flags}). Die Datei ist keine gültige DWG oder enthält proprietäre Erweiterungen (ARX); im CAD-Programm neu speichern.`;
 }
 
 function isPaperSpaceName(name) {
@@ -123,14 +123,14 @@ export async function parseDwg(buffer, file = {}, log = noop) {
     if (file.name) log(`Datei: ${file.name} (${fmtSize(file.size || buffer.byteLength)})`);
     const lib = await loadLibreDwg(log);
 
-    log('DWG wird geparst...');
+    log('DWG wird gelesen…');
     const { pointer, errorCode } = readDwg(lib, buffer);
     if (pointer == null) throw new Error(describeReadFailure(errorCode));
     if (errorCode >= DWG_ERR_CRITICAL) { lib.dwg_free(pointer); throw new Error(describeReadFailure(errorCode)); }   // LibreDWG returns a database even for garbage; from «Klassen nicht gefunden» on nothing in it is trustworthy
-    if (errorCode > 0) log(`LibreDWG Warnung (Code ${errorCode}): Datei wurde geladen, aber einige Elemente sind möglicherweise unvollständig.`, 'warn');
-    log('DWG geparst', 'success');
+    if (errorCode > 0) log(`LibreDWG-Warnung (Code ${errorCode}): Datei geladen, einzelne Elemente können fehlen.`, 'warn');
+    log('DWG gelesen', 'success');
 
-    log('Daten werden konvertiert...');
+    log('Daten werden konvertiert…');
     let db, stats, version;
     try {
         version = lib.dwg_get_version_type(pointer);

@@ -27,14 +27,14 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
 - **Datenformulare** (Kostenvoranschlag KV-32, Kostenschätzung KS-31, Ökobilanz THG-32, Grundrisse DWG-UG … DWG-DG) haben dieselben Tabs: Übersicht (Kennzahlen, Kostenziele oder Zielwerte SIA 390/1,
   Hauptgruppen als Balkenliste in eBKP-Reihenfolge mit der Vorphase als Strich, Anteil und Δ, markiert ab Schwellenwert und 0.1 Mio bzw.
   0.1 kg, Zeilen öffnen die Erfassung; Lieferung, Verlauf mit dem nächsten Schritt, Beteiligte), Erfassung
-  (siehe unten; die Ökobilanz in den zwei Tabs Erfassung Erstellung und Erfassung Betrieb), Prüfung (Vergleich mit der Vorphase oder Prüfergebnis des Plans, Prüfung BBL mit automatischen Prüfungen
-  und Checkliste, Übergabe), Beteiligte, Dokumente (mit Pflicht), Verlauf (alle Ereignisse). Die Erfassung ist nach dem
+  (siehe unten; die Ökobilanz in den zwei Tabs Erfassung Erstellung und Erfassung Betrieb), Prüfung (Zusammenfassung als Tabelle: Prüfpunkt, Wert der Lieferung, Ergebnis «erfüllt / prüfen / nicht erfüllt», die Anforderung steht im Hover;
+  Prüfung BBL mit zwei Prüfpunkten, Kommentar und Entscheid; Übergabe), Beteiligte, Dokumente (mit Pflicht), Verlauf (alle Ereignisse). Die Erfassung ist nach dem
   Einreichen gesperrt; «Erfassung wieder öffnen (Prototyp)» öffnet sie wieder (Werte bleiben). Prüfen (Checkliste, Freigeben,
   Zurückweisen) können nur BBL-Personen. Der Kommentar der Prüfung und ein Feld, in dem gerade getippt wird, bleiben beim
   Rendern erhalten. Dateien, die ein Import mitbringt (Tool-Export, Rechenhilfe, Excel), erscheinen unter Dokumente.
 - **Kosten erfassen (KV-32, KS-31)**: Betrag pro Hauptgruppe oder, nach Klick auf die Zeile, die Positionen (Menge + Kosten)
   nach eBKP-H 2020 (B02, C01 …); Positionen lassen sich entfernen (Papierkorb) und mit «+ Kostenelement hinzufügen» aus den
-  Elementgruppen der Hauptgruppe ergänzen. Importieren (Excel-Dialog), «Nur fehlende Werte anzeigen», Leiste mit
+  Elementgruppen der Hauptgruppe ergänzen. Importieren (Excel-Vorlage, Excel-Dialog, Bezugsmengen aus den Grundrissen), «Nur fehlende Werte anzeigen», Leiste mit
   Vollständigkeit und «Zur Prüfung einreichen».
 - **Ökobilanz erfassen (THG-32, Design 05.11.2026)**: Die Übersicht zeigt die Kennzahlen Erstellung und Betrieb, die Karte
   «Grundlagen» (gilt für Erstellung und Betrieb: Gebäudekategorie, Bauvorhaben, EBF/GF aus den Grundrissen, Datenstand), die
@@ -46,8 +46,8 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   Spital und Sonstige fehlen sie und die Prüfung verlangt eine Vergleichskategorie). **Erfassung Erstellung**: Grundlagen
   (Systemgrenze, Ökobilanzdaten, Tool Erstellung, Minergie-ECO GW1, Datenqualität; Optionen nach
   `docs/research/2026-11-04-oekobilanzdaten-systemgrenzen.md`) und die Emissionsquellen aus dem Tool-Export je
-  eBKP-H-Elementgruppe (SIA 2032): Code, Eingabe «Bauteil oder Anlage · Ökobilanzdaten» (Tool-Code wie Wa01, Bezeichnung,
-  Bauteil des Tools oder KBOB-Datensatz), Hersteller-Flag, Referenzgrösse mit Einheit, Kennwert kg CO₂-eq/m² EBF·a und Anteil;
+  eBKP-H-Elementgruppe (SIA 2032): Code, Bauteil oder Anlage auf einer Zeile (Tool-Code wie Wa01 und Bezeichnung; die
+  Ökobilanzdaten des Tool-Exports stehen im Hover), Hersteller-Flag, Referenzgrösse mit Einheit, Kennwert kg CO₂-eq/m² EBF·a und Anteil;
   Hauptgruppen B–G zum Auf- und Zuklappen, «+ Emissionsquelle hinzufügen», Papierkorb, Total B–G, «THGE Erstellung pro Jahr»
   und «THGE Erstellung, Betrachtungszeitraum 60 Jahre inkl. Ersatz» (Begriffe SIA 2032). «Tool-Export importieren» holt die
   Quellen des Projekts (bei einem offenen Formular alle 22, sonst die fehlenden Werte). **Erfassung Betrieb**: Grundlagen
@@ -55,17 +55,17 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   die Energiedienstleistungen nach Rechenhilfe SIA 390/1 (Nutzenergie, Anteil und Nutzungsgrad/JAZ je Energieträger mit
   Flag «Projektwert» (angekreuzt = projektspezifischer Wert statt Standardwert der Rechenhilfe, dieselbe Logik wie «Hersteller»
   in der Erstellung: das Kreuz markiert die Abweichung vom Standard); Endenergie = Nutzenergie × Anteil / Nutzungsgrad, THG = Endenergie × Koeffizient des Energieträgers, Strom
-  nach Stromprodukt; der PV-Eigenverbrauch reduziert den Strombezug, der Überschuss folgt der gewählten Regel),
-  «Rechenhilfe importieren», Total Betrieb und «THGE Erstellung + Betrieb pro Jahr». Die Prüfung zeigt neun automatische
-  Prüfpunkte (Vollständigkeit, Pflichtdokumente, Grundlagen, Abweichung zur Vorphase, Zusatzanforderung B, Richtwerte
-  informativ, Anteile der Energieträger, Photovoltaik in beiden Bereichen, Anteil Gebäudetechnik) und fünf Prüfpunkte der
-  Checkliste; der Vergleich mit der Vorphase ist eine Hantel je Hauptgruppe (SIA 31 ○, THG-32 ●), und jede markierte
-  Abweichung (ab 15 % und 0.1 kg) verlangt eine Begründung des Planers (Eingabe in der Prüfung, solange die Erfassung offen
-  ist; fehlt sie, zeigt der Prüfpunkt «ohne Begründung»); an das SUS gehen Erstellung und Betrieb in kg CO₂-eq/m² EBF·a. Grundlage sind die realen BBL-Berichte (lokal
+  nach Stromprodukt; der PV-Eigenverbrauch reduziert den Strombezug, der Überschuss folgt der gewählten Regel). Endenergie
+  und Koeffizient sind abgeleitet (grau) und lassen sich durch einen eigenen Wert ersetzen; ein geleertes Feld wird wieder
+  abgeleitet. Dazu das Importieren-Menü mit «Rechenhilfe SIA 390/1 importieren», Total Betrieb und «THGE Erstellung + Betrieb
+  pro Jahr». Die Zusammenfassung der Prüfung hat sieben Zeilen (Vollständigkeit samt Pflichtdokumenten, Zusatzanforderung B,
+  Abweichung zur Vorphase, Ökobilanzdaten und Systemgrenze, EBF, Stromprodukt, Anteile der Energieträger), die Checkliste
+  zwei Prüfpunkte. Jede markierte Abweichung (ab 15 % und 0.1 kg) verlangt eine Begründung des Planers (Eingabe unter der
+  Zeile, solange die Erfassung offen ist; fehlt sie, steht dort «ohne Begründung»). An Wüest Dimensions (Modul
+  Sustainability) gehen Erstellung und Betrieb in kg CO₂-eq/m² EBF·a. Grundlage sind die realen BBL-Berichte (lokal
   unter `docs/reference/beispiele/`) und die Empfehlungen in
-  `docs/research/2026-11-05-oekobilanz-eingabemaske-erstellung-betrieb.md`. Die Darstellungsvarianten der Design-Studie für
-  die Tabelle «THG-Emissionen nach Hauptgruppen» (Matrix, Rangliste, Einfluss, Hantel, Brücke, Zusammensetzung) sind noch
-  nicht umgesetzt.
+  `docs/research/2026-11-05-oekobilanz-eingabemaske-erstellung-betrieb.md`. Von den Darstellungsvarianten der Design-Studie
+  ist die Balkenliste der Übersicht umgesetzt; Matrix, Rangliste, Einfluss, Hantel, Brücke und Zusammensetzung sind es nicht.
 - **Planlieferungen DWG**: ein Grundriss pro Lieferung. Die DWG-Datei wird per Drag & Drop hochgeladen und lokal im Browser gegen
   die 40 Prüfregeln der CAD-Richtlinie BBL V1.0 geprüft (LibreDWG WebAssembly, nichts wird hochgeladen), mit Plan-Viewer,
   Fehlermeldungen, Räumen, Geschossflächen (Bruttogeschossfläche als Polygon), Layern und Kennzahlen SIA 416 samt
@@ -135,7 +135,7 @@ Code-Reviews mit Befunden und Status: `docs/reviews/` (zuletzt `2026-11-05-code-
   Filter, Excel-Import, Einreichen), THG-32 (Übersicht mit Zielwerten, Emissionsquellen, Betrieb, Tool-Export, Rechenhilfe, neue Quelle, Hersteller-Flag, Einreichen),
   THG-32 einreichen und prüfen (freigeben, übertragen), KV-32 zurückweisen, Planlieferungen DWG (Parsen, Hochladen, Einreichen,
   Prüfung mit Suche, Alle ein-/ausblenden und Statusfilter), die Datenformulare der weiteren Projekte, Aufgabenliste,
-  Projektseiten, Hover-Zustände, Studien-Panel und bei 375 px Überlauf, Sidebar, Filter, Footer und Karte (≈265 Checks).
+  Projektseiten, Hover-Zustände, Studien-Panel und bei 375 px Überlauf, Sidebar, Filter, Footer und Karte (≈268 Checks).
 - `node tests/responsive-audit.mjs [ordner] [m375,t768,l1024]` macht bei laufendem Server Screenshots der Hauptseiten auf
   375 / 768 / 1024 px und misst Überlauf, zu kleine Bedienelemente und Felder unter 16 px (`report.json`).
 - `node tests/refshots.mjs` erzeugt Screenshots in den Fenstergrössen der Referenz-Screenshots der CDE Bund und legt

@@ -17,12 +17,14 @@ export const PLAN_STATUS = {
 };
 export const LOCKED = new Set(['eingereicht', 'pruefung', 'freigegeben', 'uebertragen']);
 export const REVIEWABLE = new Set(['eingereicht', 'pruefung']);
+const pl = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+/** Hover text of the SIA 416 rows: where the figure comes from. */
+const SIA_TIP = { GF: 'Fläche des Geschosspolygons (R_GESCHOSSPOLYGON)', EBF: 'GF eines beheizten Geschosses, sonst 0 (SIA 416/1)', KF: 'GF − NGF', NGF: 'Summe der Raumflächen: NF + VF + FF', NF: 'HNF + NNF', HNF: 'Raumpolygone ohne Nutzungsart zählen zur HNF', NNF: 'Nach Nutzungsart des Raumstempels', VF: 'Nach Nutzungsart des Raumstempels', FF: 'Nach Nutzungsart des Raumstempels' };
 const SIA_ROWS = [['GF', 'Geschossfläche', 'gf'], ['EBF', 'Energiebezugsfläche (SIA 416/1)', 'ebf'], ['KF', 'Konstruktionsfläche', 'kf'], ['NGF', 'Nettogeschossfläche', 'ngf'], ['NF', 'Nutzfläche', 'nf'], ['HNF', 'Hauptnutzfläche', 'hnf'], ['NNF', 'Nebennutzfläche', 'nnf'], ['VF', 'Verkehrsfläche', 'vf'], ['FF', 'Funktionsfläche', 'ff']];
 const SIA_COLORS = { HNF: '#f4b6b6', NNF: '#ffd59b', VF: '#fff3a3', FF: '#b5d8f7', KF: '#d9d9d9' };
 
 const area = v => (v == null ? '–' : fmtNum(v, Math.abs(v) >= 100 ? 0 : 1) + ' m²');
 const share = (v, t) => (v == null || !t ? '' : Math.round(v / t * 100) + ' %');
-const ok = (o, label, warn = false) => ({ label, ok: o, icon: o ? 'circle-check' : warn ? 'triangle-alert' : 'circle-x', color: o ? '#2f7d63' : warn ? '#c49a1c' : '#9b2c44' });
 
 /** Initial per-floor state from data/plans.json. */
 /** Status filter of the Prüfplattform ('all' | 'warnings' | 'errors') against a status ('ok' | 'warning' | 'error'). */
@@ -103,17 +105,13 @@ export function planModel(s, data) {
       f.transferredAt || (idx >= 6 ? 'heute' : '')];
     const steps = mkSteps(P.steps, idx, st.warn ? 1 : -1).map((x, i) => ({ ...x, date: (i < idx || idx >= P.steps.length || i === idx) ? dates[i] : '' }));
 
-    // Checks before submission (supplier) and for the review (BBL)
-    const gateChecks = !result ? [ok(false, 'Noch keine DWG-Datei geprüft', true)] : [
-      ok(errors === 0, errors === 0 ? 'Keine Fehler in den Prüfregeln (Schweregrad Fehler)' : `${errors} Fehler in ${rules.failed.filter(r => r.severity === 'error').length} Prüfregel(n) — im CAD beheben und neu hochladen`),
-      ok(warnings === 0, warnings === 0 ? 'Keine Warnungen' : `${warnings} Warnung(en) in ${rules.failed.filter(r => r.severity === 'warning').length} Prüfregel(n) — zulässig, werden in der Prüfung angezeigt`, true),
-      ok(hasRooms && !fired('AOID_001'), hasRooms ? (fired('AOID_001') ? `${rooms.length} Räume, davon ${result.issues.filter(i => i.code === 'AOID_001').length} ohne AOID` : `${rooms.length} Räume mit AOID erkannt`) : 'Keine Raumpolygone auf R_RAUMPOLYGON', !hasRooms),
-      ok(hasAreas, hasAreas ? `Geschosspolygon vorhanden · GF ${area(k.gf)}` : 'Kein Geschosspolygon auf R_GESCHOSSPOLYGON', true),
-    ];
-    const autoChecks = !result ? [] : [
-      ...gateChecks,
-      ok(!fired('GEOM_001'), 'Zeichnungseinheit Millimeter (1:1)'),
-      ok(!fired('LAYER_008'), fired('LAYER_008') ? 'Unbekannte Layer vorhanden (nicht in der CAFM-Layerliste)' : 'Nur zulässige CAFM-Layer', true),
+    // Zusammenfassung of the Prüfung: [key, Prüfpunkt, value of the Lieferung, requirement (hover), state]
+    const good = rooms.filter(r => r.aoid && !r.duplicate).length, sia = hasAreas && hasRooms;
+    const summary = !result ? [] : [
+      ['err', `Fehler nach ${P.guideline}`, String(errors), 'Keine Fehler zulässig', errors ? 'err' : 'ok'],
+      ['warn', 'Warnungen', String(warnings), 'Zulässig, im Einzelfall prüfen', warnings ? 'warn' : 'ok'],
+      ['aoid', 'Raumpolygone mit eindeutiger AOID', hasRooms ? `${good} von ${rooms.length}` : 'Keine Raumpolygone', 'Jedes Raumpolygon trägt genau eine eindeutige AOID', hasRooms && good === rooms.length ? 'ok' : 'err'],
+      ['sia', 'Flächen SIA 416: GF = NGF + KF', hasAreas ? area(k.gf) : 'Kein Geschosspolygon', sia ? `NGF ${area(k.ngf)} + KF ${area(k.kf)}` : 'Geschosspolygon auf R_GESCHOSSPOLYGON und Raumpolygone auf R_RAUMPOLYGON', sia && k.kf >= 0 ? 'ok' : hasAreas ? 'err' : 'warn'],
     ];
     const manualChecks = P.checklist.map(c => ({ key: c.key, label: c.label, checked: !!(p.checks || {})[c.key], disabled: !REVIEWABLE.has(status) }));
 
@@ -121,7 +119,7 @@ export function planModel(s, data) {
     const siaRows = SIA_ROWS.map(([abbr, label, prop]) => {
       const v = k ? k[prop] : null;
       const avail = v != null && (['GF', 'EBF', 'KF'].includes(abbr) ? hasAreas : hasRooms);
-      return { abbr, label, value: avail ? area(v) : '–', share: avail && k.gf ? share(v, k.gf) : '', sum: ['GF', 'NGF', 'NF'].includes(abbr) };
+      return { abbr, label, tip: SIA_TIP[abbr] || '', value: avail ? area(v) : '–', share: avail && k.gf ? share(v, k.gf) : '', sum: ['GF', 'NGF', 'NF'].includes(abbr) };
     });
     const segs = k ? [['HNF', k.hnf], ['NNF', k.nnf], ['VF', k.vf], ['FF', k.ff], ['KF', k.kf]].filter(([, v]) => v != null && v > 0) : [];
     const segTotal = segs.reduce((a, [, v]) => a + v, 0) || 1;
@@ -161,14 +159,12 @@ export function planModel(s, data) {
       errors, warnings, passed, score: sum ? sum.score + ' %' : '–', scoreC, scoreLabel: `Score (${passed})`,
       roomCount: rooms.length, areaCount: areas.length, ngf: k && hasRooms ? area(k.ngf) : '–', gf: k && hasAreas ? area(k.gf) : '–',
       rules, issueCount: result ? result.issues.length : 0, layerCount: result ? result.layers.length : 0,
-      gateOk, autoChecks, manualChecks,
+      gateOk, summary, manualChecks,
       canSubmit: gateOk && !locked && !p.busy,
       isReviewable: REVIEWABLE.has(status), isFrei: status === 'freigegeben', isUeber: status === 'uebertragen', isZurueck: status === 'zurueck', notSubmitted: idx < 2 && status !== 'zurueck',
       approveDisabled: !manualChecks.every(m => m.checked),
-      transferStatus: status === 'uebertragen' ? 'Übertragen, ' + (f.transferredAt || 'heute') : status === 'freigegeben' ? 'Bereit zur Übertragung' : 'Wartet auf Freigabe',
+      transferStatus: status === 'uebertragen' ? 'Übertragen, ' + (f.transferredAt || 'heute') : status === 'freigegeben' ? 'Bereit zur Übertragung' : 'Nach Freigabe',
       steps, dates, siaRows, siaSegs, ratios, kpiDash, history, comment: p.comment || '',
-      meta: [['Kürzel', f.code], ['Geschoss', `${f.floor} (Ebene ${f.ee})`], ['Bestellt von', P.orderedBy], ['Lieferant', `${sup.name}, ${sup.firm}`], ['Fällig', f.due], ['Grundlage', P.guideline], ['Prüfung', `${P.ruleCount} Prüfregeln, lokal im Browser`], ['Zielsystem', P.target]]
-        .map(([k2, v], i) => ({ k: k2, v, bg: i % 2 ? 'transparent' : '#f6f7f9' })),
     };
   });
 

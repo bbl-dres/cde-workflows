@@ -2,7 +2,7 @@
   "rows": [
     {
       "name": "Kostenvoranschlag eBKP-H",
-      "desc": "KV-32 · Hauptgruppen und Kostenelemente eBKP-H (Menge + Kosten)",
+      "desc": "KV-32 · Kosten nach eBKP-H (Menge und Kosten)",
       "statusKey": "kv",
       "typ": "Datenformular",
       "zug": "Gian Muster",
