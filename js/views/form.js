@@ -20,7 +20,6 @@ const urlIcon = (url, size = 18) => html`<span class="ic" style="width:${size}px
 const OV_COLS = 'grid-template-columns:28px minmax(120px,220px) minmax(0,1fr) 60px 44px 56px';   // bar lists of the Übersicht: icon · name · bar · value · share · Δ
 const DIS = F => (F.locked ? raw('disabled') : '');
 
-export const tabBadge = b => (b ? html`<span class="tab-badge" style="background:${b.bg};color:${b.fg}">${b.n}</span>` : '');
 
 export function renderForm(ctx, F, tab) {
   switch (tab) {

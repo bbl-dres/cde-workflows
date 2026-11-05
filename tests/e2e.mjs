@@ -107,7 +107,7 @@ try {
   await go('/projects/musterhausen/deliveries/kv-32'); await sleep(100);
   check('delivery lands on Übersicht', (await hash()) === '#/projects/musterhausen/deliveries/kv-32/uebersicht' && (await text('.tab.is-active')).startsWith('Übersicht'));
   check('Übersicht: KPIs, Kostenziele, Hauptgruppen list with KS-31 ticks, Verlauf steps, Beteiligte', (await count('.kpi')) === 3 && (await bodyText()).includes('Kosten nach Hauptgruppen') && (await count('.tgt-dot')) === 3 && (await count('.ov-row')) === 11 && (await count('.ov-tick')) === 11 && (await count('.ov-sub')) === 3 && (await count('.st-row')) === 6 && (await count('.pp-row')) === 4);
-  check('tab badges: 1 missing value, 2 documents', (await text('.tab-badge')) === '1' && (await count('.tab-badge')) === 2);
+  check('tabs carry no numbers', (await count('.tab-badge')) === 0 && await evaluate(`[...document.querySelectorAll('.tab')].every(t => !/\\d/.test(t.textContent))`));
   await shot('e2e-kv-uebersicht');
   await clickText('.tab', 'Erfassung');
   check('Erfassung: 13 Hauptgruppen A–Y, D and G detailed', (await hash()).endsWith('/erfassung') && (await count('.ent-group')) === 13 && (await count('.ent-pos')) === 8);
@@ -115,7 +115,7 @@ try {
   await click('[data-action="formToggleMissing"]'); check('filter shows only missing rows', (await count('.ent-pos')) === 1 && (await count('.ent-group')) === 1 && (await count('.ent-add')) === 0 && (await state()).projects.musterhausen.forms.kv.missingOnly === true);
   await click('[data-action="formToggleMissing"]');
   await setInput('[data-fid="kvQ-D08"]', '6480');
-  check('D08 filled → complete', /Alle 27 Werte erfasst/.test(await bodyText()) && (await count('.tab-badge')) === 1 && (await enabled('[data-action="formSubmit"]')));
+  check('D08 filled → complete', /Alle 27 Werte erfasst/.test(await bodyText()) && (await enabled('[data-action="formSubmit"]')));
   check('focus restored', await evaluate(`document.activeElement?.dataset?.fid === 'kvQ-D08'`));
   await click('.ent-toggle[data-group="C"]'); check('Aufschlüsseln opens the positions of C', (await state()).projects.musterhausen.forms.kv.modes.C === 'detail' && (await count('.ent-pos')) === 12 && (await count('.ent-add')) === 3);
   await click('.ent-toggle[data-group="C"]'); check('Zusammenfassen keeps the sum as the group amount', (await state()).projects.musterhausen.forms.kv.modes.C === 'direct' && Number((await state()).projects.musterhausen.forms.kv.gvals.C) === 3970000 && (await count('.ent-pos')) === 8);
@@ -192,12 +192,12 @@ try {
   await go('/projects/musterhausen/deliveries/thg-32/dokumente'); check('Dokumente with Pflicht column', (await bodyText()).includes('Pflicht') && (await bodyText()).includes('Oekobilanz_Bericht') && (await bodyText()).includes('Oekobilanz_Toolexport'));
   // THG-32 of another project: missing values, Tool-Export import, new Emissionsquelle, Hersteller flag, removal, submission
   await go('/projects/eigerplatz/deliveries/thg-32/erfassung');
-  check('eigerplatz THG: 3 missing values, groups C and E open', (await text('.tab-badge')) === '3' && (await count('.ent-group')) === 6 && (await count('.ent-add')) === 2 && (await disabled('[data-action="formSubmit"]')));
+  check('eigerplatz THG: 3 missing values, groups C and E open', /· 3 fehlen/.test(await bodyText()) && (await count('.ent-group')) === 6 && (await count('.ent-add')) === 2 && (await disabled('[data-action="formSubmit"]')));
   await click('.ent-group[data-group="G"]'); check('group row opens G', (await state()).projects.eigerplatz.forms.thg.modes.G === 'detail' && (await count('.ent-add')) === 3);
   await click('[data-action="formToggleMissing"]'); check('filter: only the three rows with missing values', (await count('.ent-src')) === 3 && (await count('.ent-add')) === 0);
   await click('[data-action="formToggleMissing"]');
   await click('[data-action="toggleImportMenu"]'); check('THG import menu has the Tool-Export', (await count('.dd-item')) === 3 && (await count('.dd-sep')) === 1 && (await bodyText()).includes('Tool-Export importieren') && (await bodyText()).includes('Excel-Vorlage herunterladen'));
-  await click('[data-action="importItem"][data-arg="tool"]'); check('Tool-Export fills the missing values', (await count('.tab-badge')) === 1 && /Alle 73 Werte erfasst/.test(await bodyText()) && (await enabled('[data-action="formSubmit"]')) && (await count('.toast')) === 1);
+  await click('[data-action="importItem"][data-arg="tool"]'); check('Tool-Export fills the missing values', /Alle 73 Werte erfasst/.test(await bodyText()) && (await enabled('[data-action="formSubmit"]')) && (await count('.toast')) === 1);
   await click('[data-action="thgAdd"][data-group="C"]'); check('new Emissionsquelle row', (await count('.ent-new')) === 1 && (await disabled('[data-action="formSubmit"]')) && (await state()).projects.eigerplatz.thgSrc.some(s => s.isNew));
   await setInput('[data-fid="thg-n1-code"]', 'C03'); check('element group sets the unit', (await state()).projects.eigerplatz.thgSrc.find(s => s.id === 'n1').code === 'C03' && await evaluate(`[...document.querySelectorAll('.ent-new > span')].some(s => s.textContent.trim() === 'm')`));
   await setInput('[data-fid="thg-n1-kbob"]', 'St02 Stahlstütze · KBOB 06.012'); await setInput('[data-fid="thg-n1-q"]', '640'); await setInput('[data-fid="thg-n1-kw"]', '0.12');
@@ -211,7 +211,7 @@ try {
   await go('/projects/botschaft-wien/deliveries/thg-32/erfassung');
   check('open THG without Emissionsquellen', (await bodyText()).includes('Noch keine Emissionsquellen erfasst') && (await count('.ent-src')) === 0 && (await count('.ent-group')) === 6 && (await bodyText()).includes('Einreichen erst, wenn Emissionsquellen erfasst sind'));
   await click('[data-action="toggleImportMenu"]'); await click('[data-action="importItem"][data-arg="tool"]');
-  check('Tool-Export brings the 22 Emissionsquellen, the Betrieb stays open', (await state()).projects['botschaft-wien'].thgSrc.length === 22 && /29 fehlen/.test(await bodyText()) && (await text('.tab-badge')) === '29');
+  check('Tool-Export brings the 22 Emissionsquellen, the Betrieb stays open', (await state()).projects['botschaft-wien'].thgSrc.length === 22 && /29 fehlen/.test(await bodyText()));
   await go('/projects/botschaft-wien/deliveries/thg-32/betrieb'); check('open Betrieb: empty rows', (await count('.ent-betr .ent-input:not(.is-calc)[value=""]')) === 27 && (await count('.ent-betr .ent-input.is-calc[value=""]')) === 9 && (await disabled('[data-action="formSubmit"]')));
   await click('[data-action="toggleImportMenu"]'); await click('[data-action="importItem"][data-arg="rechenhilfe"]'); check('Rechenhilfe fills the Betrieb', /Alle 73 Werte erfasst/.test(await bodyText()) && (await enabled('[data-action="formSubmit"]')) && (await count('.ent-betr .hs-box.is-on')) === 5);
   await clickText('.tab', 'Verlauf'); check('Verlauf lists the Tool-Export and the Rechenhilfe', (await bodyText()).includes('Tool-Export importiert') && (await bodyText()).includes('22 Emissionsquellen übernommen') && (await bodyText()).includes('Rechenhilfe SIA 390/1 importiert'));
@@ -289,6 +289,17 @@ try {
   check('map fills its box', mapInfo.container > 300 && Math.abs(mapInfo.canvas - mapInfo.host) <= 2, JSON.stringify(mapInfo));
   check('map pins + fallback removed', mapInfo.pins >= 1 && mapInfo.fallback === false, JSON.stringify(mapInfo));
   await shot('e2e-dashboard-map');
+  // wheel over a map: the dashboard map zooms, the Standort map of a project only with Ctrl (the wheel scrolls the page there)
+  const wheel = async (sel, modifiers = 0) => { const r = await evaluate(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); el.scrollIntoView({ block: 'center' }); const b = el.getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; })()`); await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: r[0], y: r[1] }); await send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: r[0], y: r[1], deltaX: 0, deltaY: -240, modifiers }); await sleep(900); };
+  const zoomOf = sel => evaluate(`document.querySelector(${JSON.stringify(sel)}).__map.getZoom()`);
+  const z0 = await zoomOf('#dash-map'); await wheel('#dash-map'); check('dashboard map zooms with the wheel', (await zoomOf('#dash-map')) > z0 + 0.1, `${z0} → ${await zoomOf('#dash-map')}`);
+  await go('/projects/musterhausen/overview'); let ovOk = false;
+  for (let i = 0; i < 60 && !ovOk; i++) { await sleep(250); ovOk = await evaluate(`(() => { const m = document.querySelector('#ov-map')?.__map; return !!(m && m.loaded()); })()`); }
+  const z1 = await zoomOf('#ov-map'); await wheel('#ov-map');
+  check('Standort map ignores the plain wheel and shows the hint', ovOk && (await zoomOf('#ov-map')) === z1 && (await text('#ov-map .maplibregl-cooperative-gesture-screen')).includes('Scrollen zoomt die Karte'), `${z1} → ${await zoomOf('#ov-map')}`);
+  await wheel('#ov-map', 2); check('Standort map zooms with Ctrl + wheel', (await zoomOf('#ov-map')) > z1 + 0.1, `${z1} → ${await zoomOf('#ov-map')}`);
+  const z2 = await zoomOf('#ov-map'); await click('#ov-map .maplibregl-ctrl-zoom-in'); await sleep(700); check('Standort map zooms with the buttons (German labels)', (await zoomOf('#ov-map')) > z2 + 0.5 && await evaluate(`document.querySelector('#ov-map .maplibregl-ctrl-zoom-in').title === 'Vergrössern'`));
+  await go('/');
   await go('/projects/all'); await go('/'); await sleep(300); await go('/projects/all'); await go('/'); await sleep(300);
   check('one map canvas after re-visits', (await count('canvas')) === 1, String(await count('canvas')));
   await go('/projects/all'); check('map removed when leaving', (await count('canvas')) === 0);
@@ -376,7 +387,7 @@ try {
   check('ILP tiles count the plans', (await tile('total')) === 11 && (await tile('check')) >= 1 && (await tile('done')) >= 4, `${await tile('total')} ${await tile('check')} ${await tile('done')}`);
   await go('/projects/musterhausen/deliveries/dwg-eg'); await sleep(100);
   check('DWG canonical URL (Übersicht)', (await hash()) === '#/projects/musterhausen/deliveries/dwg-eg/uebersicht', await hash());
-  check('DWG Übersicht: Flächen SIA 416, Prüfregeln nach Kategorie, 4 errors badge', (await count('.sia-tbl .grid-row')) === 9 && (await bodyText()).includes('Energiebezugsfläche') && (await text('.sia-tbl .grid-head')).includes('Flächenart') && (await count('.cat-row')) === 10 && (await count('.kpi')) === 3 && (await text('.tab-badge')) === '4');
+  check('DWG Übersicht: Flächen SIA 416, Prüfregeln nach Kategorie, 4 errors', (await count('.sia-tbl .grid-row')) === 9 && (await bodyText()).includes('Energiebezugsfläche') && (await text('.sia-tbl .grid-head')).includes('Flächenart') && (await count('.cat-row')) === 10 && (await count('.kpi')) === 3 && (await bodyText()).includes('4 Fehler · 44 Warnungen') && (await count('.tab-badge')) === 0);
   await shot('e2e-dwg-uebersicht');
   await go('/projects/musterhausen/deliveries/dwg-eg/erfassung');
   check('EG: failed rules listed, submit locked', (await count('.plan-list .plan-row')) === 40 && (await bodyText()).includes('LAYER_001') && (await disabled('[data-action="planSubmit"]')) && (await bodyText()).includes('Einreichen erst, wenn der Plan keine Fehler hat'));

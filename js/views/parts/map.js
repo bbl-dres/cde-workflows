@@ -4,6 +4,11 @@
 // The map is expensive (WebGL context, style download), so the live element survives re-renders of the same page:
 // it is moved into the fresh DOM instead of being rebuilt, and removed when the page is left (unmount).
 let live = null;           // { map, el, key, host, loaded }
+// German texts of the MapLibre controls and of the hint that a map with `cooperative` shows on a plain scroll
+const LOCALE = {
+  'Map.Title': 'Karte', 'Marker.Title': 'Standort', 'NavigationControl.ZoomIn': 'Vergrössern', 'NavigationControl.ZoomOut': 'Verkleinern', 'AttributionControl.ToggleAttribution': 'Quellenangaben ein- oder ausblenden',
+  'CooperativeGesturesHandler.WindowsHelpText': 'Ctrl + Scrollen zoomt die Karte', 'CooperativeGesturesHandler.MacHelpText': '⌘ + Scrollen zoomt die Karte', 'CooperativeGesturesHandler.MobileHelpText': 'Karte mit zwei Fingern verschieben',
+};
 let suppressUntil = 0;     // removing a map whose style is still loading makes MapLibre reject its fetch with an AbortError
 
 window.addEventListener('unhandledrejection', e => { if (e.reason && e.reason.name === 'AbortError' && Date.now() < suppressUntil) e.preventDefault(); });
@@ -17,11 +22,13 @@ export function unmountMap() {
 }
 
 /**
- * mountMap(host, { key, cfg, center, zoom, fallback, build }): reuses the live map when `key` is unchanged, otherwise
+ * mountMap(host, { key, cfg, center, zoom, fallback, build, cooperative }): reuses the live map when `key` is unchanged, otherwise
  * creates one with the style of data/projects.json › map and calls build(map, maplibregl) for markers and bounds.
+ * `cooperative` is for a map inside a scrolling page: the wheel scrolls the page, zooming needs Ctrl (⌘) + wheel or the
+ * buttons, and on touch one finger scrolls the page while two fingers move the map.
  * `fallback` is the selector of the text fallback inside the host; it is removed once the style has loaded.
  */
-export function mountMap(host, { key, cfg = {}, center, zoom, fallback, build }) {
+export function mountMap(host, { key, cfg = {}, center, zoom, fallback, build, cooperative = false }) {
   if (!host || !window.maplibregl) return null;
   if (live && live.key === key && live.el) {
     host.appendChild(live.el);
@@ -35,7 +42,7 @@ export function mountMap(host, { key, cfg = {}, center, zoom, fallback, build })
   const el = document.createElement('div');
   el.className = 'dash-map-canvas';
   host.appendChild(el);
-  const map = new maplibregl.Map({ container: el, style: cfg.style, center, zoom, attributionControl: { compact: true } });
+  const map = new maplibregl.Map({ container: el, style: cfg.style, center, zoom, attributionControl: { compact: true }, cooperativeGestures: cooperative, locale: LOCALE });
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
   // MapLibre only listens to the window: a reflow of the box (breakpoint, sidebar, grid) needs an explicit resize.
   const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => map.resize()) : null;

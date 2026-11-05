@@ -92,7 +92,7 @@ test('KV-32: Hauptgruppen, totals and completeness', () => {
   assert.equal(kv.total, 19100000); assert.equal(kv.bw, 18000000, 'Erstellungskosten B–W incl. J');
   assert.equal(kv.fields, 27, '11 direct groups (A … Y without D, G) + 2 detailed groups × 4 positions × (Menge + Kosten)');
   assert.equal(kv.missing, 1, 'D08 Menge fehlt'); assert.equal(kv.bar.canSubmit, false);
-  assert.deepEqual(kv.badges.erfassung, { n: 1, bg: '#fff1f0', fg: '#9b2c44' });
+  assert.equal(kv.badges, undefined, 'the tabs carry no numbers');
   const rows = kv.erf.rows;
   assert.equal(rows.filter(r => r.isGroupRow).length, 13); assert.equal(rows.filter(r => r.isPos).length, 8);
   assert.equal(rows.filter(r => r.isAdd).length, 2, '«Kostenelement hinzufügen» under each opened group');
@@ -105,7 +105,7 @@ test('KV-32: Hauptgruppen, totals and completeness', () => {
   const filled = structuredClone(base);
   for (const c of data.ebkp.missingInitially || []) filled.projects.musterhausen.kvQ[c] = 1;
   let v = vmFor(filled);
-  assert.equal(v.forms.kv.missing, 0); assert.equal(v.forms.kv.bar.canSubmit, true); assert.equal(v.forms.kv.badges.erfassung, null);
+  assert.equal(v.forms.kv.missing, 0); assert.equal(v.forms.kv.bar.canSubmit, true);
   const only = structuredClone(base); only.projects.musterhausen.forms.kv.missingOnly = true;
   v = vmFor(only);
   assert.deepEqual(v.forms.kv.erf.rows.map(r => r.code), ['D', 'D08']);
@@ -228,7 +228,7 @@ test('THG-32: Emissionsquellen (Erstellung), Betrieb, Zielwerte SIA 390/1 and th
   // A missing value blocks the submission (badge per tab); without any Emissionsquelle the form cannot be submitted.
   st.projects.musterhausen.forms.thg.rejected = false; st.projects.musterhausen.thgSrc[0].kw = ''; st.projects.musterhausen.thgBetr.b3_eta = '';
   v = vmFor(st);
-  assert.equal(v.forms.thg.missing, 2); assert.equal(v.forms.thg.bar.canSubmit, false); assert.equal(v.forms.thg.badges.erfassung.n, 1); assert.equal(v.forms.thg.badges.betrieb.n, 1);
+  assert.equal(v.forms.thg.missing, 2); assert.equal(v.forms.thg.bar.canSubmit, false); assert.equal(v.forms.thg.missE, 1); assert.equal(v.forms.thg.missB, 1);
   assert.equal(v.forms.thg.betr.rows[3].end, '–');
   st.projects.musterhausen.thgBetr.b3_eta = 0; v = vmFor(st); assert.equal(v.forms.thg.missB, 1, 'a Nutzungsgrad of 0 counts as missing');
   st.projects.musterhausen.forms.thg.missingOnly = true;
@@ -242,7 +242,7 @@ test('THG-32: Emissionsquellen (Erstellung), Betrieb, Zielwerte SIA 390/1 and th
   // A new Emissionsquelle needs element group, Bauteil, Referenzgrösse and Kennwert; the unit comes from the element group.
   st.projects.musterhausen.thgSrc = [{ id: 'n1', grp: 'D', isNew: true, code: '', tcode: '', name: '', quelle: '', unit: '', q: '', kw: '', hs: false }];
   v = vmFor(st);
-  assert.equal(v.forms.thg.missE, 4); assert.equal(v.forms.thg.badges.erfassung.n, 4);
+  assert.equal(v.forms.thg.missE, 4);
   st.projects.musterhausen.thgSrc = [{ id: 'n1', grp: 'D', isNew: true, code: 'D01', tcode: '', name: 'Elektroanlage', quelle: 'KBOB 34.002', unit: 'm² EBF', q: 5600, kw: 1.2, hs: false }];   // as thgVal stores it
   st.projects.musterhausen.forms.thg.modes.D = 'detail';
   v = vmFor(st);
@@ -462,7 +462,7 @@ test('plans: Datenformular shape (Übersicht, Prüfung) of a floor plan', () => 
   assert.equal(eg.steps.length, 6); assert.equal(eg.planOv.cats.length, 10); assert.equal(eg.planOv.sia.length, 9, 'SIA 416 areas plus EBF (SIA 416/1)');
   assert.equal(eg.comp.pct, '26 / 40'); assert.deepEqual(eg.summ.map(r => r.key), ['err', 'warn', 'aoid', 'sia']); assert.equal(eg.summ[0].val, '4'); assert.equal(eg.summ[0].res, 'nicht erfüllt'); assert.equal(eg.summ[1].res, 'prüfen');
   assert.equal(eg.planOv.cats[0].ratio, '0/8', 'all Layer rules fail for the office layer structure');
-  assert.equal(eg.badges.erfassung.n, 4); assert.equal(eg.rv.notSubmitted, true); assert.match(eg.bar.reason, /keine Fehler/);
+  assert.equal(eg.comp.text, '4 Fehler · 44 Warnungen'); assert.equal(eg.rv.notSubmitted, true); assert.match(eg.bar.reason, /keine Fehler/);
   assert.equal(ug.status, 'Abgeschlossen'); assert.equal(ug.step, 6); assert.equal(ug.kpis[0].v, '30'); assert.equal(ug.kpis[1].v, '572.3');
   assert.ok(ug.steps.slice(0, 5).every(s => s.sym === '✓')); assert.equal(ug.docs[0].name, '9999.AA.U1_CAFM.dwg'); assert.equal(ug.docs[0].req, 'Pflicht');
   assert.ok(ug.hist.some(h => h.t === 'An SAP RE-FX übertragen') && ug.hist[0].t === 'An SAP RE-FX übertragen', 'newest first');

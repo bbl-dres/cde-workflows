@@ -77,9 +77,6 @@ const barOf = ({ editing, locked, canFilter, canSubmit, reason, comp, reviewer }
   editing, locked, canFilter, label: 'Zur Prüfung einreichen', canSubmit, reason: canSubmit || locked ? '' : reason,
   compText: comp.text, compW: comp.w, compBar: comp.bar, lockedText: `Eingereicht. Die Erfassung ist gesperrt, bis ${reviewer} freigibt oder zurückweist.`,
 });
-const badge = (n, locked) => (n && !locked ? { n, bg: '#fff1f0', fg: '#9b2c44' } : null);
-/** Tab badges: missing values of the Erfassung (the Ökobilanz splits them into Erstellung and Betrieb), number of documents. */
-const badgesOf = (missing, locked, nDocs) => { const m = typeof missing === 'object' ? missing : { erfassung: missing }; return { erfassung: badge(m.erfassung, locked), betrieb: badge(m.betrieb, locked), dokumente: { n: nDocs, bg: '#f3f4f6', fg: '#374151' } }; };
 
 /** Instance of a form in a project (data/forms.json byProject) with generated defaults for people, documents and history,
  *  derived from the initial step of the instance (later transitions are user events). */
@@ -381,7 +378,6 @@ function dataForm(kind, P, data, project, user) {
   return {
     kind: 'data', id: kind, pid: project.id, code: T.code, codeLc: T.code.toLowerCase(), title: T.title, short: T.short, lead: X.lead, leadName: `${X.leadName} (${X.leadFirm})`, reviewer, target: T.target,
     step, locked, rejected, status, pill: pillSpec(status), act: ACT_FORM,
-    badges: badgesOf(isTHG ? { erfassung: C.missE, betrieb: C.missB } : missing, locked, X.docs.length),
     steps: stepRows(D.steps, step, f.dates, rejected), next: nextStep(step, T.target, reviewer, open),
     kpis: C.kpis, comp, meta, people: peopleShort(people, X.peopleList), peopleRows: peopleRows(people, X.peopleList), docs: docRows(X.docs), hist: histRows(people, [...X.history, ...f.events]),
     ov: T.ov, subtotals: C.subtotals, chart: C.chart, tz: C.tz, headShared: C.headShared, betr: C.betr, ovList: C.ovList, ovBetr: C.ovBetr,
@@ -438,7 +434,6 @@ export function planForm(plan, data, user) {
   return {
     kind: 'plan', id: plan.key, plan, code: plan.code, codeLc: plan.codeLc, title: plan.name, short: plan.floor, lead: sup.initials, leadName: `${sup.name} (${sup.firm})`, reviewer, target: 'SAP RE-FX',
     step, locked, rejected, status, pill: plan.pill, act: ACT_PLAN,
-    badges: badgesOf(r && errors && !locked ? errors : 0, locked, docs.length),
     steps: stepRows(D.steps, step, dates, rejected), next: nextStep(step, 'SAP RE-FX', reviewer, open),
     kpis, comp, meta, people: peopleShort(people, peopleList), peopleRows: peopleRows(people, peopleList, sc => sc.replace('{floor}', plan.name)), docs, hist,
     planOv: { sia, cats },

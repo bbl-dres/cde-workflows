@@ -1,7 +1,7 @@
 import { html, pill } from '../ui.js';
 import { pageHead, tabs, emptyState } from '../shell.js';
 import { tabsOfCode } from '../links.js';
-import { renderForm, tabBadge } from './form.js';
+import { renderForm } from './form.js';
 import { mountPlan, unmountPlan } from './plan.js';
 
 // Datenlieferung: #/projects/:pid/deliveries/:code/:tab — head with status pill, the tabs of every Datenformular
@@ -42,7 +42,7 @@ export default {
     if (!F) return generic(ctx, code);
     const tab = tabOf(ctx);
     const isTHG = F.kind === 'data' && !!F.erf.isTHG;
-    const items = tabsOfCode(code).map(key => ({ key, label: (isTHG && THG_LABEL[key]) || TAB_LABEL[key], href: ctx.link.delivery(code, key), extra: tabBadge(F.badges[key]) }));
+    const items = tabsOfCode(code).map(key => ({ key, label: (isTHG && THG_LABEL[key]) || TAB_LABEL[key], href: ctx.link.delivery(code, key) }));
     return html`
       ${pageHead(F.title, ctx.crumbs(ctx.user.internal ? 'Informationslieferplan' : 'Aufgaben', F.code), { extra: pill(F.pill), style: 'margin-bottom:6px' })}
       ${tabs(items, tab)}
