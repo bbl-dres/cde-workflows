@@ -1,6 +1,7 @@
 import { html, icon, pill } from '../ui.js';
 import { pageHead, emptyState } from '../shell.js';
 import { mountProjectMap, unmountProjectMap } from './parts/projectMap.js';
+import { taskLink } from './parts/taskTable.js';
 
 // Projekt › Überblick: Favoriten, Projektaufgaben, Projektbild, Projektdaten, Standort (Karte), Verknüpfungen (wie in der CDE Bund).
 const COLS = 'grid-template-columns:minmax(0,1.2fr) minmax(0,1.3fr) minmax(0,1.3fr) 90px 130px';
@@ -32,7 +33,7 @@ export default {
             <div class="scroll-x"><div style="min-width:520px">
             <div class="grid-head" style="${COLS};background:#f4f5f7;height:34px;font-size:12.5px"><span>Aufgabe</span><span>Aufgabe von</span><span>Aufgabe an</span><span>Typ</span><span>Status</span></div>
             ${tasks.map((t, i) => html`<div class="grid-row" style="${COLS};height:30px;background:${i % 2 ? '#f6f7f9' : '#fff'};border:0">
-              <a class="ellipsis" href="#${t.href}" data-nav="${t.href}">${t.name}</a><span class="ellipsis" style="text-decoration:underline dotted;text-underline-offset:3px">${t.fuer}</span><span class="ellipsis">${t.zug}</span><span>${t.typ}</span><span>${pill(t.pill, { size: 'sm' })}</span>
+              ${taskLink(t, 'ellipsis')}<span class="ellipsis" style="text-decoration:underline dotted;text-underline-offset:3px">${t.fuer}</span><span class="ellipsis">${t.zug}</span><span>${t.typ}</span><span>${pill(t.pill, { size: 'sm' })}</span>
             </div>`)}
             </div></div>
             ${tasks.length === 0 ? html`<div style="padding:20px 0 28px">${emptyState('Keine Aufgaben')}</div>` : ''}

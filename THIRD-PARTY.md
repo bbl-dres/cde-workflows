@@ -19,7 +19,7 @@ LibreDWG is a GNU project under GPL-3.0-or-later: keep its licence text and noti
 
 | Component | Version | Licence | Where | Use |
 |---|---|---|---|---|
-| [Lucide](https://lucide.dev/) icons (`lucide-static`) | 0.460.0 | ISC | 70 SVG files in `assets/icons/` | Interface icons, rendered as CSS masks |
+| [Lucide](https://lucide.dev/) icons (`lucide-static`) | 0.460.0 | ISC | 63 SVG files in `assets/icons/` | Interface icons, rendered as CSS masks |
 | Pictograms of the eBKP-H Hauptgruppen (design study, 05.11.2026) | – | MIT (this repository) | 14 SVG files in `assets/ebkp/` | Line pictograms A–Z of the bar lists, rendered as CSS masks |
 | [Noto Sans](https://fonts.google.com/noto/specimen/Noto+Sans), Noto Sans Mono | Google Fonts | SIL Open Font License 1.1 | Google Fonts CDN, `index.html` | Interface and monospace typeface |
 | Project photos | – | CC0 1.0, CC BY 3.0, CC BY-SA 4.0 per photo ([credits](assets/projects/ATTRIBUTION.md)) | `assets/projects/` | Illustrations of the fictional projects; source Wikimedia Commons, not BBL material |

@@ -9,10 +9,16 @@ export function visibleColumns(ctx, { global }) {
   return TASK_COLUMNS.filter(c => !c.unavailable && (c.fixed || on.has(c.key)) && (!c.globalOnly || global));
 }
 
+/** A Datenformular or plan delivery opens its delivery; any other task opens the detail panel on the right. */
+export const isDelivery = t => !!t.delivery || t.typ === 'Datenformular';
+export const taskLink = (t, cls = '') => (isDelivery(t)
+  ? html`<a class="${cls}" href="#${t.href}" data-nav="${t.href}">${t.name}</a>`
+  : html`<a class="${cls}" href="#${t.href}" data-action="taskOpen" data-id="${t.tid}">${t.name}</a>`);
+
 function cell(ctx, c, t, opts) {
   const { link } = ctx;
   switch (c.key) {
-    case 'name': return html`<span class="flex items-center gap-6 min-w-0"><a class="ellipsis" href="#${t.href}" data-nav="${t.href}">${t.name}</a>${opts.nameExtra ? opts.nameExtra(t) : ''}</span>`;
+    case 'name': return html`<span class="flex items-center gap-6 min-w-0">${taskLink(t, 'ellipsis')}${opts.nameExtra ? opts.nameExtra(t) : ''}</span>`;
     case 'project': return html`<a class="ellipsis muted" href="#${link.project(t.projectId)}" data-nav="${link.project(t.projectId)}">${t.projectName}</a>`;
     case 'desc': return html`<span class="ellipsis">${t.desc}</span>`;
     case 'status': return html`<span>${pill(t.pill, { size: 'sm' })}</span>`;
@@ -39,7 +45,7 @@ export function taskTable(ctx, rows, opts = {}) {
         <span class="chk" aria-hidden="true"></span>
         ${cols.map(c => cell(ctx, c, t, opts))}
         <span class="row-actions">
-          <a class="btn-icon" href="#${t.href}" data-nav="${t.href}" title="Öffnen">${icon('external-link', 13, '#1f2937')}</a>
+          ${isDelivery(t) ? html`<a class="btn-icon" href="#${t.href}" data-nav="${t.href}" title="Öffnen">${icon('external-link', 13, '#1f2937')}</a>` : html`<a class="btn-icon" href="#${t.href}" data-action="taskOpen" data-id="${t.tid}" title="Öffnen">${icon('external-link', 13, '#1f2937')}</a>`}
           <button type="button" class="btn-icon" title="Bearbeiten" data-action="proto">${icon('pencil', 13, '#1f2937')}</button>
           <button type="button" class="btn-icon btn-icon-danger" title="Löschen" data-action="proto">${icon('trash-2', 13, '#ff3162')}</button>
         </span>

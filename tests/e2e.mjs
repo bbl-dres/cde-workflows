@@ -269,6 +269,13 @@ try {
   // 6. Tasks pages, favorites, sections
   await go('/tasks/all'); check('my tasks', (await count('.grid-row')) >= 5);
   await go('/tasks/everything'); check('all tasks', (await count('.grid-row')) >= 12);
+  // a normal task opens the detail panel on the right, a Datenformular and a plan delivery open their delivery
+  await evaluate(`window.cde.actions.setUser({ key: 'PM' })`); await go('/projects/musterhausen/tasks');
+  await clickText('.task-row a', 'Pläne Bauprojekt');
+  check('normal task: detail panel instead of navigation', (await hash()).endsWith('/musterhausen/tasks') && (await count('.drawer-task')) === 1 && (await text('.task-title')) === 'Pläne Bauprojekt' && (await text('.task-facts')).includes('Zugewiesen an') && (await text('.task-facts')).includes('Alex Beispiel') && (await text('.task-tab')) === 'Kommentare (0)' && (await text('.drawer-foot')).includes('Erledigt'));
+  await click('.drawer-task .dialog-close'); check('panel closes', (await count('.drawer-task')) === 0 && (await state()).ui.dialog === null);
+  await clickText('.task-row a', 'Kostenvoranschlag eBKP-H'); check('Datenformular task opens the form', (await hash()).includes('/deliveries/kv-32') && (await count('.drawer-task')) === 0);
+  await go('/projects/musterhausen/tasks'); await clickText('.task-row a', 'Grundriss UG'); check('plan delivery task opens the delivery', (await hash()).includes('/deliveries/dwg-ug'));
   await go('/projects/all?view=card'); check('card view with hero photos', (await count('.project-card')) === 8 && (await count('.project-card-img')) === 8 && await evaluate(`[...document.querySelectorAll('.project-card-img')].every(i => i.complete && i.naturalWidth > 0)`));
   await click('.project-card [data-action="toggleFavorite"][data-id="eigerplatz"]'); check('favorite toggled', (await state()).favorites.includes('eigerplatz'));
   await go('/projects/favorites?view=list'); check('favorites page', (await count('.table-row')) === 2);

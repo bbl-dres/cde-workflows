@@ -37,6 +37,7 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   wer die Lieferung hat, und «Erfassung wieder öffnen (Prototyp)» öffnet sie wieder (Werte bleiben). Prüfen (Checkliste, Freigeben,
   Zurückweisen) können nur BBL-Personen. Der Kommentar der Prüfung und ein Feld, in dem gerade getippt wird, bleiben beim
   Rendern erhalten. Dateien, die ein Import mitbringt (Tool-Export, Rechenhilfe, Excel), erscheinen unter Dokumente.
+- **Aufgaben**: ein Klick auf eine normale Aufgabe (Aufgabe, Modell-Issue) öffnet rechts das Detailfenster wie in der CDE Bund (Zugewiesen an, Aufgabe für, Fällig am, Status, Beschreibung, Kommentare); Datenformulare und Planlieferungen öffnen ihre Lieferung (`taskLink` in `js/views/parts/taskTable.js`, `js/views/taskDrawer.js`).
 - **Energiebezugsfläche (SIA 380/1)**: Pflichtangabe jedes Grundrisses (Kachel, eigener Block, Prüfpunkt, Übergabe, Bedingung zum Einreichen). Sie wird nach einem Entscheidungsbaum aus der Flächenart der Räume hergeleitet (`data/plans.json › ebf`, `ebfOf` in `js/model/plan.js`), bis die Pläne EBF-Polygone tragen.
 - **Excel: herunterladen, bearbeiten, importieren** (`js/excel.js`): «Excel herunterladen» schreibt die Werte eines Datenformulars
   in eine Arbeitsmappe, «Excel importieren» liest dieselbe Mappe wieder ein. Kosten (KV-32, KS-31): ein Blatt mit einer Zeile

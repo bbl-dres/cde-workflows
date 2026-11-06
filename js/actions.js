@@ -139,6 +139,9 @@ export function makeActions(store, data, nav) {
     toggleNav: ds => ui({ navOpen: { ...s().ui.navOpen, [ds.key]: !s().ui.navOpen[ds.key] } }),
     openDialog: ds => ui({ dialog: ds.arg, importMenu: false }),
     toggleSide: () => ui({ sideOpen: !s().ui.sideOpen }),
+    /** Detail panel of a normal task (Aufgabe, Modell-Issue); deliveries open their own page. */
+    taskOpen: ds => ui({ dialog: 'task', taskId: ds.id, notif: false, userMenu: false, importMenu: false }),
+    taskClose: () => ui({ dialog: null, taskId: null }),
     // «Tabelle konfigurieren»
     openColumns: () => ui({ dialog: 'columns', colDraft: [...(s().taskCols || [])] }),
     colToggle: ds => { const d = new Set(s().ui.colDraft || []); d.has(ds.key) ? d.delete(ds.key) : d.add(ds.key); ui({ colDraft: [...d] }); },

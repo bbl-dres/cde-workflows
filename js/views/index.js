@@ -10,6 +10,7 @@ import delivery from './delivery.js';
 import s01 from './s01.js';
 import s02b from './s02b.js';
 import order from './order.js';
+import taskDrawer from './taskDrawer.js';
 import s03c from './s03c.js';
 import s03d from './s03d.js';
 import columns from './columns.js';
@@ -56,6 +57,7 @@ export const views = {
 export const dialogs = {
   order,
   columns,
+  task: taskDrawer,
   import: {
     when: ctx => ctx.route.name === 'delivery' && ['kv', 'ks', 'thg'].includes(kindOfCode(ctx.route.params.code)) && kindOfCode(ctx.route.params.code) === (ctx.state.imp.form || 'kv') && ['erfassung', 'betrieb'].includes(ctx.route.params.tab || 'erfassung'),   // the dialog belongs to the form it was opened from (Erfassung, or Erfassung Betrieb of the Ökobilanz)
     render: ctx => (ctx.state.imp.step === 2 ? s03d : s03c).overlay(ctx),

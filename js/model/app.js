@@ -17,7 +17,7 @@ export function appModel(state, data, project, user, base) {
   projects.forEach(p => {
     const rows = p.detailed ? base.auRows : (p.tasks || []).map((r, i) => { const status = (r.delivery && base.formStatusOf(p.id, r.delivery)) || r.status; return { ...r, status, pill: pillSpec(status), typW: r.typ === 'Datenformular' ? 600 : 400, bg: i % 2 ? '#f6f7f9' : '#fff' }; });
     rows.forEach(t => allTasks.push({
-      ...t, projectId: p.id, projectName: p.name,
+      ...t, projectId: p.id, projectName: p.name, tid: `${p.id}:${t.name}`,
       href: t.delivery ? link.delivery(p.id, t.delivery) : link.projectTasks(p.id),
     }));
   });
@@ -66,7 +66,7 @@ export function appModel(state, data, project, user, base) {
     auRows = allTasks.filter(t => t.projectId === project.id);
   }
   ilpRows = ilpRows.map(r => ({ ...r, href: link.delivery(project.id, r.code) }));
-  auRows = auRows.map(t => ({ ...t, href: t.href || (t.delivery ? link.delivery(project.id, t.delivery) : link.projectTasks(project.id)) }));
+  auRows = auRows.map(t => ({ ...t, tid: `${project.id}:${t.name}`, projectId: t.projectId || project.id, href: t.href || (t.delivery ? link.delivery(project.id, t.delivery) : link.projectTasks(project.id)) }));
   const count = st => ilpRows.filter(r => r.status === st).length;
   const ilpCount = { total: ilpRows.length, work: count('In Bearbeitung'), check: count('In Prüfung'), done: count('Abgeschlossen'), over: count('Überfällig') };
   const ilpTiles = data.ilp.tiles.map(t => ({ ...t, value: ilpCount[t.key] }));
@@ -101,7 +101,7 @@ export function appModel(state, data, project, user, base) {
   return {
     user, project, today: data.projects.today,
     projects: projectRows, myProjects,
-    allTasks, taskRows: { all: mine, assigned, everything }, dash, insights,
+    allTasks, taskById: tid => allTasks.find(t => t.tid === tid) || null, taskRows: { all: mine, assigned, everything }, dash, insights,
     notifs, unreadCount,
     ilpRows, ilpTiles, auRows, deliveryByCode, activities, documents, loin, logs,
     members: project.members.map(k => data.users.users.find(u => u.key === k)).filter(Boolean),
