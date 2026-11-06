@@ -85,7 +85,7 @@ function onHashChange(initial) {
   if (initial !== true) {
     window.scrollTo(0, 0);
     const ui = store.get().ui;
-    if (ui.userMenu || ui.sideOpen || ui.importMenu || ui.searchOpen || ui.dialog === 'columns') store.setIn('ui', { userMenu: false, sideOpen: false, importMenu: false, searchOpen: false, dialog: ui.dialog === 'columns' ? null : ui.dialog });   // page-local overlays close on navigation
+    if (ui.userMenu || ui.sideOpen || ui.importMenu || ui.searchOpen || ui.dialog === 'columns' || ui.dialog === 'task') store.setIn('ui', { userMenu: false, sideOpen: false, importMenu: false, searchOpen: false, dialog: ui.dialog === 'columns' || ui.dialog === 'task' ? null : ui.dialog, taskId: null });   // page-local overlays close on navigation
   }
   render();
 }
