@@ -35,7 +35,7 @@ export function renderForm(ctx, F, tab) {
 // ---- Übersicht ----
 function uebersicht(ctx, F) {
   const L = tab => ctx.link.delivery(F.codeLc, tab);
-  return html`<div class="fm-cols">
+  return html`<div class="fm-cols fx">
     <div class="fm-main">
       <div class="kpi-grid">
         ${F.kpis.map(k => html`<div class="card kpi" title="${k.tip}"><span class="kpi-k">${k.k}</span><span class="kpi-row"><span class="kpi-v">${k.v}</span><span class="kpi-u">${k.u}</span></span></div>`)}
@@ -47,14 +47,14 @@ function uebersicht(ctx, F) {
       ${card('Lieferung', html`<div style="padding:4px 0 6px">${metaRows(F.meta)}</div>`)}
       ${F.kind === 'plan' && F.plan.result ? card('Prüfbericht', html`<div class="rep-box">${btn({ label: 'Prüfbericht herunterladen', icon: 'download', kind: 'primary', action: 'planReport', key: F.plan.key })}</div>`) : ''}
       ${card(html`<span class="flex-1">Verlauf</span>${headLink('Alle Ereignisse', L('verlauf'))}`, stepsList(F, L))}
-      ${card(html`<span class="flex-1">Beteiligte</span>${headLink('Verwalten', L('beteiligte'))}`, html`<div class="pp-list">${F.people.map(p => html`<div class="pp-row">${avatar(p.ini, 28, '#e5e7eb', '#374151')}<div class="flex-1 min-w-0 flex-col"><span class="pp-name">${p.name}</span><span class="pp-firm">${p.firm}</span></div><span class="pp-role">${p.role}</span></div>`)}</div>`)}
+      ${card(html`<span class="flex-1">Beteiligte</span>${headLink('Verwalten', L('beteiligte'))}`, html`<div class="pp-list">${F.people.map(p => html`<div class="pp-row">${avatar(p.ini, 28, 'var(--line-3)', 'var(--text-3)')}<div class="flex-1 min-w-0 flex-col"><span class="pp-name">${p.name}</span><span class="pp-firm">${p.firm}</span></div><span class="pp-role">${p.role}</span></div>`)}</div>`)}
     </div>
   </div>`;
 }
 
-const stepsList = (F, L) => html`<div class="st-list">${F.steps.map(s => html`<div class="st-row" style="background:${s.rowBg}">
-  <span class="st-dot" style="border-color:${s.bd};background:${s.bg};color:${s.fg}">${s.sym}</span>
-  <span class="st-label" style="color:${s.lc};font-weight:${s.fw}">${s.label}</span>
+const stepsList = (F, L) => html`<div class="st-list">${F.steps.map(s => html`<div class="st-row${s.isCur ? ' is-cur' : ''}">
+  <span class="dot is-${s.state}">${s.sym}</span>
+  <span class="st-label is-${s.state}">${s.label}</span>
   <span class="st-sub">${s.sub}</span>
   ${s.isCur ? html`<div class="st-next"><span class="st-next-text">${F.next.text}</span>${F.next.btn ? html`<div>${btn({ label: F.next.btn, kind: 'primary', nav: L(F.next.tab) })}</div>` : ''}</div>` : ''}
 </div>`)}</div>`;
@@ -96,7 +96,7 @@ const targetChart = F => {
     <div class="tgt-axis"><span>${K.min}</span><span>${K.max}</span></div>
     <div class="tgt-legend"><span></span><span class="muted fs-12">Ziel</span><span class="muted fs-12 right">Wert</span><span class="muted fs-12 right" title="Abweichung des Ist-Werts vom Zielwert">Ist zum Ziel</span>
       ${K.targets.map(m => html`<span class="tgt-n">${m.n}</span><span class="ellipsis">${m.label}</span><span class="right">${m.val}</span><span class="right" title="Ist ${K.ist} zu ${m.label} ${m.val}">${m.delta}</span>`)}
-      ${K.hasBand ? html`<span class="tgt-bandsw"></span><span style="color:#374151">Genauigkeit ±${K.acc} % um Kostenziel</span><span class="right" style="color:#374151">${K.band}</span><span></span>` : ''}
+      ${K.hasBand ? html`<span class="tgt-bandsw"></span><span style="color:var(--text-3)">Genauigkeit ±${K.acc} % um Kostenziel</span><span class="right" style="color:var(--text-3)">${K.band}</span><span></span>` : ''}
     </div>
   </div>`;
 };
@@ -111,7 +111,7 @@ const zielwerte = F => {
         ${r.marks.map(m => html`<div class="tz-mark" style="--x:${m.x}"></div><span class="tz-dot${m.below ? ' is-below' : ''}" style="--x:${m.x}" title="${m.title}">${m.n}</span>`)}</div>
       <span class="tz-ist" title="${r.tip}">${r.ist}</span></div>`)}
     <div class="tz-axis"><span></span><span><span>0</span><span>${Z.max}</span></span><span></span></div>
-    <div class="tz-legend"><span></span><span class="muted fs-12">Ziel</span><span class="muted fs-12 right" title="Richtwert Erstellung, informativ">Erstellung</span><span class="muted fs-12 right" title="Richtwert Betrieb, informativ">Betrieb</span><span class="muted fs-12 right" title="Höchstwert für Erstellung + Betrieb, einzuhalten">Zusatzanforderung</span>
+    <div class="tz-legend"><span></span><span class="muted fs-12">Ziel</span><span class="muted fs-12 right" title="Richtwert Erstellung, informativ">Erstellung</span><span class="muted fs-12 right" title="Richtwert Betrieb, informativ">Betrieb</span><span class="muted fs-12 right" title="Summe aus Erstellung und Betrieb. Die Werte B und A sind die Zusatzanforderung der SIA 390/1: Höchstwert für diese Summe, einzuhalten">Erstellung + Betrieb</span>
       <span class="tz-sw"></span><span class="fw-600">Ist</span>${Z.ist.map(v => html`<span class="right fw-600">${v}</span>`)}
       ${Z.legend.map(m => html`<span class="tgt-n">${m.n}</span><span class="ellipsis">${m.label}</span>${m.cells.map(c => html`<span class="right">${c.v}</span>`)}`)}
     </div>
@@ -146,7 +146,7 @@ const INERT = F => (F.locked ? raw('inert') : '');
 
 function erfassung(ctx, F) {
   const body = F.kind === 'plan' ? planEntry(ctx, F) : F.erf.isTHG ? html`${thgHeadCard(ctx, F, 'Erstellung', F.erf.head)}${dataEntry(ctx, F)}` : dataEntry(ctx, F);
-  return html`<div class="fm-stack">${body}${submitBar(F)}</div>`;
+  return html`<div class="fm-stack fx">${body}${submitBar(F)}</div>`;
 }
 
 /** Importieren menu: the Excel template first (separated), then the imports of the tab. */
@@ -198,10 +198,10 @@ const kwCell = (F, r, ro) => html`<span class="ent-cell-input"><input class="ent
 
 /** Hauptgruppe: the whole row toggles «Aufschlüsseln / Zusammenfassen» (not on locked forms), the chevron is the keyboard target. */
 const chevron = (F, r) => (r.canToggle
-  ? html`<button type="button" class="ent-toggle" data-action="formMode" data-form="${F.id}" data-group="${r.code}" data-fid="${F.id}-toggle-${r.code}" aria-label="${r.toggleLabel} ${r.code}" aria-expanded="${r.direct ? 'false' : 'true'}">${icon(r.chev, 16, '#374151')}</button>`
-  : html`<span class="ent-toggle" aria-hidden="true">${icon(r.chev, 16, '#9ca3af')}</span>`);
+  ? html`<button type="button" class="ent-toggle" data-action="formMode" data-form="${F.id}" data-group="${r.code}" data-fid="${F.id}-toggle-${r.code}" aria-label="${r.toggleLabel} ${r.code}" aria-expanded="${r.direct ? 'false' : 'true'}">${icon(r.chev, 16, 'var(--text-3)')}</button>`
+  : html`<span class="ent-toggle" aria-hidden="true">${icon(r.chev, 16, 'var(--faint)')}</span>`);
 const groupAttrs = (F, r) => (r.canToggle ? html`data-action="formMode" data-form="${F.id}" data-group="${r.code}"` : '');
-const delBtn = (action, attrs, label) => html`<span class="ent-del-cell"><button type="button" class="ent-del" data-action="${action}" ${attrs} aria-label="${label}" title="${label}">${icon('trash-2', 15, '#6b7280')}</button></span>`;
+const delBtn = (action, attrs, label) => html`<span class="ent-del-cell"><button type="button" class="ent-del" data-action="${action}" ${attrs} aria-label="${label}" title="${label}">${icon('trash-2', 15, 'var(--muted)')}</button></span>`;
 const addRow = (F, r, action) => html`<div class="ent-add"><button type="button" class="btn-link" data-action="${action}" data-form="${F.id}" data-group="${r.grp}">${r.label}</button></div>`;
 const optionList = (r, empty) => html`${r.code ? '' : html`<option value="" selected>${empty}</option>`}${r.opts.map(o => html`<option value="${o.v}" ${o.sel ? raw('selected') : ''}>${o.label}</option>`)}`;
 /** Fixed-width code control: the code as label with a chevron, the native select (list «D01 Elektroanlage») invisibly on top. */
@@ -300,7 +300,7 @@ const thgSrcRow = (F, r, ro) => html`<div class="ent-pos ent-src${r.isNew ? ' en
 function betrieb(ctx, F) {
   if (F.kind !== 'data' || !F.erf.isTHG) return erfassung(ctx, F);
   const B = F.betr, ro = RO(F), open = !!ctx.state.ui.importMenu;
-  return html`<div class="fm-stack">
+  return html`<div class="fm-stack fx">
     ${thgHeadCard(ctx, F, 'Betrieb', B.head, B.pv.map(p => html`<label class="thg-field pv-field"><span>${p.label}</span><input class="ent-text${p.key ? ' right' : ''}" aria-label="${p.label}" title="${p.tip || ''}" value="${p.val}" placeholder="fehlt" style="background:${p.bg};border-color:${p.bdc}" ${p.key ? html`data-change="thgBetr" data-key="${p.key}" data-fid="thg-betr-${p.key}"` : ''} ${p.ro ? raw('readonly') : ''}></label>`))}
     <div class="card${lockCls(F)}">
       <div class="card-head" style="flex-wrap:wrap">
@@ -368,8 +368,8 @@ function planEntry(ctx, F) {
       ${p.own && !F.locked ? linkBtn({ label: 'Entfernen', cls: 'fs-12', action: 'planRemove', key: p.key }) : ''}
     </div>
     ${open ? html`<div class="backdrop backdrop-clear" data-action="closeMenus"></div>` : ''}
-    ${p.busy ? html`<div class="note note-grey" style="margin:10px 12px 6px"><span class="plan-spin">${icon('loader-circle', 14, '#5b6573')}</span>${p.busy}</div>` : ''}
-    ${p.error ? html`<div class="note note-rose" style="margin:10px 12px 6px">${icon('circle-alert', 14, '#9b2c44')}${p.error}</div>` : ''}
+    ${p.busy ? html`<div class="note note-grey" style="margin:10px 12px 6px"><span class="plan-spin">${icon('loader-circle', 14, 'var(--muted)')}</span>${p.busy}</div>` : ''}
+    ${p.error ? html`<div class="note note-rose" style="margin:10px 12px 6px">${icon('circle-alert', 14, 'var(--rose-text)')}${p.error}</div>` : ''}
     ${!p.result ? html`<div style="padding:40px 20px 36px">${dropZone(p)}</div>` : resultPanel(ctx, p)}
   </div>`;
 }
@@ -378,7 +378,7 @@ function submitBar(F) {
   const B = F.bar, A = F.act;
   if (B.locked) return html`<div class="submit-bar"><span class="fs-13 flex-1" style="min-width:240px">${B.lockedText}</span>${linkBtn({ label: 'Erfassung wieder öffnen (Prototyp)', cls: 'fs-125', action: A.reopen, key: F.id })}</div>`;
   return html`<div class="submit-bar">
-    <div class="submit-comp"><span class="fs-125" style="color:#374151">${B.compText}</span>${progress(B.compW, B.compBar)}</div>
+    <div class="submit-comp"><span class="fs-125" style="color:var(--text-3)">${B.compText}</span>${progress(B.compW, B.compBar)}</div>
     ${B.canFilter ? checkbox({ checked: F.erf.missingOnly, label: 'Nur fehlende Werte anzeigen', action: 'formToggleMissing', key: F.id }) : ''}
     <span class="flex-1"></span>
     ${B.reason ? html`<span class="submit-reason">${B.reason}</span>` : ''}
@@ -389,7 +389,7 @@ function submitBar(F) {
 // ---- Prüfung ----
 function pruefung(ctx, F) {
   const L = tab => ctx.link.delivery(F.codeLc, tab), A = F.act;
-  return html`<div class="fm-cols">
+  return html`<div class="fm-cols fx">
     <div class="fm-main">${summaryCard(F, L)}</div>
     <div class="fm-side">
       ${card(html`<span class="flex-1">Prüfung BBL</span>${hint(`${F.reviewer}, BBL`)}`, html`<div class="card-body flex-col" style="gap:10px">
@@ -415,18 +415,18 @@ function summaryCard(F, L) {
     ? html`<div class="muted fs-125" style="padding:28px 16px">${F.summNote}</div>`
     : html`<div class="fm-table"><div class="sm-body">
       <div class="sm-th"><span>Prüfpunkt</span><span>Lieferung</span><span>Ergebnis</span></div>
-      ${F.summ.map((r, i) => html`<div class="sm-tr" style="background:${i % 2 ? '#fafbfc' : '#fff'}" title="${r.tip}"><span>${r.label}${srOnly(`. Anforderung: ${r.tip}`)}</span><span>${r.val}</span><span>${r.res}</span></div>`)}
+      ${F.summ.map((r, i) => html`<div class="sm-tr" style="background:${i % 2 ? 'var(--surface-1)' : 'var(--white)'}" title="${r.tip}"><span>${r.label}${srOnly(`. Anforderung: ${r.tip}`)}</span><span>${r.val}</span><span>${r.res}</span></div>`)}
     </div></div>`);
 }
 
 // ---- Beteiligte · Dokumente · Verlauf ----
 function beteiligte(F) {
   const C = 'grid-template-columns:minmax(0,1.3fr) minmax(0,1.3fr) 150px minmax(0,1.2fr) 130px 80px';
-  return html`<div class="fm-stack">${card(html`<span class="flex-1">Beteiligte an dieser Lieferung</span><button type="button" class="btn btn-secondary" data-action="proto">Bearbeitende hinzufügen</button>`, html`<div class="fm-table"><div style="min-width:760px">
+  return html`<div class="fm-stack fx">${card(html`<span class="flex-1">Beteiligte an dieser Lieferung</span><button type="button" class="btn btn-secondary" data-action="proto">Bearbeitende hinzufügen</button>`, html`<div class="fm-table"><div style="min-width:760px">
     <div class="fm-th" style="${C};padding:0 12px;gap:0 12px"><span>Person</span><span>Firma</span><span>Rolle</span><span>Bereich</span><span>Status</span><span></span></div>
     ${F.peopleRows.map(p => html`<div class="fm-tr" style="${C};min-height:46px;padding:0 12px;gap:0 12px;background:${p.bg}">
-      <span class="flex items-center gap-8 min-w-0">${avatar(p.ini, 24, '#aab2bc')}<span class="ellipsis">${p.name}</span></span><span class="ellipsis">${p.firm}</span><span class="fw-500">${p.role}</span><span class="ellipsis" style="color:#3d4650">${p.scope}</span><span style="color:${p.stC}">${p.st}</span>
-      <span class="flex justify-end gap-6"><button type="button" class="btn-icon" title="Rolle und Bereich bearbeiten" aria-label="Rolle und Bereich bearbeiten" data-action="proto">${icon('pencil', 14, '#374151')}</button>${p.editable ? html`<button type="button" class="btn-icon btn-icon-danger" title="Aus Lieferung entfernen" aria-label="Aus Lieferung entfernen" data-action="proto">${icon('trash-2', 14, '#374151')}</button>` : ''}</span>
+      <span class="flex items-center gap-8 min-w-0">${avatar(p.ini, 24, 'var(--muted)')}<span class="ellipsis">${p.name}</span></span><span class="ellipsis">${p.firm}</span><span class="fw-500">${p.role}</span><span class="ellipsis" style="color:var(--text-3)">${p.scope}</span><span style="color:${p.stC}">${p.st}</span>
+      <span class="flex justify-end gap-6"><button type="button" class="btn-icon" title="Rolle und Bereich bearbeiten" aria-label="Rolle und Bereich bearbeiten" data-action="proto">${icon('pencil', 14, 'var(--text-3)')}</button>${p.editable ? html`<button type="button" class="btn-icon btn-icon-danger" title="Aus Lieferung entfernen" aria-label="Aus Lieferung entfernen" data-action="proto">${icon('trash-2', 14, 'var(--text-3)')}</button>` : ''}</span>
     </div>`)}
   </div></div>`)}</div>`;
 }

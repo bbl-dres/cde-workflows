@@ -1,20 +1,26 @@
 /* Screen-specific styles (views-b: Excel importieren, dialog of the KV-32 Erfassung). Shared components live in components.css. */
 
-.imp-steps { display: flex; gap: 28px; padding: 14px 24px; border-bottom: 1px solid var(--line-5); font-size: 13.5px; }
+.imp-steps { display: flex; gap: 28px; padding: 14px 24px; border-bottom: 1px solid var(--line-4); font-size: 13.5px; }
 .imp-step { display: flex; gap: 8px; align-items: center; }
-.imp-step-dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; background: #fff; flex: none; }
-.imp-drop { position: relative; border: 2px dashed var(--line); border-radius: 4px; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; background: #fafbfc; text-align: center; cursor: pointer; transition: border-color .2s, background-color .2s; }
-.imp-drop.is-over { border-color: var(--navy); background: #eef3f7; }
+.imp-step { color: var(--muted); }
+.imp-step.is-done { color: var(--text); }
+.imp-step.is-cur { color: var(--text); font-weight: 600; }
+.imp-drop { position: relative; border: 2px dashed var(--line); border-radius: 4px; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; background: var(--surface-1); text-align: center; cursor: pointer; transition: border-color .2s, background-color .2s; }
+.imp-drop.is-over { border-color: var(--navy); background: var(--surface-sel); }
 .imp-file { display: flex; align-items: center; gap: 10px; border: 1px solid var(--green-line); background: var(--green-bg-2); border-radius: 3px; padding: 10px 12px; font-size: 13px; }
 .imp-box { border: 1px solid var(--line-3); border-radius: 4px; padding: 14px 16px; position: relative; }
 .imp-format { display: grid; grid-template-columns: 28px 1fr auto; gap: 4px 10px; font-size: 12.5px; }
-.imp-tab { border: 1px solid; border-radius: 3px; padding: 5px 12px; font-size: 13px; font-weight: 600; display: flex; gap: 6px; align-items: center; cursor: pointer; }
+.imp-tab { border: 1px solid var(--line); background: var(--white); color: var(--ink); border-radius: 3px; padding: 5px 12px; font-size: 13px; font-weight: 600; display: flex; gap: 6px; align-items: center; cursor: pointer; }
+.imp-tab[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: var(--white); }
+.imp-tab-n { font-size: 12px; font-weight: 400; opacity: .8; }
 .imp-table { margin: 12px 24px 0; border: 1px solid var(--line-3); border-radius: 3px; height: min(520px, 55vh); overflow: auto; }
 .imp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .imp-thead, .imp-trow { min-width: 720px; }   /* narrow windows scroll the preview sideways instead of squeezing the Bezeichnung */
 .imp-thead { display: grid; gap: 0 12px; padding: 0 12px; height: 32px; align-items: center; background: var(--head-bg); font-size: 12px; font-weight: 500; position: sticky; top: 0; }
-.imp-trow { display: grid; gap: 0 12px; padding: 0 12px; height: 30px; align-items: center; font-size: 12.5px; border-bottom: 1px solid var(--line-6); font-variant-numeric: tabular-nums; }
-.imp-st { font-size: 12px; border: 1px solid; border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.imp-trow { display: grid; gap: 0 12px; padding: 0 12px; height: 30px; align-items: center; font-size: 12.5px; border-bottom: 1px solid var(--line-4); font-variant-numeric: tabular-nums; }
+.imp-trow.is-changed { background: var(--amber-bg); }
+.imp-trow.is-note { background: var(--rose-bg-2); }
+.imp-file .muted { color: var(--green-dark); }
 .imp-modes .radio { gap: 7px; }
 .imp-modes .radio-dot { border: 1.5px solid var(--navy); }
 .imp-done { padding: 60px 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }

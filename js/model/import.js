@@ -3,12 +3,7 @@ import { samplePayload, planImport, SHEET } from '../excel.js';
 
 // 03c/03d Excel importieren: Datei wählen, Vorschau, Übernehmen. The dialog belongs to one Datenformular (imp.form = kv | ks | thg)
 // and shows what the chosen file would change (js/excel.js). Without a file the cost forms use the sample file of the prototype.
-const ST = {
-  'Unverändert': ['#f0f2f5', '#e1e5ea', '#5b6573'],
-  'Geändert': ['#f8f1d2', '#e6dca6', '#5a4508'],
-  'Hinweis': ['#f9e2e7', '#e8c3cc', '#6b1d2e'],
-  'Ignoriert': ['#fff', '#c9cfd6', '#5b6573'],
-};
+const CHIP = { 'Unverändert': 'neutral', 'Geändert': 'changed', 'Hinweis': 'note', 'Ignoriert': 'ignored' };   // css .chip variants
 const COST_FORMAT = gl => [['A', `Code ${gl}`, 'Schlüssel'], ['B', 'Bezeichnung', 'optional'], ['C', 'Menge', 'ausser «pauschal»'], ['D', 'Einheit', 'optional'], ['E', 'Kosten CHF', 'Pflicht'], ['F', 'Kennwert CHF/m² GF', 'optional']];
 const THG_FORMAT = [['1', `Blatt «${SHEET.head}»`, 'Schlüssel in Spalte A'], ['2', `Blatt «${SHEET.src}»`, 'ID in Spalte A'], ['3', `Blatt «${SHEET.betr}»`, 'Nr in Spalte A']];
 const size = n => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
@@ -30,9 +25,9 @@ export function importModel(s, data, P, pid, gl = 'eBKP-H') {
   const all = plan.rows, f = I.filter, done = !!I.done;
   const impRows = all
     .filter(r => f === 'alle' || (f === 'geaendert' && r.st === 'Geändert') || (f === 'hinweise' && (r.st === 'Hinweis' || r.st === 'Ignoriert')))
-    .map(r => { const c = ST[r.st]; return { ...r, stBg: c[0], stBd: c[1], stC: c[2], vW: r.st === 'Geändert' ? 600 : 400, bg: r.st === 'Geändert' ? '#fdfaf0' : r.st === 'Hinweis' ? '#fcf1f3' : '#fff' }; });
-  const tab = (key, label, count) => ({ key, label, count, active: f === key, bd: f === key ? 'var(--navy)' : '#c9cfd6', bg: f === key ? 'var(--navy)' : '#fff', c: f === key ? '#fff' : '#1f2937' });
-  const step = (n, on, ok) => ({ sym: ok ? '✓' : String(n), bg: ok ? '#4c8c75' : '#fff', bd: ok ? '#4c8c75' : on ? 'var(--navy)' : '#c9cfd6', c: ok ? '#fff' : on ? 'var(--navy)' : '#6b7480', w: on && !ok ? 600 : 400, t: (on || ok) ? '#1f2937' : '#6b7480' });
+    .map(r => ({ ...r, chip: CHIP[r.st], vW: r.st === 'Geändert' ? 600 : 400, rowCls: r.st === 'Geändert' ? ' is-changed' : r.st === 'Hinweis' ? ' is-note' : '' }));
+  const tab = (key, label, count) => ({ key, label, count, active: f === key });
+  const step = (n, on, ok) => ({ sym: ok ? '✓' : String(n), state: ok ? 'done' : on ? 'cur' : 'todo' });
   return {
     impRows, impAll: all.length, impChanged: plan.changed, impKind: kind, impCode: T.code, impTitle: T.title, impColQ: plan.colQ, impColV: plan.colV,
     impHasFile: !!payload, impIsSample: !!payload && !file, impFile: name, impFileSize: file ? size(file.size) : '48 KB',

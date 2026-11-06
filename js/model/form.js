@@ -17,7 +17,7 @@ export const LOCKED_FROM = 3;
 const STATUS = ['Offen', 'In Bearbeitung', 'In Bearbeitung', 'Eingereicht', 'In Prüfung', 'Freigegeben', 'Abgeschlossen'];
 const statusOfStep = (step, rejected) => (rejected ? 'Zurückgewiesen' : STATUS[step] || 'Offen');
 const CAT = [['LAYER', 'Layer'], ['POLY', 'Raumpolygone'], ['GPOLY', 'Geschosspolygon'], ['AOID', 'AOID'], ['GEOM', 'Geometrie'], ['TEXT', 'Text'], ['STYLE', 'Stil'], ['LAYOUT', 'Layout'], ['DIM', 'Bemassung'], ['HATCH', 'Schraffur']];
-const ST_COLOR = { 'Fertig gemeldet': '#2f6b12', Eingereicht: '#2f6b12', Abgeschlossen: '#2f6b12', Prüft: '#8a6100', 'Ab Einreichung': '#6b7280' };
+const ST_COLOR = { 'Fertig gemeldet': 'var(--ok)', Eingereicht: 'var(--ok)', Abgeschlossen: 'var(--ok)', Prüft: 'var(--amber-text)', 'Ab Einreichung': 'var(--muted)' };
 const ACT_FORM = { submit: 'formSubmit', reopen: 'formReopen', toggle: 'formToggleCheck', approve: 'formApprove', reject: 'formReject', transfer: 'formTransfer', reset: 'formResetReview', comment: 'formComment' };
 const ACT_PLAN = { submit: 'planSubmit', reopen: 'planReopen', toggle: 'planToggleCheck', approve: 'planApprove', reject: 'planReject', transfer: 'planTransfer', reset: 'planResetReview', comment: 'planComment' };
 const DEV_PCT = 10;                                                 // default threshold of the comparison with the previous phase
@@ -32,7 +32,7 @@ const prevSum = prev => Object.values(prev).reduce((a, b) => a + b, 0);
 const devOf = (cur, pv, limit, absMin) => { const d = cur - pv, dp = pv ? d / pv * 100 : 0, fl = pv > 0 && Math.abs(dp) >= limit && Math.abs(d) >= absMin; return { d, dp, fl }; };   // fl feeds the Zusammenfassung of the Prüfung only: the lists show plain values, the form does not judge a deviation
 const sgn = (v, fmt = FMT1) => (v > 0.04 ? '+' : v < -0.04 ? '−' : '±') + fmt(Math.abs(v));
 const ebkpIcon = code => `assets/ebkp/${code}.svg`;
-const alt = i => (i % 2 ? 'transparent' : '#f6f7f9');
+const alt = i => (i % 2 ? 'transparent' : 'var(--surface-2)');
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const missingText = n => plural(n, 'Wert fehlt', 'Werte fehlen');
 /** Options of an element-group select: the element groups of the Hauptgruppe not yet in the table (the own code stays). */
@@ -44,9 +44,9 @@ export function stepRows(labels, step, dates, rejected) {
   labels.forEach((label, i) => {
     if (i === 2) return;                                             // «Intern geprüft» only with a GP mandate
     const done = i < step, cur = i === step;
-    const o = { label, bg: '#fff', bd: '#d1d5db', fg: '#6b7280', sym: '', lc: '#6b7280', fw: 400, sub: '', isCur: cur, rowBg: cur ? '#f3f6f9' : 'transparent' };
-    if (done) Object.assign(o, { bg: '#10384f', bd: '#10384f', fg: '#fff', sym: '✓', lc: '#262626', sub: dates[i] || '' });
-    else if (cur) Object.assign(o, rejected ? { bd: '#cf1322', fg: '#cf1322', lc: '#cf1322', fw: 600, sub: 'zurückgewiesen' } : { bd: '#10384f', fg: '#10384f', lc: '#10384f', fw: 600, sub: 'aktuell' });
+    const o = { label, state: 'todo', sym: '', sub: '', isCur: cur };   // state: todo, done, cur, err (css .dot, .st-label)
+    if (done) Object.assign(o, { state: 'done', sym: '✓', sub: dates[i] || '' });
+    else if (cur) Object.assign(o, rejected ? { state: 'err', sub: 'zurückgewiesen' } : { state: 'cur', sub: 'aktuell' });
     out.push(o);
   });
   out.forEach((o, j) => { if (o.sym !== '✓') o.sym = String(j + 1); });
@@ -55,8 +55,8 @@ export function stepRows(labels, step, dates, rejected) {
 
 const person = (people, key) => people[key] || [key, ''];
 const peopleShort = (people, list) => list.map(([ini, role]) => ({ ini, name: person(people, ini)[0], firm: person(people, ini)[1], role }));
-const peopleRows = (people, list, scopeOf = s => s) => list.map(([ini, role, scope, st], i) => ({ ini, name: person(people, ini)[0], firm: person(people, ini)[1], role, scope: scopeOf(scope), st, stC: ST_COLOR[st] || '#262626', editable: role !== 'Lieferverantwortlich', bg: i % 2 ? '#fafbfc' : '#fff' }));
-const docRows = list => list.map(([name, type, req, by, date]) => ({ name, type, req, by, date, reqFg: req === 'Pflicht' ? '#262626' : '#6b7280', reqFw: req === 'Pflicht' ? 600 : 400 }));
+const peopleRows = (people, list, scopeOf = s => s) => list.map(([ini, role, scope, st], i) => ({ ini, name: person(people, ini)[0], firm: person(people, ini)[1], role, scope: scopeOf(scope), st, stC: ST_COLOR[st] || 'var(--text)', editable: role !== 'Lieferverantwortlich', bg: i % 2 ? 'var(--surface-1)' : 'var(--white)' }));
+const docRows = list => list.map(([name, type, req, by, date]) => ({ name, type, req, by, date, reqFg: req === 'Pflicht' ? 'var(--text)' : 'var(--muted)', reqFw: req === 'Pflicht' ? 600 : 400 }));
 /** Newest first; an event is [date, time, who, title, detail]. */
 const histRows = (people, list) => list.slice().reverse().map(([d, time, who, t, detail]) => ({ d, time: time || '', t, detail: detail || '', ini: who === 'SYS' ? 'CDE' : who, name: person(people, who)[0], firm: person(people, who)[1] }));
 const handoverStatus = (step, date) => (step < 5 ? 'Nach Freigabe' : step === 5 ? 'Bereit zur Übertragung' : `Übertragen, ${date || 'heute'}`);
@@ -85,7 +85,7 @@ const lockText = (step, dates, target) => (step >= 6 ? `An ${target} übertragen
   : step === 5 ? `Freigegeben${when(dates[5])}. Änderungen sind nicht mehr möglich.`
   : `Eingereicht${when(dates[3])}. Änderungen erst nach Rückweisung.`);
 const lockTip = step => (step >= 5 ? 'Gesperrt' : 'Gesperrt bis zur Rückweisung');
-const groupBg = (open, locked) => (open ? (locked ? '#e9ecf0' : '#f3f4f6') : (locked ? 'transparent' : '#fff'));   // a locked table is tinted, closed groups let the tint through
+const groupBg = (open, locked) => (open ? (locked ? 'var(--surface-locked)' : 'var(--surface-2)') : (locked ? 'transparent' : 'var(--white)'));   // a locked table is tinted, closed groups let the tint through
 
 /** Instance of a form in a project (data/forms.json byProject) with generated defaults for people, documents and history,
  *  derived from the initial step of the instance (later transitions are user events). */
@@ -299,15 +299,15 @@ function thgPart(P, f, data, T, M, ref, locked, bd) {
     { isPv: true, name: 'PV-Export', carrier: pvOn ? `${FMT(exp * EBF)} kWh/a · ${pvRule}` : pvRule, end: '–', kE: credit ? TH.pv.credit.toFixed(3) : '–', thg: pvOn ? neg(-credit) : '–' }];
   const betrList = only ? betrRows.filter(r => r.miss) : [...betrRows, ...pvRows];
   const pvFields = [
-    { label: 'Photovoltaik · Leistung', val: kWp ? `${FMT(kWp)} kWp · aus ${pvSrc.code} Erstellung` : 'keine Anlage (kWp) in der Erstellung', ro: true, bg: '#f3f4f6', bdc: '#d9d9d9' },
-    { label: 'PV-Ertrag kWh/a', key: 'pv_y', val: disp(B.pv_y), ro: locked, bg: locked ? '#f3f4f6' : '#fff', bdc: bd(pvAsked && Y == null) },
-    { label: 'Eigenverbrauch %', key: 'pv_ev', val: disp01(B.pv_ev), ro: locked, bg: locked ? '#f3f4f6' : '#fff', bdc: bd(pvAsked && EV == null), tip: '0 bis 100 % des Ertrags' }];
+    { label: 'Photovoltaik · Leistung', val: kWp ? `${FMT(kWp)} kWp · aus ${pvSrc.code} Erstellung` : 'keine Anlage (kWp) in der Erstellung', ro: true, bg: 'var(--surface-2)', bdc: 'var(--line-2)' },
+    { label: 'PV-Ertrag kWh/a', key: 'pv_y', val: disp(B.pv_y), ro: locked, bg: locked ? 'var(--surface-2)' : 'var(--white)', bdc: bd(pvAsked && Y == null) },
+    { label: 'Eigenverbrauch %', key: 'pv_ev', val: disp01(B.pv_ev), ro: locked, bg: locked ? 'var(--surface-2)' : 'var(--white)', bdc: bd(pvAsked && EV == null), tip: '0 bis 100 % des Ertrags' }];
   const betrStr = hasBetr ? neg(thgB, FMT1) : '–', sumStr = hasSrc && hasBetr ? neg(sumIst, FMT1) : '–';
 
   // Grundlagen: shared (Übersicht), Erstellung and Betrieb (head of the two Erfassung tabs); EBF and GF come from the floor plans
   const headField = ([key, label, def, opts]) => {
     const fromRef = def == null, ro = fromRef || locked, val = fromRef ? (ref[key] ? FMT(ref[key]) + ' m²' : '–') : hv(key);
-    return { key, label, isSelect: !!opts, isText: !opts && !fromRef, opts: (opts || []).map(o => ({ v: o, sel: o === val })), val, ro, bg: ro ? '#f3f4f6' : '#fff' };
+    return { key, label, isSelect: !!opts, isText: !opts && !fromRef, opts: (opts || []).map(o => ({ v: o, sel: o === val })), val, ro, bg: ro ? 'var(--surface-2)' : 'var(--white)' };
   };
   const byKey = Object.fromEntries(TH.head.map(h => [h[0], h])), headOf = keys => keys.map(k => byKey[k]).filter(Boolean).map(headField);
   const HG = TH.headGroups, headShared = headOf(HG.shared), headErst = headOf(HG.erstellung), headBetr = headOf(HG.betrieb);
@@ -326,7 +326,7 @@ function thgPart(P, f, data, T, M, ref, locked, bd) {
     tip: `${label} (${sub}): Ist ${istOk[j] ? neg(IST[j], FMT1) : '–'} kg CO₂-eq/m² EBF·a${MK.filter(m => m.v[j] != null).map(m => ` · ${m.label} ${FMT1(m.v[j])}`).join('')}`,
     marks: MK.filter(m => m.v[j] != null).sort((a, b) => a.v[j] - b.v[j]).map((m, i) => ({ n: m.n, x: X(m.v[j]), below: i % 2 === 1, title: `${m.label} ${FMT1(m.v[j])}` })) }));
   const zusB = rw('zus')[0];
-  const tz = { title: T.ov.chartTitle, hint: `kg CO₂-eq/m² EBF·a · Richtwerte SIA 390/1 ${kat}${RW.zus ? (RW.verified ? '' : ' · Betrieb und Zusatzanforderung als Annahme') : ' · nur Erstellung'}`, max: FMT1(mx), rows: tzRows,
+  const tz = { title: T.ov.chartTitle, hint: `kg CO₂-eq/m² EBF·a · Richtwerte SIA 390/1 ${kat}${RW.zus ? (RW.verified ? '' : ' · Betrieb und Summe als Annahme') : ' · nur Erstellung'}`, max: FMT1(mx), rows: tzRows,
     ist: IST.map((v, j) => (istOk[j] ? neg(v, FMT1) : '–')), legend: MK.map(m => ({ n: m.n, label: m.label, cells: m.v.map(v => ({ v: v == null ? '–' : FMT1(v) })) })) };
   const kpis = [{ k: 'Erstellung', v: erstStr, u: 'kg CO₂-eq/m² EBF·a', tip: 'THGE Erstellung pro Jahr und m² EBF: Summe der Emissionsquellen (SIA 2032, 60 Jahre inkl. Ersatz)' },
     { k: 'Betrieb', v: betrStr, u: 'kg CO₂-eq/m² EBF·a', tip: 'THG Betrieb pro Jahr und m² EBF: Endenergie × Treibhausgaskoeffizient, abzüglich PV-Eigenverbrauch (Rechenhilfe SIA 390/1)' }];
@@ -343,7 +343,7 @@ function thgPart(P, f, data, T, M, ref, locked, bd) {
   const BR = [...agg].map(([name, v]) => ({ name, v })).filter(x => Math.abs(x.v) > 0.0005);
   const mxB = Math.max(0.01, ...BR.map(x => Math.abs(x.v))) * 1.08, wholeB = wholeShares(BR.map(x => Math.max(0, x.v)));
   const ovBetr = { col: 'Energiedienstleistung', unit: 'kg', shareLabel: 'Anteil', shareTip: 'Anteil an den Emissionen des Betriebs, ohne PV-Gutschrift', totShare: '', dUnit: 'Δ', max: FMT2(mxB), totalLabel: 'Total Betrieb', prevText: 'keine Vorphase', tot: hasBetr ? neg(thgB) : '–', dTot: '–', subs: [],
-    rows: BR.map(x => ({ code: '', name: x.name, icon: x.v < 0 ? 'assets/icons/zap.svg' : ebkpIcon('D'), cur: neg(x.v), share: x.v > 0 ? wholeB[BR.indexOf(x)] + ' %' : '', w: (Math.abs(x.v) / mxB * 100).toFixed(2) + '%', tx: null, bc: x.v < 0 ? '#8795a5' : null, d: '–', dp: '', tip: x.v < 0 ? 'Gutschrift: PV-Eigenverbrauch und Überschuss' : x.name, tab: 'betrieb' })), foot: 'kg CO₂-eq/m² EBF·a · keine Vorphase', unitTip: 'THG Betrieb in kg CO₂-eq/m² EBF·a', dTip: 'Für den Betrieb gibt es keine Vorphase', totTip: 'THG Betrieb: Energiedienstleistungen abzüglich PV-Gutschrift' };
+    rows: BR.map(x => ({ code: '', name: x.name, icon: x.v < 0 ? 'assets/icons/zap.svg' : ebkpIcon('D'), cur: neg(x.v), share: x.v > 0 ? wholeB[BR.indexOf(x)] + ' %' : '', w: (Math.abs(x.v) / mxB * 100).toFixed(2) + '%', tx: null, bc: x.v < 0 ? 'var(--bar-credit)' : null, d: '–', dp: '', tip: x.v < 0 ? 'Gutschrift: PV-Eigenverbrauch und Überschuss' : x.name, tab: 'betrieb' })), foot: 'kg CO₂-eq/m² EBF·a · keine Vorphase', unitTip: 'THG Betrieb in kg CO₂-eq/m² EBF·a', dTip: 'Für den Betrieb gibt es keine Vorphase', totTip: 'THG Betrieb: Energiedienstleistungen abzüglich PV-Gutschrift' };
 
   // Prüfung: Zusammenfassung; a Hauptgruppe is flagged when it deviates from the Vorphase by limit % and 0.1 kg
   const flagged = listG.map(gRow).filter(r => r.fl).map(r => r.code);
@@ -383,7 +383,7 @@ function dataForm(kind, P, data, project, user) {
   const sn = k => num((P.sia || {})[k]) || 0;
   const ref = { GSF: sn('GSF'), GF: sn('GF'), FAW: sn('FAW'), FB: sn('FB'), BUF: sn('BUF'), NF: sn('HNF') + sn('NNF'), EBF: sn('EBF') };
   const step = f.step, locked = step >= LOCKED_FROM, rejected = !!f.rejected;
-  const bd = miss => (!locked && miss ? '#ffa39e' : '#d9d9d9');
+  const bd = miss => (!locked && miss ? 'var(--rose-line)' : 'var(--line-2)');
   const status = X.overdue && step <= 1 && !rejected ? 'Überfällig' : statusOfStep(step, rejected);
   const reviewer = X.reviewerName;
   const C = isTHG ? thgPart(P, f, data, T, M, ref, locked, bd) : costPart(kind, P, f, data, T, M, ref, locked, bd);
@@ -391,7 +391,7 @@ function dataForm(kind, P, data, project, user) {
 
   const noSrc = isTHG && !C.nSrc;                                        // an Ökobilanz without any Emissionsquelle is not complete, whatever the Betrieb shows
   const filled = fields - missing, compPct = fields ? Math.round(filled / (fields + (noSrc ? 1 : 0)) * 100) : 0;
-  const comp = { label: 'Vollständigkeit', tip: isTHG ? 'Erfasste von verlangten Werten: Referenzgrösse und Kennwert je Emissionsquelle, Nutzenergie, Anteil und Nutzungsgrad je Energiedienstleistung, PV-Ertrag und Eigenverbrauch' : 'Erfasste von verlangten Werten: Betrag je Hauptgruppe oder Menge und Kosten je Kostenelement', pct: compPct + ' %', w: compPct + '%', bar: missing || !fields || noSrc ? '#d48806' : '#2f7d63',   // w and bar: progress of the Erfassung bar
+  const comp = { label: 'Vollständigkeit', tip: isTHG ? 'Erfasste von verlangten Werten: Referenzgrösse und Kennwert je Emissionsquelle, Nutzenergie, Anteil und Nutzungsgrad je Energiedienstleistung, PV-Ertrag und Eigenverbrauch' : 'Erfasste von verlangten Werten: Betrag je Hauptgruppe oder Menge und Kosten je Kostenelement', pct: compPct + ' %', w: compPct + '%', bar: missing || !fields || noSrc ? 'var(--amber)' : 'var(--ok)',   // w and bar: progress of the Erfassung bar
     text: noSrc ? `Noch keine Emissionsquellen erfasst${C.missB ? ` · Betrieb: ${missingText(C.missB)}` : ''}` : !fields || (step === 0 && missing) ? 'Noch keine Werte erfasst' : missing ? `${filled} von ${fields} Werten erfasst · ${missing === 1 ? '1 fehlt' : `${missing} fehlen`}` : `Alle ${fields} Werte erfasst` };
   // step 0: nobody has entered a value yet (the first input starts the Erfassung)
   const open = C.open || (step === 0 && missing ? { text: 'Noch keine Werte erfasst. Die Erfassung ist offen.', btn: 'Erfassung öffnen', tab: 'erfassung' }
@@ -415,7 +415,7 @@ function dataForm(kind, P, data, project, user) {
     steps: stepRows(D.steps, step, f.dates, rejected), next: nextStep(step, T.target, reviewer, open),
     kpis: C.kpis, comp, meta, people: peopleShort(people, X.peopleList), peopleRows: peopleRows(people, X.peopleList), docs: docRows(X.docs), hist: histRows(people, [...X.history, ...f.events]),
     ov: T.ov, subtotals: C.subtotals, chart: C.chart, tz: C.tz, headShared: C.headShared, betr: C.betr, ovList: C.ovList, ovBetr: C.ovBetr,
-    erf: { tableTitle: T.tableTitle, totalLabel: T.totalLabel, missingOnly: !!f.missingOnly, importItems: T.importItems, inputBg: locked ? '#f3f4f6' : '#fff', ...C.erf },
+    erf: { tableTitle: T.tableTitle, totalLabel: T.totalLabel, missingOnly: !!f.missingOnly, importItems: T.importItems, inputBg: locked ? 'var(--surface-2)' : 'var(--white)', ...C.erf },
     bar, devPct: T.devPct || DEV_PCT, summ, manual, rv, handover: { ziel: T.ziel, value: C.handoverValue, status: handoverStatus(step, f.dates[6]) }, canTransfer: step === 5 && (!user || !!user.internal),   // the BBL hands over to the target system
     missing, fields, missE: C.missE, missB: C.missB, total: C.total, bw: C.bw, groups: C.groups, endwert: C.endwert, endwertStr: C.endwertStr, nSrc: C.nSrc,
     submitDetail: C.submitDetail,
@@ -450,9 +450,9 @@ export function planForm(plan, data, user) {
   });
   const tot = key => cats.reduce((a, c) => a + c[key], 0);
   const catTot = { ratio: `${r ? tot('ok') : '–'} / ${tot('n')}`, w: r ? String(tot('nw')) : '–', e: r ? String(tot('ne')) : '–' };
-  const sia = plan.siaRows.map((x, i) => ({ ab: x.abbr, name: x.label, val: x.value, share: x.share, tip: x.tip, bg: i % 2 ? '#fafbfc' : '#fff', fw: x.sum ? 600 : 400 }));
+  const sia = plan.siaRows.map((x, i) => ({ ab: x.abbr, name: x.label, val: x.value, share: x.share, tip: x.tip, bg: i % 2 ? 'var(--surface-1)' : 'var(--white)', fw: x.sum ? 600 : 400 }));
   const compW = r ? passed / total * 100 : 0;
-  const comp = { label: 'Prüfregeln', tip: 'Bestandene Prüfregeln der CAD-Richtlinie BBL V1.0; darunter die Zahl der Meldungen. Fehler sperren das Einreichen, Warnungen nicht', pct: r ? `${passed} / ${total}` : '–', w: compW + '%', bar: errors ? '#cf1322' : '#2f7d63', text: r ? `${errors} Fehler · ${warnings} Warnungen` : 'Noch keine DWG-Datei geprüft' };
+  const comp = { label: 'Prüfregeln', tip: 'Bestandene Prüfregeln der CAD-Richtlinie BBL V1.0; darunter die Zahl der Meldungen. Fehler sperren das Einreichen, Warnungen nicht', pct: r ? `${passed} / ${total}` : '–', w: compW + '%', bar: errors ? 'var(--rose)' : 'var(--ok)', text: r ? `${errors} Fehler · ${warnings} Warnungen` : 'Noch keine DWG-Datei geprüft' };
   const kpis = [{ k: 'Räume mit AOID', v: r ? String(plan.aoidCount) : '–', u: plan.aoidCount === plan.roomCount || !r ? 'Raumpolygone' : `von ${plan.roomCount} Raumpolygonen`, tip: 'Geschlossene Polylinien auf R_RAUMPOLYGON mit einer eindeutigen AOID auf R_AOID' },
     { k: 'Geschossfläche GF', v: k && k.gf != null ? FMT1(k.gf) : '–', u: 'm²', tip: 'Fläche des Geschosspolygons auf R_GESCHOSSPOLYGON' },
     { k: 'Energiebezugsfläche EBF', v: plan.ebfRow.value.replace(' m²', ''), u: 'm² · SIA 380/1', tip: `Pflichtangabe für die Ökobilanz. ${plan.ebfRow.tip}` }];

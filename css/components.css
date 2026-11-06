@@ -13,7 +13,7 @@
 /* ant-btn (CDE Bund Tailwind override): 28px, 12px/600, radius 4px */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 28px; border-radius: var(--radius); padding: 0 12px; font-size: 12px; font-weight: 600; white-space: nowrap; border: 1px solid var(--line); background: #fff; color: var(--navy); line-height: 1; transition: color .2s, background-color .2s, border-color .2s; }
 .btn:hover { border-color: var(--navy-hover); color: var(--navy-hover); }
-.btn-primary { background: var(--navy-2); color: #fff; border-color: var(--navy-2); }
+.btn-primary { background: var(--navy); color: #fff; border-color: var(--navy); }
 .btn-primary:hover { background: var(--navy-hover); border-color: var(--navy-hover); color: #fff; }
 .btn-secondary { background: #fff; color: var(--navy); border-color: var(--line); }
 .btn-sm { height: 22px; padding: 0 8px; font-size: 12px; }
@@ -46,12 +46,12 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .search-wrap { display: flex; min-width: 0; max-width: 100%; }   /* field + button stay one unit when a toolbar wraps */
 .search { height: 28px; background: #fff; border: 1px solid var(--line-2); border-radius: 4px 0 0 4px; font-size: 12px; color: var(--placeholder); display: flex; align-items: center; padding: 0 8px; max-width: 100%; transition: border-color .3s; }
-.search:hover { border-color: #21485c; }
-.search-btn { width: 28px; height: 28px; background: var(--navy-2); margin-left: -10px; border-radius: 0 4px 4px 0; display: flex; align-items: center; justify-content: center; flex: none; }
+.search:hover { border-color: var(--navy-border); }
+.search-btn { width: 28px; height: 28px; background: var(--navy); margin-left: -10px; border-radius: 0 4px 4px 0; display: flex; align-items: center; justify-content: center; flex: none; }
 .filter-btn { display: inline-flex; gap: 6px; align-items: center; height: 28px; background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 0 12px; font-size: 12px; font-weight: 600; color: var(--navy); white-space: nowrap; transition: border-color .2s, color .2s; }
 .filter-btn:hover { border-color: var(--navy-hover); color: var(--navy-hover); }
 .filter-field { display: inline-flex; justify-content: space-between; align-items: center; gap: 6px; height: 28px; background: #fff; border: 1px solid var(--line-2); border-radius: 4px; padding: 0 8px; font-size: 12px; color: var(--placeholder); transition: border-color .3s; }
-.filter-field:hover { border-color: #21485c; }
+.filter-field:hover { border-color: var(--navy-border); }
 
 /* ---- Grid tables (div-based, as in the design) ---- */
 .table { background: #fff; box-shadow: var(--shadow-1); border-radius: var(--radius); overflow: hidden; }
@@ -97,7 +97,7 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 .ant-table-striped .ant-row:nth-child(odd) { background: var(--row-alt); }
 .ant-table-striped .ant-row:hover { background: var(--row-hover); }
 .ant-empty { padding: 32px 0; }
-.grid-row { display: grid; gap: 0 10px; padding: 0 12px; height: 28px; align-items: center; font-size: 12.5px; border-bottom: 1px solid var(--line-6); transition: background-color .3s; }
+.grid-row { display: grid; gap: 0 10px; padding: 0 12px; height: 28px; align-items: center; font-size: 12.5px; border-bottom: 1px solid var(--line-4); transition: background-color .3s; }
 .grid-row:hover { background: var(--row-hover) !important; }
 .code { font-family: var(--mono); font-size: 12px; }
 
@@ -122,15 +122,15 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 
 /* ---- Forms ---- */
 .field-label { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-.req { color: var(--req); }
+.req { color: var(--red-2); }
 .field { height: 28px; border: 1px solid var(--line-2); border-radius: 4px; display: flex; align-items: center; gap: 6px; padding: 0 7px; font-size: 12px; background: #fff; transition: border-color .3s; }
-.field:hover { border-color: #21485c; }
+.field:hover { border-color: var(--navy-border); }
 .field-readonly { background: #f5f5f5; color: var(--muted); }
 .field-readonly:hover { border-color: var(--line-2); }
 .textarea { border: 1px solid var(--line-2); border-radius: 4px; padding: 4px 7px; font-size: 12px; color: var(--placeholder); background: #fff; }
 .text-input { height: 28px; border: 1px solid var(--line-2); border-radius: 4px; padding: 0 7px; font-size: 12px; background: #fff; outline: none; transition: border-color .3s, box-shadow .3s; }
-.text-input:hover { border-color: #21485c; }
-.text-input:focus { border-color: #21485c; box-shadow: 0 0 0 2px var(--primary-ring); }
+.text-input:hover { border-color: var(--navy-border); }
+.text-input:focus { border-color: var(--navy-border); box-shadow: 0 0 0 2px var(--primary-ring); }
 
 /* checkbox / radio / toggle (custom, keyboard accessible) */
 .checkbox { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; font-size: 13px; outline: none; border-radius: 3px; }
@@ -167,7 +167,7 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 .dialog-title { font-size: 16px; font-weight: 600; }
 .dialog-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 .dialog-close { background: none; border: 0; padding: 4px; display: inline-flex; border-radius: 3px; }
-.dialog-close:hover { background: var(--line-5); }
+.dialog-close:hover { background: var(--line-4); }
 .dialog-body { padding: 22px 24px; display: flex; flex-direction: column; gap: 20px; }
 .dialog-foot { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding: 14px 24px; border-top: 1px solid var(--line-4); }
 
@@ -182,7 +182,7 @@ button.filter-btn { font-family: inherit; cursor: pointer; }
 .pager-btn.is-disabled { cursor: not-allowed; color: #d9d9d9; }
 .pager-btn.is-disabled:hover { border-color: var(--line-2); }
 .pager-size { padding: 0 8px; cursor: default; }
-.pager-size:hover { border-color: #21485c; color: inherit; }
+.pager-size:hover { border-color: var(--navy-border); color: inherit; }
 
 /* ---- Bars (cost comparison) ---- */
 @media (max-width: 479.98px) { .meta-row, .meta-row-wide { grid-template-columns: 130px minmax(0, 1fr); } }

@@ -203,7 +203,7 @@ test('THG-32: Emissionsquellen (Erstellung), Betrieb, Zielwerte SIA 390/1 and th
   assert.equal(T('basis').val, 'KBOB Version 9.0 · SIA 2032:2020'); assert.equal(T('strom').val, 'Wasserkraft 100 % (Pflichtenheft BBL)'); assert.equal(T('anteile').val, '100 %'); assert.ok(T('ebf').val.endsWith(' m²'));
   // Übersicht lists (design 05.11.2026) and the flagged deviation in the Zusammenfassung
   assert.equal(thg.ovList.rows.length, 6); assert.deepEqual(thg.ovList.rows.map(r => r.code), ['B', 'C', 'D', 'E', 'F', 'G']); assert.equal(thg.ovList.rows[2].d, '+0.4'); assert.ok(thg.ovList.rows.every(r => r.dw === undefined && r.dfg === undefined), 'plain values: no conditional colour or weight'); assert.equal(thg.ovList.tot, '8.7'); assert.equal(thg.ovList.dTot, '+0.5'); assert.ok(thg.ovList.rows[2].tx && thg.ovList.rows[0].icon === 'assets/ebkp/B.svg');
-  assert.equal(thg.ovBetr.rows.length, 9); assert.equal(thg.ovBetr.rows[8].name, 'Photovoltaik (Gutschrift)'); assert.ok(thg.ovBetr.rows[8].cur.startsWith('−') && thg.ovBetr.rows[8].bc === '#8795a5'); assert.equal(thg.ovBetr.rows[1].name, 'Warmwasser'); assert.equal(thg.ovBetr.rows[1].cur, '0.15', 'both Warmwasser carriers add up'); assert.equal(thg.ovBetr.tot, '0.52');
+  assert.equal(thg.ovBetr.rows.length, 9); assert.equal(thg.ovBetr.rows[8].name, 'Photovoltaik (Gutschrift)'); assert.ok(thg.ovBetr.rows[8].cur.startsWith('−') && thg.ovBetr.rows[8].bc === 'var(--bar-credit)'); assert.equal(thg.ovBetr.rows[1].name, 'Warmwasser'); assert.equal(thg.ovBetr.rows[1].cur, '0.15', 'both Warmwasser carriers add up'); assert.equal(thg.ovBetr.tot, '0.52');
   assert.equal(T('prev').val, 'ab 15 % bei D', 'Technik deviates 18 % from SIA 31, above the 15 % threshold of the Ökobilanz'); assert.equal(T('prev').res, 'prüfen', 'a deviation is for the reviewer to judge'); assert.equal(T('prev').begr, undefined, 'plain rows only');
   // Betrieb rows on one line; Endenergie and Koeffizient are derived and can be replaced by an own value
   assert.equal(thg.betr.rows[0].label, 'Raumwärme'); assert.equal(thg.betr.rows[1].label, 'Warmwasser · Wärmepumpe Sole/Wasser'); assert.ok(!thg.betr.rows[0].endOwn && thg.betr.rows[0].endStr === '5.5' && thg.betr.rows[0].kStr === '0.012');
@@ -568,7 +568,7 @@ test('plans: Nutzungsart of the rooms (mock of the Raumtabelle CAD.A01), DIN 277
   assert.deepEqual(d.economy.map(r => `${r.abbr} ${r.value}`), ['NGF / GF 0.90', 'KF / GF 0.10', 'NF / NGF 0.79', 'HNF / NGF 0.71']);
   // ring: one label per segment, the labels of one side keep 18 px distance and stay inside the box
   const c = d.donut.callouts;
-  assert.deepEqual(c.map(x => x.label), ['HNF', 'NNF', 'VF', 'FF', 'KF']); assert.equal(c[0].pct, '64 %'); assert.ok(d.donut.gradient.startsWith('conic-gradient(#f4b6b6 0.00% ') && d.donut.label.includes('HNF 64 %'));
+  assert.deepEqual(c.map(x => x.label), ['HNF', 'NNF', 'VF', 'FF', 'KF']); assert.equal(c[0].pct, '64 %'); assert.ok(d.donut.gradient.startsWith('conic-gradient(var(--sia-hnf) 0.00% ') && d.donut.label.includes('HNF 64 %'));
   for (const side of [true, false]) { const ys = c.filter(x => x.right === side).map(x => x.yPx).sort((p, q) => p - q); assert.ok(ys.every((y, i) => y >= 8 && y <= 192 && (!i || y - ys[i - 1] >= 18 - 1e-9)), `labels ${side ? 'right' : 'left'}: ${ys.join(', ')}`); }
   assert.equal(donutOf([]), null); assert.equal(donutOf([['HNF', 5]]).callouts[0].pct, '100 %');
   // the labels of the ring are whole percentages that add up to 100 (largest remainder)
@@ -665,4 +665,16 @@ test('plans: seeds match the plan-check engine (LibreDWG WebAssembly under Node)
   await assert.rejects(planSession.checkFile('T', fileOf(Buffer.from('kein DWG, nur Text'.repeat(20)), 'plan.dwg')));
   assert.equal(planSession.get(first.key), first.entry, 'the readable drawing is still in the session'); assert.equal(planSession.get(first.key).status, 'ready');
   await assert.rejects(planSession.checkFile('T', fileOf(Buffer.from('kein DWG'.repeat(40)), 'anderer.dwg'))); assert.equal(planSession.get('upload:T:anderer.dwg'), null, 'a failed first check leaves no entry');
+});
+
+test('design tokens: the form surfaces use tokens only, every token they use exists', () => {
+  const FORM_FILES = ['css/form.css', 'css/plan.css', 'css/views-b.css', 'css/views-c.css', 'js/views/form.js', 'js/views/plan.js', 'js/views/s03c.js', 'js/views/s03d.js', 'js/model/form.js', 'js/model/plan.js', 'js/model/import.js'];
+  const tokens = readFileSync(join(ROOT, 'css/tokens.css'), 'utf8'), defined = new Set([...tokens.matchAll(/(--[\w-]+)\s*:/g)].map(m => m[1]));
+  for (const f of FORM_FILES) {
+    const src = readFileSync(join(ROOT, f), 'utf8');
+    assert.deepEqual([...src.matchAll(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b/g)].map(m => m[0]).filter(h => h !== '#000'), [], `${f}: a colour literal that should be a token (css/tokens.css)`);
+    const used = [...src.matchAll(/var\((--[\w-]+)/g)].map(m => m[1]).filter(v => !/^--(x|y|w|h|n|fid)$/.test(v));
+    const missing = [...new Set(used)].filter(v => !defined.has(v) && !new RegExp(`${v}\s*:`).test(src));   // a custom property set in the file itself (--x of the bars) is fine
+    assert.deepEqual(missing, [], `${f}: tokens that are not defined`);
+  }
 });

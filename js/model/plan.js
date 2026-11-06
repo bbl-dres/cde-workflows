@@ -27,7 +27,7 @@ const SIA_TIP = { GF: 'Fläche des Geschosspolygons (R_GESCHOSSPOLYGON)', EBF: '
 // is not a SIA 416 area (SIA 380/1) and a required figure of every floor plan: it has its own block, a Prüfpunkt and gates the submission.
 const SIA_ROWS = [['GF', 'Geschossfläche', 'gf'], ['KF', 'Konstruktionsfläche', 'kf'], ['NGF', 'Nettogeschossfläche', 'ngf'], ['VF', 'Verkehrsfläche', 'vf'], ['FF', 'Funktionsfläche', 'ff'], ['NF', 'Nutzfläche', 'nf'], ['HNF', 'Hauptnutzfläche', 'hnf'], ['NNF', 'Nebennutzfläche', 'nnf']];
 const KPI_AREAS = ['HNF', 'NNF', 'NF', 'VF', 'FF', 'NGF', 'KF', 'GF'];
-const SIA_COLORS = { HNF: '#f4b6b6', NNF: '#ffd59b', VF: '#fff3a3', FF: '#b5d8f7', KF: '#d9d9d9' };
+const SIA_COLORS = { HNF: 'var(--sia-hnf)', NNF: 'var(--sia-nnf)', VF: 'var(--sia-vf)', FF: 'var(--sia-ff)', KF: 'var(--sia-kf)' };
 
 const area = v => (v == null ? '–' : fmtNum(v, Math.abs(v) >= 100 ? 0 : 1) + ' m²');
 const area1 = v => (v == null ? '–' : fmtNum(v, 1) + ' m²');           // area tables: one decimal
@@ -158,7 +158,7 @@ export function planModel(s, data) {
     const gateOk = !!result && errors === 0 && ebf != null;                 // no errors and the Energiebezugsfläche is known
     const hasRooms = rooms.length > 0, hasAreas = areas.length > 0;
     const passed = sum ? `${sum.passedRules}/${sum.totalRules}` : `–/${P.ruleCount}`;
-    const scoreC = !sum ? '#6b7480' : sum.score >= 90 ? '#2f7d63' : sum.score >= 60 ? '#8a6100' : '#9b2c44';
+    const scoreC = !sum ? 'var(--muted)' : sum.score >= 90 ? 'var(--ok)' : sum.score >= 60 ? 'var(--amber-text)' : 'var(--rose-text)';
     const fired = code => result ? result.issues.some(i => i.code === code) : false;
     const uploadedAt = own ? 'heute' : (result ? f.uploadedAt : null);
 
@@ -189,12 +189,12 @@ export function planModel(s, data) {
     });
     const segs = k ? [['HNF', k.hnf], ['NNF', k.nnf], ['VF', k.vf], ['FF', k.ff], ['KF', k.kf]].filter(([, v]) => v != null && v > 0) : [];
     const sections = k ? buildKpiSections({ ...k, hasRooms, hasAreaPolys: hasAreas }) : null;
-    const kpiRow = (r, i) => ({ abbr: r.abbr, label: r.label, value: area1(r.value), share: r.value == null || !r.total ? '–' : (r.value / r.total * 100).toFixed(1) + ' %', sum: ['GF', 'NGF', 'NF'].includes(r.abbr), bg: i % 2 ? '#fff' : '#f6f7f9' });
+    const kpiRow = (r, i) => ({ abbr: r.abbr, label: r.label, value: area1(r.value), share: r.value == null || !r.total ? '–' : (r.value / r.total * 100).toFixed(1) + ' %', sum: ['GF', 'NGF', 'NF'].includes(r.abbr), bg: i % 2 ? 'var(--white)' : 'var(--surface-2)' });
     // Kennzahlen sub-tab (design 06.11.2026): Flächen SIA 416 and DIN 277, Flächenkennzahlen, ring with callouts
     const kpiDash = sections ? {
       areas: KPI_AREAS.map(a => sections.areas.find(r => r.abbr === a)).filter(Boolean).map(kpiRow), din277: sections.din277.map(kpiRow),
       ebf: sections.areas.filter(r => r.abbr === 'EBF').map((r, i) => ({ ...kpiRow({ ...r, label: `Energiebezugsfläche${ebfNote ? ` (${ebfNote})` : ''}` }, i), sum: true })),
-      economy: sections.economy.map((r, i) => ({ abbr: r.abbr, label: r.label, value: formatRatio(r.ratio), bg: i % 2 ? '#fff' : '#f6f7f9' })),
+      economy: sections.economy.map((r, i) => ({ abbr: r.abbr, label: r.label, value: formatRatio(r.ratio), bg: i % 2 ? 'var(--white)' : 'var(--surface-2)' })),
       donut: donutOf(segs),
     } : null;
 

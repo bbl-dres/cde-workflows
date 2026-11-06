@@ -37,6 +37,7 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   wer die Lieferung hat, und «Erfassung wieder öffnen (Prototyp)» öffnet sie wieder (Werte bleiben). Prüfen (Checkliste, Freigeben,
   Zurückweisen) können nur BBL-Personen. Der Kommentar der Prüfung und ein Feld, in dem gerade getippt wird, bleiben beim
   Rendern erhalten. Dateien, die ein Import mitbringt (Tool-Export, Rechenhilfe, Excel), erscheinen unter Dokumente.
+- **Farben und Tokens**: die Formulare verwenden nur Tokens (`css/tokens.css`, Ebene «Datenformulare»); ein Test verhindert Hex-Werte in ihren Dateien. Gemeinsame Komponenten `.dot`, `.chip`, die Regelgruppe der Eingabefelder und der Geltungsbereich `.fx` (Linkfarbe, Feldrand); die CDE-Dateien sind nicht Teil davon (`docs/reviews/2026-11-06-design-review-farbe-kontrast.md`).
 - **Aufgaben**: ein Klick auf eine normale Aufgabe (Aufgabe, Modell-Issue) öffnet rechts das Detailfenster wie in der CDE Bund (Zugewiesen an, Aufgabe für, Fällig am, Status, Beschreibung, Kommentare); Datenformulare und Planlieferungen öffnen ihre Lieferung (`taskLink` in `js/views/parts/taskTable.js`, `js/views/taskDrawer.js`).
 - **Energiebezugsfläche (SIA 380/1)**: Pflichtangabe jedes Grundrisses (Kachel, eigener Block, Prüfpunkt, Übergabe, Bedingung zum Einreichen). Sie wird nach einem Entscheidungsbaum aus der Flächenart der Räume hergeleitet (`data/plans.json › ebf`, `ebfOf` in `js/model/plan.js`), bis die Pläne EBF-Polygone tragen.
 - **Excel: herunterladen, bearbeiten, importieren** (`js/excel.js`): «Excel herunterladen» schreibt die Werte eines Datenformulars
@@ -166,7 +167,7 @@ Code-Reviews mit Befunden und Status: `docs/reviews/` (zuletzt `2026-11-05-code-
   gegen die vorberechneten Ergebnisse (`tests/model.test.mjs`) sowie die Benutzeraktionen gegen den echten Store
   (Aufschlüsseln, Kostenelemente, Emissionsquellen, Importe, Workflow, Planprüfung), den Mock, den Store und die
   Formatierung (`tests/actions.test.mjs`), Rollen der Prüfung, Statusfilter und Suche der Planprüfung, Nutzungsarten, DIN 277 und Ring der Kennzahlen,
-  den Excel-Kreislauf (Blätter, Lesen, Vorschau, Übernehmen, Zurücksetzen, fremde Dateien) ohne Browser; 39 Tests, Node 22+.
+  den Excel-Kreislauf (Blätter, Lesen, Vorschau, Übernehmen, Zurücksetzen, fremde Dateien) ohne Browser; 40 Tests, Node 22+.
 - `node tests/e2e.mjs` fährt bei laufendem Server einen Headless-Browser (Edge/Chrome/Brave) durch die Anwendung: Startseite mit
   Karte, Bestellen-Drawer, Rollenwechsel, Benachrichtigungen, KV-32 (Übersicht, Erfassung mit Aufschlüsseln, Kostenelemente,
   Filter, Excel herunterladen, in der Mappe ändern und wieder importieren, Einreichen), THG-32 (Übersicht mit Zielwerten, Emissionsquellen, Betrieb, Tool-Export, Rechenhilfe, neue Quelle, Hersteller-Flag, Einreichen),

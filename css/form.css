@@ -24,7 +24,7 @@
 /* Prüfung: Zusammenfassung (Prüfpunkt · Lieferung · Ergebnis) */
 .sm-body { min-width: 560px; }
 .sm-th, .sm-tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 220px) 100px; gap: 0 16px; align-items: center; padding: 0 14px; }
-.sm-th { height: 34px; background: #fafafa; font-size: 12px; font-weight: 500; color: var(--text); border-bottom: 1px solid var(--line-4); }
+.sm-th { height: 34px; background: var(--surface-1); font-size: 12px; font-weight: 500; color: var(--text); border-bottom: 1px solid var(--line-4); }
 .sm-tr { min-height: 40px; padding-top: 6px; padding-bottom: 6px; font-size: 13px; border-bottom: 1px solid var(--line-4); text-wrap: pretty; cursor: help; }
 .sm-tr > span { min-width: 0; }
 @media (max-width: 639.98px) {                                          /* phones: the value moves under its Prüfpunkt, the result stays visible */
@@ -49,7 +49,7 @@
 .cat-th { height: 30px; font-size: 12px; color: var(--muted); }
 .cat-axis { display: flex; justify-content: space-between; }
 .cat-tr { min-height: 36px; font-size: 13px; }
-.cat-total { height: 38px; font-size: 13px; border-top: 1px solid #1f2d3f; margin-top: 4px; }
+.cat-total { height: 38px; font-size: 13px; border-top: 1px solid var(--ink); margin-top: 4px; }
 .rep-box { padding: 16px 12px; display: flex; justify-content: center; }
 @media (max-width: 639.98px) {                                          /* phones: the counts stay, the bar goes */
   .cat-th, .cat-tr, .cat-total { grid-template-columns: minmax(0, 1fr) 64px 60px 44px; gap: 6px; }
@@ -61,12 +61,12 @@
    and its values are text instead of fields. */
 .lock-wrap { position: relative; }
 .is-locked .lock-wrap { min-height: 300px; }
-.lock-veil { position: absolute; inset: 0; z-index: 3; background: rgba(229, 232, 237, .72); display: flex; justify-content: center; align-items: flex-start; padding: 96px 16px; border-radius: 0 0 6px 6px; cursor: not-allowed; }
-.lock-box { position: sticky; top: 96px; display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 340px; padding: 18px 22px; background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(16, 24, 40, .12); text-align: center; cursor: default; }
-.lock-ic { width: 44px; height: 44px; border-radius: 50%; background: #eef0f3; color: var(--navy); display: flex; align-items: center; justify-content: center; }
+.lock-veil { position: absolute; inset: 0; z-index: 3; background: var(--veil); display: flex; justify-content: center; align-items: flex-start; padding: 96px 16px; border-radius: 0 0 6px 6px; cursor: not-allowed; }
+.lock-box { position: sticky; top: 96px; display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 340px; padding: 18px 22px; background: var(--white); border-radius: 6px; box-shadow: 0 4px 12px rgba(16, 24, 40, .12); text-align: center; cursor: default; }
+.lock-ic { width: 44px; height: 44px; border-radius: 50%; background: var(--track); color: var(--navy); display: flex; align-items: center; justify-content: center; }
 .lock-title { font-size: 14px; font-weight: 600; color: var(--text); }
-.lock-text { font-size: 13px; color: #374151; text-wrap: pretty; }
-.is-locked .fm-table { background: #f6f7f9; }
+.lock-text { font-size: 13px; color: var(--text-3); text-wrap: pretty; }
+.is-locked .fm-table { background: var(--surface-2); }
 .is-locked .ent-input, .is-locked .ent-input[readonly], .is-locked .ent-text, .is-locked .ent-text[readonly] { border-color: transparent !important; background: transparent !important; box-shadow: none !important; color: var(--text); cursor: default; }
 .is-locked .ent-pos:hover, .is-locked .ent-group:hover { background-color: transparent; }
 .is-locked .ent:not(.ent-betr) .ent-input { padding-right: 13px; }   /* without the box the value lines up with the sums and totals of its column */
@@ -76,7 +76,7 @@
 
 /* Tables inside cards */
 .fm-table { overflow-x: auto; }
-.fm-th { display: grid; gap: 0 10px; height: 34px; align-items: center; padding: 0 14px; background: #fafafa; font-size: 12px; font-weight: 500; color: var(--text); border-bottom: 1px solid var(--line-4); }
+.fm-th { display: grid; gap: 0 10px; height: 34px; align-items: center; padding: 0 14px; background: var(--surface-1); font-size: 12px; font-weight: 500; color: var(--text); border-bottom: 1px solid var(--line-4); }
 .fm-th > * { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fm-tr { display: grid; gap: 0 10px; min-height: 38px; align-items: center; padding: 0 14px; font-size: 13px; border-bottom: 1px solid var(--line-4); font-variant-numeric: tabular-nums; transition: background-color .3s; }
 .fm-tr > * { min-width: 0; }
@@ -85,24 +85,24 @@
 .fw-400 { font-weight: 400; }
 
 /* Bar charts of the Übersicht (Kostenziele, Zielwerte SIA 390/1, bar lists) share one geometry: track and bar 8px high without
-   rounded corners (track #eef0f3, bar navy), marks and ticks 2px × 18px in --mark, 5px above and below the bar */
+   rounded corners (track var(--track), bar navy), marks and ticks 2px × 18px in --mark, 5px above and below the bar */
 /* Übersicht: target chart (Kostenziel / Zielwert) */
 .tgt-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
 .tgt-ist { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .tgt { position: relative; height: 64px; }
-.tgt-track { position: absolute; left: 0; right: 0; top: 28px; height: 8px; background: #eef0f3; }
-.tgt-band { position: absolute; top: 23px; height: 18px; background: #d9dfe7; }   /* accuracy band: as high as the marks, a neutral tone (green would read as «good») */
+.tgt-track { position: absolute; left: 0; right: 0; top: 28px; height: 8px; background: var(--track); }
+.tgt-band { position: absolute; top: 23px; height: 18px; background: var(--band); }   /* accuracy band: as high as the marks, a neutral tone (green would read as «good») */
 .tgt-bar { position: absolute; top: 28px; height: 8px; left: 0; background: var(--navy); }
 /* marks of the target charts: one neutral dark colour (amber, green and red would read as warning, success and error) and one
    line width; --x is the position in %, snapped to whole pixels so that every line is exactly 2px (a fractional position smears it) */
 .tgt-mark, .tgt-dot, .tz-mark, .tz-dot, .ov-tick { left: var(--x); left: round(var(--x), 1px); }
 .tgt-mark { position: absolute; top: 23px; height: 18px; width: 2px; margin-left: -1px; background: var(--mark); }
-.tgt-dot, .tgt-n { width: 16px; height: 16px; border-radius: 50%; background: var(--mark); color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.tgt-dot, .tgt-n { width: 16px; height: 16px; border-radius: 50%; background: var(--mark); color: var(--white); font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
 .tgt-dot { position: absolute; transform: translateX(-50%); }
 .tgt-axis { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; margin-top: -6px; }
 .tgt-legend { display: grid; grid-template-columns: 16px minmax(0, 1fr) 120px 100px; gap: 8px 12px; align-items: center; font-size: 13px; border-top: 1px solid var(--line-4); padding-top: 10px; font-variant-numeric: tabular-nums; }
 .tgt-legend > * { min-width: 0; }
-.tgt-bandsw { width: 16px; height: 8px; background: #d9dfe7; }
+.tgt-bandsw { width: 16px; height: 8px; background: var(--band); }
 
 /* Übersicht (design 05.11.2026): bar lists with the previous phase as a tick */
 .ov-body { padding: 8px 16px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 460px; }
@@ -112,47 +112,61 @@
 .ov-axis { display: flex; justify-content: space-between; }
 .ov-row { min-height: 42px; font-size: 13px; border-radius: 4px; }
 .ov-row.is-link { cursor: pointer; }
-.ov-row.is-link:hover, .ov-row.is-link:focus-visible { background: #f3f6f9; outline: none; }
+.ov-row.is-link:hover, .ov-row.is-link:focus-visible { background: var(--surface-sel); outline: none; }
 .ov-row.is-link:focus-visible { box-shadow: 0 0 0 2px var(--primary-ring); }
-.ov-ic { width: 28px; height: 28px; border-radius: 6px; background: #e2e8ee; color: var(--navy); display: flex; align-items: center; justify-content: center; }
+.ov-ic { width: 28px; height: 28px; border-radius: 6px; background: var(--band); color: var(--navy); display: flex; align-items: center; justify-content: center; }
 .ov-bar { position: relative; height: 18px; }
-.ov-track { position: absolute; left: 0; right: 0; top: 5px; height: 8px; background: #eef0f3; }
+.ov-track { position: absolute; left: 0; right: 0; top: 5px; height: 8px; background: var(--track); }
 .ov-fill { position: absolute; left: 0; top: 5px; height: 8px; background: var(--navy); }
 .ov-tick { position: absolute; top: 0; height: 18px; width: 2px; margin-left: -1px; background: var(--mark); }   /* Vorphase; position snapped like the target marks */
-.ov-total { height: 38px; font-size: 13px; border-top: 1px solid #1f2d3f; margin-top: 4px; }
+.ov-total { height: 38px; font-size: 13px; border-top: 1px solid var(--ink); margin-top: 4px; }
 .ov-sub { min-height: 36px; font-size: 13.5px; font-weight: 700; }
-.seg { display: inline-flex; border: 1px solid #d1d5db; border-radius: 4px; overflow: hidden; margin: 12px 16px 0; }
-.seg-btn { height: 26px; padding: 0 12px; border: 0; font-size: 12.5px; font-weight: 600; cursor: pointer; background: #fff; color: var(--navy); white-space: nowrap; }
-.seg-btn.is-on { background: var(--navy); color: #fff; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; margin: 12px 16px 0; }
+.seg-btn { height: 26px; padding: 0 12px; border: 0; font-size: 12.5px; font-weight: 600; cursor: pointer; background: var(--white); color: var(--navy); white-space: nowrap; }
+.seg-btn.is-on { background: var(--navy); color: var(--white); }
 .seg-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: -2px; }
 
 /* Übersicht: Verlauf (steps) and Beteiligte (short list) */
 .st-list { padding: 8px 8px 10px; display: flex; flex-direction: column; gap: 2px; }
 .st-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 6px 10px; align-items: start; padding: 7px 8px; border-radius: 4px; }
-.st-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
-.st-label { font-size: 13px; line-height: 20px; }
+/* dot: the step marker of the Verlauf and of the import dialog. States: todo (default), done, cur, err */
+.dot { width: 20px; height: 20px; flex: none; border-radius: 50%; border: 2px solid var(--line); background: var(--white); color: var(--muted); font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.dot-lg { width: 22px; height: 22px; font-size: 12px; font-weight: 400; }
+.dot.is-done { background: var(--navy); border-color: var(--navy); color: var(--white); }
+.dot.is-cur { border-color: var(--navy); color: var(--navy); }
+.dot.is-err { border-color: var(--rose); color: var(--rose); }
+.st-label { font-size: 13px; line-height: 20px; color: var(--muted); }
+.st-label.is-done { color: var(--text); }
+.st-label.is-cur { color: var(--navy); font-weight: 600; }
+.st-label.is-err { color: var(--rose); font-weight: 600; }
+.st-row.is-cur { background: var(--surface-sel); }
+/* chip: a small status label (import preview); variants neutral, changed, note, ignored */
+.chip { display: inline-block; font-size: 12px; line-height: 18px; border: 1px solid var(--line-3); border-radius: 999px; padding: 0 8px; white-space: nowrap; background: var(--surface-2); color: var(--muted); }
+.chip-changed { background: var(--amber-bg); border-color: var(--amber-line); color: var(--amber-dark); }
+.chip-note { background: var(--rose-bg-2); border-color: var(--rose-line); color: var(--rose-dark); }
+.chip-ignored { background: var(--white); border-color: var(--line); }
 .st-sub { font-size: 12px; line-height: 20px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .st-next { grid-column: 2 / 4; display: flex; flex-direction: column; gap: 8px; }
-.st-next-text { font-size: 12.5px; line-height: 1.45; color: #374151; }
+.st-next-text { font-size: 12.5px; line-height: 1.45; color: var(--text-3); }
 .pp-list { padding: 6px 14px 10px; display: flex; flex-direction: column; }
-.pp-row { display: flex; align-items: center; gap: 10px; min-height: 44px; border-bottom: 1px solid #f5f5f5; }
+.pp-row { display: flex; align-items: center; gap: 10px; min-height: 44px; border-bottom: 1px solid var(--line-4); }
 .pp-row:last-child { border-bottom: 0; }
 .pp-row .avatar { font-weight: 600; }
 .pp-name { font-size: 13px; }
 .pp-firm { font-size: 12px; color: var(--muted); }
-.pp-role { font-size: 12px; color: #374151; text-align: right; white-space: nowrap; }
+.pp-role { font-size: 12px; color: var(--text-3); text-align: right; white-space: nowrap; }
 
 /* Übersicht (DWG): Flächen SIA 416 and Prüfregeln nach Kategorie */
 
 /* Erfassung: Hauptgruppen with direct amount or detailed positions */
 .ent { min-width: 720px; }
-.ent-th { display: grid; height: 34px; align-items: center; background: #fafafa; font-size: 12px; font-weight: 500; color: var(--text); border-bottom: 1px solid var(--line-4); }
+.ent-th { display: grid; height: 34px; align-items: center; background: var(--surface-1); font-size: 12px; font-weight: 500; color: var(--text); border-bottom: 1px solid var(--line-4); }
 .ent-th > span, .ent-group > span, .ent-pos > span, .ent-total > span, .ent-subtotal > span { min-width: 0; padding: 0 10px; }
 .ent-th > span:first-child, .ent-total > span:first-child, .ent-subtotal > span:first-child, .ent-pos > span:first-child { padding-left: 14px; }
 .ent-th > span:last-child, .ent-group > span:last-child, .ent-pos > span:last-child, .ent-total > span:last-child, .ent-subtotal > span:last-child { padding-right: 14px; }
-.ent-group { display: grid; min-height: 42px; align-items: center; font-size: 13px; border-bottom: 1px solid #eceff2; transition: background-color .3s; }
+.ent-group { display: grid; min-height: 42px; align-items: center; font-size: 13px; border-bottom: 1px solid var(--line-3); transition: background-color .3s; }
 .ent-group.is-toggle { cursor: pointer; }
-.ent-group:hover { background: #eef1f4 !important; }
+.ent-group:hover { background: var(--surface-hover) !important; }
 .ent-code { padding: 0 6px 0 8px !important; display: flex; align-items: center; gap: 4px; font-weight: 600; }
 .ent-toggle { width: 22px; height: 22px; flex: none; border: 0; border-radius: 4px; background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
 .ent-toggle:hover { background: var(--line-3); }
@@ -161,34 +175,27 @@
 .ent-sub { font-size: 12px; color: var(--muted); }
 .ent-pos { display: grid; min-height: 40px; align-items: center; font-size: 13px; border-bottom: 1px solid var(--line-4); transition: background-color .3s; }
 .ent-pos:hover { background: var(--row-hover); }
-.ent-pos-code { padding-left: 34px !important; color: #374151; font-variant-numeric: tabular-nums; }
+.ent-pos-code { padding-left: 34px !important; color: var(--text-3); font-variant-numeric: tabular-nums; }
 .ent-cell-input { padding: 0 4px !important; }
 .ent-cell-input.pl6 { padding-left: 6px !important; }
-.ent-input { width: 100%; height: 28px; text-align: right; font-size: 13px; font-variant-numeric: tabular-nums; padding: 0 8px; border-radius: 4px; outline: none; border: 1px solid var(--line-2); background: #fff; transition: border-color .3s, box-shadow .3s; }
-.ent-input::placeholder { color: #b4242f; }
-.ent-input:hover { border-color: #21485c; }
-.ent-input:focus { border-color: #21485c !important; box-shadow: 0 0 0 2px var(--primary-ring); }
+.ent-input { width: 100%; height: 28px; text-align: right; font-size: 13px; font-variant-numeric: tabular-nums; padding: 0 8px; border-radius: 4px; outline: none; border: 1px solid var(--line-2); background: var(--white); transition: border-color .3s, box-shadow .3s; }
 .ent-input[readonly] { color: var(--muted); }
 .ent-input.is-calc { color: var(--muted); }                 /* derived value (Endenergie, Koeffizient); an own value is shown in the text colour */
 .ent-input.is-calc::placeholder { color: var(--muted); }
 .pr13 { padding-right: 13px !important; }                   /* aligns plain numbers with the text of the inputs above */
-.ent-text { width: 100%; height: 28px; font-size: 13px; padding: 0 8px; border-radius: 4px; outline: none; border: 1px solid var(--line-2); background: #fff; transition: border-color .3s, box-shadow .3s; }
+.ent-text { width: 100%; height: 28px; font-size: 13px; padding: 0 8px; border-radius: 4px; outline: none; border: 1px solid var(--line-2); background: var(--white); transition: border-color .3s, box-shadow .3s; }
 .ent-text::placeholder { color: var(--muted-2); }
-.ent-text:hover:not([readonly]) { border-color: #21485c; }
-.ent-text:focus:not([readonly]) { border-color: #21485c !important; box-shadow: 0 0 0 2px var(--primary-ring); }
 .ent-text[readonly] { color: var(--muted); }
-.ent-select { width: 100%; height: 28px; font-size: 12.5px; padding: 0 2px; border-radius: 4px; outline: none; border: 1px solid var(--line-2); background: #fff; color: var(--text); }
-.ent-select:hover:not([disabled]) { border-color: #21485c; }
-.ent-select:focus { border-color: #21485c !important; box-shadow: 0 0 0 2px var(--primary-ring); }
+.ent-select { width: 100%; height: 28px; font-size: 12.5px; padding: 0 2px; border-radius: 4px; outline: none; border: 1px solid var(--line-2); background: var(--white); color: var(--text); }
 .ent-select[disabled] { color: var(--muted); }
 /* Code control: the native select (readable list «D01 Elektroanlage») sits invisibly over a fixed-width code label */
 .ent-code-wrap { position: relative; display: inline-flex; width: 100%; max-width: 80px; height: 28px; }
-.ent-code-fake { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 4px; height: 28px; padding: 0 5px 0 7px; border: 1px solid var(--line-2); border-radius: 4px; background: #fff; font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.ent-code-fake { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 4px; height: 28px; padding: 0 5px 0 7px; border: 1px solid var(--line-2); border-radius: 4px; background: var(--white); font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
 .ent-code-wrap select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; margin: 0; cursor: pointer; }
-.ent-code-wrap:hover .ent-code-fake, .ent-code-wrap:focus-within .ent-code-fake { border-color: #21485c; }
+.ent-code-wrap:hover .ent-code-fake, .ent-code-wrap:focus-within .ent-code-fake { border-color: var(--navy-border); }
 .ent-code-wrap:focus-within .ent-code-fake { box-shadow: 0 0 0 2px var(--primary-ring); }
-.ent-code-wrap.is-missing .ent-code-fake { border-color: #ffa39e; color: #b4242f; font-weight: 400; }
-.ent-new { background: #fcfcfd; }
+.ent-code-wrap.is-missing .ent-code-fake { border-color: var(--rose-line); color: var(--rose-text); font-weight: 400; }
+.ent-new { background: var(--surface-1); }
 .ent-code-cell { grid-column: 1; padding-left: 14px !important; }
 .ent-src { min-height: 48px; }
 .ent-add { display: flex; align-items: center; min-height: 36px; padding: 0 14px 0 34px; border-bottom: 1px solid var(--line-4); }
@@ -197,30 +204,30 @@
 .ent-del { width: 26px; height: 26px; border: 0; border-radius: 4px; background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
 .ent-del:hover { background: var(--row-alt); }
 .ent-del:hover .ic { background: var(--rose-text) !important; }
-.hs-box { width: 16px; height: 16px; padding: 0; border-radius: 3px; border: 1px solid var(--faint); background: #fff; color: #fff; font-size: 11px; line-height: 14px; text-align: center; cursor: pointer; }
+.hs-box { width: 16px; height: 16px; padding: 0; border-radius: 3px; border: 1px solid var(--faint); background: var(--white); color: var(--white); font-size: 11px; line-height: 14px; text-align: center; cursor: pointer; }
 .hs-box.is-on { background: var(--navy); border-color: var(--navy); }
 .hs-box[disabled] { cursor: default; }
 .hs-box:not([disabled]):hover { border-color: var(--navy); }
 .center { text-align: center; }
 .ent-thg { min-width: 1000px; }
-.ent-total { display: grid; height: 40px; align-items: center; font-size: 13px; border-top: 1px solid #1f2d3f; font-variant-numeric: tabular-nums; }
+.ent-total { display: grid; height: 40px; align-items: center; font-size: 13px; border-top: 1px solid var(--ink); font-variant-numeric: tabular-nums; }
 .ent-subtotal { display: grid; min-height: 38px; align-items: center; font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
 /* Grundlagen der Ökobilanz */
 .thg-head { padding: 12px 14px 14px; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px 16px; }
 .thg-field { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; min-width: 0; }
-.thg-field > span { color: #374151; }
+.thg-field > span { color: var(--text-3); }
 .thg-field .ent-select, .thg-field .ent-text { height: 30px; font-size: 13px; }
 
 /* Import dropdown */
 .dd { position: relative; }
-.dd-menu { position: absolute; right: 0; top: 32px; z-index: 61; background: #fff; border-radius: 4px; box-shadow: var(--shadow-pop); padding: 4px; min-width: 230px; display: flex; flex-direction: column; }
-.dd-item { text-align: left; background: #fff; border: 0; padding: 8px 10px; font-size: 13px; font-weight: 400; color: var(--text); cursor: pointer; border-radius: 3px; white-space: nowrap; }
+.dd-menu { position: absolute; right: 0; top: 32px; z-index: 61; background: var(--white); border-radius: 4px; box-shadow: var(--shadow-pop); padding: 4px; min-width: 230px; display: flex; flex-direction: column; }
+.dd-item { text-align: left; background: var(--white); border: 0; padding: 8px 10px; font-size: 13px; font-weight: 400; color: var(--text); cursor: pointer; border-radius: 3px; white-space: nowrap; }
 .dd-item:hover { background: var(--row-alt); }
 a.dd-item { display: block; text-decoration: none; }                /* a link among the menu buttons (guideline PDF) */
 .dd-sep { border-bottom: 1px solid var(--line-4); border-radius: 3px 3px 0 0; }
 
 /* Submit bar at the end of the Erfassung (sticky) */
-.submit-bar { position: sticky; bottom: 0; z-index: 4; background: #fff; border-radius: 6px; box-shadow: 0 -6px 16px -10px rgba(16,24,40,.25), var(--shadow-1); padding: 12px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+.submit-bar { position: sticky; bottom: 0; z-index: 4; background: var(--white); border-radius: 6px; box-shadow: 0 -6px 16px -10px rgba(16,24,40,.25), var(--shadow-1); padding: 12px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
 .submit-comp { display: flex; flex-direction: column; gap: 5px; width: 220px; }
 .submit-reason { font-size: 12.5px; color: var(--muted); }
 .submit-bar .checkbox { align-items: center; }
@@ -232,17 +239,16 @@ a.dd-item { display: block; text-decoration: none; }                /* a link am
 /* Ökobilanz: Betrieb (Energiedienstleistungen nach Rechenhilfe SIA 390/1) */
 .ent-betr { min-width: 900px; }
 .thg-field .ent-text.right { text-align: right; font-variant-numeric: tabular-nums; }
-.thg-field .ent-text::placeholder { color: #b4242f; }
 
 /* Übersicht (THG-32): Zielwerte SIA 390/1, three rows (Erstellung, Betrieb, Zusatzanforderung) with the Richtwerte as marks */
 .tz-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; }
 .tz-row, .tz-axis { display: grid; grid-template-columns: 150px minmax(0, 1fr) 56px; gap: 0 14px; align-items: center; }
 .tz-label { font-size: 13px; font-weight: 500; }
 .tz-track-wrap { position: relative; height: 62px; }
-.tz-track { position: absolute; left: 0; right: 0; top: 28px; height: 8px; background: #eef0f3; }
+.tz-track { position: absolute; left: 0; right: 0; top: 28px; height: 8px; background: var(--track); }
 .tz-bar { position: absolute; top: 28px; height: 8px; left: 0; background: var(--navy); }
 .tz-mark { position: absolute; top: 23px; height: 18px; width: 2px; margin-left: -1px; background: var(--mark); }
-.tz-dot { position: absolute; top: 5px; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; background: var(--mark); color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.tz-dot { position: absolute; top: 5px; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; background: var(--mark); color: var(--white); font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
 .tz-dot.is-below { top: 43px; }
 .tz-ist { font-size: 15px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
 .tz-axis { font-size: 11.5px; color: var(--muted); margin-top: -6px; font-variant-numeric: tabular-nums; }
@@ -265,3 +271,16 @@ a.dd-item { display: block; text-decoration: none; }                /* a link am
   .card-head { flex-wrap: wrap; }
   .card-head .card-hint { flex-basis: 100%; }   /* long hints (Zielwerte, Prüfung) go below the title on the phone */
 }
+
+/* ---- Entry controls: one rule set (hover, focus, placeholder) for every field of the form surfaces ---- */
+.fx :is(.ent-input, .ent-text, .ent-select, .plan-search, .rv-textarea) { border-color: var(--field-border); }
+:is(.ent-input, .ent-text:not([readonly]), .ent-select:not([disabled]), .plan-search, .text-input, .rv-textarea):hover { border-color: var(--navy-border); }
+:is(.ent-input, .ent-text:not([readonly]), .ent-select, .plan-search, .rv-textarea):focus { border-color: var(--navy-border) !important; box-shadow: 0 0 0 2px var(--primary-ring); outline: none; }
+.fx :is(.ent-input, .ent-text, .rv-textarea, .plan-search)::placeholder { color: var(--muted); }
+.fx .ent-input::placeholder, .fx .thg-field .ent-text::placeholder { color: var(--rose-text); }   /* «fehlt» */
+.fx .is-locked :is(.ent-input, .ent-text, .ent-select) { border-color: transparent; }
+/* links and disabled buttons on the form surfaces */
+.fx .btn-link, .fx .card-head-link, .fx a.dd-item { color: var(--link-text); }
+.fx .btn-link:hover { color: var(--navy); }
+.fx .btn[disabled] { color: var(--muted); }
+.is-locked .muted, .is-locked .fm-muted { color: var(--muted); }

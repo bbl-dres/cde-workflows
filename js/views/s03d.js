@@ -3,32 +3,32 @@ import { html, icon, radio, raw } from '../ui.js';
 // 03d Excel importieren: Vorschau – step 2/3 of the import dialog (preview, mode, apply, done state).
 const COLS = 'grid-template-columns:60px minmax(160px,1fr) 100px 120px 110px 170px';
 
-const step = (s, label) => html`<span class="imp-step" style="font-weight:${s.w};color:${s.t}"><span class="imp-step-dot" style="border-color:${s.bd};background:${s.bg};color:${s.c}">${s.sym}</span>${label}</span>`;
+const step = (s, label) => html`<span class="imp-step is-${s.state}"><span class="dot dot-lg is-${s.state}">${s.sym}</span>${label}</span>`;
 
 export default {
   overlay(ctx) {
     const { vm } = ctx;
     return html`<div class="overlay" style="padding-top:70px">
-      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="imp-title" style="width:900px">
+      <div class="dialog fx" role="dialog" aria-modal="true" aria-labelledby="imp-title" style="width:900px">
         <div class="dialog-head">
           <div><div class="dialog-title" id="imp-title">Excel importieren</div><div class="dialog-sub">${vm.impFile} · ${vm.impSheet}</div></div>
-          <button type="button" class="dialog-close" data-action="impClose" aria-label="Dialog schliessen">${icon('x', 18, '#5b6573')}</button>
+          <button type="button" class="dialog-close" data-action="impClose" aria-label="Dialog schliessen">${icon('x', 18, 'var(--muted)')}</button>
         </div>
         <div class="imp-steps">${step(vm.impStep1, 'Datei wählen')}${step(vm.impStep2, 'Vorschau prüfen')}${step(vm.impStep3, 'Übernehmen')}</div>
 
         ${vm.impOpen ? html`
           <div class="rel flex items-center gap-8" style="padding:16px 24px 0">
             ${ctx.marker(1, 'top:6px;left:2px')}
-            ${vm.impTabs.map(t => html`<button type="button" class="imp-tab" data-action="impFilter" data-arg="${t.key}" aria-pressed="${t.active ? 'true' : 'false'}" style="border-color:${t.bd};background:${t.bg};color:${t.c}">${t.label}<span style="font-size:12px;font-weight:400;opacity:.8">${t.count}</span></button>`)}
+            ${vm.impTabs.map(t => html`<button type="button" class="imp-tab" data-action="impFilter" data-arg="${t.key}" aria-pressed="${t.active ? 'true' : 'false'}">${t.label}<span class="imp-tab-n">${t.count}</span></button>`)}
           </div>
           <div class="imp-table">
             <div class="imp-thead" style="${COLS}"><span>Code</span><span>Bezeichnung (Datei)</span><span class="right">${vm.impColQ}</span><span class="right">${vm.impColV}</span><span>Status</span><span>Bemerkung</span></div>
-            ${vm.impRows.map(r => html`<div class="imp-trow" style="${COLS};background:${r.bg}">
+            ${vm.impRows.map(r => html`<div class="imp-trow${r.rowCls}" style="${COLS}">
               <span class="code">${r.code}</span>
               <span class="ellipsis">${r.name}</span>
               <span class="right">${r.fq}</span>
               <span class="right ellipsis" style="font-weight:${r.vW}" title="${r.fv}">${r.fv}</span>
-              <span><span class="imp-st" style="border-color:${r.stBd};background:${r.stBg};color:${r.stC}">${r.st}</span></span>
+              <span><span class="chip chip-${r.chip}">${r.st}</span></span>
               <span class="fs-12 muted ellipsis" title="${r.note}">${r.note}</span>
             </div>`)}
             ${vm.impRows.length === 0 ? html`<div class="muted fs-13" style="padding:18px 14px">Keine Zeilen in dieser Ansicht.</div>` : ''}
@@ -40,7 +40,7 @@ export default {
           </div>`
         : html`
           <div class="imp-done">
-            ${icon('circle-check', 40, '#2f7d63')}
+            ${icon('circle-check', 40, 'var(--ok)')}
             <div class="fs-16 fw-600">${vm.impDoneText}</div>
             <div class="fs-13 muted" style="max-width:460px;line-height:1.5">Der Import ist im Verlauf protokolliert. Hinweise bleiben in der Erfassung markiert. Werte in <button type="button" class="btn-link" data-action="impGoto" data-arg="${ctx.link.delivery(ctx.route.params.code, 'erfassung')}">der Erfassung</button> und <button type="button" class="btn-link" data-action="impGoto" data-arg="${ctx.link.delivery(ctx.route.params.code, 'uebersicht')}">der Übersicht</button> sind aktualisiert.</div>
             ${vm.impCanUndo ? html`<button type="button" class="btn-link fs-13" style="margin-top:6px" data-action="impReset">Import zurücksetzen</button>` : ''}

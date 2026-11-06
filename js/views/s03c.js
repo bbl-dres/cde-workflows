@@ -7,26 +7,26 @@ export default {
   overlay(ctx) {
     const { vm } = ctx;
     return html`<div class="overlay" style="padding-top:110px">
-      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="imp-title" style="width:860px">
+      <div class="dialog fx" role="dialog" aria-modal="true" aria-labelledby="imp-title" style="width:860px">
         <div class="dialog-head">
           <div><div class="dialog-title" id="imp-title">Excel importieren</div><div class="dialog-sub">${vm.impCode} · ${vm.impTitle}</div></div>
-          <button type="button" class="dialog-close" data-action="impClose" aria-label="Dialog schliessen">${icon('x', 18, '#5b6573')}</button>
+          <button type="button" class="dialog-close" data-action="impClose" aria-label="Dialog schliessen">${icon('x', 18, 'var(--muted)')}</button>
         </div>
         <div class="imp-steps">
-          <span class="imp-step fw-600"><span class="imp-step-dot" style="border-color:var(--navy)">1</span>Datei wählen</span>
-          <span class="imp-step" style="color:#6b7480"><span class="imp-step-dot" style="border-color:#c9cfd6">2</span>Vorschau prüfen</span>
-          <span class="imp-step" style="color:#6b7480"><span class="imp-step-dot" style="border-color:#c9cfd6">3</span>Übernehmen</span>
+          <span class="imp-step is-cur"><span class="dot dot-lg is-cur">1</span>Datei wählen</span>
+          <span class="imp-step"><span class="dot dot-lg">2</span>Vorschau prüfen</span>
+          <span class="imp-step"><span class="dot dot-lg">3</span>Übernehmen</span>
         </div>
         <div class="dialog-body" style="gap:18px">
           <label class="imp-drop" data-drop="impFile">
-            ${icon('upload', 30, '#5b6573')}
+            ${icon('upload', 30, 'var(--muted)')}
             <div class="fs-14">Excel-Datei hierher ziehen oder <span class="btn-link">auswählen</span></div>
             <div class="fs-12 muted">.xlsx, max. 10 MB · wird im Browser gelesen, nichts wird hochgeladen</div>
             <input type="file" accept=".xlsx" class="vh" data-change="impFile" aria-label="Excel-Datei für ${vm.impCode} auswählen">
           </label>
           ${vm.impHasFile ? html`<div class="imp-file">
-            ${icon('file-spreadsheet', 18, '#2f7d63')}
-            <div class="flex-1"><strong>${vm.impFile}</strong> <span class="muted">· ${vm.impFileSize}</span><div class="fs-12" style="color:#1f4a3b">${vm.impIsSample ? 'Beispieldatei des Prototyps · ' : ''}${vm.impSheet} erkannt · ${vm.impRowsText}</div></div>
+            ${icon('file-spreadsheet', 18, 'var(--ok)')}
+            <div class="flex-1"><strong>${vm.impFile}</strong> <span class="muted">· ${vm.impFileSize}</span><div class="fs-12" style="color:var(--green-dark)">${vm.impIsSample ? 'Beispieldatei des Prototyps · ' : ''}${vm.impSheet} erkannt · ${vm.impRowsText}</div></div>
             ${vm.impIsSample ? '' : html`<button type="button" class="btn-link fs-125" data-action="impFileClear">Entfernen</button>`}
           </div>` : ''}
           <div class="imp-cols">
@@ -35,8 +35,8 @@ export default {
               <div class="fs-14 fw-600" style="margin-bottom:4px">Vorlage</div>
               <div class="fs-125 muted" style="line-height:1.5;margin-bottom:12px">${vm.impTplText}</div>
               <div class="flex-col gap-8 items-start">
-                <button type="button" class="btn btn-secondary btn-sm" style="padding:5px 12px" data-action="formExcel" data-form="${vm.impKind}" data-arg="leer">${icon('download', 14, '#3a4350')}Leere Vorlage ${vm.impCode} (.xlsx)</button>
-                <button type="button" class="btn btn-secondary btn-sm" style="padding:5px 12px" data-action="formExcel" data-form="${vm.impKind}">${icon('download', 14, '#3a4350')}Vorlage mit aktuellen Werten (.xlsx)</button>
+                <button type="button" class="btn btn-secondary btn-sm" style="padding:5px 12px" data-action="formExcel" data-form="${vm.impKind}" data-arg="leer">${icon('download', 14, 'var(--text-3)')}Leere Vorlage ${vm.impCode} (.xlsx)</button>
+                <button type="button" class="btn btn-secondary btn-sm" style="padding:5px 12px" data-action="formExcel" data-form="${vm.impKind}">${icon('download', 14, 'var(--text-3)')}Vorlage mit aktuellen Werten (.xlsx)</button>
               </div>
             </div>
             <div class="imp-box">

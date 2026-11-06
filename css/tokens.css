@@ -14,7 +14,7 @@
   --head-bg: #e5e7eb;       /* .vux-table th */
   --row-hover: #fafafa;     /* ant-table row hover */
   --row-alt: #f3f4f6;       /* .table-striped */
-  --row-alt-2: #f3f4f6;
+
   --field-bg: #f3f4f6;
   --sel-bg: #e7f5ff;        /* .table-selected-item */
   --nav-active: #d1d5db;    /* .active-link */
@@ -22,34 +22,33 @@
 
   /* text */
   --text: #262626;          /* rgba(0,0,0,.85) on white */
-  --text-2: #262626;
+
   --text-3: #374151;
   --muted: #656c7a;         /* gray-500, darkened a step: 4.8:1 on the alternating row background #f3f4f6 (AA) */
   --muted-2: #8c8c8c;       /* rgba(0,0,0,.45) */
   --faint: #9ca3af;
   --placeholder: #bfbfbf;
-  --disabled: #bfbfbf;
-  --icon: #374151;
+    --icon: #374151;
 
   /* lines */
   --line: #d1d5db;          /* buttons */
   --line-2: #d9d9d9;        /* fields */
   --line-3: #e5e7eb;
   --line-4: #f0f0f0;        /* ant separators */
-  --line-5: #f0f0f0;
-  --line-6: #f0f0f0;
+
+
 
   /* brand */
   --topbar: #344255;        /* measured */
   --navy: #10384f;          /* --primary-color */
   --mark: #374151;          /* marks of the target charts: neutral, not a status colour */
-  --navy-2: #10384f;        /* primary buttons */
+        /* primary buttons */
   --navy-hover: #0b2538;
   --primary-ring: rgba(16, 56, 79, .2);
   --red: #e94d65;           /* topbar badge, measured */
   --red-2: #ff3162;         /* ant-badge, dangerous buttons */
   --red-hover: #cc1044;     /* status-danger-dark (dangerous buttons hover) */
-  --req: #ff3162;
+
   --link: #2ba89f;
   --link-hover: #4cb5ab;
   --brand: #2ba89f;
@@ -58,7 +57,7 @@
   --marker: #c2410c;
 
   /* semantic (Ant tag palette + study) */
-  --green: #389e0d; --green-2: #2ba89f; --green-dark: #1f4a3b; --green-bg: #f6ffed; --green-bg-2: #e2efed; --green-line: #b7eb8f; --green-line-2: #b7eb8f;
+  --green: #389e0d; --green-2: #2ba89f; --green-dark: #1f4a3b; --green-bg: #f6ffed; --green-bg-2: #e2efed; --green-line: #b7eb8f;
   --amber: #d48806; --amber-dark: #5a4508; --amber-text: #8a6100; --amber-bg: #fffbe6; --amber-line: #ffe58f;
   --rose: #cf1322; --rose-dark: #6b1d2e; --rose-text: #9b2c44; --rose-bg: #fff1f0; --rose-bg-2: #fcf1f3; --rose-line: #ffa39e;
   --violet: #531dab; --violet-dark: #3b2462; --violet-bg: #f9f0ff;
@@ -69,4 +68,22 @@
   --shadow-pop: 0 3px 6px -4px rgba(0,0,0,.12), 0 6px 16px rgba(0,0,0,.08), 0 9px 28px 8px rgba(0,0,0,.05);
   --radius: 4px;
   --radius-card: 6px;
+
+  /* ---- Datenformulare (design of this prototype, not of the CDE): neutrals, surfaces, status, data-viz. Every colour of the form
+     surfaces (css/form.css, plan.css, views-b/c, views/form.js, plan.js, model/*) is one of these or one of the tokens above. ---- */
+  --ink: #1f2937;            /* strongest text, rules under totals, icons on light surfaces */
+  --navy-border: #21485c;    /* hover and focus border of every field (value of the CDE hover, now one name) */
+  --surface-1: #fafbfc;      /* alternate row, card foot, quiet panel */
+  --surface-2: #f3f4f6;      /* open group row, tinted area (= --row-alt) */
+  --surface-sel: #eef3f7;    /* current or hovered row, drop zone while a file is over it */
+  --surface-hover: #eef1f4;  /* hover on a group row */
+  --surface-locked: #eceff3; /* tinted table of a locked Erfassung; muted text keeps 4.5:1 on it */
+  --track: #eef0f3;          /* empty track of a bar */
+  --band: #d9dfe7;           /* accuracy band, icon tile */
+  --veil: rgba(229, 232, 237, .72);   /* veil over a locked Erfassung */
+  --field-border: #8c93a1;   /* border of an entry field: 3:1 against white (WCAG 1.4.11); the CDE keeps its lighter --line-2 */
+  --link-text: #1c7c75;      /* link text on the form surfaces: 5.0:1 on white (the CDE link colour --link has 2.9:1) */
+  --ok: #2f7d63;             /* confirmation: check marks, completed work (5.0:1 on white, white on it 5.0:1) */
+  --bar-credit: #8795a5;     /* bar of a credit (PV) in the lists */
+  --sia-hnf: #f4b6b6; --sia-nnf: #ffd59b; --sia-vf: #fff3a3; --sia-ff: #b5d8f7; --sia-kf: #d9d9d9;   /* segments of the ring «Anteile SIA 416»: categories, not judgements */
 }

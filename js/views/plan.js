@@ -10,20 +10,20 @@ import { planLists } from '../model/plan.js';
 // list interactions). The page itself is views/form.js.
 // The plan is parsed and checked locally in the browser by js/plancheck (plan-check engine, LibreDWG WebAssembly).
 
-const SEV_ICON = { pass: ['circle-check', '#2f7d63'], warn: ['triangle-alert', '#8a6100'], fail: ['circle-x', '#9b2c44'] };
-const STATUS_ICON = { ok: ['circle-check', '#2f7d63'], warning: ['triangle-alert', '#8a6100'], error: ['circle-x', '#9b2c44'] };
+const SEV_ICON = { pass: ['circle-check', 'var(--ok)'], warn: ['triangle-alert', 'var(--amber-text)'], fail: ['circle-x', 'var(--rose-text)'] };
+const STATUS_ICON = { ok: ['circle-check', 'var(--ok)'], warning: ['triangle-alert', 'var(--amber-text)'], error: ['circle-x', 'var(--rose-text)'] };
 const TABS = [['rules', 'Prüfregeln'], ['issues', 'Fehlermeldungen'], ['layers', 'Layer'], ['rooms', 'Räume'], ['areas', 'Flächen'], ['kpi', 'Kennzahlen']];
 const OVERLAY_OF_TAB = { rooms: 'rooms', areas: 'areas' };   // what the viewer highlights per sub tab (Kennzahlen has no viewer)
 const PLACEHOLDER = { rules: 'Prüfregel suchen…', issues: 'Fehler suchen…', rooms: 'Raum suchen…', areas: 'Fläche suchen…', layers: 'Layer suchen…' };
 const TOGGLE_TABS = new Set(['rooms', 'areas', 'layers']);   // rows with a viewer visibility checkbox → toggle-all in the toolbar
-const FILTERS = [['all', 'Alle', null], ['warnings', 'Warnungen', ['triangle-alert', '#8a6100']], ['errors', 'Fehler', ['circle-x', '#9b2c44']]];
+const FILTERS = [['all', 'Alle', null], ['warnings', 'Warnungen', ['triangle-alert', 'var(--amber-text)']], ['errors', 'Fehler', ['circle-x', 'var(--rose-text)']]];
 const fmtArea = v => v.toLocaleString('de-CH', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' m²';
 
 // ---- Pieces ----
 
 export const dropZone = plan => html`
   <label class="plan-drop" data-plan-drop="${plan.key}">
-    ${icon('upload', 30, '#5b6573')}
+    ${icon('upload', 30, 'var(--muted)')}
     <div class="plan-drop-title">DWG-Datei für ${plan.name} hierher ziehen oder auswählen</div>
     <div class="plan-drop-hint">.dwg, max. 50 MB · Prüfung lokal im Browser nach CAD-Richtlinie BBL V1.0, nichts wird hochgeladen</div>
     <span class="btn btn-primary">Datei auswählen</span>
@@ -36,17 +36,17 @@ const resultStrip = plan => html`<div class="plan-result">
   <div title="Nettogeschossfläche: Summe der Raumflächen"><div class="plan-kpi-label">NGF</div><div class="plan-kpi">${plan.ngf}</div></div>
   <div title="Energiebezugsfläche nach SIA 380/1, hergeleitet aus der Flächenart der Räume. Pflichtangabe für die Ökobilanz"><div class="plan-kpi-label">EBF</div><div class="plan-kpi">${plan.ebf}</div></div>
   <div title="Anteil der bestandenen Prüfregeln (bestanden / geprüft)"><div class="plan-kpi-label">${plan.scoreLabel}</div><div class="plan-kpi" style="color:${plan.scoreC}">${plan.score}</div></div>
-  <div title="Verstösse mit Schweregrad Fehler; sie sperren das Einreichen"><div class="plan-kpi-label">Fehler</div><div class="plan-kpi" style="color:${plan.errors ? '#9b2c44' : '#2f7d63'}">${plan.errors}</div></div>
-  <div title="Verstösse mit Schweregrad Warnung; zulässig, in der Prüfung sichtbar"><div class="plan-kpi-label">Warnungen</div><div class="plan-kpi" style="color:${plan.warnings ? '#8a6100' : '#2f7d63'}">${plan.warnings}</div></div>
+  <div title="Verstösse mit Schweregrad Fehler; sie sperren das Einreichen"><div class="plan-kpi-label">Fehler</div><div class="plan-kpi" style="color:${plan.errors ? 'var(--rose-text)' : 'var(--ok)'}">${plan.errors}</div></div>
+  <div title="Verstösse mit Schweregrad Warnung; zulässig, in der Prüfung sichtbar"><div class="plan-kpi-label">Warnungen</div><div class="plan-kpi" style="color:${plan.warnings ? 'var(--amber-text)' : 'var(--ok)'}">${plan.warnings}</div></div>
 </div>`;
 
 const viewerBox = plan => html`<div class="plan-viewer" data-plan-viewer="${plan.drawingKey || ''}" data-plan-src="${plan.src || ''}" data-plan-status="idle">
   <canvas role="img" aria-label="Grundrissplan ${plan.name}"></canvas>
-  <div class="plan-viewer-state"><span class="plan-spin">${icon('loader-circle', 22, '#5b6573')}</span><div class="plan-state-text">Plan wird geladen…</div><div class="plan-state-sub"></div></div>
+  <div class="plan-viewer-state"><span class="plan-spin">${icon('loader-circle', 22, 'var(--muted)')}</span><div class="plan-state-text">Plan wird geladen…</div><div class="plan-state-sub"></div></div>
   <div class="plan-tools" role="toolbar" aria-label="Viewer">
-    <button type="button" data-plan-zoom="in" title="Vergrössern">${icon('zoom-in', 14, '#1f2937')}</button>
-    <button type="button" data-plan-zoom="out" title="Verkleinern">${icon('zoom-out', 14, '#1f2937')}</button>
-    <button type="button" data-plan-zoom="fit" title="Gesamtansicht">${icon('house', 14, '#1f2937')}</button>
+    <button type="button" data-plan-zoom="in" title="Vergrössern">${icon('zoom-in', 14, 'var(--ink)')}</button>
+    <button type="button" data-plan-zoom="out" title="Verkleinern">${icon('zoom-out', 14, 'var(--ink)')}</button>
+    <button type="button" data-plan-zoom="fit" title="Gesamtansicht">${icon('house', 14, 'var(--ink)')}</button>
   </div>
   <div class="plan-coords" aria-hidden="true"></div>
   <div class="plan-popup" role="tooltip" aria-live="polite"></div>
@@ -107,7 +107,7 @@ function listLayers(plan, L) {
   return html`<div class="plan-group"><span>Layer</span><span>${L.layers.length}</span></div>
     ${L.layers.map(l => { const hidden = viewer.hiddenLayers.has(l.name); return html`<label class="plan-row${hidden ? ' is-hidden' : ''}" style="cursor:pointer">
       <input type="checkbox" ${hidden ? '' : raw('checked')} data-plan-layer="${l.name}" aria-label="Layer ${l.name} ein-/ausblenden">
-      ${icon(l.ok ? 'circle-check' : 'triangle-alert', 14, l.ok ? '#2f7d63' : '#8a6100')}<span class="plan-swatch" style="background:${l.color}"></span>
+      ${icon(l.ok ? 'circle-check' : 'triangle-alert', 14, l.ok ? 'var(--ok)' : 'var(--amber-text)')}<span class="plan-swatch" style="background:${l.color}"></span>
       <span class="plan-row-text" title="${l.ok ? 'Zulässiger CAFM-Layer' : 'Unbekannter Layer, nicht in der CAFM-Layerliste'}">${l.name}</span><span class="plan-row-count">${l.count} Objekte</span></label>`; })}`;
 }
 
@@ -121,7 +121,7 @@ const ratioTable = rows => html`<div><div class="kd-title">Flächenkennzahlen</d
   ${rows.map(r => html`<div class="kd-ratio" style="background:${r.bg}" title="${r.label}"><span class="ellipsis"><span class="kd-ratio-ab">${r.abbr}</span>${r.label}</span><span class="right">${r.value}</span></div>`)}</div>`;
 const donut = d => html`<div><div class="kd-title">Anteile SIA 416</div>${!d ? html`<div class="plan-empty" style="padding:14px 0">Keine Flächen für das Diagramm.</div>` : html`<div class="kd-donut-wrap"><div class="kd-donut" role="img" aria-label="${d.label}">
   <div class="kd-ring" style="background:${d.gradient}"></div>
-  <svg width="360" height="200" viewBox="0 0 360 200" aria-hidden="true">${d.callouts.map(c => html`<polyline points="${c.pts}" fill="none" stroke="#9ca3af" stroke-width="1"></polyline>`)}</svg>
+  <svg width="360" height="200" viewBox="0 0 360 200" aria-hidden="true">${d.callouts.map(c => html`<polyline points="${c.pts}" fill="none" stroke="var(--faint)" stroke-width="1"></polyline>`)}</svg>
   ${d.callouts.map(c => html`<span class="kd-callout${c.right ? '' : ' is-left'}" style="top:${c.y};left:${c.x}"><b>${c.label}</b> ${c.pct}</span>`)}
 </div></div>`}</div>`;
 function listKpi(plan) {
@@ -144,7 +144,7 @@ export function resultPanel(ctx, plan) {
     ${resultStrip(plan)}
     <div class="plan-tabbar">
       <div class="plan-tabs" role="tablist">${TABS.map(([key, label]) => html`<button type="button" class="plan-tab${key === tab ? ' is-active' : ''}" role="tab" aria-selected="${key === tab ? 'true' : 'false'}" aria-controls="plan-list" data-action="planTab" data-arg="${key}">${label}</button>`)}</div>
-      ${tab === 'kpi' ? '' : html`<div class="plan-filter" role="group" aria-label="Statusfilter">${FILTERS.map(([key, label, ic]) => { const on = key === L.filter; return html`<button type="button" data-action="planFilter" data-arg="${key}" data-key="${plan.key}" aria-pressed="${on ? 'true' : 'false'}">${ic ? icon(ic[0], 13, on ? '#fff' : ic[1]) : ''}${label}</button>`; })}</div>`}
+      ${tab === 'kpi' ? '' : html`<div class="plan-filter" role="group" aria-label="Statusfilter">${FILTERS.map(([key, label, ic]) => { const on = key === L.filter; return html`<button type="button" data-action="planFilter" data-arg="${key}" data-key="${plan.key}" aria-pressed="${on ? 'true' : 'false'}">${ic ? icon(ic[0], 13, on ? 'var(--white)' : ic[1]) : ''}${label}</button>`; })}</div>`}
     </div>
     ${tab === 'kpi'
       ? html`<div id="plan-list" role="tabpanel" data-plan-tab="kpi">${body}</div>`
