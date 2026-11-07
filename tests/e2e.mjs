@@ -228,8 +228,10 @@ try {
   await click('.ent-group[data-group="G"]');
   await click('[data-action="formToggleMissing"]'); check('filter: only the three rows with missing values', (await count('.ent-src')) === 3 && (await count('.ent-add')) === 0);
   await click('[data-action="formToggleMissing"]');
-  await click('[data-action="toggleImportMenu"]'); check('THG import menu has the Tool-Export', (await count('.dd-item')) === 3 && (await count('.dd-sep')) === 1 && (await bodyText()).includes('Tool-Export importieren') && (await bodyText()).includes('Excel-Vorlage herunterladen'));
-  await click('[data-action="importItem"][data-arg="tool"]'); check('Tool-Export fills the missing values', /Alle 73 Werte erfasst/.test(await bodyText()) && (await enabled('[data-action="formSubmit"]')) && (await count('.toast')) === 1);
+  await click('[data-action="toggleImportMenu"]'); check('THG import menu: Excel only, no Tool-Export, width limited', (await count('.dd-item')) === 2 && (await count('.dd-sep')) === 1 && !(await bodyText()).includes('Tool-Export importieren') && (await bodyText()).includes('Excel importieren') && (await bodyText()).includes('Excel-Vorlage herunterladen') && await evaluate(`document.querySelector('.dd-menu').getBoundingClientRect().width <= 262`));
+  await click('[data-action="toggleImportMenu"]');
+  await evaluate(`(async () => { const { mockProject } = await import('./js/model/mock.js'), A = window.cde.actions, d = window.cde.data, full = mockProject(d.projects.projects.find(p => p.id === 'eigerplatz'), d, { complete: true }).thgSrc; for (const s of window.cde.state.projects.eigerplatz.thgSrc) { const c = full.find(x => x.id === s.id); if (s.q == null) A.thgVal({ id: s.id, field: 'q' }, { value: String(c.q) }); if (s.kw == null) A.thgVal({ id: s.id, field: 'kw' }, { value: String(c.kw) }); } })()`); await settle();
+  check('the missing values are entered', /Alle 73 Werte erfasst/.test(await bodyText()) && (await enabled('[data-action="formSubmit"]')));
   // Excel round trip of the Ökobilanz: three sheets, no sample file
   const xt = await evaluate(`(async () => {
     const A = window.cde.actions, blob = await A.formExcel({ form: 'thg' }, null, null, { save: false });
@@ -260,11 +262,11 @@ try {
   await click('[data-action="formSubmit"]'); check('eigerplatz THG submitted', (await state()).projects.eigerplatz.forms.thg.step === 3 && (await text('.page-title')).includes('Eingereicht') && (await count('.ent-input:not([readonly])')) === 0);
   await go('/projects/botschaft-wien/deliveries/thg-32/erfassung');
   check('open THG without Emissionsquellen', (await bodyText()).includes('Noch keine Emissionsquellen erfasst') && (await count('.ent-src')) === 0 && (await count('.ent-group')) === 6 && (await bodyText()).includes('Einreichen erst, wenn Emissionsquellen erfasst sind'));
-  await click('[data-action="toggleImportMenu"]'); await click('[data-action="importItem"][data-arg="tool"]');
-  check('Tool-Export brings the 22 Emissionsquellen, the Betrieb stays open', (await state()).projects['botschaft-wien'].thgSrc.length === 22 && /29 fehlen/.test(await bodyText()));
+  await evaluate(`(async () => { const X = await import('./js/excel.js'), { mockProject } = await import('./js/model/mock.js'), d = window.cde.data, p0 = window.cde.state.projects['botschaft-wien'], M = mockProject(d.projects.projects.find(p => p.id === 'botschaft-wien'), d, { complete: true }); const sheets = X.sheetsOf('thg', { ...p0, thgSrc: M.thgSrc, thgHead: M.thgHead, thgBetr: M.thgBetr }, d).filter(s => s.name === 'Erstellung'); const payload = X.readWorkbook('thg', Object.fromEntries(sheets.map(s => [s.name, s.rows])), d); window.cde.actions.importItem({ arg: 'excel', form: 'thg' }); window.cde.store.setIn('imp', { file: { name: 'Oekobilanz_Toolexport_SIA32.xlsx', size: 1, payload }, pid: 'botschaft-wien' }); window.cde.actions.impApply(); window.cde.actions.impClose(); })()`); await settle();
+  check('an Excel file brings the 22 Emissionsquellen, the Betrieb stays open', (await state()).projects['botschaft-wien'].thgSrc.length === 22 && /29 fehlen/.test(await bodyText()));
   await go('/projects/botschaft-wien/deliveries/thg-32/betrieb'); check('open Betrieb: empty rows', (await count('.ent-betr .ent-input:not(.is-calc)[value=""]')) === 27 && (await count('.ent-betr .ent-input.is-calc[value=""]')) === 9 && (await disabled('[data-action="formSubmit"]')));
   await click('[data-action="toggleImportMenu"]'); await click('[data-action="importItem"][data-arg="rechenhilfe"]'); check('Rechenhilfe fills the Betrieb', /Alle 73 Werte erfasst/.test(await bodyText()) && (await enabled('[data-action="formSubmit"]')) && (await count('.ent-betr .hs-box.is-on')) === 5);
-  await clickText('.tab', 'Verlauf'); check('Verlauf lists the Tool-Export and the Rechenhilfe', (await bodyText()).includes('Tool-Export importiert') && (await bodyText()).includes('22 Emissionsquellen übernommen') && (await bodyText()).includes('Rechenhilfe SIA 390/1 importiert'));
+  await clickText('.tab', 'Verlauf'); check('Verlauf lists the Excel import and the Rechenhilfe', (await bodyText()).includes('Excel importiert') && (await bodyText()).includes('Rechenhilfe SIA 390/1 importiert'));
 
   // 6. Tasks pages, favorites, sections
   await go('/tasks/all'); check('my tasks', (await count('.grid-row')) >= 5);

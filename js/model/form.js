@@ -370,7 +370,7 @@ function thgPart(P, f, data, T, M, ref, locked, bd) {
     headShared, erf: { isTHG: true, rows, head: headErst, tot, derived, nSrc, missing: missE },
     betr: { title: T.betrTitle, importItems: T.betrImportItems || [], head: headBetr, pv: pvFields, rows: betrList, end: hasBetr ? neg(endB, FMT1) : '–', thg: hasBetr ? neg(thgB) : '–', missing: missB, hasValues: hasBetr,
       subs: [{ name: 'THGE Erstellung pro Jahr', v: erstStr, tip: 'Summe der Emissionsquellen, kg CO₂-eq/m² EBF·a' }, { name: 'THGE Erstellung + Betrieb pro Jahr', v: sumStr, tip: 'Massgebend für die Zusatzanforderung SIA 390/1, kg CO₂-eq/m² EBF·a' }] },
-    open: nSrc === 0 ? { text: 'Noch keine Emissionsquellen erfasst. Tool-Export importieren oder die Quellen von Hand erfassen.', btn: 'Erfassung öffnen', tab: 'erfassung' }
+    open: nSrc === 0 ? { text: 'Noch keine Emissionsquellen erfasst. Excel importieren oder die Quellen von Hand erfassen.', btn: 'Erfassung öffnen', tab: 'erfassung' }
       : missE === 0 && missB ? { text: `Betrieb: ${missingText(missB)} noch. Rechenhilfe importieren oder die Werte erfassen.`, btn: 'Erfassung Betrieb öffnen', tab: 'betrieb' } : undefined };
 }
 

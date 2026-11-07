@@ -34,7 +34,7 @@
       "manual": [["k1", "Abweichungen zur Vorphase begründet"], ["k2", "Detaillierter KV plausibel"]],
       "docs": [["Kostenvoranschlag_detail.pdf", "PDF", "Pflicht"], ["Kostenvoranschlag_positionen.xlsx", "Excel", "Optional"]],
       "ov": { "chartTitle": "Kostenziele", "chartHint": "Ziele werden in ePPM verwaltet", "istLabel": "Ist · KV-32 Erstellungskosten B–W" },
-      "importItems": [["vorlage", "Excel-Vorlage herunterladen"], ["excel", "Excel importieren"], ["dwg", "Bezugsmengen aus den Grundrissen übernehmen"]]
+      "importItems": [["vorlage", "Excel-Vorlage herunterladen"], ["excel", "Excel importieren"], ["dwg", "Mengen aus Grundrissen übernehmen"]]
     },
     "ks": {
       "code": "KS-31",
@@ -52,7 +52,7 @@
       "manual": [["k1", "Abweichungen zur Vorphase begründet"], ["k2", "Kostenschätzung plausibel"]],
       "docs": [["Kostenschaetzung_eBKP-H.pdf", "PDF", "Pflicht"]],
       "ov": { "chartTitle": "Kostenziele", "chartHint": "Ziele werden in ePPM verwaltet", "istLabel": "Ist · KS-31 Erstellungskosten B–W" },
-      "importItems": [["vorlage", "Excel-Vorlage herunterladen"], ["excel", "Excel importieren"], ["dwg", "Bezugsmengen aus den Grundrissen übernehmen"]]
+      "importItems": [["vorlage", "Excel-Vorlage herunterladen"], ["excel", "Excel importieren"], ["dwg", "Mengen aus Grundrissen übernehmen"]]
     },
     "thg": {
       "code": "THG-32",
@@ -70,7 +70,7 @@
       "manual": [["t1", "Abweichungen zur Vorphase begründet"], ["t2", "Ökobilanz-Bericht plausibel, Pflichtenheft BBL eingehalten"]],
       "docs": [["Oekobilanz_Bericht_SIA32.pdf", "PDF", "Pflicht"], ["Oekobilanz_Toolexport_SIA32.xlsx", "Excel", "Pflicht"], ["Rechenhilfe_SIA390-1_Betrieb.xlsx", "Excel", "Pflicht"]],
       "ov": { "chartTitle": "Zielwerte SIA 390/1" },
-      "importItems": [["vorlage", "Excel-Vorlage herunterladen"], ["excel", "Excel importieren"], ["tool", "Tool-Export importieren (XLSX, JSON)"]],
+      "importItems": [["vorlage", "Excel-Vorlage herunterladen"], ["excel", "Excel importieren"]],
       "betrImportItems": [["vorlage", "Excel-Vorlage herunterladen"], ["excel", "Excel importieren"], ["rechenhilfe", "Rechenhilfe SIA 390/1 importieren"]]
     }
   },
@@ -173,8 +173,8 @@
             "03.05.2027",
             "17:30",
             "OB",
-            "Tool-Export importiert",
-            "Oekobilanz_Toolexport_SIA32.xlsx · Lesosai · 22 Emissionsquellen übernommen"
+            "Excel importiert",
+            "Oekobilanz_Toolexport_SIA32.xlsx · 22 Emissionsquellen übernommen"
           ],
           [
             "03.05.2027",

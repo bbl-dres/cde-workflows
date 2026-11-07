@@ -18,7 +18,7 @@ const { initialState, STATE_VERSION } = await mod('js/model/state.js');
 const { createStore, patchDotted } = await mod('js/store.js');
 const { makeActions } = await mod('js/actions.js');
 const { formModel, LOCKED_FROM } = await mod('js/model/form.js');
-const { mockProject, groupAmount, mergeToolExport, mergeBetr, thgErst } = await mod('js/model/mock.js');
+const { mockProject, groupAmount, mergeBetr, thgErst } = await mod('js/model/mock.js');
 const { FMT, FMT1, FMT2, num, disp, disp1, mio } = await mod('js/format.js');
 const searchMod = await mod('js/model/search.js');
 const { planModel, planLists } = await mod('js/model/plan.js');
@@ -162,24 +162,28 @@ test('actions: Emissionsquellen (THG-32) add, edit, flag, remove, Grundlagen; lo
   assert.equal(JSON.stringify(P()), before, 'locked: no changes');
 });
 
-test('actions: Importieren (Tool-Export, Excel, others)', () => {
+test('actions: Importieren (Excel, Rechenhilfe, others)', async () => {
+  const X = await mod('js/excel.js');
   const { actions, P, F, store, toast } = setup('eigerplatz');
+  // the complete Erstellung of the project as a file, imported through the Excel dialog (the file carries the name of the required document)
+  const erstellung = () => { const M = mockProject(data.projects.projects.find(p => p.id === setup.pid), data, { complete: true }); const s = X.sheetsOf('thg', { ...P(), thgSrc: M.thgSrc, thgHead: M.thgHead, thgBetr: M.thgBetr }, data).filter(x => x.name === 'Erstellung'); return X.readWorkbook('thg', Object.fromEntries(s.map(x => [x.name, x.rows])), data); };
+  const importFile = payload => { actions.importItem({ arg: 'excel', form: 'thg' }); store.setIn('imp', { file: { name: 'Oekobilanz_Toolexport_SIA32.xlsx', size: 1, payload }, pid: setup.pid }); actions.impApply(); actions.impClose(); };
   assert.equal(F('thg').missing, 3);
-  actions.importItem({ arg: 'tool', form: 'thg' });
-  assert.equal(F('thg').missing, 0); assert.match(toast(), /3 Werte ergänzt/); assert.ok(eventTitles(P().forms.thg).includes('Tool-Export importiert'));
-  actions.importItem({ arg: 'tool', form: 'thg' });
-  assert.match(toast(), /keine neuen Werte/);
+  importFile(erstellung());
+  assert.equal(F('thg').missing, 0); assert.ok(eventTitles(P().forms.thg).includes('Excel importiert')); assert.equal(F('thg').docs.filter(d => d.name === 'Oekobilanz_Toolexport_SIA32.xlsx').length, 1, 'a file the form already lists is not added twice');
+  importFile(erstellung());
+  assert.match(toast(), /keine Änderungen/);
   actions.importItem({ arg: 'ifc', form: 'thg' });
   assert.match(toast(), /ohne Funktion/);
   // an open THG-32 gets all sources
   setup.pid = 'botschaft-wien';
   assert.equal(P().thgSrc.length, 0);
-  actions.importItem({ arg: 'tool', form: 'thg' });
-  assert.equal(P().thgSrc.length, data.thg.sources.length); assert.match(toast(), /22 Emissionsquellen übernommen/);
+  importFile(erstellung());
+  assert.equal(P().thgSrc.length, data.thg.sources.length);
   assert.equal(F('thg').missing, 29, 'the Betrieb of an open form is still empty'); assert.equal(F('thg').next.tab, 'betrieb');
   actions.importItem({ arg: 'rechenhilfe', form: 'thg' });
   assert.equal(F('thg').missing, 0); assert.match(toast(), /29 Werte übernommen/); assert.ok(eventTitles(P().forms.thg).includes('Rechenhilfe SIA 390/1 importiert')); assert.equal(F('thg').bar.canSubmit, true);
-  assert.equal(F('thg').docs.length, 2, 'Tool-Export and Rechenhilfe appear under Dokumente'); assert.ok(F('thg').summ[0].tip.includes('Oekobilanz_Bericht') && F('thg').summ[0].val === 'Alle Werte erfasst · 1 Pflichtdokument fehlt' && !F('thg').summ[0].ok, 'the report is still missing');
+  assert.equal(F('thg').docs.length, 2, 'the imported Excel file and the Rechenhilfe appear under Dokumente'); assert.ok(F('thg').summ[0].tip.includes('Oekobilanz_Bericht') && F('thg').summ[0].val === 'Alle Werte erfasst · 1 Pflichtdokument fehlt' && !F('thg').summ[0].ok, 'the report is still missing');
   actions.importItem({ arg: 'rechenhilfe', form: 'thg' });
   assert.match(toast(), /keine neuen Werte/);
   // Excel: form-aware dialog; locked forms refuse every import
@@ -194,7 +198,7 @@ test('actions: Importieren (Tool-Export, Excel, others)', () => {
   assert.equal(num(P().kvV.C02), mockProject(data.projects.projects.find(p => p.id === 'musterhausen'), data).kvV.C02);
   setup.pid = 'agroscope-posieux';
   const before = JSON.stringify(P());
-  actions.importItem({ arg: 'tool', form: 'thg' }); actions.importItem({ arg: 'excel', form: 'kv' });
+  actions.importItem({ arg: 'excel', form: 'thg' }); actions.importItem({ arg: 'excel', form: 'kv' });
   assert.equal(JSON.stringify(P()), before); assert.match(toast(), /gesperrt/);
 });
 
@@ -259,7 +263,7 @@ test('actions: plan review follows the plan model gates', () => {
   assert.equal(plans().OG2.status, data.plans.floors.find(f => f.key === 'OG2').status);
 });
 
-test('mock: deterministic, scaled, calibrated; group amounts; Tool-Export merge', () => {
+test('mock: deterministic, scaled, calibrated; group amounts', () => {
   const projects = data.projects.projects;
   for (const p of projects) assert.deepEqual(mockProject(p, data), mockProject(p, data), `${p.id}: deterministic`);
   const agro = mockProject(projects.find(p => p.id === 'agroscope-posieux'), data);
@@ -276,11 +280,6 @@ test('mock: deterministic, scaled, calibrated; group amounts; Tool-Export merge'
   const g = data.ebkp.ebkp.find(x => x.code === 'C');
   assert.equal(groupAmount(g, { C01: '', C02: null }), null); assert.equal(groupAmount(g, { C01: 10, C02: '20' }), 30);
   assert.equal(groupAmount(g, { C01: 10, C02: 20 }, { C02: true }, [{ v: '5' }]), 15);
-  const full = data.thg.sources.map(s => ({ ...s }));
-  const cur = full.slice(0, 3).map(s => ({ ...s, kw: null }));
-  const m = mergeToolExport(cur, full);
-  assert.equal(m.filled, 3); assert.equal(m.added, full.length - 3); assert.equal(m.next.length, full.length);
-  assert.deepEqual(mergeToolExport(full, full), { next: full, added: 0, filled: 0 });
   const mb = mergeBetr({ b0_n: 30, b1_n: '', b0_proj: false }, { b0_n: 22, b1_n: 7, b0_proj: true, pv_y: 55800 });
   assert.deepEqual(mb, { next: { b0_n: 30, b1_n: 7, b0_proj: false, pv_y: 55800 }, filled: 2 }, 'entered values and flags stay, blanks are filled');
 });
@@ -494,11 +493,6 @@ test('review 06.11. (QS): Übersicht click, roles, first input, filter, search, 
   assert.match(toast(), /^10 Bezugsmengen aus den Grundrissen übernommen\.$/); assert.equal(P().kvQ.A01, sia.GSF); assert.equal(P().kvQ.D01, sia.GF); assert.equal(P().kvQ.D05, sia.EBF); assert.equal(P().kvQ.J02, sia.HNF + sia.NNF); assert.equal(P().kvQ.I01, sia.BUF);
   assert.equal(P().kvQ.C01, null, 'a Bezugsgrösse of the element itself (Fläche Fundament) does not come from the SIA 416 figures'); assert.equal(P().kvQ.D08, null);
   actions.importItem({ arg: 'dwg', form: 'kv' }); assert.match(toast(), /Keine fehlende Menge/);
-  // Tool-Export: the message names both what came in and what was filled
-  const gone = P().thgSrc[5];
-  actions.thgRemove({ id: gone.id }); actions.importItem({ arg: 'tool', form: 'thg' });
-  assert.match(toast(), /1 Emissionsquelle übernommen, 3 Werte ergänzt/);
-  assert.equal(F('thg').docs.filter(d => d.name === 'Oekobilanz_Toolexport_SIA32.xlsx').length, 1, 'a file the form already lists is not added twice');
 
   // search: ArrowUp from «nothing active» goes to the last hit
   actions.searchType({}, { value: 'kv' }); const hits = store.get().ui;

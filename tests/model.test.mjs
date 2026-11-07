@@ -207,7 +207,7 @@ test('THG-32: Emissionsquellen (Erstellung), Betrieb, Zielwerte SIA 390/1 and th
   assert.equal(T('prev').val, 'ab 15 % bei D', 'Technik deviates 18 % from SIA 31, above the 15 % threshold of the Ökobilanz'); assert.equal(T('prev').res, 'prüfen', 'a deviation is for the reviewer to judge'); assert.equal(T('prev').begr, undefined, 'plain rows only');
   // Betrieb rows on one line; Endenergie and Koeffizient are derived and can be replaced by an own value
   assert.equal(thg.betr.rows[0].label, 'Raumwärme'); assert.equal(thg.betr.rows[1].label, 'Warmwasser · Wärmepumpe Sole/Wasser'); assert.ok(!thg.betr.rows[0].endOwn && thg.betr.rows[0].endStr === '5.5' && thg.betr.rows[0].kStr === '0.012');
-  assert.deepEqual(thg.betr.importItems.map(i => i[0]), ['vorlage', 'excel', 'rechenhilfe']); assert.deepEqual(thg.erf.importItems.map(i => i[0]), ['vorlage', 'excel', 'tool']);
+  assert.deepEqual(thg.betr.importItems.map(i => i[0]), ['vorlage', 'excel', 'rechenhilfe']); assert.deepEqual(thg.erf.importItems.map(i => i[0]), ['vorlage', 'excel']);
   assert.equal(thg.rv.notSubmitted, true);
   assert.equal(thg.manual.length, 2); assert.equal(thg.docs.length, 3); assert.equal(thg.target, 'Wüest Dimensions');
   assert.equal(thg.rv.canReview, false); assert.equal(thg.rv.canApprove, false); assert.equal(thg.bar.canSubmit, true, 'complete → Einreichen possible');

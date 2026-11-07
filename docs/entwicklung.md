@@ -78,7 +78,7 @@ weltweite CARTO-Basiskarte «Positron» (Vektorkacheln, öffentlich, ohne Schlü
   eBKP-H-Elementgruppe (SIA 2032): Code, Bauteil oder Anlage auf einer Zeile (Tool-Code wie Wa01 und Bezeichnung; die
   Ökobilanzdaten des Tool-Exports stehen im Hover), Hersteller-Flag, Referenzgrösse mit Einheit, Kennwert kg CO₂-eq/m² EBF·a und Anteil;
   Hauptgruppen B–G zum Auf- und Zuklappen (alle offen), «+ Emissionsquelle hinzufügen», Papierkorb, Total B–G, «THGE Erstellung pro Jahr»
-  und «THGE Erstellung, Betrachtungszeitraum 60 Jahre inkl. Ersatz» (Begriffe SIA 2032). «Tool-Export importieren» holt die
+  und «THGE Erstellung, Betrachtungszeitraum 60 Jahre inkl. Ersatz» (Begriffe SIA 2032). «Excel importieren» holt die
   Quellen des Projekts (bei einem offenen Formular alle 22, sonst die fehlenden Werte). **Erfassung Betrieb**: Grundlagen
   (Tool Betrieb, Stromprodukt, PV-Überschuss, Photovoltaik: Leistung aus D01.01 der Erstellung, Ertrag, Eigenverbrauch) und
   die Energiedienstleistungen nach Rechenhilfe SIA 390/1 (Nutzenergie, Anteil und Nutzungsgrad/JAZ je Energieträger mit

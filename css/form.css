@@ -220,8 +220,8 @@
 
 /* Import dropdown */
 .dd { position: relative; }
-.dd-menu { position: absolute; right: 0; top: 32px; z-index: 61; background: var(--white); border-radius: 4px; box-shadow: var(--shadow-pop); padding: 4px; min-width: 230px; display: flex; flex-direction: column; }
-.dd-item { text-align: left; background: var(--white); border: 0; padding: 8px 10px; font-size: 13px; font-weight: 400; color: var(--text); cursor: pointer; border-radius: 3px; white-space: nowrap; }
+.dd-menu { position: absolute; right: 0; top: 32px; z-index: 61; background: var(--white); border-radius: 4px; box-shadow: var(--shadow-pop); padding: 4px; width: max-content; min-width: 190px; max-width: min(260px, calc(100vw - 32px)); display: flex; flex-direction: column; }
+.dd-item { text-align: left; background: var(--white); border: 0; padding: 8px 10px; font-size: 13px; font-weight: 400; color: var(--text); cursor: pointer; border-radius: 3px; line-height: 1.35; }   /* a long label wraps inside the menu width */
 .dd-item:hover { background: var(--row-alt); }
 a.dd-item { display: block; text-decoration: none; }                /* a link among the menu buttons (guideline PDF) */
 .dd-sep { border-bottom: 1px solid var(--line-4); border-radius: 3px 3px 0 0; }

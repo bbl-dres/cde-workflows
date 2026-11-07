@@ -14,7 +14,7 @@ import { LEGACY, link } from './links.js';
 import { TASK_COLUMNS } from './model/columns.js';
 import { formModel, LOCKED_FROM } from './model/form.js';
 import { initProject } from './model/state.js';
-import { KEYS, mockProject, groupAmount, egOf, mergeToolExport, mergeBetr, needsQty } from './model/mock.js';
+import { KEYS, mockProject, groupAmount, egOf, mergeBetr, needsQty } from './model/mock.js';
 import { planModel } from './model/plan.js';
 import { patchDotted } from './store.js';
 import { num } from './format.js';
@@ -233,21 +233,6 @@ export function makeActions(store, data, nav) {
         setP(pp => ({ [qKey]: { ...pp[qKey], ...Q }, forms: { ...pp.forms, [kind]: { ...pp.forms[kind], added: (pp.forms[kind].added || []).map(a => (a.id in added ? { ...a, q: added[a.id] } : a)) } } }));
         logEv(kind, me(), 'Bezugsmengen übernommen', `${pl(n, 'Menge', 'Mengen')} aus den Grundrissen (DWG)`);
         toast(`${pl(n, 'Bezugsmenge', 'Bezugsmengen')} aus den Grundrissen übernommen.`);
-        return;
-      }
-      if (ds.arg === 'tool' && ds.form === 'thg') {
-        // Tool-Export (XLSX/JSON of the Ökobilanz tool): the Emissionsquellen of the project come in, missing values are filled
-        const p = P(), project = projectOf(pid()); if (!p || !project) return;
-        const { next, added, filled } = mergeToolExport(p.thgSrc || [], mockProject(project, data, { complete: true }).thgSrc);
-        if (!added && !filled) { toast('Tool-Export enthält keine neuen Werte.'); return; }
-        const doc = (data.forms.kinds.thg.docs.find(d => /toolexport/i.test(d[0])) || [])[0] || 'Tool-Export';
-        const tool = (p.thgHead || {}).tool || data.thg.head.find(h => h[0] === 'tool')[2];
-        const what = [added ? `${pl(added, 'Emissionsquelle', 'Emissionsquellen')} übernommen` : '', filled ? `${pl(filled, 'Wert', 'Werte')} ergänzt` : ''].filter(Boolean).join(', ');
-        begin('thg');
-        setP({ thgSrc: next });
-        addDoc('thg', doc);
-        logEv('thg', me(), 'Tool-Export importiert', `${doc} · ${tool} · ${what}`);
-        toast(`Tool-Export importiert: ${what}.`);
         return;
       }
       if (ds.arg === 'rechenhilfe' && ds.form === 'thg') {

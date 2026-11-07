@@ -106,20 +106,6 @@ export function groupAmount(g, V, removed = {}, added = []) {
 /** Group amounts for the direct entry mode of every Hauptgruppe ('' when nothing is entered). */
 export const groupAmounts = (values, data) => Object.fromEntries(data.ebkp.ebkp.map(g => [g.code, groupAmount(g, values) ?? (g.kids.length ? '' : 0)]));   // a Hauptgruppe without elements (H) is 0, not missing
 
-/** Tool-Export import: the complete Emissionsquellen of the project come in; existing rows keep their values, blanks are filled. */
-export function mergeToolExport(current, complete) {
-  let added = 0, filled = 0;
-  const next = current.map(x => {
-    const b = complete.find(y => y.id === x.id);
-    if (!b || x.isNew) return x;
-    const o = { ...x };
-    ['q', 'kw'].forEach(k => { if (num(o[k]) == null && b[k] != null) { o[k] = b[k]; filled++; } });
-    return o;
-  });
-  complete.forEach(b => { if (!current.some(x => x.id === b.id)) { next.push({ ...b }); added++; } });
-  return { next, added, filled };
-}
-
 /** Rechenhilfe import (Betrieb): the complete values of the project come in; values already entered stay, blanks are filled. */
 export function mergeBetr(current, complete) {
   let filled = 0; const next = { ...current };
